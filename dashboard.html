@@ -6,26 +6,22 @@
   <title>Agencia OS — Dashboard</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    body { overflow: auto; }
+    body { overflow: auto; background: var(--bg); }
 
     .dash-page {
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      background: var(--bg);
-      padding: 24px;
+      padding: 40px 24px;
     }
 
-    .dash-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 56px 44px;
-      text-align: center;
-      max-width: 440px;
+    .dash-wrap {
       width: 100%;
-      box-shadow: var(--shadow-lg);
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
       animation: cardIn .4s cubic-bezier(.4,0,.2,1) both;
     }
 
@@ -34,183 +30,461 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .dash-icon {
-      width: 64px;
-      height: 64px;
+    /* ── Header ── */
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .dash-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .dash-logo-mark {
+      width: 32px;
+      height: 32px;
       background: var(--azul);
-      border-radius: 18px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 28px;
     }
 
-    .dash-icon svg {
-      width: 32px;
-      height: 32px;
+    .dash-logo-mark svg {
+      width: 17px;
+      height: 17px;
       fill: none;
       stroke: var(--celeste);
       stroke-width: 2.5;
       stroke-linecap: round;
-      stroke-linejoin: round;
     }
 
-    .dash-title {
-      font-size: 22px;
-      font-weight: 900;
-      color: var(--ink);
-      letter-spacing: -.5px;
-      margin-bottom: 8px;
-    }
-
-    .dash-sub {
-      font-size: 13px;
-      color: var(--ink3);
-      line-height: 1.6;
-      margin-bottom: 32px;
-    }
-
-    .dash-info {
-      background: var(--bg);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      text-align: left;
-      margin-bottom: 24px;
-    }
-
-    .dash-info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    .dash-info-row:last-child { border-bottom: none; }
-
-    .dash-info-lbl { color: var(--ink3); font-weight: 600; }
-    .dash-info-val { color: var(--ink); font-weight: 800; }
-
-    .invite-box {
-      background: var(--celeste-dim);
-      border: 1px solid rgba(142,219,255,.3);
-      border-radius: var(--radius);
-      padding: 14px 20px;
-      margin-bottom: 24px;
-      text-align: left;
-    }
-
-    .invite-label {
-      font-size: 10px;
-      font-weight: 800;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      margin-bottom: 6px;
-    }
-
-    .invite-code {
-      font-size: 22px;
+    .dash-logo-name {
+      font-size: 14px;
       font-weight: 900;
       color: var(--azul);
-      letter-spacing: 4px;
+      letter-spacing: -.3px;
     }
 
-    .invite-hint {
-      font-size: 11px;
-      color: var(--ink3);
-      margin-top: 4px;
-    }
-
-    .btn-sm {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 18px;
+    .btn-signout {
+      padding: 7px 14px;
       border-radius: var(--radius-sm);
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       border: 1.5px solid var(--border);
       background: var(--white);
-      color: var(--ink2);
+      color: var(--ink3);
       font-family: 'Plus Jakarta Sans', sans-serif;
       transition: all var(--transition);
     }
 
-    .btn-sm:hover { background: var(--bg); }
+    .btn-signout:hover { background: var(--bg); color: var(--ink2); }
+
+    /* ── Card base ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Greeting card ── */
+    .greeting-card {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .greeting-av {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: var(--azul);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--celeste);
+      flex-shrink: 0;
+      letter-spacing: -.5px;
+    }
+
+    .greeting-name {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -.4px;
+    }
+
+    .greeting-meta {
+      font-size: 12px;
+      color: var(--ink3);
+      margin-top: 3px;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .role-owner { background: var(--azul); color: var(--celeste); }
+    .role-member { background: var(--bg); color: var(--ink2); border: 1px solid var(--border); }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--ink3);
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: 14px;
+    }
+
+    /* ── Info rows ── */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-lbl { color: var(--ink3); font-weight: 600; }
+    .info-val { color: var(--ink); font-weight: 700; }
+
+    /* ── Invite box ── */
+    .invite-card {
+      background: var(--azul);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      display: none;
+    }
+
+    .invite-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: rgba(142,219,255,.6);
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: 10px;
+    }
+
+    .invite-code-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .invite-code {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: 6px;
+    }
+
+    .btn-copy {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1.5px solid rgba(142,219,255,.3);
+      background: rgba(142,219,255,.1);
+      color: var(--celeste);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn-copy:hover { background: rgba(142,219,255,.2); }
+    .btn-copy.copied { background: rgba(52,199,89,.2); border-color: rgba(52,199,89,.4); color: #34C759; }
+
+    .invite-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+      margin-top: 10px;
+    }
+
+    /* ── Solicitudes pendientes ── */
+    .requests-card { display: none; }
+
+    .requests-empty {
+      text-align: center;
+      padding: 20px 0 8px;
+      font-size: 13px;
+      color: var(--ink3);
+    }
+
+    .request-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      animation: cardIn .25s both;
+    }
+
+    .request-item:last-child { border-bottom: none; }
+
+    .request-av {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink2);
+      flex-shrink: 0;
+    }
+
+    .request-info { flex: 1; min-width: 0; }
+
+    .request-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .request-email {
+      font-size: 11px;
+      color: var(--ink3);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .request-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-approve {
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      background: var(--success);
+      color: var(--white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all var(--transition);
+    }
+
+    .btn-approve:hover { opacity: .85; transform: translateY(-1px); }
+
+    .btn-reject {
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--ink3);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all var(--transition);
+    }
+
+    .btn-reject:hover { border-color: var(--danger); color: var(--danger); background: #FFF5F5; }
+
+    /* ── Equipo ── */
+    .team-card { display: none; }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .member-item:last-child { border-bottom: none; }
+
+    .member-av {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .member-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .member-role {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    .role-tag-owner { background: var(--azul); color: var(--celeste); }
+    .role-tag-member { background: var(--bg); color: var(--ink3); border: 1px solid var(--border); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      white-space: nowrap;
+      z-index: 100;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
 
 <div class="dash-page">
-  <div class="dash-card">
+  <div class="dash-wrap">
 
-    <div class="dash-icon">
-      <svg viewBox="0 0 22 22">
-        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-        <rect x="12" y="3" width="7" height="7" rx="1.5"/>
-        <rect x="3" y="12" width="7" height="7" rx="1.5"/>
-        <rect x="12" y="12" width="7" height="7" rx="1.5"/>
-      </svg>
+    <!-- Header -->
+    <div class="dash-header">
+      <div class="dash-logo">
+        <div class="dash-logo-mark">
+          <svg viewBox="0 0 22 22">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+            <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+          </svg>
+        </div>
+        <span class="dash-logo-name">Agencia OS</span>
+      </div>
+      <button class="btn-signout" onclick="handleSignOut()">Cerrar sesión</button>
     </div>
 
-    <h1 class="dash-title" id="dash-title">Todo listo 🎉</h1>
-    <p class="dash-sub" id="dash-sub">Tu agencia está creada y lista.<br>Próximamente el dashboard completo.</p>
-
-    <div class="dash-info" id="dash-info" style="display:none">
-      <div class="dash-info-row">
-        <span class="dash-info-lbl">Agencia</span>
-        <span class="dash-info-val" id="info-agency">—</span>
-      </div>
-      <div class="dash-info-row">
-        <span class="dash-info-lbl">Tu rol</span>
-        <span class="dash-info-val" id="info-role">—</span>
-      </div>
-      <div class="dash-info-row">
-        <span class="dash-info-lbl">Usuario</span>
-        <span class="dash-info-val" id="info-user">—</span>
+    <!-- Greeting -->
+    <div class="card greeting-card">
+      <div class="greeting-av" id="greeting-av">—</div>
+      <div>
+        <div class="greeting-name" id="greeting-name">—</div>
+        <div class="greeting-meta" id="greeting-agency">—</div>
+        <div class="role-badge" id="role-badge"></div>
       </div>
     </div>
 
     <!-- Código de invitación (solo OWNER) -->
-    <div class="invite-box" id="invite-box" style="display:none">
+    <div class="invite-card" id="invite-card">
       <div class="invite-label">Código para invitar a tu equipo</div>
-      <div class="invite-code" id="invite-code">——————</div>
-      <div class="invite-hint">Compartí este código con las personas que quieras sumar.</div>
+      <div class="invite-code-wrap">
+        <div class="invite-code" id="invite-code">——————</div>
+        <button class="btn-copy" id="btn-copy" onclick="copyCode()">Copiar</button>
+      </div>
+      <div class="invite-hint">Compartí este código con las personas que quieras sumar a tu agencia.</div>
     </div>
 
-    <button class="btn-sm" onclick="handleSignOut()">Cerrar sesión</button>
+    <!-- Solicitudes pendientes (solo OWNER) -->
+    <div class="card requests-card" id="requests-card">
+      <div class="section-title">Solicitudes pendientes <span id="requests-count"></span></div>
+      <div id="requests-list">
+        <div class="requests-empty">Sin solicitudes pendientes</div>
+      </div>
+    </div>
+
+    <!-- Equipo -->
+    <div class="card team-card" id="team-card">
+      <div class="section-title">Equipo</div>
+      <div id="team-list"></div>
+    </div>
 
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script type="module">
   import { supabase, requireAuth, signOut } from './supabase.js'
 
   window.handleSignOut = signOut
 
+  let agencyId = null
+  let inviteCode = null
+
+  const avatarColors = [
+    { bg: '#E1F5EE', color: '#085041' },
+    { bg: '#EEEDFE', color: '#3C3489' },
+    { bg: '#FAECE7', color: '#712B13' },
+    { bg: '#E6F1FB', color: '#0C447C' },
+    { bg: '#FFF3E0', color: '#7C4A00' },
+  ]
+
+  function getColor(str) {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
+    return avatarColors[Math.abs(hash) % avatarColors.length]
+  }
+
+  function initials(nombre, apellido) {
+    return ((nombre?.[0] || '') + (apellido?.[0] || '')).toUpperCase()
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.classList.add('show')
+    setTimeout(() => t.classList.remove('show'), 2500)
+  }
+
   async function init() {
     const session = await requireAuth()
     if (!session) return
 
-    // Cargar datos
     const { data: membership } = await supabase
       .from('agency_members')
       .select('role, status, agencies(id, nombre)')
       .eq('user_id', session.user.id)
       .maybeSingle()
 
-    if (!membership) {
-      window.location.href = 'onboarding.html'
-      return
-    }
-
-    if (membership.status === 'pending') {
-      window.location.href = 'waiting.html'
-      return
-    }
+    if (!membership) { window.location.href = 'onboarding.html'; return }
+    if (membership.status === 'pending') { window.location.href = 'waiting.html'; return }
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -218,30 +492,159 @@
       .eq('id', session.user.id)
       .single()
 
-    // Mostrar info
-    document.getElementById('dash-title').textContent = `Hola, ${profile?.nombre || ''} 👋`
-    document.getElementById('dash-sub').textContent = 'Tu espacio está listo. Próximamente el dashboard completo.'
+    agencyId = membership.agencies?.id
 
-    document.getElementById('info-agency').textContent = membership.agencies?.nombre || '—'
-    document.getElementById('info-role').textContent = membership.role
-    document.getElementById('info-user').textContent = `${profile?.nombre} ${profile?.apellido}`
-    document.getElementById('dash-info').style.display = 'block'
+    // Greeting
+    const ini = initials(profile?.nombre, profile?.apellido)
+    const col = getColor(ini)
+    const av = document.getElementById('greeting-av')
+    av.textContent = ini
+    av.style.background = col.bg
+    av.style.color = col.color
 
-    // Si es OWNER, mostrar código de invitación
+    document.getElementById('greeting-name').textContent = `Hola, ${profile?.nombre || ''} 👋`
+    document.getElementById('greeting-agency').textContent = membership.agencies?.nombre || ''
+
+    const badge = document.getElementById('role-badge')
+    badge.textContent = membership.role
+    badge.classList.add(membership.role === 'OWNER' ? 'role-owner' : 'role-member')
+
     if (membership.role === 'OWNER') {
-      const { data: inv } = await supabase
-        .from('invitations')
-        .select('code')
-        .eq('agency_id', membership.agencies.id)
-        .eq('status', 'pending')
-        .maybeSingle()
-
-      if (inv) {
-        document.getElementById('invite-code').textContent = inv.code
-        document.getElementById('invite-box').style.display = 'block'
-      }
+      await loadOwnerData()
     }
+
+    await loadTeam()
   }
+
+  async function loadOwnerData() {
+    // Código de invitación
+    const { data: inv } = await supabase
+      .from('invitations')
+      .select('code')
+      .eq('agency_id', agencyId)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (inv) {
+      inviteCode = inv.code
+      document.getElementById('invite-code').textContent = inv.code
+      document.getElementById('invite-card').style.display = 'block'
+    }
+
+    // Solicitudes pendientes
+    document.getElementById('requests-card').style.display = 'block'
+    await loadRequests()
+  }
+
+  async function loadRequests() {
+    const { data: pending } = await supabase
+      .from('agency_members')
+      .select('id, user_id, profiles(nombre, apellido)')
+      .eq('agency_id', agencyId)
+      .eq('status', 'pending')
+
+    const list = document.getElementById('requests-list')
+    const countEl = document.getElementById('requests-count')
+
+    if (!pending || pending.length === 0) {
+      list.innerHTML = '<div class="requests-empty">Sin solicitudes pendientes</div>'
+      countEl.textContent = ''
+      return
+    }
+
+    countEl.textContent = `(${pending.length})`
+    list.innerHTML = pending.map(m => {
+      const nombre = m.profiles?.nombre || '—'
+      const apellido = m.profiles?.apellido || ''
+      const ini = initials(nombre, apellido)
+      const col = getColor(ini)
+      return `
+        <div class="request-item" id="req-${m.id}">
+          <div class="request-av" style="background:${col.bg};color:${col.color}">${ini}</div>
+          <div class="request-info">
+            <div class="request-name">${nombre} ${apellido}</div>
+          </div>
+          <div class="request-actions">
+            <button class="btn-approve" onclick="approveRequest('${m.id}', '${m.user_id}')">Aprobar</button>
+            <button class="btn-reject" onclick="rejectRequest('${m.id}')">Rechazar</button>
+          </div>
+        </div>
+      `
+    }).join('')
+  }
+
+  async function loadTeam() {
+    const { data: members } = await supabase
+      .from('agency_members')
+      .select('role, user_id, profiles(nombre, apellido)')
+      .eq('agency_id', agencyId)
+      .eq('status', 'active')
+
+    if (!members || members.length === 0) return
+
+    document.getElementById('team-card').style.display = 'block'
+    const list = document.getElementById('team-list')
+    list.innerHTML = members.map(m => {
+      const nombre = m.profiles?.nombre || '—'
+      const apellido = m.profiles?.apellido || ''
+      const ini = initials(nombre, apellido)
+      const col = getColor(ini)
+      return `
+        <div class="member-item">
+          <div class="member-av" style="background:${col.bg};color:${col.color}">${ini}</div>
+          <div class="member-name">${nombre} ${apellido}</div>
+          <span class="member-role ${m.role === 'OWNER' ? 'role-tag-owner' : 'role-tag-member'}">${m.role}</span>
+        </div>
+      `
+    }).join('')
+  }
+
+  window.approveRequest = async function(memberId, userId) {
+    const btn = document.querySelector(`#req-${memberId} .btn-approve`)
+    btn.textContent = '...'
+    btn.disabled = true
+
+    const { error } = await supabase
+      .from('agency_members')
+      .update({ status: 'active' })
+      .eq('id', memberId)
+
+    if (error) { showToast('Error al aprobar'); btn.textContent = 'Aprobar'; btn.disabled = false; return }
+
+    document.getElementById(`req-${memberId}`)?.remove()
+    showToast('✓ Miembro aprobado')
+    await loadRequests()
+    await loadTeam()
+  }
+
+  window.rejectRequest = async function(memberId) {
+    const btn = document.querySelector(`#req-${memberId} .btn-reject`)
+    btn.textContent = '...'
+    btn.disabled = true
+
+    const { error } = await supabase
+      .from('agency_members')
+      .delete()
+      .eq('id', memberId)
+
+    if (error) { showToast('Error al rechazar'); btn.textContent = 'Rechazar'; btn.disabled = false; return }
+
+    document.getElementById(`req-${memberId}`)?.remove()
+    showToast('Solicitud rechazada')
+    await loadRequests()
+  }
+
+  window.copyCode = function() {
+    if (!inviteCode) return
+    navigator.clipboard.writeText(inviteCode)
+    const btn = document.getElementById('btn-copy')
+    btn.textContent = '¡Copiado!'
+    btn.classList.add('copied')
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied') }, 2000)
+  }
+
+  // Polling para actualizar solicitudes cada 15s
+  setInterval(loadRequests, 15000)
 
   init()
 </script>
