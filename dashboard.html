@@ -398,6 +398,14 @@
     }
     .k-add:hover { border-color: var(--celeste); color: var(--azul); background: var(--celeste-dim); }
 
+
+    /* ── Drag & drop ── */
+    .k-card[draggable] { cursor: grab; }
+    .k-card[draggable]:active { cursor: grabbing; }
+    .k-card.dragging { opacity: .4; transform: scale(.97); }
+    .k-col.drag-over .k-cards { background: var(--celeste-dim); border-radius: var(--r-sm); }
+    .k-col.drag-over { border-color: var(--celeste); }
+
     /* Tasks */
     .tasks-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .tasks-filter { display: flex; gap: 6px; }
@@ -1398,6 +1406,81 @@
     }).join('')
   }
 
+  function renderKanban() {
+    const board = document.getElementById('kanban-board')
+    board.innerHTML = KANBAN_COLS.map(col => {
+      const colPieces = pieces.filter(p => p.estado === col.id)
+      const cards = colPieces.length === 0
+        ? `<div style="padding:12px;font-size:11px;color:var(--ink3);text-align:center">Sin piezas</div>`
+        : colPieces.map(p => {
+            const due = formatDate(p.fecha_entrega)
+            const clientName = p.clients?.nombre || '—'
+            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')">
+              <div class="k-card-title">${p.titulo}</div>
+              <div class="k-card-meta">
+                <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
+                ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
+                ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
+              </div>
+            </div>`
+          }).join('')
+      return `<div class="k-col" data-col="${col.id}">
+        <div class="k-col-head">
+          <div class="k-dot" style="background:${col.color}"></div>
+          <div class="k-col-name">${col.name}</div>
+          <div class="k-count">${colPieces.length}</div>
+        </div>
+        <div class="k-cards" data-col="${col.id}">${cards}</div>
+        <div class="k-add" onclick="openPieceModal(null,'${col.id}')"><i class="ti ti-plus" style="font-size:12px"></i> Agregar</div>
+      </div>`
+    }).join('')
+    initDragDrop()
+  }
+
+  function initDragDrop() {
+    let dragId = null
+
+    document.querySelectorAll('.k-card[draggable]').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        dragId = card.dataset.id
+        card.classList.add('dragging')
+        e.dataTransfer.effectAllowed = 'move'
+      })
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging')
+        document.querySelectorAll('.k-col').forEach(c => c.classList.remove('drag-over'))
+      })
+    })
+
+    document.querySelectorAll('.k-col').forEach(col => {
+      col.addEventListener('dragover', e => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        document.querySelectorAll('.k-col').forEach(c => c.classList.remove('drag-over'))
+        col.classList.add('drag-over')
+      })
+      col.addEventListener('dragleave', e => {
+        if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over')
+      })
+      col.addEventListener('drop', async e => {
+        e.preventDefault()
+        col.classList.remove('drag-over')
+        const newEstado = col.dataset.col
+        if (!dragId || !newEstado) return
+        const piece = pieces.find(p => p.id === dragId)
+        if (!piece || piece.estado === newEstado) return
+        // Optimistic update
+        piece.estado = newEstado
+        renderKanban()
+        renderContenidoPanel()
+        // Persist
+        await supabase.from('content_pieces').update({ estado: newEstado }).eq('id', dragId)
+        dragId = null
+        showToast('✓ Estado actualizado')
+      })
+    })
+  }
+
   // ── Piece detail ──────────────────────────────────────
   window.openPieceDetail = function(id) {
     const p = pieces.find(x => x.id === id)
@@ -1433,14 +1516,16 @@
   }
 
   window.editPieceFromDetail = function() {
+    const id = detailPieceId
     closePieceDetail()
-    setTimeout(() => openPieceModal(detailPieceId || document.getElementById('piece-id').value), 100)
+    setTimeout(() => openPieceModal(id), 150)
   }
 
   window.deletePieceFromDetail = async function() {
     if (!detailPieceId) return
-    await supabase.from('content_pieces').delete().eq('id', detailPieceId)
+    const id = detailPieceId
     closePieceDetail()
+    await supabase.from('content_pieces').delete().eq('id', id)
     showToast('Pieza eliminada')
     await renderContenido()
   }
