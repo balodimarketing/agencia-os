@@ -1333,6 +1333,7 @@
   }
 
   async function renderContenido() {
+    if (teamMembers.length === 0) await loadTeam()
     await loadPieces()
     await loadTasks()
     renderKanban()
