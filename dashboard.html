@@ -3,438 +3,884 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agencia OS — Dashboard</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Agencia OS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <style>
-    body { overflow: auto; background: var(--bg); }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .dash-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 40px 24px;
+    :root {
+      --azul:        #0A2540;
+      --azul-hover:  #0D2E4D;
+      --celeste:     #8EDBFF;
+      --celeste-dim: rgba(142,219,255,.1);
+      --white:       #FFFFFF;
+      --bg:          #F5F7FA;
+      --ink:         #111111;
+      --ink2:        #4A5568;
+      --ink3:        #9AA5B4;
+      --border:      #E8ECF0;
+      --success:     #34C759;
+      --danger:      #FF6B6B;
+      --warn:        #FFB800;
+      --rail-w:      62px;
+      --panel-w:     248px;
+      --topbar-h:    52px;
+      --radius-sm:   8px;
+      --radius:      12px;
+      --radius-lg:   16px;
+      --shadow:      0 2px 12px rgba(0,0,0,.06);
+      --shadow-lg:   0 8px 32px rgba(0,0,0,.1);
+      --t:           .16s cubic-bezier(.4,0,.2,1);
     }
 
-    .dash-wrap {
-      width: 100%;
-      max-width: 520px;
+    html, body {
+      height: 100%;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════
+       APP SHELL
+    ══════════════════════════ */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════
+       RAIL
+    ══════════════════════════ */
+    .rail {
+      width: var(--rail-w);
+      background: var(--azul);
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      animation: cardIn .4s cubic-bezier(.4,0,.2,1) both;
+      align-items: center;
+      padding: 14px 0;
+      flex-shrink: 0;
+      z-index: 30;
+      gap: 2px;
     }
 
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Header ── */
-    .dash-header {
+    .rail-logo {
+      width: 36px;
+      height: 36px;
+      background: var(--celeste);
+      border-radius: 10px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
+      justify-content: center;
+      margin-bottom: 18px;
+      cursor: pointer;
+      transition: transform var(--t), opacity var(--t);
+      flex-shrink: 0;
     }
 
-    .dash-logo {
+    .rail-logo:hover { transform: scale(1.05); }
+
+    .rail-logo svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: var(--azul);
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .rail-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background var(--t), color var(--t);
+      color: rgba(255,255,255,.35);
+      position: relative;
+    }
+
+    .rail-btn i { font-size: 19px; }
+
+    .rail-btn:hover {
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.75);
+    }
+
+    .rail-btn.active {
+      background: var(--celeste-dim);
+      color: var(--celeste);
+    }
+
+    /* Tooltip */
+    .rail-btn::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--ink);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 7px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--t);
+      z-index: 100;
+    }
+
+    .rail-btn:hover::after { opacity: 1; }
+
+    .rail-divider {
+      width: 28px;
+      height: 1px;
+      background: rgba(255,255,255,.08);
+      margin: 6px 0;
+    }
+
+    .rail-bottom {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rail-av {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform var(--t);
+      letter-spacing: -.3px;
+      position: relative;
+    }
+
+    .rail-av:hover { transform: scale(1.08); }
+
+    /* ══════════════════════════
+       PANEL
+    ══════════════════════════ */
+    .panel {
+      width: var(--panel-w);
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -.3px;
+    }
+
+    .panel-sub {
+      font-size: 11px;
+      color: var(--ink3);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .panel-search {
+      margin: 10px 12px 2px;
+      position: relative;
+    }
+
+    .panel-search i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: var(--ink3);
+      pointer-events: none;
+    }
+
+    .panel-search input {
+      width: 100%;
+      padding: 7px 10px 7px 32px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      outline: none;
+      transition: border var(--t);
+    }
+
+    .panel-search input:focus { border-color: var(--celeste); }
+    .panel-search input::placeholder { color: var(--ink3); }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .panel-body::-webkit-scrollbar { width: 4px; }
+    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .panel-item {
+      padding: 9px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background var(--t);
+      margin-bottom: 1px;
+    }
+
+    .panel-item:hover { background: var(--bg); }
+
+    .panel-item.active { background: #EBF5FF; }
+
+    .pi-row {
       display: flex;
       align-items: center;
       gap: 9px;
     }
 
-    .dash-logo-mark {
-      width: 32px;
-      height: 32px;
-      background: var(--azul);
-      border-radius: 8px;
+    .pi-av {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      flex-shrink: 0;
     }
 
-    .dash-logo-mark svg {
-      width: 17px;
-      height: 17px;
-      fill: none;
-      stroke: var(--celeste);
-      stroke-width: 2.5;
-      stroke-linecap: round;
+    .pi-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .dash-logo-name {
-      font-size: 14px;
-      font-weight: 900;
+    .pi-badge {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .pi-meta {
+      font-size: 10px;
+      color: var(--ink3);
+      margin-top: 3px;
+      padding-left: 37px;
+      font-weight: 500;
+    }
+
+    .panel-add {
+      margin: 4px 2px;
+      padding: 9px 12px;
+      border: 1.5px dashed var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink3);
+      transition: all var(--t);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .panel-add:hover {
+      border-color: var(--celeste);
       color: var(--azul);
+      background: var(--celeste-dim);
+    }
+
+    /* ══════════════════════════
+       WORKSPACE
+    ══════════════════════════ */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* Topbar */
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--ink);
+      flex: 1;
       letter-spacing: -.3px;
     }
 
-    .btn-signout {
-      padding: 7px 14px;
+    .topbar-search {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      height: 32px;
+      cursor: text;
+      transition: border var(--t);
+    }
+
+    .topbar-search:focus-within { border-color: var(--celeste); }
+
+    .topbar-search i { font-size: 14px; color: var(--ink3); }
+
+    .topbar-search input {
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--ink);
+      outline: none;
+      width: 140px;
+    }
+
+    .topbar-search input::placeholder { color: var(--ink3); }
+
+    .topbar-kbd {
+      font-size: 10px;
+      color: var(--ink3);
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 6px;
+      font-family: monospace;
+    }
+
+    .tbtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px;
       border-radius: var(--radius-sm);
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--white);
-      color: var(--ink3);
+      color: var(--ink2);
       font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: all var(--transition);
+      transition: all var(--t);
     }
 
-    .btn-signout:hover { background: var(--bg); color: var(--ink2); }
+    .tbtn:hover { background: var(--bg); }
 
-    /* ── Card base ── */
+    .tbtn i { font-size: 14px; }
+
+    .tbtn.primary {
+      background: var(--azul);
+      color: var(--white);
+      border-color: var(--azul);
+    }
+
+    .tbtn.primary:hover { opacity: .88; }
+
+    /* View content */
+    .view {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px;
+      display: none;
+    }
+
+    .view.active { display: block; }
+
+    .view::-webkit-scrollbar { width: 5px; }
+    .view::-webkit-scrollbar-track { background: transparent; }
+    .view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── View: Inicio ── */
+    .greeting {
+      margin-bottom: 24px;
+    }
+
+    .greeting-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -.6px;
+    }
+
+    .greeting-sub {
+      font-size: 13px;
+      color: var(--ink3);
+      margin-top: 4px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .metric {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: box-shadow var(--t), transform var(--t);
+    }
+
+    .metric:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+
+    .metric-val {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .metric-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink3);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-top: 6px;
+    }
+
+    .metric-trend {
+      font-size: 11px;
+      color: var(--ink3);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .trend-up { color: var(--success); }
+    .trend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
     .card {
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow);
+      padding: 20px;
     }
 
-    /* ── Greeting card ── */
-    .greeting-card {
+    .card-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 18px;
+      justify-content: space-between;
     }
 
-    .greeting-av {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: var(--azul);
+    .card-title-action {
+      font-size: 11px;
+      color: var(--ink3);
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0;
+      cursor: pointer;
+      transition: color var(--t);
+    }
+
+    .card-title-action:hover { color: var(--azul); }
+
+    /* Alert rows */
+    .alert-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 9px;
+      margin-bottom: 4px;
+      transition: background var(--t);
+      cursor: pointer;
+    }
+
+    .alert-row:hover { background: var(--bg); }
+
+    .alert-ico {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--celeste);
+      font-size: 16px;
       flex-shrink: 0;
-      letter-spacing: -.5px;
     }
 
-    .greeting-name {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--ink);
-      letter-spacing: -.4px;
-    }
+    .alert-body { flex: 1; min-width: 0; }
+    .alert-main { font-size: 12px; font-weight: 700; color: var(--ink); }
+    .alert-sub { font-size: 10px; color: var(--ink3); margin-top: 1px; }
+    .alert-time { font-size: 10px; color: var(--ink3); flex-shrink: 0; }
 
-    .greeting-meta {
-      font-size: 12px;
-      color: var(--ink3);
-      margin-top: 3px;
-    }
-
-    .role-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: .4px;
-      text-transform: uppercase;
-      margin-top: 6px;
-    }
-
-    .role-owner { background: var(--azul); color: var(--celeste); }
-    .role-member { background: var(--bg); color: var(--ink2); border: 1px solid var(--border); }
-
-    /* ── Section title ── */
-    .section-title {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      margin-bottom: 14px;
-    }
-
-    /* ── Info rows ── */
-    .info-row {
+    /* Task rows */
+    .task-row {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
+      gap: 10px;
+      padding: 8px 0;
       border-bottom: 1px solid var(--border);
-      font-size: 13px;
+      cursor: pointer;
+      transition: opacity var(--t);
     }
 
-    .info-row:last-child { border-bottom: none; }
-    .info-lbl { color: var(--ink3); font-weight: 600; }
-    .info-val { color: var(--ink); font-weight: 700; }
+    .task-row:last-child { border-bottom: none; }
+    .task-row:hover { opacity: .75; }
 
-    /* ── Invite box ── */
-    .invite-card {
-      background: var(--azul);
-      border: 1px solid var(--azul);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow);
-      display: none;
-    }
-
-    .invite-label {
-      font-size: 10px;
-      font-weight: 800;
-      color: rgba(142,219,255,.6);
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      margin-bottom: 10px;
-    }
-
-    .invite-code-wrap {
+    .chk {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      transition: all var(--t);
+    }
+
+    .chk.done { background: var(--success); border-color: var(--success); }
+    .chk.done::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 900; }
+
+    .task-name {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .task-name.done { text-decoration: line-through; color: var(--ink3); }
+
+    .pill {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 300px;
+      text-align: center;
       gap: 12px;
     }
 
-    .invite-code {
-      font-size: 28px;
-      font-weight: 900;
-      color: var(--white);
-      letter-spacing: 6px;
-    }
-
-    .btn-copy {
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-      border: 1.5px solid rgba(142,219,255,.3);
-      background: rgba(142,219,255,.1);
-      color: var(--celeste);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: all var(--transition);
-      white-space: nowrap;
-    }
-
-    .btn-copy:hover { background: rgba(142,219,255,.2); }
-    .btn-copy.copied { background: rgba(52,199,89,.2); border-color: rgba(52,199,89,.4); color: #34C759; }
-
-    .invite-hint {
-      font-size: 11px;
-      color: rgba(255,255,255,.4);
-      margin-top: 10px;
-    }
-
-    /* ── Solicitudes pendientes ── */
-    .requests-card { display: none; }
-
-    .requests-empty {
-      text-align: center;
-      padding: 20px 0 8px;
-      font-size: 13px;
-      color: var(--ink3);
-    }
-
-    .request-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border);
-      animation: cardIn .25s both;
-    }
-
-    .request-item:last-child { border-bottom: none; }
-
-    .request-av {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
+    .empty-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       background: var(--bg);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--ink2);
-      flex-shrink: 0;
+      font-size: 22px;
     }
 
-    .request-info { flex: 1; min-width: 0; }
-
-    .request-name {
-      font-size: 13px;
-      font-weight: 700;
+    .empty-title {
+      font-size: 15px;
+      font-weight: 800;
       color: var(--ink);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      letter-spacing: -.3px;
     }
 
-    .request-email {
-      font-size: 11px;
+    .empty-sub {
+      font-size: 12px;
       color: var(--ink3);
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      max-width: 220px;
+      line-height: 1.6;
     }
-
-    .request-actions {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .btn-approve {
-      padding: 7px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-      border: none;
-      background: var(--success);
-      color: var(--white);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: all var(--transition);
-    }
-
-    .btn-approve:hover { opacity: .85; transform: translateY(-1px); }
-
-    .btn-reject {
-      padding: 7px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-      border: 1.5px solid var(--border);
-      background: var(--white);
-      color: var(--ink3);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: all var(--transition);
-    }
-
-    .btn-reject:hover { border-color: var(--danger); color: var(--danger); background: #FFF5F5; }
-
-    /* ── Equipo ── */
-    .team-card { display: none; }
-
-    .member-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .member-item:last-child { border-bottom: none; }
-
-    .member-av {
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    .member-name {
-      flex: 1;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--ink);
-    }
-
-    .member-role {
-      font-size: 10px;
-      font-weight: 800;
-      padding: 3px 9px;
-      border-radius: 8px;
-      text-transform: uppercase;
-      letter-spacing: .3px;
-    }
-
-    .role-tag-owner { background: var(--azul); color: var(--celeste); }
-    .role-tag-member { background: var(--bg); color: var(--ink3); border: 1px solid var(--border); }
 
     /* ── Toast ── */
     .toast {
       position: fixed;
-      bottom: 28px;
+      bottom: 24px;
       left: 50%;
-      transform: translateX(-50%) translateY(80px);
+      transform: translateX(-50%) translateY(70px);
       background: var(--ink);
-      color: var(--white);
+      color: #fff;
       font-size: 13px;
       font-weight: 700;
-      padding: 12px 20px;
+      padding: 11px 20px;
       border-radius: 12px;
       box-shadow: var(--shadow-lg);
-      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
       white-space: nowrap;
-      z-index: 100;
+      z-index: 200;
     }
 
     .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .view.active > * {
+      animation: fadeUp .22s cubic-bezier(.4,0,.2,1) both;
+    }
+
+    .view.active > *:nth-child(2) { animation-delay: .04s; }
+    .view.active > *:nth-child(3) { animation-delay: .08s; }
+    .view.active > *:nth-child(4) { animation-delay: .12s; }
   </style>
 </head>
 <body>
 
-<div class="dash-page">
-  <div class="dash-wrap">
+<div class="app">
 
-    <!-- Header -->
-    <div class="dash-header">
-      <div class="dash-logo">
-        <div class="dash-logo-mark">
-          <svg viewBox="0 0 22 22">
-            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-            <rect x="12" y="3" width="7" height="7" rx="1.5"/>
-            <rect x="3" y="12" width="7" height="7" rx="1.5"/>
-            <rect x="12" y="12" width="7" height="7" rx="1.5"/>
-          </svg>
+  <!-- ══ RAIL ══ -->
+  <div class="rail">
+    <div class="rail-logo">
+      <svg viewBox="0 0 22 22">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+        <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+      </svg>
+    </div>
+
+    <div class="rail-btn active" data-module="inicio" data-tip="Inicio" onclick="switchModule(this)">
+      <i class="ti ti-layout-dashboard"></i>
+    </div>
+    <div class="rail-btn" data-module="cuentas" data-tip="Cuentas" onclick="switchModule(this)">
+      <i class="ti ti-building"></i>
+    </div>
+    <div class="rail-btn" data-module="contenido" data-tip="Contenido" onclick="switchModule(this)">
+      <i class="ti ti-photo"></i>
+    </div>
+    <div class="rail-btn" data-module="equipo" data-tip="Equipo" onclick="switchModule(this)">
+      <i class="ti ti-users"></i>
+    </div>
+    <div class="rail-divider"></div>
+    <div class="rail-btn" data-module="crm" data-tip="CRM" onclick="switchModule(this)">
+      <i class="ti ti-address-book"></i>
+    </div>
+
+    <div class="rail-bottom">
+      <div class="rail-btn" data-tip="Cerrar sesión" onclick="handleSignOut()">
+        <i class="ti ti-logout"></i>
+      </div>
+      <div class="rail-av" id="rail-av" data-tip="Mi cuenta"></div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL ══ -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title" id="panel-title">Inicio</div>
+      <div class="panel-sub" id="panel-sub">Resumen del día</div>
+    </div>
+    <div class="panel-search">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Buscar...">
+    </div>
+    <div class="panel-body" id="panel-body"></div>
+  </div>
+
+  <!-- ══ WORKSPACE ══ -->
+  <div class="workspace">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title" id="ws-title">Inicio</div>
+      <div class="topbar-search">
+        <i class="ti ti-search"></i>
+        <input type="text" placeholder="Buscar en la app...">
+        <span class="topbar-kbd">⌘K</span>
+      </div>
+      <button class="tbtn primary" id="ws-cta">
+        <i class="ti ti-plus"></i>
+        <span id="ws-cta-label">Nuevo</span>
+      </button>
+    </div>
+
+    <!-- ── VIEW: INICIO ── -->
+    <div class="view active" id="v-inicio">
+      <div class="greeting">
+        <h1 class="greeting-title" id="greeting-title">Buenos días 👋</h1>
+        <p class="greeting-sub" id="greeting-sub">Cargando tu espacio...</p>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-val">12</div>
+          <div class="metric-lbl">Clientes activos</div>
+          <div class="metric-trend"><span class="trend-dot" style="background:var(--success)"></span> Todo al día</div>
         </div>
-        <span class="dash-logo-name">Agencia OS</span>
+        <div class="metric">
+          <div class="metric-val">3</div>
+          <div class="metric-lbl">Aprobaciones</div>
+          <div class="metric-trend"><span class="trend-dot" style="background:var(--warn)"></span> Pendientes</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val">8</div>
+          <div class="metric-lbl">Piezas esta semana</div>
+          <div class="metric-trend"><span class="trend-dot" style="background:var(--celeste)"></span> En producción</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val">5</div>
+          <div class="metric-lbl">Tareas vencidas</div>
+          <div class="metric-trend"><span class="trend-dot" style="background:var(--danger)"></span> Requieren atención</div>
+        </div>
       </div>
-      <button class="btn-signout" onclick="handleSignOut()">Cerrar sesión</button>
+
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-title">
+            Alertas
+            <span class="card-title-action">Ver todo</span>
+          </div>
+          <div class="alert-row">
+            <div class="alert-ico" style="background:#FCEBEB">🔴</div>
+            <div class="alert-body">
+              <div class="alert-main">Aprobación vencida — Café Bistrot</div>
+              <div class="alert-sub">Post de Instagram · hace 2 días</div>
+            </div>
+            <div class="alert-time">2d</div>
+          </div>
+          <div class="alert-row">
+            <div class="alert-ico" style="background:#FAEEDA">⏰</div>
+            <div class="alert-body">
+              <div class="alert-main">Entrega mañana — Moda Sur</div>
+              <div class="alert-sub">Reels × 3 · 23 hs</div>
+            </div>
+            <div class="alert-time">23h</div>
+          </div>
+          <div class="alert-row">
+            <div class="alert-ico" style="background:#E6FFE6">✅</div>
+            <div class="alert-body">
+              <div class="alert-main">Aprobado — Fitclub ARG</div>
+              <div class="alert-sub">Story pack · recién</div>
+            </div>
+            <div class="alert-time">ahora</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            Tareas de hoy
+            <span class="card-title-action">Ver todo</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk done"></div>
+            <div class="task-name done">Brief TechEdu Online</div>
+            <span class="pill" style="background:#E6FFE6;color:#27500A">Listo</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"></div>
+            <div class="task-name">Armar calendario editorial noviembre</div>
+            <span class="pill" style="background:#FAEEDA;color:#633806">Hoy</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"></div>
+            <div class="task-name">Revisar copy campaña Black Friday</div>
+            <span class="pill" style="background:#FCEBEB;color:#791F1F">Urgente</span>
+          </div>
+          <div class="task-row" onclick="toggleTask(this)">
+            <div class="chk"></div>
+            <div class="task-name">Enviar reporte mensual Moda Sur</div>
+            <span class="pill" style="background:#E8F4FF;color:#0A2540">Pendiente</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Greeting -->
-    <div class="card greeting-card">
-      <div class="greeting-av" id="greeting-av">—</div>
-      <div>
-        <div class="greeting-name" id="greeting-name">—</div>
-        <div class="greeting-meta" id="greeting-agency">—</div>
-        <div class="role-badge" id="role-badge"></div>
+    <!-- ── VIEW: CUENTAS ── -->
+    <div class="view" id="v-cuentas">
+      <div class="empty-state">
+        <div class="empty-icon">🏢</div>
+        <div class="empty-title">Cuentas</div>
+        <div class="empty-sub">Acá vas a gestionar todos tus clientes y sus datos.</div>
       </div>
     </div>
 
-    <!-- Código de invitación (solo OWNER) -->
-    <div class="invite-card" id="invite-card">
-      <div class="invite-label">Código para invitar a tu equipo</div>
-      <div class="invite-code-wrap">
-        <div class="invite-code" id="invite-code">——————</div>
-        <button class="btn-copy" id="btn-copy" onclick="copyCode()">Copiar</button>
-      </div>
-      <div class="invite-hint">Compartí este código con las personas que quieras sumar a tu agencia.</div>
-    </div>
-
-    <!-- Solicitudes pendientes (solo OWNER) -->
-    <div class="card requests-card" id="requests-card">
-      <div class="section-title">Solicitudes pendientes <span id="requests-count"></span></div>
-      <div id="requests-list">
-        <div class="requests-empty">Sin solicitudes pendientes</div>
+    <!-- ── VIEW: CONTENIDO ── -->
+    <div class="view" id="v-contenido">
+      <div class="empty-state">
+        <div class="empty-icon">📸</div>
+        <div class="empty-title">Contenido</div>
+        <div class="empty-sub">El flujo de producción y aprobación de piezas.</div>
       </div>
     </div>
 
-    <!-- Equipo -->
-    <div class="card team-card" id="team-card">
-      <div class="section-title">Equipo</div>
-      <div id="team-list"></div>
+    <!-- ── VIEW: EQUIPO ── -->
+    <div class="view" id="v-equipo">
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <div class="empty-title">Equipo</div>
+        <div class="empty-sub">Tareas y actividad de cada miembro.</div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: CRM ── -->
+    <div class="view" id="v-crm">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">CRM</div>
+        <div class="empty-sub">Contactos, historial y seguimiento de clientes.</div>
+      </div>
     </div>
 
   </div>
@@ -447,27 +893,155 @@
 
   window.handleSignOut = signOut
 
-  let agencyId = null
-  let inviteCode = null
-
-  const avatarColors = [
-    { bg: '#E1F5EE', color: '#085041' },
-    { bg: '#EEEDFE', color: '#3C3489' },
-    { bg: '#FAECE7', color: '#712B13' },
-    { bg: '#E6F1FB', color: '#0C447C' },
-    { bg: '#FFF3E0', color: '#7C4A00' },
-  ]
-
-  function getColor(str) {
-    let hash = 0
-    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
-    return avatarColors[Math.abs(hash) % avatarColors.length]
+  // ── Panel data por módulo ─────────────────────────────
+  const panelData = {
+    inicio: {
+      title: 'Inicio',
+      sub: 'Resumen del día',
+      cta: 'Nueva tarea',
+      body: `
+        <div class="panel-item active">
+          <div class="pi-row">
+            <span style="font-size:15px">👋</span>
+            <div class="pi-name">Buenos días</div>
+          </div>
+          <div class="pi-meta">3 urgentes hoy</div>
+        </div>
+        <div class="panel-item">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#FCEBEB;color:#791F1F">!</div>
+            <div class="pi-name">Aprobaciones</div>
+            <div class="pi-badge" style="background:#FCEBEB;color:#791F1F">3</div>
+          </div>
+          <div class="pi-meta">Esperando respuesta</div>
+        </div>
+        <div class="panel-item">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#FAEEDA;color:#633806">⏰</div>
+            <div class="pi-name">Tareas vencidas</div>
+            <div class="pi-badge" style="background:#FAEEDA;color:#633806">5</div>
+          </div>
+          <div class="pi-meta">Requieren atención</div>
+        </div>
+      `
+    },
+    cuentas: {
+      title: 'Cuentas',
+      sub: '12 clientes activos',
+      cta: 'Nuevo cliente',
+      body: `
+        <div class="panel-item active">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#E1F5EE;color:#085041">CB</div>
+            <div class="pi-name">Café Bistrot</div>
+            <div class="pi-badge" style="background:#FCEBEB;color:#791F1F">3</div>
+          </div>
+          <div class="pi-meta">Gastronomía · IG · FB</div>
+        </div>
+        <div class="panel-item">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#EEEDFE;color:#3C3489">MS</div>
+            <div class="pi-name">Moda Sur</div>
+            <div class="pi-badge" style="background:#FAEEDA;color:#633806">7</div>
+          </div>
+          <div class="pi-meta">Indumentaria · IG · TT</div>
+        </div>
+        <div class="panel-item">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#FAECE7;color:#712B13">FA</div>
+            <div class="pi-name">Fitclub ARG</div>
+            <div class="pi-badge" style="background:#E6FFE6;color:#27500A">ok</div>
+          </div>
+          <div class="pi-meta">Fitness · IG</div>
+        </div>
+        <div class="panel-item">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#E6F1FB;color:#0C447C">TE</div>
+            <div class="pi-name">TechEdu Online</div>
+            <div class="pi-badge" style="background:#E8F4FF;color:#0A2540">new</div>
+          </div>
+          <div class="pi-meta">Educación · IG · LI</div>
+        </div>
+        <div class="panel-add"><i class="ti ti-plus" style="font-size:12px"></i> Nuevo cliente</div>
+      `
+    },
+    contenido: {
+      title: 'Contenido',
+      sub: 'Workflow de piezas',
+      cta: 'Nueva pieza',
+      body: `
+        <div class="panel-item active">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#FCEBEB;color:#791F1F"><i class="ti ti-clock" style="font-size:13px"></i></div>
+            <div class="pi-name">En aprobación</div>
+            <div class="pi-badge" style="background:#FCEBEB;color:#791F1F">3</div>
+          </div>
+        </div>
+        <div class="panel-item">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#FAEEDA;color:#633806"><i class="ti ti-pencil" style="font-size:13px"></i></div>
+            <div class="pi-name">En producción</div>
+            <div class="pi-badge" style="background:#FAEEDA;color:#633806">3</div>
+          </div>
+        </div>
+        <div class="panel-item">
+          <div class="pi-row">
+            <div class="pi-av" style="background:#E6FFE6;color:#27500A"><i class="ti ti-check" style="font-size:13px"></i></div>
+            <div class="pi-name">Publicadas</div>
+            <div class="pi-badge" style="background:#E6FFE6;color:#27500A">5</div>
+          </div>
+        </div>
+        <div class="panel-add"><i class="ti ti-plus" style="font-size:12px"></i> Nueva pieza</div>
+      `
+    },
+    equipo: {
+      title: 'Equipo',
+      sub: 'Miembros activos',
+      cta: 'Invitar',
+      body: `<div id="equipo-panel-list"><div style="padding:12px;font-size:12px;color:var(--ink3)">Cargando...</div></div>`
+    },
+    crm: {
+      title: 'CRM',
+      sub: 'Contactos',
+      cta: 'Nuevo contacto',
+      body: `
+        <div class="panel-add"><i class="ti ti-plus" style="font-size:12px"></i> Nuevo contacto</div>
+      `
+    }
   }
 
-  function initials(nombre, apellido) {
-    return ((nombre?.[0] || '') + (apellido?.[0] || '')).toUpperCase()
+  // ── Switch module ─────────────────────────────────────
+  window.switchModule = function(el) {
+    const mod = el.dataset.module
+
+    // Rail
+    document.querySelectorAll('.rail-btn[data-module]').forEach(b => b.classList.remove('active'))
+    el.classList.add('active')
+
+    // View
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
+    document.getElementById('v-' + mod)?.classList.add('active')
+
+    // Panel + topbar
+    const pd = panelData[mod]
+    if (pd) {
+      document.getElementById('panel-title').textContent = pd.title
+      document.getElementById('panel-sub').textContent = pd.sub
+      document.getElementById('panel-body').innerHTML = pd.body
+      document.getElementById('ws-title').textContent = pd.title
+      document.getElementById('ws-cta-label').textContent = pd.cta
+    }
   }
 
+  // ── Toggle task ───────────────────────────────────────
+  window.toggleTask = function(row) {
+    const chk = row.querySelector('.chk')
+    const name = row.querySelector('.task-name')
+    chk.classList.toggle('done')
+    name.classList.toggle('done')
+  }
+
+  // ── Toast ─────────────────────────────────────────────
   function showToast(msg) {
     const t = document.getElementById('toast')
     t.textContent = msg
@@ -475,6 +1049,7 @@
     setTimeout(() => t.classList.remove('show'), 2500)
   }
 
+  // ── Init ──────────────────────────────────────────────
   async function init() {
     const session = await requireAuth()
     if (!session) return
@@ -494,159 +1069,22 @@
       .eq('id', session.user.id)
       .single()
 
-    agencyId = membership.agencies?.id
-
     // Greeting
-    const ini = initials(profile?.nombre, profile?.apellido)
-    const col = getColor(ini)
-    const av = document.getElementById('greeting-av')
+    const hour = new Date().getHours()
+    const saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
+    document.getElementById('greeting-title').textContent = `${saludo}, ${profile?.nombre || ''} 👋`
+    document.getElementById('greeting-sub').textContent = membership.agencies?.nombre || ''
+
+    // Avatar en rail
+    const ini = ((profile?.nombre?.[0] || '') + (profile?.apellido?.[0] || '')).toUpperCase()
+    const av = document.getElementById('rail-av')
     av.textContent = ini
-    av.style.background = col.bg
-    av.style.color = col.color
+    av.style.background = '#1a3a5c'
+    av.style.color = 'var(--celeste)'
 
-    document.getElementById('greeting-name').textContent = `Hola, ${profile?.nombre || ''} 👋`
-    document.getElementById('greeting-agency').textContent = membership.agencies?.nombre || ''
-
-    const badge = document.getElementById('role-badge')
-    badge.textContent = membership.role
-    badge.classList.add(membership.role === 'OWNER' ? 'role-owner' : 'role-member')
-
-    if (membership.role === 'OWNER') {
-      await loadOwnerData()
-    }
-
-    await loadTeam()
+    // Panel inicial
+    document.getElementById('panel-body').innerHTML = panelData.inicio.body
   }
-
-  async function loadOwnerData() {
-    // Código de invitación
-    const { data: inv } = await supabase
-      .from('invitations')
-      .select('code')
-      .eq('agency_id', agencyId)
-      .eq('status', 'pending')
-      .maybeSingle()
-
-    if (inv) {
-      inviteCode = inv.code
-      document.getElementById('invite-code').textContent = inv.code
-      document.getElementById('invite-card').style.display = 'block'
-    }
-
-    // Solicitudes pendientes
-    document.getElementById('requests-card').style.display = 'block'
-    await loadRequests()
-  }
-
-  async function loadRequests() {
-    const { data: pending } = await supabase
-      .from('agency_members')
-      .select('id, user_id, profiles(nombre, apellido)')
-      .eq('agency_id', agencyId)
-      .eq('status', 'pending')
-
-    const list = document.getElementById('requests-list')
-    const countEl = document.getElementById('requests-count')
-
-    if (!pending || pending.length === 0) {
-      list.innerHTML = '<div class="requests-empty">Sin solicitudes pendientes</div>'
-      countEl.textContent = ''
-      return
-    }
-
-    countEl.textContent = `(${pending.length})`
-    list.innerHTML = pending.map(m => {
-      const nombre = m.profiles?.nombre || '—'
-      const apellido = m.profiles?.apellido || ''
-      const ini = initials(nombre, apellido)
-      const col = getColor(ini)
-      return `
-        <div class="request-item" id="req-${m.id}">
-          <div class="request-av" style="background:${col.bg};color:${col.color}">${ini}</div>
-          <div class="request-info">
-            <div class="request-name">${nombre} ${apellido}</div>
-          </div>
-          <div class="request-actions">
-            <button class="btn-approve" onclick="approveRequest('${m.id}', '${m.user_id}')">Aprobar</button>
-            <button class="btn-reject" onclick="rejectRequest('${m.id}')">Rechazar</button>
-          </div>
-        </div>
-      `
-    }).join('')
-  }
-
-  async function loadTeam() {
-    const { data: members } = await supabase
-      .from('agency_members')
-      .select('role, user_id, profiles(nombre, apellido)')
-      .eq('agency_id', agencyId)
-      .eq('status', 'active')
-
-    if (!members || members.length === 0) return
-
-    document.getElementById('team-card').style.display = 'block'
-    const list = document.getElementById('team-list')
-    list.innerHTML = members.map(m => {
-      const nombre = m.profiles?.nombre || '—'
-      const apellido = m.profiles?.apellido || ''
-      const ini = initials(nombre, apellido)
-      const col = getColor(ini)
-      return `
-        <div class="member-item">
-          <div class="member-av" style="background:${col.bg};color:${col.color}">${ini}</div>
-          <div class="member-name">${nombre} ${apellido}</div>
-          <span class="member-role ${m.role === 'OWNER' ? 'role-tag-owner' : 'role-tag-member'}">${m.role}</span>
-        </div>
-      `
-    }).join('')
-  }
-
-  window.approveRequest = async function(memberId, userId) {
-    const btn = document.querySelector(`#req-${memberId} .btn-approve`)
-    btn.textContent = '...'
-    btn.disabled = true
-
-    const { error } = await supabase
-      .from('agency_members')
-      .update({ status: 'active' })
-      .eq('id', memberId)
-
-    if (error) { showToast('Error al aprobar'); btn.textContent = 'Aprobar'; btn.disabled = false; return }
-
-    document.getElementById(`req-${memberId}`)?.remove()
-    showToast('✓ Miembro aprobado')
-    await loadRequests()
-    await loadTeam()
-  }
-
-  window.rejectRequest = async function(memberId) {
-    const btn = document.querySelector(`#req-${memberId} .btn-reject`)
-    btn.textContent = '...'
-    btn.disabled = true
-
-    const { error } = await supabase
-      .from('agency_members')
-      .delete()
-      .eq('id', memberId)
-
-    if (error) { showToast('Error al rechazar'); btn.textContent = 'Rechazar'; btn.disabled = false; return }
-
-    document.getElementById(`req-${memberId}`)?.remove()
-    showToast('Solicitud rechazada')
-    await loadRequests()
-  }
-
-  window.copyCode = function() {
-    if (!inviteCode) return
-    navigator.clipboard.writeText(inviteCode)
-    const btn = document.getElementById('btn-copy')
-    btn.textContent = '¡Copiado!'
-    btn.classList.add('copied')
-    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied') }, 2000)
-  }
-
-  // Polling para actualizar solicitudes cada 15s
-  setInterval(loadRequests, 15000)
 
   init()
 </script>
