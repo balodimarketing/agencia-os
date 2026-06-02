@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agencia OS — Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { overflow: auto; }
+
+    .dash-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      padding: 24px;
+    }
+
+    .dash-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 56px 44px;
+      text-align: center;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      animation: cardIn .4s cubic-bezier(.4,0,.2,1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .dash-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--azul);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+    }
+
+    .dash-icon svg {
+      width: 32px;
+      height: 32px;
+      fill: none;
+      stroke: var(--celeste);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .dash-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -.5px;
+      margin-bottom: 8px;
+    }
+
+    .dash-sub {
+      font-size: 13px;
+      color: var(--ink3);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .dash-info {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .dash-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .dash-info-row:last-child { border-bottom: none; }
+
+    .dash-info-lbl { color: var(--ink3); font-weight: 600; }
+    .dash-info-val { color: var(--ink); font-weight: 800; }
+
+    .invite-box {
+      background: var(--celeste-dim);
+      border: 1px solid rgba(142,219,255,.3);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .invite-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--ink3);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 6px;
+    }
+
+    .invite-code {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--azul);
+      letter-spacing: 4px;
+    }
+
+    .invite-hint {
+      font-size: 11px;
+      color: var(--ink3);
+      margin-top: 4px;
+    }
+
+    .btn-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--ink2);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all var(--transition);
+    }
+
+    .btn-sm:hover { background: var(--bg); }
+  </style>
+</head>
+<body>
+
+<div class="dash-page">
+  <div class="dash-card">
+
+    <div class="dash-icon">
+      <svg viewBox="0 0 22 22">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+        <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+      </svg>
+    </div>
+
+    <h1 class="dash-title" id="dash-title">Todo listo 🎉</h1>
+    <p class="dash-sub" id="dash-sub">Tu agencia está creada y lista.<br>Próximamente el dashboard completo.</p>
+
+    <div class="dash-info" id="dash-info" style="display:none">
+      <div class="dash-info-row">
+        <span class="dash-info-lbl">Agencia</span>
+        <span class="dash-info-val" id="info-agency">—</span>
+      </div>
+      <div class="dash-info-row">
+        <span class="dash-info-lbl">Tu rol</span>
+        <span class="dash-info-val" id="info-role">—</span>
+      </div>
+      <div class="dash-info-row">
+        <span class="dash-info-lbl">Usuario</span>
+        <span class="dash-info-val" id="info-user">—</span>
+      </div>
+    </div>
+
+    <!-- Código de invitación (solo OWNER) -->
+    <div class="invite-box" id="invite-box" style="display:none">
+      <div class="invite-label">Código para invitar a tu equipo</div>
+      <div class="invite-code" id="invite-code">——————</div>
+      <div class="invite-hint">Compartí este código con las personas que quieras sumar.</div>
+    </div>
+
+    <button class="btn-sm" onclick="handleSignOut()">Cerrar sesión</button>
+
+  </div>
+</div>
+
+<script type="module">
+  import { supabase, requireAuth, signOut } from './supabase.js'
+
+  window.handleSignOut = signOut
+
+  async function init() {
+    const session = await requireAuth()
+    if (!session) return
+
+    // Cargar datos
+    const { data: membership } = await supabase
+      .from('agency_members')
+      .select('role, status, agencies(id, nombre)')
+      .eq('user_id', session.user.id)
+      .maybeSingle()
+
+    if (!membership) {
+      window.location.href = 'onboarding.html'
+      return
+    }
+
+    if (membership.status === 'pending') {
+      window.location.href = 'waiting.html'
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('nombre, apellido')
+      .eq('id', session.user.id)
+      .single()
+
+    // Mostrar info
+    document.getElementById('dash-title').textContent = `Hola, ${profile?.nombre || ''} 👋`
+    document.getElementById('dash-sub').textContent = 'Tu espacio está listo. Próximamente el dashboard completo.'
+
+    document.getElementById('info-agency').textContent = membership.agencies?.nombre || '—'
+    document.getElementById('info-role').textContent = membership.role
+    document.getElementById('info-user').textContent = `${profile?.nombre} ${profile?.apellido}`
+    document.getElementById('dash-info').style.display = 'block'
+
+    // Si es OWNER, mostrar código de invitación
+    if (membership.role === 'OWNER') {
+      const { data: inv } = await supabase
+        .from('invitations')
+        .select('code')
+        .eq('agency_id', membership.agencies.id)
+        .eq('status', 'pending')
+        .maybeSingle()
+
+      if (inv) {
+        document.getElementById('invite-code').textContent = inv.code
+        document.getElementById('invite-box').style.display = 'block'
+      }
+    }
+  }
+
+  init()
+</script>
+
+</body>
+</html>

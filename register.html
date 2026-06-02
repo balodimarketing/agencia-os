@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agencia OS — Crear cuenta</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="card">
+
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 22 22">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+          <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+        </svg>
+      </div>
+      <span class="logo-name">Agencia OS</span>
+    </div>
+
+    <h1 class="card-title">Crear cuenta</h1>
+    <p class="card-sub">Empezá a gestionar tu agencia hoy.</p>
+
+    <div class="error-msg" id="error"></div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" id="nombre" placeholder="Ana" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label>Apellido</label>
+        <input type="text" id="apellido" placeholder="García" autocomplete="family-name">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="tu@email.com" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+    </div>
+
+    <button class="btn btn-primary" id="btn-register" onclick="handleRegister()">
+      <span id="btn-text">Crear cuenta</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+    <div class="card-footer">
+      ¿Ya tenés cuenta? <a href="index.html">Iniciar sesión</a>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { supabase, redirectIfAuth } from './supabase.js'
+
+  redirectIfAuth()
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleRegister()
+  })
+
+  window.handleRegister = async function() {
+    const nombre   = document.getElementById('nombre').value.trim()
+    const apellido = document.getElementById('apellido').value.trim()
+    const email    = document.getElementById('email').value.trim()
+    const password = document.getElementById('password').value
+    const btn      = document.getElementById('btn-register')
+    const spinner  = document.getElementById('spinner')
+    const btnText  = document.getElementById('btn-text')
+
+    document.getElementById('error').classList.remove('show')
+
+    // Validaciones
+    if (!nombre || !apellido || !email || !password) {
+      showError('Completá todos los campos.')
+      return
+    }
+    if (password.length < 8) {
+      showError('La contraseña debe tener al menos 8 caracteres.')
+      return
+    }
+
+    // Loading
+    btn.disabled = true
+    spinner.style.display = 'block'
+    btnText.textContent = 'Creando cuenta...'
+
+    // 1. Crear usuario en Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { nombre, apellido }
+      }
+    })
+
+    if (error) {
+      reset()
+      if (error.message.includes('already registered')) {
+        showError('Ya existe una cuenta con ese email.')
+      } else {
+        showError('No se pudo crear la cuenta. Intentá de nuevo.')
+      }
+      return
+    }
+
+    // 2. Crear perfil en tabla profiles
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({ id: data.user.id, nombre, apellido })
+
+    if (profileError) {
+      reset()
+      showError('Error al guardar el perfil. Intentá de nuevo.')
+      return
+    }
+
+    // 3. Ir a onboarding
+    window.location.href = 'onboarding.html'
+
+    function reset() {
+      btn.disabled = false
+      spinner.style.display = 'none'
+      btnText.textContent = 'Crear cuenta'
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error')
+    el.textContent = msg
+    el.classList.add('show')
+  }
+</script>
+
+</body>
+</html>

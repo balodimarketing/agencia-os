@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agencia OS — Esperando aprobación</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .wait-card {
+      text-align: center;
+      padding: 56px 44px;
+    }
+
+    .wait-icon {
+      width: 72px;
+      height: 72px;
+      background: var(--celeste-dim);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      font-size: 32px;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.06); opacity: .85; }
+    }
+
+    .wait-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -.5px;
+      margin-bottom: 10px;
+    }
+
+    .wait-sub {
+      font-size: 14px;
+      color: var(--ink3);
+      line-height: 1.6;
+      max-width: 300px;
+      margin: 0 auto 32px;
+    }
+
+    .wait-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      color: #92400E;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 20px;
+      margin-bottom: 32px;
+    }
+
+    .wait-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--warn);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .3; }
+    }
+
+    .wait-footer {
+      font-size: 12px;
+      color: var(--ink3);
+      margin-top: 24px;
+    }
+
+    .wait-footer a {
+      color: var(--azul);
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="card wait-card">
+
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 22 22">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+          <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+        </svg>
+      </div>
+      <span class="logo-name">Agencia OS</span>
+    </div>
+
+    <div class="wait-icon">⏳</div>
+
+    <h1 class="wait-title">Solicitud enviada</h1>
+    <p class="wait-sub">El administrador de la agencia va a revisar tu solicitud y recibirás acceso cuando la aprueben.</p>
+
+    <div class="wait-badge">
+      <div class="wait-dot"></div>
+      Esperando aprobación
+    </div>
+
+    <p id="agency-name" style="font-size:13px;color:var(--ink2);font-weight:700;margin-bottom:4px"></p>
+
+    <div class="wait-footer">
+      ¿Equivocaste la agencia? <a onclick="cancelRequest()">Cancelar solicitud</a>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { supabase, requireAuth, signOut } from './supabase.js'
+
+  async function init() {
+    const session = await requireAuth()
+    if (!session) return
+
+    // Verificar si ya fue aprobado
+    const { data: membership } = await supabase
+      .from('agency_members')
+      .select('status, agencies(nombre)')
+      .eq('user_id', session.user.id)
+      .maybeSingle()
+
+    if (!membership) {
+      window.location.href = 'onboarding.html'
+      return
+    }
+
+    if (membership.status === 'active') {
+      window.location.href = 'dashboard.html'
+      return
+    }
+
+    // Mostrar nombre de agencia
+    if (membership.agencies) {
+      document.getElementById('agency-name').textContent = membership.agencies.nombre
+    }
+
+    // Polling cada 10s para ver si fue aprobado
+    setInterval(async () => {
+      const { data } = await supabase
+        .from('agency_members')
+        .select('status')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+
+      if (data?.status === 'active') {
+        window.location.href = 'dashboard.html'
+      }
+    }, 10000)
+  }
+
+  init()
+
+  window.cancelRequest = async function() {
+    const session = await supabase.auth.getSession()
+    if (!session.data.session) return
+
+    await supabase
+      .from('agency_members')
+      .delete()
+      .eq('user_id', session.data.session.user.id)
+
+    window.location.href = 'onboarding.html'
+  }
+</script>
+
+</body>
+</html>
