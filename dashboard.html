@@ -334,6 +334,110 @@
     .btn-copy-invite { padding: 8px 16px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid rgba(142,219,255,.3); background: rgba(142,219,255,.1); color: var(--celeste); font-family: inherit; transition: all var(--t); white-space: nowrap; }
     .btn-copy-invite:hover { background: rgba(142,219,255,.2); }
     .btn-copy-invite.copied { background: rgba(52,199,89,.2); border-color: rgba(52,199,89,.4); color: #34C759; }
+
+    /* ══════════════════════════
+       CONTENIDO
+    ══════════════════════════ */
+
+    /* View switcher */
+    .view-switcher {
+      display: inline-flex; gap: 3px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--r-sm);
+      padding: 3px; margin-bottom: 24px;
+    }
+    .view-tab {
+      padding: 7px 18px; border-radius: 6px; font-size: 12px; font-weight: 700;
+      cursor: pointer; color: var(--ink3); transition: all var(--t); user-select: none;
+    }
+    .view-tab.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+    /* Sub-views */
+    .content-subview { display: none; }
+    .content-subview.active { display: block; }
+
+    /* Kanban */
+    .kanban { display: flex; gap: 14px; overflow-x: auto; height: calc(100vh - 200px); padding-bottom: 12px; }
+    .kanban::-webkit-scrollbar { height: 5px; }
+    .kanban::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .k-col {
+      background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg);
+      min-width: 234px; max-width: 234px; display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .k-col-head {
+      padding: 14px 14px 12px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .k-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .k-col-name { font-size: 12px; font-weight: 800; color: var(--ink); flex: 1; }
+    .k-count { font-size: 11px; color: var(--ink3); background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 1px 8px; font-weight: 700; }
+
+    .k-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
+    .k-cards::-webkit-scrollbar { width: 3px; }
+    .k-cards::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .k-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-sm);
+      padding: 12px; cursor: pointer; transition: all var(--t);
+      border-left: 3px solid transparent;
+      animation: fadeUp .18s both;
+    }
+    .k-card:hover { background: #EBF5FF; border-color: var(--celeste); box-shadow: var(--shadow); }
+    .k-card-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.4; }
+    .k-card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .k-client-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+    .k-type-tag { font-size: 10px; color: var(--ink3); font-weight: 600; }
+    .k-due { font-size: 10px; color: var(--ink3); margin-left: auto; }
+    .k-due.overdue { color: var(--danger); font-weight: 700; }
+
+    .k-add {
+      margin: 0 10px 10px; padding: 8px; border: 1.5px dashed var(--border);
+      border-radius: var(--r-sm); cursor: pointer; text-align: center;
+      font-size: 11px; font-weight: 700; color: var(--ink3); transition: all var(--t);
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .k-add:hover { border-color: var(--celeste); color: var(--azul); background: var(--celeste-dim); }
+
+    /* Tasks */
+    .tasks-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .tasks-filter { display: flex; gap: 6px; }
+    .filter-btn { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--ink3); font-family: inherit; transition: all var(--t); }
+    .filter-btn.active { background: var(--azul); color: var(--white); border-color: var(--azul); }
+
+    .task-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .task-item {
+      background: var(--white); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px;
+      transition: all var(--t); cursor: pointer;
+    }
+    .task-item:hover { box-shadow: var(--shadow); border-color: #D0DCE8; }
+
+    .task-chk {
+      width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all var(--t); margin-top: 1px; cursor: pointer;
+    }
+    .task-chk.done { background: var(--success); border-color: var(--success); }
+    .task-chk.done::after { content: '✓'; color: #fff; font-size: 10px; font-weight: 900; }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .task-title.done { text-decoration: line-through; color: var(--ink3); }
+    .task-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+    .task-client { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+    .task-assignee { font-size: 10px; color: var(--ink3); font-weight: 600; }
+    .task-due { font-size: 10px; color: var(--ink3); }
+    .task-due.overdue { color: var(--danger); font-weight: 700; }
+
+    .task-status-badge {
+      font-size: 9px; font-weight: 800; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .3px; margin-left: auto; flex-shrink: 0;
+    }
+    .ts-pendiente  { background: #F5F5F5; color: var(--ink3); }
+    .ts-en-progreso{ background: #E6F1FB; color: #0C447C; }
+    .ts-revision   { background: #FAEEDA; color: #633806; }
+    .ts-completada { background: #E6FFE6; color: #1A6B28; }
   </style>
 </head>
 <body>
@@ -405,7 +509,29 @@
 
     <!-- CONTENIDO -->
     <div class="view" id="v-contenido">
-      <div class="empty-state"><div class="empty-icon">📸</div><div class="empty-title">Contenido</div><div class="empty-sub">El flujo de producción y aprobación de piezas. Próximamente.</div></div>
+      <!-- Switcher -->
+      <div class="view-switcher">
+        <div class="view-tab active" id="tab-piezas" onclick="switchContentTab('piezas')">Piezas</div>
+        <div class="view-tab" id="tab-tareas" onclick="switchContentTab('tareas')">Tareas</div>
+      </div>
+
+      <!-- PIEZAS — Kanban -->
+      <div class="content-subview active" id="sv-piezas">
+        <div class="kanban" id="kanban-board"></div>
+      </div>
+
+      <!-- TAREAS -->
+      <div class="content-subview" id="sv-tareas">
+        <div class="tasks-header">
+          <div class="tasks-filter">
+            <button class="filter-btn active" data-filter="todas" onclick="filterTasks(this)">Todas</button>
+            <button class="filter-btn" data-filter="pendiente" onclick="filterTasks(this)">Pendientes</button>
+            <button class="filter-btn" data-filter="en-progreso" onclick="filterTasks(this)">En progreso</button>
+            <button class="filter-btn" data-filter="completada" onclick="filterTasks(this)">Completadas</button>
+          </div>
+        </div>
+        <div class="task-list" id="task-list"></div>
+      </div>
     </div>
 
     <!-- EQUIPO -->
@@ -608,6 +734,161 @@
   </div>
 </div>
 
+<!-- MODAL NUEVA PIEZA -->
+<div class="modal-overlay" id="modal-piece" onclick="if(event.target===this)closePieceModal()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-piece-title">Nueva pieza</div>
+      <button class="modal-close" onclick="closePieceModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="piece-error"></div>
+      <input type="hidden" id="piece-id">
+      <input type="hidden" id="piece-default-estado">
+
+      <div class="form-field">
+        <label class="form-label">Título</label>
+        <input type="text" class="form-input" id="piece-titulo" placeholder="Ej: Reel receta especial diciembre">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Cliente</label>
+          <select class="form-input form-select" id="piece-client"></select>
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Tipo</label>
+          <select class="form-input form-select" id="piece-tipo">
+            <option value="">Sin tipo</option>
+            <option value="Reel">Reel</option>
+            <option value="Story">Story</option>
+            <option value="Carrusel">Carrusel</option>
+            <option value="Feed">Feed</option>
+            <option value="Banner">Banner</option>
+            <option value="Copy">Copy</option>
+            <option value="Video">Video</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Estado</label>
+          <select class="form-input form-select" id="piece-estado">
+            <option value="idea">Idea</option>
+            <option value="produccion">Producción</option>
+            <option value="revision">Revisión interna</option>
+            <option value="aprobacion">Aprobación</option>
+            <option value="publicado">Publicado</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Fecha de entrega</label>
+          <input type="date" class="form-input" id="piece-fecha">
+        </div>
+      </div>
+
+      <div class="form-field" style="margin-top:16px">
+        <label class="form-label">Responsable</label>
+        <select class="form-input form-select" id="piece-responsable">
+          <option value="">Sin asignar</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-input form-textarea" id="piece-descripcion" placeholder="Brief de la pieza, referencias, indicaciones..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closePieceModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" id="btn-save-piece" onclick="savePiece()">
+        <span id="btn-save-piece-text">Guardar pieza</span>
+        <div class="spinner" id="piece-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE PIEZA -->
+<div class="modal-overlay" id="modal-piece-detail" onclick="if(event.target===this)closePieceDetail()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <div class="modal-title" id="piece-detail-title" style="font-size:16px"></div>
+      <button class="modal-close" onclick="closePieceDetail()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="piece-detail-body"></div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closePieceDetail()">Cerrar</button>
+      <button class="tbtn" id="btn-edit-piece" onclick="editPieceFromDetail()"><i class="ti ti-pencil"></i> Editar</button>
+      <button class="tbtn danger" id="btn-delete-piece" onclick="deletePieceFromDetail()"><i class="ti ti-trash"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA TAREA -->
+<div class="modal-overlay" id="modal-task" onclick="if(event.target===this)closeTaskModal()">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-task-title">Nueva tarea</div>
+      <button class="modal-close" onclick="closeTaskModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="task-error"></div>
+      <input type="hidden" id="task-id">
+
+      <div class="form-field">
+        <label class="form-label">Título</label>
+        <input type="text" class="form-input" id="task-titulo" placeholder="Ej: Editar reels semana del 20">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Cliente</label>
+          <select class="form-input form-select" id="task-client">
+            <option value="">Sin cliente</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Asignar a</label>
+          <select class="form-input form-select" id="task-asignado">
+            <option value="">Sin asignar</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Estado</label>
+          <select class="form-input form-select" id="task-estado">
+            <option value="pendiente">Pendiente</option>
+            <option value="en-progreso">En progreso</option>
+            <option value="revision">En revisión</option>
+            <option value="completada">Completada</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Fecha de entrega</label>
+          <input type="date" class="form-input" id="task-fecha">
+        </div>
+      </div>
+
+      <div class="form-field" style="margin-top:16px">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-input form-textarea" style="min-height:80px" id="task-descripcion" placeholder="Detallá qué hay que hacer..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeTaskModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" id="btn-save-task" onclick="saveTask()">
+        <span id="btn-save-task-text">Guardar tarea</span>
+        <div class="spinner" id="task-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -664,6 +945,7 @@
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
     else if (mod === 'equipo') { renderEquipo() }
+    else if (mod === 'contenido') { renderContenido() }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -679,6 +961,7 @@
   window.handleCta = function() {
     if (currentModule === 'cuentas') openClientModal()
     else if (currentModule === 'equipo') openInviteModal()
+    else if (currentModule === 'contenido') { if(currentContentTab==='piezas') openPieceModal(); else openTaskModal() }
   }
 
   // ══════════════════════════════════════
@@ -991,6 +1274,357 @@
     setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied') }, 2000)
   }
 
+
+  // ══════════════════════════════════════
+  // CONTENIDO
+  // ══════════════════════════════════════
+
+  let pieces = []
+  let tasks = []
+  let currentContentTab = 'piezas'
+  let currentTaskFilter = 'todas'
+  let detailPieceId = null
+
+  const KANBAN_COLS = [
+    { id: 'idea',       name: 'Idea',              color: '#94A3B8' },
+    { id: 'produccion', name: 'Producción',         color: '#60A5FA' },
+    { id: 'revision',   name: 'Revisión interna',   color: '#FBBF24' },
+    { id: 'aprobacion', name: 'Aprobación',         color: '#F87171' },
+    { id: 'publicado',  name: 'Publicado',          color: '#34C759' },
+  ]
+
+  const CLIENT_COLORS = ['#E1F5EE','#EEEDFE','#FAECE7','#E6F1FB','#FFF3E0','#FCE4EC']
+  const CLIENT_TEXT   = ['#085041','#3C3489','#712B13','#0C447C','#7C4A00','#7B1B35']
+
+  function clientColor(id, type) {
+    let h = 0; for(let i=0;i<id.length;i++) h = id.charCodeAt(i)+((h<<5)-h)
+    const idx = Math.abs(h) % CLIENT_COLORS.length
+    return type === 'bg' ? CLIENT_COLORS[idx] : CLIENT_TEXT[idx]
+  }
+
+  function formatDate(d) {
+    if (!d) return null
+    const date = new Date(d + 'T12:00:00')
+    const today = new Date(); today.setHours(0,0,0,0)
+    const diff = Math.floor((date - today) / 86400000)
+    if (diff < 0) return { text: `Hace ${Math.abs(diff)}d`, overdue: true }
+    if (diff === 0) return { text: 'Hoy', overdue: false }
+    if (diff === 1) return { text: 'Mañana', overdue: false }
+    return { text: date.toLocaleDateString('es-AR',{day:'numeric',month:'short'}), overdue: false }
+  }
+
+  // ── Load ──────────────────────────────────────────────
+  async function loadPieces() {
+    const { data } = await supabase
+      .from('content_pieces')
+      .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido)')
+      .eq('agency_id', agencyId)
+      .order('created_at', { ascending: false })
+    pieces = data || []
+  }
+
+  async function loadTasks() {
+    const { data } = await supabase
+      .from('content_tasks')
+      .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
+      .eq('agency_id', agencyId)
+      .order('created_at', { ascending: false })
+    tasks = data || []
+  }
+
+  async function renderContenido() {
+    await loadPieces()
+    await loadTasks()
+    renderKanban()
+    renderTasks()
+    renderContenidoPanel()
+  }
+
+  // ── Panel ─────────────────────────────────────────────
+  function renderContenidoPanel() {
+    const body = document.getElementById('panel-body')
+    const byEstado = {}
+    KANBAN_COLS.forEach(c => { byEstado[c.id] = pieces.filter(p => p.estado === c.id).length })
+    const statusColors = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759' }
+    body.innerHTML = KANBAN_COLS.map(c => `
+      <div class="panel-item" onclick="switchContentTab('piezas')">
+        <div class="pi-row">
+          <div class="pi-av" style="background:${statusColors[c.id]}22;color:${statusColors[c.id]}">
+            <i class="ti ti-circle-filled" style="font-size:8px"></i>
+          </div>
+          <div class="pi-name">${c.name}</div>
+          <div class="pi-badge" style="background:var(--bg);color:var(--ink3)">${byEstado[c.id]}</div>
+        </div>
+      </div>`).join('') +
+      `<div class="panel-item" onclick="switchContentTab('tareas')">
+        <div class="pi-row">
+          <div class="pi-av" style="background:#E6F1FB;color:#0C447C"><i class="ti ti-checkbox" style="font-size:13px"></i></div>
+          <div class="pi-name">Tareas</div>
+          <div class="pi-badge" style="background:var(--bg);color:var(--ink3)">${tasks.length}</div>
+        </div>
+      </div>`
+    document.getElementById('panel-sub').textContent = `${pieces.length} piezas · ${tasks.length} tareas`
+  }
+
+  // ── Kanban ────────────────────────────────────────────
+  function renderKanban() {
+    const board = document.getElementById('kanban-board')
+    board.innerHTML = KANBAN_COLS.map(col => {
+      const colPieces = pieces.filter(p => p.estado === col.id)
+      const cards = colPieces.length === 0
+        ? `<div style="padding:12px;font-size:11px;color:var(--ink3);text-align:center">Sin piezas</div>`
+        : colPieces.map(p => {
+            const due = formatDate(p.fecha_entrega)
+            const clientName = p.clients?.nombre || '—'
+            return `<div class="k-card" onclick="openPieceDetail('${p.id}')">
+              <div class="k-card-title">${p.titulo}</div>
+              <div class="k-card-meta">
+                <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
+                ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
+                ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
+              </div>
+            </div>`
+          }).join('')
+      return `<div class="k-col">
+        <div class="k-col-head">
+          <div class="k-dot" style="background:${col.color}"></div>
+          <div class="k-col-name">${col.name}</div>
+          <div class="k-count">${colPieces.length}</div>
+        </div>
+        <div class="k-cards">${cards}</div>
+        <div class="k-add" onclick="openPieceModal(null,'${col.id}')"><i class="ti ti-plus" style="font-size:12px"></i> Agregar</div>
+      </div>`
+    }).join('')
+  }
+
+  // ── Piece detail ──────────────────────────────────────
+  window.openPieceDetail = function(id) {
+    const p = pieces.find(x => x.id === id)
+    if (!p) return
+    detailPieceId = id
+    const col = KANBAN_COLS.find(c => c.id === p.estado)
+    const due = formatDate(p.fecha_entrega)
+    document.getElementById('piece-detail-title').textContent = p.titulo
+    document.getElementById('piece-detail-body').innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px">
+        <span style="font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;background:${col?.color}22;color:${col?.color}">${col?.name||p.estado}</span>
+        ${p.tipo ? `<span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:var(--bg);color:var(--ink2);border:1px solid var(--border)">${p.tipo}</span>` : ''}
+        ${due ? `<span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:${due.overdue?'#FEF2F2':'var(--bg)'};color:${due.overdue?'var(--danger)':'var(--ink2)'}">${due.text}</span>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cliente</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.clients?.nombre||'—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Fecha entrega</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—'}</div>
+        </div>
+      </div>
+      ${p.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap">${p.descripcion}</div></div>` : ''}
+    `
+    document.getElementById('modal-piece-detail').classList.add('show')
+  }
+
+  window.closePieceDetail = function() {
+    document.getElementById('modal-piece-detail').classList.remove('show')
+    detailPieceId = null
+  }
+
+  window.editPieceFromDetail = function() {
+    closePieceDetail()
+    setTimeout(() => openPieceModal(detailPieceId || document.getElementById('piece-id').value), 100)
+  }
+
+  window.deletePieceFromDetail = async function() {
+    if (!detailPieceId) return
+    await supabase.from('content_pieces').delete().eq('id', detailPieceId)
+    closePieceDetail()
+    showToast('Pieza eliminada')
+    await renderContenido()
+  }
+
+  // ── Piece modal ───────────────────────────────────────
+  window.openPieceModal = function(id, defaultEstado) {
+    const p = id ? pieces.find(x => x.id === id) : null
+    document.getElementById('modal-piece-title').textContent = p ? 'Editar pieza' : 'Nueva pieza'
+    document.getElementById('piece-id').value = p?.id || ''
+    document.getElementById('piece-titulo').value = p?.titulo || ''
+    document.getElementById('piece-tipo').value = p?.tipo || ''
+    document.getElementById('piece-estado').value = p?.estado || defaultEstado || 'idea'
+    document.getElementById('piece-fecha').value = p?.fecha_entrega || ''
+    document.getElementById('piece-descripcion').value = p?.descripcion || ''
+    document.getElementById('piece-error').classList.remove('show')
+
+    // Populate clients
+    const cs = document.getElementById('piece-client')
+    cs.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${p?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
+
+    // Populate responsable
+    const rs = document.getElementById('piece-responsable')
+    rs.innerHTML = '<option value="">Sin asignar</option>' + teamMembers.map(m => {
+      const n = (m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')
+      return `<option value="${m.id}" ${p?.responsable_id===m.id?'selected':''}>${n.trim()}</option>`
+    }).join('')
+
+    document.getElementById('modal-piece').classList.add('show')
+    setTimeout(() => document.getElementById('piece-titulo').focus(), 100)
+  }
+
+  window.closePieceModal = function() { document.getElementById('modal-piece').classList.remove('show') }
+
+  window.savePiece = async function() {
+    const id = document.getElementById('piece-id').value
+    const titulo = document.getElementById('piece-titulo').value.trim()
+    const errEl = document.getElementById('piece-error')
+    errEl.classList.remove('show')
+    if (!titulo) { errEl.textContent = 'El título es obligatorio.'; errEl.classList.add('show'); return }
+
+    const btn = document.getElementById('btn-save-piece')
+    const spinner = document.getElementById('piece-spinner')
+    const btnText = document.getElementById('btn-save-piece-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    const payload = {
+      titulo,
+      tipo: document.getElementById('piece-tipo').value || null,
+      estado: document.getElementById('piece-estado').value,
+      fecha_entrega: document.getElementById('piece-fecha').value || null,
+      descripcion: document.getElementById('piece-descripcion').value.trim() || null,
+      client_id: document.getElementById('piece-client').value || null,
+      responsable_id: document.getElementById('piece-responsable').value || null,
+      agency_id: agencyId,
+    }
+
+    let error
+    if (id) {
+      ({ error } = await supabase.from('content_pieces').update(payload).eq('id', id))
+    } else {
+      payload.created_by = (await supabase.auth.getUser()).data.user.id
+      ;({ error } = await supabase.from('content_pieces').insert(payload))
+    }
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar pieza'
+    if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
+    closePieceModal()
+    showToast(id ? '✓ Pieza actualizada' : '✓ Pieza creada')
+    await renderContenido()
+  }
+
+  // ── Tasks ─────────────────────────────────────────────
+  function renderTasks() {
+    const list = document.getElementById('task-list')
+    let filtered = currentTaskFilter === 'todas' ? tasks : tasks.filter(t => t.estado === currentTaskFilter)
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state" style="min-height:200px"><div class="empty-icon">✅</div><div class="empty-title">Sin tareas</div><div class="empty-sub">Creá una tarea y asignala a un miembro del equipo.</div></div>`
+      return
+    }
+    list.innerHTML = filtered.map(t => {
+      const due = formatDate(t.fecha_entrega)
+      const assignee = t.agency_members?.profiles
+      const assigneeName = assignee ? (assignee.nombre + ' ' + assignee.apellido).trim() : null
+      const isDone = t.estado === 'completada'
+      return `<div class="task-item" onclick="openTaskModal('${t.id}')">
+        <div class="task-chk ${isDone?'done':''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}')"></div>
+        <div class="task-body">
+          <div class="task-title ${isDone?'done':''}">${t.titulo}</div>
+          <div class="task-meta-row">
+            ${t.clients ? `<span class="task-client" style="background:${clientColor(t.client_id,'bg')};color:${clientColor(t.client_id,'text')}">${t.clients.nombre}</span>` : ''}
+            ${assigneeName ? `<span class="task-assignee"><i class="ti ti-user" style="font-size:10px"></i> ${assigneeName}</span>` : ''}
+            ${due ? `<span class="task-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
+          </div>
+        </div>
+        <span class="task-status-badge ts-${t.estado}">${t.estado.replace('-',' ')}</span>
+      </div>`
+    }).join('')
+  }
+
+  window.filterTasks = function(el) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+    el.classList.add('active')
+    currentTaskFilter = el.dataset.filter
+    renderTasks()
+  }
+
+  window.toggleTaskStatus = async function(id, estado) {
+    const next = estado === 'completada' ? 'pendiente' : 'completada'
+    await supabase.from('content_tasks').update({ estado: next }).eq('id', id)
+    await loadTasks(); renderTasks(); renderContenidoPanel()
+  }
+
+  // ── Task modal ────────────────────────────────────────
+  window.openTaskModal = function(id) {
+    const t = id ? tasks.find(x => x.id === id) : null
+    document.getElementById('modal-task-title').textContent = t ? 'Editar tarea' : 'Nueva tarea'
+    document.getElementById('task-id').value = t?.id || ''
+    document.getElementById('task-titulo').value = t?.titulo || ''
+    document.getElementById('task-estado').value = t?.estado || 'pendiente'
+    document.getElementById('task-fecha').value = t?.fecha_entrega || ''
+    document.getElementById('task-descripcion').value = t?.descripcion || ''
+    document.getElementById('task-error').classList.remove('show')
+
+    const tc = document.getElementById('task-client')
+    tc.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${t?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
+
+    const ta = document.getElementById('task-asignado')
+    ta.innerHTML = '<option value="">Sin asignar</option>' + teamMembers.map(m => {
+      const n = (m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')
+      return `<option value="${m.id}" ${t?.asignado_a===m.id?'selected':''}>${n.trim()}</option>`
+    }).join('')
+
+    document.getElementById('modal-task').classList.add('show')
+    setTimeout(() => document.getElementById('task-titulo').focus(), 100)
+  }
+
+  window.closeTaskModal = function() { document.getElementById('modal-task').classList.remove('show') }
+
+  window.saveTask = async function() {
+    const id = document.getElementById('task-id').value
+    const titulo = document.getElementById('task-titulo').value.trim()
+    const errEl = document.getElementById('task-error')
+    errEl.classList.remove('show')
+    if (!titulo) { errEl.textContent = 'El título es obligatorio.'; errEl.classList.add('show'); return }
+
+    const btn = document.getElementById('btn-save-task')
+    const spinner = document.getElementById('task-spinner')
+    const btnText = document.getElementById('btn-save-task-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    const payload = {
+      titulo,
+      estado: document.getElementById('task-estado').value,
+      fecha_entrega: document.getElementById('task-fecha').value || null,
+      descripcion: document.getElementById('task-descripcion').value.trim() || null,
+      client_id: document.getElementById('task-client').value || null,
+      asignado_a: document.getElementById('task-asignado').value || null,
+      agency_id: agencyId,
+    }
+
+    let error
+    if (id) {
+      ({ error } = await supabase.from('content_tasks').update(payload).eq('id', id))
+    } else {
+      payload.created_by = (await supabase.auth.getUser()).data.user.id
+      ;({ error } = await supabase.from('content_tasks').insert(payload))
+    }
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar tarea'
+    if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
+    closeTaskModal()
+    showToast(id ? '✓ Tarea actualizada' : '✓ Tarea creada')
+    await loadTasks(); renderTasks(); renderContenidoPanel()
+  }
+
+  // ── Content tab switcher ──────────────────────────────
+  window.switchContentTab = function(tab) {
+    currentContentTab = tab
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'))
+    document.getElementById('tab-' + tab)?.classList.add('active')
+    document.querySelectorAll('.content-subview').forEach(s => s.classList.remove('active'))
+    document.getElementById('sv-' + tab)?.classList.add('active')
+    document.getElementById('ws-cta-label').textContent = tab === 'piezas' ? 'Nueva pieza' : 'Nueva tarea'
+  }
+
   // ══════════════════════════════════════
   // EQUIPO
   // ══════════════════════════════════════
@@ -1250,6 +1884,9 @@
       closeMemberModal()
       closeDeleteMemberModal()
       closeInviteModal()
+      closePieceModal()
+      closePieceDetail()
+      closeTaskModal()
     }
   })
 
