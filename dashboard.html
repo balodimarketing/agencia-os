@@ -330,6 +330,10 @@
     .btn-approve:hover { opacity: .85; }
     .btn-reject  { padding: 7px 14px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--ink3); font-family: inherit; transition: all var(--t); }
     .btn-reject:hover  { border-color: var(--danger); color: var(--danger); }
+
+    .btn-copy-invite { padding: 8px 16px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid rgba(142,219,255,.3); background: rgba(142,219,255,.1); color: var(--celeste); font-family: inherit; transition: all var(--t); white-space: nowrap; }
+    .btn-copy-invite:hover { background: rgba(142,219,255,.2); }
+    .btn-copy-invite.copied { background: rgba(52,199,89,.2); border-color: rgba(52,199,89,.4); color: #34C759; }
   </style>
 </head>
 <body>
@@ -503,6 +507,29 @@
   </div>
 </div>
 
+
+<!-- MODAL INVITAR -->
+<div class="modal-overlay" id="modal-invite" onclick="if(event.target===this)closeInviteModal()">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-head">
+      <div class="modal-title">Invitar al equipo</div>
+      <button class="modal-close" onclick="closeInviteModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:20px">Compartí este código con las personas que querés sumar a tu agencia. Ingresan con este código al registrarse.</p>
+      <div style="background:var(--azul);border-radius:var(--r);padding:20px 24px">
+        <div style="font-size:10px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Código de invitación</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div id="invite-modal-code" style="font-size:26px;font-weight:900;color:var(--white);letter-spacing:5px">——————</div>
+          <button class="btn-copy-invite" id="btn-copy-invite" onclick="copyInviteCode()">Copiar</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn primary" style="width:100%" onclick="closeInviteModal()">Listo</button>
+    </div>
+  </div>
+</div>
 <!-- MODAL EDITAR MIEMBRO -->
 <div class="modal-overlay" id="modal-member" onclick="if(event.target===this)closeMemberModal()">
   <div class="modal" style="max-width:480px">
@@ -651,6 +678,7 @@
   // ── CTA button ────────────────────────────────────────
   window.handleCta = function() {
     if (currentModule === 'cuentas') openClientModal()
+    else if (currentModule === 'equipo') openInviteModal()
   }
 
   // ══════════════════════════════════════
@@ -923,11 +951,45 @@
     av.style.color = 'var(--celeste)'
 
     await loadClients()
+    await loadInviteCode()
 
     // Inicializar panel de inicio
     document.getElementById('panel-body').innerHTML = ''
   }
 
+
+
+  // ── Invite modal ──────────────────────────────────────
+  let inviteCode = null
+
+  async function loadInviteCode() {
+    if (!agencyId) return
+    const { data } = await supabase
+      .from('invitations')
+      .select('code')
+      .eq('agency_id', agencyId)
+      .eq('status', 'pending')
+      .maybeSingle()
+    inviteCode = data?.code || null
+  }
+
+  window.openInviteModal = function() {
+    document.getElementById('invite-modal-code').textContent = inviteCode || '——————'
+    document.getElementById('modal-invite').classList.add('show')
+  }
+
+  window.closeInviteModal = function() {
+    document.getElementById('modal-invite').classList.remove('show')
+  }
+
+  window.copyInviteCode = function() {
+    if (!inviteCode) return
+    navigator.clipboard.writeText(inviteCode)
+    const btn = document.getElementById('btn-copy-invite')
+    btn.textContent = '¡Copiado!'
+    btn.classList.add('copied')
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied') }, 2000)
+  }
 
   // ══════════════════════════════════════
   // EQUIPO
@@ -1187,6 +1249,7 @@
       closeDeleteModal()
       closeMemberModal()
       closeDeleteMemberModal()
+      closeInviteModal()
     }
   })
 
