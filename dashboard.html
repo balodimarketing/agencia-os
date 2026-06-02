@@ -272,6 +272,64 @@
     /* ── Spinner ── */
     .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════
+       EQUIPO
+    ══════════════════════════ */
+    .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+    .member-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg);
+      padding: 20px; transition: box-shadow var(--t), transform var(--t);
+    }
+    .member-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+
+    .member-card-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+    .member-av-lg { width: 48px; height: 48px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; flex-shrink: 0; }
+    .member-card-name { font-size: 14px; font-weight: 800; color: var(--ink); letter-spacing: -.2px; }
+    .member-card-puesto { font-size: 11px; color: var(--ink3); margin-top: 2px; font-weight: 500; }
+    .member-card-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+
+    .role-badge-sm {
+      font-size: 9px; font-weight: 800; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .4px;
+    }
+    .role-owner  { background: var(--azul); color: var(--celeste); }
+    .role-admin  { background: #EEF2FF; color: #3730A3; }
+    .role-member { background: var(--bg); color: var(--ink3); border: 1px solid var(--border); }
+
+    .status-badge {
+      font-size: 9px; font-weight: 800; padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .4px;
+    }
+    .status-activo    { background: #E6FFE6; color: #1A6B28; }
+    .status-vacaciones{ background: #FFFBEB; color: #92400E; }
+    .status-inactivo  { background: #F5F5F5; color: var(--ink3); }
+
+    .member-clients-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; min-height: 22px; }
+    .member-client-tag {
+      font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 6px;
+      background: var(--bg); color: var(--ink2); border: 1px solid var(--border);
+    }
+    .member-no-clients { font-size: 11px; color: var(--ink3); font-style: italic; }
+
+    .member-card-actions { display: flex; gap: 6px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+    /* Request row */
+    .req-row {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--white); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 14px 16px; margin-bottom: 8px;
+    }
+    .req-av { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+    .req-info { flex: 1; min-width: 0; }
+    .req-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .req-meta { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+    .req-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-approve { padding: 7px 14px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: none; background: var(--success); color: var(--white); font-family: inherit; transition: all var(--t); }
+    .btn-approve:hover { opacity: .85; }
+    .btn-reject  { padding: 7px 14px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--ink3); font-family: inherit; transition: all var(--t); }
+    .btn-reject:hover  { border-color: var(--danger); color: var(--danger); }
   </style>
 </head>
 <body>
@@ -348,7 +406,11 @@
 
     <!-- EQUIPO -->
     <div class="view" id="v-equipo">
-      <div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Equipo</div><div class="empty-sub">Tareas y actividad de cada miembro. Próximamente.</div></div>
+      <div id="equipo-requests" style="display:none;margin-bottom:24px">
+        <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Solicitudes pendientes <span id="req-count"></span></div>
+        <div id="equipo-requests-list"></div>
+      </div>
+      <div id="equipo-members-grid" class="members-grid"></div>
     </div>
 
     <!-- CRM -->
@@ -441,6 +503,84 @@
   </div>
 </div>
 
+<!-- MODAL EDITAR MIEMBRO -->
+<div class="modal-overlay" id="modal-member" onclick="if(event.target===this)closeMemberModal()">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-title">Editar miembro</div>
+      <button class="modal-close" onclick="closeMemberModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="member-error"></div>
+      <input type="hidden" id="member-id">
+
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:var(--bg);border-radius:var(--r)">
+        <div id="member-modal-av" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0"></div>
+        <div>
+          <div id="member-modal-name" style="font-size:14px;font-weight:800;color:var(--ink)"></div>
+          <div id="member-modal-email" style="font-size:11px;color:var(--ink3);margin-top:2px"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Rol en el sistema</label>
+          <select class="form-input form-select" id="member-role">
+            <option value="ADMIN">Admin</option>
+            <option value="MEMBER">Member</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Estado</label>
+          <select class="form-input form-select" id="member-status">
+            <option value="activo">Activo</option>
+            <option value="vacaciones">Vacaciones</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field" style="margin-top:16px">
+        <label class="form-label">Puesto</label>
+        <input type="text" class="form-input" id="member-puesto" placeholder="Ej: Community Manager, Diseñador, Gerente...">
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Clientes asignados</label>
+        <div id="member-clients-checkboxes" class="redes-grid"></div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:8px">Solo verá los clientes que le asignés.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeMemberModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" id="btn-save-member" onclick="saveMember()">
+        <span id="btn-save-member-text">Guardar cambios</span>
+        <div class="spinner" id="member-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR MIEMBRO -->
+<div class="modal-overlay" id="modal-delete-member" onclick="if(event.target===this)closeDeleteMemberModal()">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head">
+      <div class="modal-title">Eliminar miembro</div>
+      <button class="modal-close" onclick="closeDeleteMemberModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink2);line-height:1.6">¿Estás seguro que querés eliminar a <strong id="delete-member-name"></strong> del equipo? Perderá acceso a la agencia.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeDeleteMemberModal()">Cancelar</button>
+      <button class="tbtn danger" style="flex:1" id="btn-confirm-delete-member" onclick="confirmDeleteMember()">
+        <span id="btn-delete-member-text">Eliminar</span>
+        <div class="spinner" id="delete-member-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -496,6 +636,7 @@
     document.getElementById('panel-title').textContent = modMeta[mod]?.title || mod
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
+    else if (mod === 'equipo') { renderEquipo() }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -787,11 +928,265 @@
     document.getElementById('panel-body').innerHTML = ''
   }
 
+
+  // ══════════════════════════════════════
+  // EQUIPO
+  // ══════════════════════════════════════
+
+  let teamMembers = []
+  let memberClientMap = {}
+  let deleteMemberTargetId = null
+
+  async function loadTeam() {
+    if (!agencyId) return
+    const { data, error } = await supabase
+      .from('agency_members')
+      .select('id, role, status, puesto, activity_status, user_id, profiles(nombre, apellido)')
+      .eq('agency_id', agencyId)
+      .eq('status', 'active')
+    if (!error) teamMembers = data || []
+
+    // Load member_clients for each member
+    memberClientMap = {}
+    if (teamMembers.length > 0) {
+      const memberIds = teamMembers.map(m => m.id)
+      const { data: mc } = await supabase
+        .from('member_clients')
+        .select('agency_member_id, client_id, clients(nombre)')
+        .in('agency_member_id', memberIds)
+      if (mc) {
+        mc.forEach(row => {
+          if (!memberClientMap[row.agency_member_id]) memberClientMap[row.agency_member_id] = []
+          memberClientMap[row.agency_member_id].push({ id: row.client_id, nombre: row.clients?.nombre })
+        })
+      }
+    }
+  }
+
+  async function loadPendingRequests() {
+    if (!agencyId) return []
+    const { data } = await supabase
+      .from('agency_members')
+      .select('id, user_id, profiles(nombre, apellido)')
+      .eq('agency_id', agencyId)
+      .eq('status', 'pending')
+    return data || []
+  }
+
+  async function renderEquipo() {
+    await loadTeam()
+    const pending = await loadPendingRequests()
+    renderEquipoRequests(pending)
+    renderEquipoGrid()
+    renderEquipoPanel()
+  }
+
+  function renderEquipoPanel() {
+    const body = document.getElementById('panel-body')
+    const active = teamMembers.filter(m => m.role !== 'OWNER')
+    document.getElementById('panel-sub').textContent = `${active.length} miembro${active.length !== 1 ? 's' : ''}`
+    if (teamMembers.length === 0) { body.innerHTML = ''; return }
+    body.innerHTML = teamMembers.map(m => {
+      const nombre = m.profiles?.nombre || '—'
+      const apellido = m.profiles?.apellido || ''
+      const full = nombre + ' ' + apellido
+      const ini = initials(full)
+      const col = getAvColor(full)
+      return `<div class="panel-item">
+        <div class="pi-row">
+          <div class="pi-av" style="background:${col.bg};color:${col.color}">${ini}</div>
+          <div class="pi-name">${full.trim()}</div>
+          <div class="pi-badge" style="background:${m.role==='OWNER'?'var(--azul)':m.role==='ADMIN'?'#EEF2FF':'var(--bg)'};color:${m.role==='OWNER'?'var(--celeste)':m.role==='ADMIN'?'#3730A3':'var(--ink3)'}">${m.role}</div>
+        </div>
+        <div class="pi-meta">${m.puesto || 'Sin puesto'}</div>
+      </div>`
+    }).join('')
+  }
+
+  function renderEquipoRequests(pending) {
+    const section = document.getElementById('equipo-requests')
+    const list = document.getElementById('equipo-requests-list')
+    const count = document.getElementById('req-count')
+    if (!pending.length) { section.style.display = 'none'; return }
+    section.style.display = 'block'
+    count.textContent = `(${pending.length})`
+    list.innerHTML = pending.map(m => {
+      const nombre = m.profiles?.nombre || '—'
+      const apellido = m.profiles?.apellido || ''
+      const full = nombre + ' ' + apellido
+      const ini = initials(full)
+      const col = getAvColor(full)
+      return `<div class="req-row" id="req-${m.id}">
+        <div class="req-av" style="background:${col.bg};color:${col.color}">${ini}</div>
+        <div class="req-info">
+          <div class="req-name">${full.trim()}</div>
+          <div class="req-meta">Solicitud pendiente</div>
+        </div>
+        <div class="req-actions">
+          <button class="btn-approve" onclick="approveRequest('${m.id}')">Aprobar</button>
+          <button class="btn-reject" onclick="rejectRequest('${m.id}')">Rechazar</button>
+        </div>
+      </div>`
+    }).join('')
+  }
+
+  function renderEquipoGrid() {
+    const grid = document.getElementById('equipo-members-grid')
+    if (teamMembers.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Sin miembros todavía</div><div class="empty-sub">Invitá a tu equipo usando el código de invitación.</div></div></div>`
+      return
+    }
+    grid.innerHTML = teamMembers.map(m => {
+      const nombre = m.profiles?.nombre || '—'
+      const apellido = m.profiles?.apellido || ''
+      const full = nombre + ' ' + apellido
+      const ini = initials(full)
+      const col = getAvColor(full)
+      const assignedClients = memberClientMap[m.id] || []
+      const clientTags = assignedClients.length
+        ? assignedClients.map(c => `<span class="member-client-tag">${c.nombre}</span>`).join('')
+        : `<span class="member-no-clients">Sin clientes asignados</span>`
+      const canEdit = userRole === 'OWNER' && m.role !== 'OWNER'
+      return `<div class="member-card fade-up">
+        <div class="member-card-top">
+          <div class="member-av-lg" style="background:${col.bg};color:${col.color}">${ini}</div>
+          <div style="flex:1;min-width:0">
+            <div class="member-card-name">${full.trim()}</div>
+            <div class="member-card-puesto">${m.puesto || 'Sin puesto asignado'}</div>
+            <div class="member-card-badges" style="margin-top:6px">
+              <span class="role-badge-sm role-${m.role.toLowerCase()}">${m.role}</span>
+              <span class="status-badge status-${m.activity_status||'activo'}">${m.activity_status||'activo'}</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Clientes asignados</div>
+        <div class="member-clients-row">${clientTags}</div>
+        ${canEdit ? `<div class="member-card-actions">
+          <button class="btn-action" style="flex:1" onclick="openMemberModal('${m.id}')"><i class="ti ti-pencil"></i> Editar</button>
+          <button class="btn-action del" onclick="openDeleteMemberModal('${m.id}','${full.trim().replace(/'/g,"\'")}')"><i class="ti ti-trash"></i></button>
+        </div>` : ''}
+      </div>`
+    }).join('')
+  }
+
+  // ── Approve / Reject ──────────────────────────────────
+  window.approveRequest = async function(memberId) {
+    await supabase.from('agency_members').update({ status: 'active' }).eq('id', memberId)
+    showToast('✓ Miembro aprobado')
+    await renderEquipo()
+  }
+
+  window.rejectRequest = async function(memberId) {
+    await supabase.from('agency_members').delete().eq('id', memberId)
+    showToast('Solicitud rechazada')
+    await renderEquipo()
+  }
+
+  // ── Edit member modal ─────────────────────────────────
+  window.openMemberModal = function(memberId) {
+    const m = teamMembers.find(x => x.id === memberId)
+    if (!m) return
+    const nombre = m.profiles?.nombre || '—'
+    const apellido = m.profiles?.apellido || ''
+    const full = nombre + ' ' + apellido
+    const ini = initials(full)
+    const col = getAvColor(full)
+
+    document.getElementById('member-id').value = memberId
+    document.getElementById('member-modal-name').textContent = full.trim()
+    document.getElementById('member-modal-email').textContent = m.puesto || 'Sin puesto'
+    const av = document.getElementById('member-modal-av')
+    av.textContent = ini; av.style.background = col.bg; av.style.color = col.color
+    document.getElementById('member-role').value = m.role
+    document.getElementById('member-status').value = m.activity_status || 'activo'
+    document.getElementById('member-puesto').value = m.puesto || ''
+    document.getElementById('member-error').classList.remove('show')
+
+    // Clients checkboxes
+    const assigned = (memberClientMap[memberId] || []).map(c => c.id)
+    const checkboxes = document.getElementById('member-clients-checkboxes')
+    checkboxes.innerHTML = clients.map(c => `
+      <input type="checkbox" class="red-check" id="mc-${c.id}" value="${c.id}" ${assigned.includes(c.id) ? 'checked' : ''}>
+      <label class="red-label" for="mc-${c.id}">${c.nombre}</label>
+    `).join('')
+
+    document.getElementById('modal-member').classList.add('show')
+  }
+
+  window.closeMemberModal = function() {
+    document.getElementById('modal-member').classList.remove('show')
+  }
+
+  window.saveMember = async function() {
+    const memberId = document.getElementById('member-id').value
+    const role = document.getElementById('member-role').value
+    const activity_status = document.getElementById('member-status').value
+    const puesto = document.getElementById('member-puesto').value.trim()
+
+    const btn = document.getElementById('btn-save-member')
+    const spinner = document.getElementById('member-spinner')
+    const btnText = document.getElementById('btn-save-member-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    // Update member
+    await supabase.from('agency_members')
+      .update({ role, activity_status, puesto: puesto || null })
+      .eq('id', memberId)
+
+    // Update client assignments
+    const selectedClients = clients
+      .filter(c => document.getElementById('mc-' + c.id)?.checked)
+      .map(c => c.id)
+
+    // Delete existing and re-insert
+    await supabase.from('member_clients').delete().eq('agency_member_id', memberId)
+    if (selectedClients.length > 0) {
+      await supabase.from('member_clients').insert(
+        selectedClients.map(cid => ({ agency_member_id: memberId, client_id: cid }))
+      )
+    }
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
+    closeMemberModal()
+    showToast('✓ Miembro actualizado')
+    await renderEquipo()
+  }
+
+  // ── Delete member ─────────────────────────────────────
+  window.openDeleteMemberModal = function(id, nombre) {
+    deleteMemberTargetId = id
+    document.getElementById('delete-member-name').textContent = nombre
+    document.getElementById('modal-delete-member').classList.add('show')
+  }
+
+  window.closeDeleteMemberModal = function() {
+    document.getElementById('modal-delete-member').classList.remove('show')
+    deleteMemberTargetId = null
+  }
+
+  window.confirmDeleteMember = async function() {
+    if (!deleteMemberTargetId) return
+    const btn = document.getElementById('btn-confirm-delete-member')
+    const spinner = document.getElementById('delete-member-spinner')
+    const btnText = document.getElementById('btn-delete-member-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Eliminando...'
+
+    await supabase.from('member_clients').delete().eq('agency_member_id', deleteMemberTargetId)
+    await supabase.from('agency_members').delete().eq('id', deleteMemberTargetId)
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Eliminar'
+    closeDeleteMemberModal()
+    showToast('Miembro eliminado')
+    await renderEquipo()
+  }
+
   // Escape para cerrar modales
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeClientModal()
       closeDeleteModal()
+      closeMemberModal()
+      closeDeleteMemberModal()
     }
   })
 
