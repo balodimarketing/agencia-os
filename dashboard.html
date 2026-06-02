@@ -1385,36 +1385,6 @@
         : colPieces.map(p => {
             const due = formatDate(p.fecha_entrega)
             const clientName = p.clients?.nombre || '—'
-            return `<div class="k-card" onclick="openPieceDetail('${p.id}')">
-              <div class="k-card-title">${p.titulo}</div>
-              <div class="k-card-meta">
-                <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
-                ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
-                ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
-              </div>
-            </div>`
-          }).join('')
-      return `<div class="k-col">
-        <div class="k-col-head">
-          <div class="k-dot" style="background:${col.color}"></div>
-          <div class="k-col-name">${col.name}</div>
-          <div class="k-count">${colPieces.length}</div>
-        </div>
-        <div class="k-cards">${cards}</div>
-        <div class="k-add" onclick="openPieceModal(null,'${col.id}')"><i class="ti ti-plus" style="font-size:12px"></i> Agregar</div>
-      </div>`
-    }).join('')
-  }
-
-  function renderKanban() {
-    const board = document.getElementById('kanban-board')
-    board.innerHTML = KANBAN_COLS.map(col => {
-      const colPieces = pieces.filter(p => p.estado === col.id)
-      const cards = colPieces.length === 0
-        ? `<div style="padding:12px;font-size:11px;color:var(--ink3);text-align:center">Sin piezas</div>`
-        : colPieces.map(p => {
-            const due = formatDate(p.fecha_entrega)
-            const clientName = p.clients?.nombre || '—'
             return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')">
               <div class="k-card-title">${p.titulo}</div>
               <div class="k-card-meta">
