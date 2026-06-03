@@ -1747,7 +1747,7 @@
       if (clientIds.length === 0) { pieces = []; return }
       const { data } = await supabase
         .from('content_pieces')
-        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), agency_members!content_pieces_responsable_id_fkey(profiles(nombre,apellido)), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
         .eq('agency_id', agencyId)
         .in('client_id', clientIds)
         .order('created_at', { ascending: false })
@@ -1755,7 +1755,7 @@
     } else {
       const { data } = await supabase
         .from('content_pieces')
-        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), agency_members!content_pieces_responsable_id_fkey(profiles(nombre,apellido)), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
         .eq('agency_id', agencyId)
         .order('created_at', { ascending: false })
       pieces = data || []
@@ -1841,6 +1841,7 @@
                 ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
                 ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
               </div>
+              ${(() => { const r = p.agency_members?.profiles; return r ? `<div style="font-size:10px;color:var(--ink3);margin-top:5px;display:flex;align-items:center;gap:4px"><i class="ti ti-user" style="font-size:10px"></i>${r.nombre} ${r.apellido}</div>` : '' })()}
             </div>`
           }).join('')
       return `<div class="k-col" data-col="${col.id}">
@@ -1953,6 +1954,14 @@
         <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Fecha entrega</div>
           <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Responsable</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.agency_members?.profiles ? p.agency_members.profiles.nombre + ' ' + p.agency_members.profiles.apellido : '—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Tipo</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.tipo||'—'}</div>
         </div>
       </div>
       ${p.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:12px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap">${p.descripcion}</div></div>` : ''}
