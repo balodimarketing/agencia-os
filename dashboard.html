@@ -4845,11 +4845,6 @@
     crmContacts = data || []
   }
 
-  function renderCrm() {
-    if (crmView === 'pipeline') renderCrmPipeline()
-    else renderCrmList()
-  }
-
   function renderCrmPipeline() {
     const kanban = document.getElementById('crm-kanban')
     if (!kanban) return
