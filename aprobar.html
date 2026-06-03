@@ -230,11 +230,12 @@
     btn.disabled = true; document.getElementById('btn-cambios').disabled = true
     spinner.style.display = 'block'; btnText.style.display = 'none'
 
-    await supabase.from('content_pieces').update({
-      estado: 'publicado',
-      aprobacion_comentario: null,
-      aprobado_por: 'externo'
-    }).eq('id', pieceId)
+    // Get piece data before deleting
+    const { data: piece } = await supabase
+      .from('content_pieces')
+      .select('titulo, agency_id, responsable_id, agency_members!content_pieces_responsable_id_fkey(user_id)')
+      .eq('id', pieceId)
+      .single()
 
     // Delete file from storage if exists
     if (archivoUrl) {
@@ -242,7 +243,47 @@
       if (path) await supabase.storage.from('pieces').remove([path])
     }
 
-    showResult('✅', '¡Aprobado!', 'Le avisamos al equipo. La pieza pasó a Publicado.')
+    // Delete piece record entirely
+    await supabase.from('content_pieces').delete().eq('id', pieceId)
+
+    // Send notifications
+    if (piece) {
+      const titulo = piece.titulo
+      const agencyId = piece.agency_id
+
+      // Notify owner
+      const { data: owner } = await supabase
+        .from('agencies')
+        .select('owner_id')
+        .eq('id', agencyId)
+        .single()
+
+      if (owner) {
+        await supabase.from('notifications').insert({
+          agency_id: agencyId,
+          user_id: owner.owner_id,
+          tipo: 'pieza_aprobada',
+          titulo: '✅ Pieza aprobada',
+          mensaje: titulo,
+          link_modulo: 'contenido'
+        })
+      }
+
+      // Notify responsable if different from owner
+      const responsableUserId = piece.agency_members?.user_id
+      if (responsableUserId && responsableUserId !== owner?.owner_id) {
+        await supabase.from('notifications').insert({
+          agency_id: agencyId,
+          user_id: responsableUserId,
+          tipo: 'pieza_aprobada',
+          titulo: '✅ Tu pieza fue aprobada',
+          mensaje: titulo,
+          link_modulo: 'contenido'
+        })
+      }
+    }
+
+    showResult('✅', '¡Aprobado!', 'Le avisamos al equipo. La pieza fue aprobada y procesada.')
   }
 
   window.pedirCambios = function() {
@@ -265,11 +306,55 @@
     document.getElementById('btn-cambios').disabled = true
     document.getElementById('btn-cambios').textContent = 'Enviando...'
 
+    // Get piece data for notifications
+    const { data: piece } = await supabase
+      .from('content_pieces')
+      .select('titulo, agency_id, agency_members!content_pieces_responsable_id_fkey(user_id)')
+      .eq('id', pieceId)
+      .single()
+
     await supabase.from('content_pieces').update({
       estado: 'revision',
       aprobacion_comentario: comentario,
       aprobado_por: null
     }).eq('id', pieceId)
+
+    // Send notifications
+    if (piece) {
+      const titulo = piece.titulo
+      const agencyId = piece.agency_id
+
+      // Notify owner
+      const { data: owner } = await supabase
+        .from('agencies')
+        .select('owner_id')
+        .eq('id', agencyId)
+        .single()
+
+      if (owner) {
+        await supabase.from('notifications').insert({
+          agency_id: agencyId,
+          user_id: owner.owner_id,
+          tipo: 'pieza_cambios',
+          titulo: '🔄 Cambios solicitados',
+          mensaje: `${titulo}: "${comentario}"`,
+          link_modulo: 'contenido'
+        })
+      }
+
+      // Notify responsable if different from owner
+      const responsableUserId = piece.agency_members?.user_id
+      if (responsableUserId && responsableUserId !== owner?.owner_id) {
+        await supabase.from('notifications').insert({
+          agency_id: agencyId,
+          user_id: responsableUserId,
+          tipo: 'pieza_cambios',
+          titulo: '🔄 Te pidieron cambios',
+          mensaje: `${titulo}: "${comentario}"`,
+          link_modulo: 'contenido'
+        })
+      }
+    }
 
     showResult('🔄', 'Cambios solicitados', 'El equipo recibió tus comentarios y va a trabajar en los ajustes.')
   }
