@@ -159,12 +159,19 @@
       .eq('aprobacion_token', token)
       .maybeSingle()
 
-    // Get responsables from piece_responsables
+    document.getElementById('loading').style.display = 'none'
+
+    if (error || !piece) { showError(); return }
+    if (piece.estado === 'publicado') { showResult('✅', 'Ya aprobada', 'Esta pieza ya fue aprobada anteriormente.'); return }
+
+    pieceId = piece.id
+
+    // Get responsables from piece_responsables - now that pieceId is set
     let responsableNombre = '—'
     const { data: prsDisplay } = await supabase
       .from('piece_responsables')
       .select('agency_member_id')
-      .eq('piece_id', piece?.id || pieceId)
+      .eq('piece_id', pieceId)
     if (prsDisplay && prsDisplay.length > 0) {
       const memberIds = prsDisplay.map(r => r.agency_member_id)
       const { data: membersDisplay } = await supabase
@@ -182,14 +189,6 @@
         }
       }
     }
-
-    document.getElementById('loading').style.display = 'none'
-
-    if (error || !piece) { showError(); return }
-    if (piece.estado === 'publicado') { showResult('✅', 'Ya aprobada', 'Esta pieza ya fue aprobada anteriormente.'); return }
-    // Allow re-approval from revision state (after changes were requested)
-
-    pieceId = piece.id
     archivoUrl = piece.archivo_url
 
     // Fill data
