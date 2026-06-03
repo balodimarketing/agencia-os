@@ -1159,7 +1159,7 @@
   }
 
   // ── Module switch ─────────────────────────────────────
-  window.switchModule = function(el) {
+  window.switchModule = async function(el) {
     const mod = el.dataset.module
     currentModule = mod
     document.querySelectorAll('.rail-btn[data-module]').forEach(b => b.classList.remove('active'))
@@ -1597,7 +1597,7 @@
     }
     list.innerHTML = notifications.map(n => {
       const meta = NOTIF_ICONS[n.tipo] || NOTIF_ICONS.default
-      return `<div class="notif-item ${n.leida ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.link_modulo||''}')">
+      return `<div class="notif-item ${n.leida ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.link_modulo||''}', '${n.link_id||''}')">
         <div class="notif-icon" style="background:${meta.bg}">${meta.icon}</div>
         <div class="notif-body">
           <div class="notif-title">${n.titulo}</div>
@@ -1634,17 +1634,27 @@
     document.getElementById('notif-overlay').classList.remove('open')
   }
 
-  window.handleNotifClick = async function(id, modulo) {
+  window.handleNotifClick = async function(id, modulo, linkId) {
     // Mark as read
     await supabase.from('notifications').update({ leida: true }).eq('id', id)
     notifications = notifications.map(n => n.id === id ? {...n, leida: true} : n)
     renderNotifications()
     updateNotifDot()
+    closeNotifPanel()
 
     // Navigate to module
     if (modulo) {
       const railBtn = document.querySelector(`.rail-btn[data-module="${modulo}"]`)
-      if (railBtn) { closeNotifPanel(); switchModule(railBtn) }
+      if (railBtn) {
+        await switchModule(railBtn)
+        // Open specific piece if linkId provided
+        if (linkId && modulo === 'contenido') {
+          setTimeout(() => {
+            const piece = pieces.find(p => p.id === linkId)
+            if (piece) openPieceDetail(linkId)
+          }, 400)
+        }
+      }
     }
   }
 
@@ -1835,7 +1845,7 @@
             const clientName = p.clients?.nombre || '—'
             return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario?'border-left-color:var(--danger)':''}">
               <div class="k-card-title">${p.titulo}</div>
-              ${p.aprobacion_comentario ? `<div style="font-size:10px;color:var(--danger);font-weight:600;margin-bottom:6px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">💬 ${p.aprobacion_comentario}</div>` : ''}
+              ${p.aprobacion_comentario ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;background:#FEF2F2;color:var(--danger);cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')">💬 Ver cambios</span></div>` : ''}
               <div class="k-card-meta">
                 <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
                 ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
@@ -2108,7 +2118,11 @@
       // Notify owner and admins
       const targets = teamMembers.filter(m => (m.role === 'OWNER' || m.role === 'ADMIN') && m.user_id !== currentUserId)
       for (const m of targets) {
-        await createNotification(m.user_id, 'pieza_aprobacion', 'Pieza lista para aprobación', piece?.titulo || 'Una pieza', 'contenido')
+        await supabase.from('notifications').insert({
+          agency_id: agencyId, user_id: m.user_id,
+          tipo: 'pieza_aprobacion', titulo: 'Pieza lista para aprobación',
+          mensaje: piece?.titulo || 'Una pieza', link_modulo: 'contenido', link_id: pieceId
+        })
       }
       await loadPieces()
       openPieceDetail(pieceId)
@@ -2232,13 +2246,12 @@
       const member = teamMembers.find(m => m.id === asignadoId)
       if (member && member.user_id !== currentUserId) {
         const taskTitulo = document.getElementById('task-titulo').value.trim()
-        await createNotification(
-          member.user_id,
-          'tarea_asignada',
-          id ? 'Tarea actualizada' : 'Nueva tarea asignada',
-          taskTitulo,
-          'contenido'
-        )
+        await supabase.from('notifications').insert({
+          agency_id: agencyId, user_id: member.user_id,
+          tipo: 'tarea_asignada',
+          titulo: id ? 'Tarea actualizada' : 'Nueva tarea asignada',
+          mensaje: taskTitulo, link_modulo: 'contenido'
+        })
       }
     }
   }
