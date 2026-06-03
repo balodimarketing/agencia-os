@@ -1210,12 +1210,11 @@
   async function loadClients() {
     if (!agencyId) return
     if (userRole === 'MEMBER') {
-      // Get the member's own record directly by user_id
+      // Get the member's own record directly by user_id (no agency_id filter needed)
       const { data: myMemberData } = await supabase
         .from('agency_members')
         .select('id')
         .eq('user_id', currentUserId)
-        .eq('agency_id', agencyId)
         .eq('status', 'active')
         .single()
       if (!myMemberData) { clients = []; return }
@@ -1777,7 +1776,7 @@
         .from('agency_members')
         .select('id')
         .eq('user_id', currentUserId)
-        .eq('agency_id', agencyId)
+        .eq('status', 'active')
         .single()
       if (!myMemberData) { tasks = []; return }
       const { data } = await supabase
