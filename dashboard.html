@@ -1103,7 +1103,7 @@
   <div class="notif-panel-head">
     <div class="notif-panel-title">Notificaciones</div>
     <div class="notif-panel-actions">
-      <button class="notif-mark-all" onclick="markAllRead()">Marcar todo como leído</button>
+      <button class="notif-mark-all" onclick="markAllRead()">Limpiar todo</button>
       <button class="notif-close" onclick="closeNotifPanel()"><i class="ti ti-x"></i></button>
     </div>
   </div>
@@ -1635,9 +1635,9 @@
   }
 
   window.handleNotifClick = async function(id, modulo, linkId) {
-    // Mark as read
-    await supabase.from('notifications').update({ leida: true }).eq('id', id)
-    notifications = notifications.map(n => n.id === id ? {...n, leida: true} : n)
+    // Delete notification (like phone behavior)
+    await supabase.from('notifications').delete().eq('id', id)
+    notifications = notifications.filter(n => n.id !== id)
     renderNotifications()
     updateNotifDot()
     closeNotifPanel()
@@ -1660,13 +1660,13 @@
 
   window.markAllRead = async function() {
     await supabase.from('notifications')
-      .update({ leida: true })
+      .delete()
       .eq('user_id', currentUserId)
       .eq('agency_id', agencyId)
-    notifications = notifications.map(n => ({...n, leida: true}))
+    notifications = []
     renderNotifications()
     updateNotifDot()
-    showToast('✓ Todo marcado como leído')
+    showToast('✓ Notificaciones eliminadas')
   }
 
   // ── Create notification helper ────────────────────────
@@ -1702,12 +1702,17 @@
         table: 'notifications',
         filter: `user_id=eq.${currentUserId}`
       }, (payload) => {
-        notifications.unshift(payload.new)
-        renderNotifications()
-        updateNotifDot()
-        // Show mini toast
-        const meta = NOTIF_ICONS[payload.new.tipo] || NOTIF_ICONS.default
-        showToast(meta.icon + ' ' + payload.new.titulo)
+        if (payload.eventType === 'INSERT') {
+          notifications.unshift(payload.new)
+          renderNotifications()
+          updateNotifDot()
+          const meta = NOTIF_ICONS[payload.new.tipo] || NOTIF_ICONS.default
+          showToast(meta.icon + ' ' + payload.new.titulo)
+        } else if (payload.eventType === 'DELETE') {
+          notifications = notifications.filter(n => n.id !== payload.old.id)
+          renderNotifications()
+          updateNotifDot()
+        }
       })
       .subscribe()
   }
