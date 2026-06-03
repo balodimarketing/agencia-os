@@ -1210,16 +1210,17 @@
   async function loadClients() {
     if (!agencyId) return
     if (userRole === 'MEMBER') {
-      // Get the member's own record directly by user_id (no agency_id filter needed)
+      // Get member record with agency_id directly
       const { data: myMemberData } = await supabase
         .from('agency_members')
-        .select('id')
+        .select('id, agency_id')
         .eq('user_id', currentUserId)
         .eq('status', 'active')
-        .single()
+        .maybeSingle()
       if (!myMemberData) { clients = []; return }
       const myMemberId = myMemberData.id
-      // Update teamMembers ref so other functions can use it
+      // Set agencyId from member record if not already set
+      if (!agencyId) agencyId = myMemberData.agency_id
       if (!teamMembers.find(m => m.user_id === currentUserId)) {
         teamMembers.push({ id: myMemberId, user_id: currentUserId, role: userRole })
       }
@@ -1774,11 +1775,12 @@
     if (userRole === 'MEMBER') {
       const { data: myMemberData } = await supabase
         .from('agency_members')
-        .select('id')
+        .select('id, agency_id')
         .eq('user_id', currentUserId)
         .eq('status', 'active')
-        .single()
+        .maybeSingle()
       if (!myMemberData) { tasks = []; return }
+      if (!agencyId) agencyId = myMemberData.agency_id
       const { data } = await supabase
         .from('content_tasks')
         .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
