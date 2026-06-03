@@ -2096,6 +2096,30 @@
     if (card) card.classList.toggle('open')
   }
 
+  window.toggleDrawerPiece = function(id) {
+    const card = document.getElementById('drw-' + id)
+    if (card) card.classList.toggle('open')
+  }
+
+  window.scheduleDrawerPiece = async function(id) {
+    const dateInput = document.getElementById('drw-date-' + id)
+    const hInput = document.getElementById('drw-h-' + id)
+    const mInput = document.getElementById('drw-m-' + id)
+    const dateVal = dateInput?.value
+    if (!dateVal) { showToast('Seleccioná una fecha'); return }
+    const h = hInput?.value || '9'
+    const m = mInput?.value || '0'
+    const d = new Date(dateVal + 'T00:00:00')
+    d.setHours(parseInt(h), parseInt(m), 0, 0)
+    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString() }).eq('id', id)
+    showToast('✓ Publicación programada')
+    await loadPublishedPieces()
+    await loadCalendarEvents()
+    renderCalGrid()
+    updateDrawerBadge()
+    if (drawerOpen) renderDrawerPieces()
+  }
+
   window.schedulePiece = async function(id) {
     const dateInput = document.getElementById('calp-date-' + id)
     const hInput = document.getElementById('calp-h-' + id)
@@ -2539,8 +2563,8 @@
     const scheduledText = hasDate
       ? `<div style="font-size:11px;color:var(--success);font-weight:700;margin-top:6px;display:flex;align-items:center;gap:4px"><i class="ti ti-check" style="font-size:11px"></i>${new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`
       : ''
-    return `<div class="cal-piece-card" id="calp-${p.id}" style="margin-bottom:8px">
-      <div class="cal-piece-head" onclick="toggleCalPiece('${p.id}')">
+    return `<div class="cal-piece-card" id="drw-${p.id}" style="margin-bottom:8px">
+      <div class="cal-piece-head" onclick="toggleDrawerPiece('${p.id}')">
         <div class="cal-piece-dot" style="background:${hasDate?'#34C759':'#94A3B8'}"></div>
         <div class="cal-piece-title">${p.titulo}</div>
         <div class="cal-piece-arrow" style="font-size:10px;color:var(--ink3)">▼</div>
@@ -2550,20 +2574,20 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
           <div>
             <div style="font-size:9px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Fecha</div>
-            <input type="date" class="form-input" id="calp-date-${p.id}" value="${hasDate ? new Date(p.fecha_publicacion).toISOString().slice(0,10) : ''}" style="font-size:11px;padding:6px 8px">
+            <input type="date" class="form-input" id="drw-date-${p.id}" value="${hasDate ? new Date(p.fecha_publicacion).toISOString().slice(0,10) : ''}" style="font-size:11px;padding:6px 8px">
           </div>
           <div>
             <div style="font-size:9px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Hora</div>
             <div style="display:flex;gap:3px;align-items:center">
-              <select class="form-input form-select" id="calp-h-${p.id}" style="font-size:11px;padding:6px 4px;padding-right:18px">${hour_options}</select>
+              <select class="form-input form-select" id="drw-h-${p.id}" style="font-size:11px;padding:6px 4px;padding-right:18px">${hour_options}</select>
               <span style="font-weight:700;color:var(--ink3)">:</span>
-              <select class="form-input form-select" id="calp-m-${p.id}" style="font-size:11px;padding:6px 4px;padding-right:18px">
+              <select class="form-input form-select" id="drw-m-${p.id}" style="font-size:11px;padding:6px 4px;padding-right:18px">
                 <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
               </select>
             </div>
           </div>
         </div>
-        <div class="cal-piece-schedule-btn" onclick="schedulePiece('${p.id}')">
+        <div class="cal-piece-schedule-btn" onclick="scheduleDrawerPiece('${p.id}')">
           ${hasDate ? 'Reprogramar' : 'Programar publicación'}
         </div>
         ${scheduledText}
