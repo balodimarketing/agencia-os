@@ -176,6 +176,7 @@
 
     if (error || !piece) { showError(); return }
     if (piece.estado === 'publicado') { showResult('✅', 'Ya aprobada', 'Esta pieza ya fue aprobada anteriormente.'); return }
+    // Allow re-approval from revision state (after changes were requested)
 
     pieceId = piece.id
     archivoUrl = piece.archivo_url
@@ -274,7 +275,12 @@
       if (path) await supabase.storage.from('pieces').remove([path])
     }
 
-    // Keep piece record - just update estado to publicado (already done above)
+    // Update estado to publicado and clear token so link can't be reused
+    await supabase.from('content_pieces').update({
+      estado: 'publicado',
+      aprobacion_comentario: null,
+      aprobado_por: 'externo'
+    }).eq('id', pieceId)
 
     // Send notifications
     if (piece) {
