@@ -2463,6 +2463,24 @@
       ${ev.link ? `<a href="${ev.link}" target="_blank" style="display:flex;align-items:center;gap:8px;background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--azul);font-size:13px;font-weight:700"><i class="ti ti-link" style="font-size:16px"></i>${ev.link}</a>` : ''}`
     document.getElementById('event-detail-edit').style.display = 'flex'
     document.getElementById('event-detail-delete').style.display = 'flex'
+
+    // Cargar y mostrar participantes
+    const { data: parts } = await supabase
+      .from('event_participants')
+      .select('agency_members(profiles(nombre, apellido))')
+      .eq('event_id', id)
+    if (parts && parts.length > 0) {
+      const partsHTML = parts.map(p => {
+        const nombre = `${p.agency_members?.profiles?.nombre || ''} ${p.agency_members?.profiles?.apellido || ''}`.trim()
+        return `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--celeste-dim);color:var(--azul);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">${nombre}</span>`
+      }).join('')
+      document.getElementById('event-detail-body').innerHTML +=
+        `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-top:10px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Participantes</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${partsHTML}</div>
+        </div>`
+    }
+
     document.getElementById('modal-event-detail').classList.add('show')
   }
 
@@ -2568,9 +2586,20 @@
   window.closeEventModal = function() { document.getElementById('modal-event').classList.remove('show') }
   window.closeEventDetail = function() { document.getElementById('modal-event-detail').classList.remove('show'); calEditingEventId = null }
 
-  window.editEventFromDetail = function() {
+  window.editEventFromDetail = async function() {
     const ev = calEvents.find(x => x.id === calEditingEventId)
     if (!ev) return
+
+    // Cargar participantes existentes
+    const { data: parts } = await supabase
+      .from('event_participants')
+      .select('agency_member_id, agency_members(profiles(nombre, apellido))')
+      .eq('event_id', ev.id)
+    selectedParticipantes = (parts || []).map(p => ({
+      id: p.agency_member_id,
+      nombre: `${p.agency_members?.profiles?.nombre || ''} ${p.agency_members?.profiles?.apellido || ''}`.trim()
+    }))
+
     closeEventDetail()
     setTimeout(() => {
       document.getElementById('modal-event-title').textContent = 'Editar evento'
@@ -2587,6 +2616,8 @@
       document.getElementById('event-h-fin').value = evEnd ? evEnd.getHours() : (evStart.getHours()+1)%24
       document.getElementById('event-m-fin').value = evEnd ? [0,15,30,45].reduce((a,b) => Math.abs(b-evEnd.getMinutes()) < Math.abs(a-evEnd.getMinutes()) ? b : a) : 0
       selectEventColor(ev.color, document.querySelector(`#event-colors div[style*="${ev.color}"]`) || document.querySelectorAll('#event-colors div')[0])
+      renderPartTags()
+      loadPartDrop()
       document.getElementById('modal-event').classList.add('show')
     }, 150)
   }
@@ -2653,6 +2684,23 @@
         await supabase.from('event_participants').insert(
           selectedParticipantes.map(p => ({ event_id: savedId, agency_member_id: p.id }))
         )
+        // Notificar a cada participante
+        if (teamMembers.length === 0) await loadTeam()
+        const fechaStr = startDate.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'})
+        const horaStr = startDate.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
+        for (const part of selectedParticipantes) {
+          // Obtener user_id del miembro
+          const member = teamMembers.find(m => m.id === part.id)
+          if (member && member.user_id !== currentUserId) {
+            await createNotification(
+              member.user_id,
+              'calendario',
+              `Nuevo evento: ${titulo}`,
+              `${fechaStr} a las ${horaStr}`,
+              'calendario'
+            )
+          }
+        }
       }
     }
 
