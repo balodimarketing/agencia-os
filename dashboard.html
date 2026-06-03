@@ -1357,6 +1357,26 @@
 </div>
 
 <!-- MODAL NUEVO EVENTO -->
+<!-- Modal día completo -->
+<div class="modal-overlay" id="modal-day" onclick="if(event.target===this)closeDayModal()" style="display:none">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div id="day-modal-title" style="font-size:17px;font-weight:900;color:var(--ink);letter-spacing:-.4px"></div>
+        <div id="day-modal-sub" style="font-size:12px;color:var(--ink3);margin-top:2px"></div>
+      </div>
+      <button class="modal-close" onclick="closeDayModal()">✕</button>
+    </div>
+    <div id="day-modal-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;padding:4px 2px"></div>
+    <div style="margin-top:20px">
+      <button class="btn btn-primary" onclick="closeDayModal();setTimeout(()=>openEventModal(window.dayModalIso),250)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo evento
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-event" onclick="if(event.target===this)closeEventModal()">
   <div class="modal" style="max-width:480px">
     <div class="modal-head">
@@ -2296,21 +2316,72 @@
       cellDate.setDate(startDay.getDate() + i)
       const isToday = cellDate.toDateString() === today.toDateString()
       const isOther = cellDate.getMonth() !== month
+      const isoStr = cellDate.toISOString()
+      const dayNumStyle = !isOther ? 'cursor:pointer' : ''
       const dayNum = isToday
-        ? `<div class="cal-month-day today-m">${cellDate.getDate()}</div>`
-        : `<div class="cal-month-day ${isOther?'other-m':''}">${cellDate.getDate()}</div>`
+        ? `<div class="cal-month-day today-m" onclick="event.stopPropagation();openDayModal('${isoStr}')" style="cursor:pointer">${cellDate.getDate()}</div>`
+        : `<div class="cal-month-day ${isOther?'other-m':''}" onclick="event.stopPropagation();openDayModal('${isoStr}')" style="${dayNumStyle}">${cellDate.getDate()}</div>`
 
       const dayEvents = allEvents.filter(e => new Date(e.fecha_inicio).toDateString() === cellDate.toDateString())
       const eventsHTML = dayEvents.slice(0,3).map(e =>
         `<div class="cal-month-event" style="background:${e.color}22;color:${e.color}" onclick="openEventDetail('${e.id}')">${e.titulo}</div>`
       ).join('')
-      const more = dayEvents.length > 3 ? `<div style="font-size:9px;color:var(--ink3);font-weight:700">+${dayEvents.length-3} más</div>` : ''
+      const more = dayEvents.length > 3 ? `<div style="font-size:9px;color:var(--ink3);font-weight:700;cursor:pointer;padding:2px 4px" onclick="event.stopPropagation();openDayModal('${isoStr}')">+${dayEvents.length-3} más</div>` : ''
 
-      html += `<div class="cal-month-cell" style="${isOther?'background:#FAFBFC':''}" onclick="handleMonthCellClick(event, '${cellDate.toISOString()}')">${dayNum}${eventsHTML}${more}</div>`
+      html += `<div class="cal-month-cell" style="${isOther?'background:#FAFBFC':''}" onclick="handleMonthCellClick(event, '${isoStr}')">${dayNum}${eventsHTML}${more}</div>`
     }
 
     html += `</div>`
     grid.innerHTML = html
+  }
+
+  window.dayModalIso = ''
+
+  window.openDayModal = function(isoDate) {
+    const date = new Date(isoDate)
+    const allEvents = getAllEvents()
+    const dayEvents = allEvents.filter(e => new Date(e.fecha_inicio).toDateString() === date.toDateString())
+
+    const DAYS_FULL = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
+    const MONTHS_FULL = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+    document.getElementById('day-modal-title').textContent =
+      `${DAYS_FULL[date.getDay()]} ${date.getDate()}`
+    document.getElementById('day-modal-sub').textContent =
+      `${MONTHS_FULL[date.getMonth()]} ${date.getFullYear()}`
+    window.dayModalIso = date.toISOString().slice(0, 16).replace('T', 'T').slice(0, 16)
+
+    const list = document.getElementById('day-modal-list')
+    if (dayEvents.length === 0) {
+      list.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--ink3);font-size:13px">Sin eventos este día</div>`
+    } else {
+      list.innerHTML = dayEvents.map(e => {
+        const start = new Date(e.fecha_inicio)
+        const timeStr = start.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
+        const isPiece = e.id.startsWith('piece-')
+        const icon = isPiece
+          ? `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`
+          : `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
+        return `<div onclick="closeDayModal();openEventDetail('${e.id}')" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:${e.color}11;border-left:3px solid ${e.color};cursor:pointer;transition:background .15s" onmouseover="this.style.background='${e.color}22'" onmouseout="this.style.background='${e.color}11'">
+          <div style="color:${e.color};flex-shrink:0">${icon}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${timeStr}${isPiece ? ' · Pieza' : ''}</div>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--ink3);flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>`
+      }).join('')
+    }
+
+    const overlay = document.getElementById('modal-day')
+    overlay.style.display = 'flex'
+    requestAnimationFrame(() => overlay.classList.add('open'))
+  }
+
+  window.closeDayModal = function() {
+    const overlay = document.getElementById('modal-day')
+    overlay.classList.remove('open')
+    setTimeout(() => { overlay.style.display = 'none' }, 220)
   }
 
   window.calShowMoreDay = function(isoDate) {
