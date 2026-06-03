@@ -809,6 +809,12 @@
         <textarea class="form-input form-textarea" id="piece-descripcion" placeholder="Brief de la pieza, referencias, indicaciones..."></textarea>
       </div>
     </div>
+      <div class="form-field">
+        <label class="form-label">Archivo (imagen o video)</label>
+        <input type="file" class="form-input" id="piece-file" accept="image/*,video/*" style="padding:8px">
+        <div id="piece-file-current" style="font-size:11px;color:var(--ink3);margin-top:6px;display:none"></div>
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="tbtn" style="flex:1" onclick="closePieceModal()">Cancelar</button>
       <button class="tbtn primary" style="flex:2" id="btn-save-piece" onclick="savePiece()">
@@ -1459,13 +1465,44 @@
     const col = KANBAN_COLS.find(c => c.id === p.estado)
     const due = formatDate(p.fecha_entrega)
     document.getElementById('piece-detail-title').textContent = p.titulo
+
+    const isImage = p.archivo_url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(p.archivo_url)
+    const isVideo = p.archivo_url && /\.(mp4|mov|webm|avi)$/i.test(p.archivo_url)
+    const filePreview = p.archivo_url
+      ? `<div style="margin-bottom:16px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Archivo</div>
+          ${isImage ? `<img src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:260px;object-fit:contain;background:#000">` : ''}
+          ${isVideo ? `<video controls src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:260px"></video>` : ''}
+          <a href="${p.archivo_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;font-weight:700;color:var(--ink2);text-decoration:none;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm)">⬇ Descargar</a>
+        </div>`
+      : ''
+
+    const approvalLink = p.aprobacion_token
+      ? `<div style="background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;margin-top:12px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Link de aprobación</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:11px;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${window.location.origin}${window.location.pathname.replace('dashboard.html','aprobar.html')}?token=${p.aprobacion_token}</div>
+            <button onclick="copyApprovalLink('${p.aprobacion_token}')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid rgba(142,219,255,.4);background:rgba(142,219,255,.1);color:var(--azul);cursor:pointer;font-family:inherit;white-space:nowrap" id="copy-link-btn">Copiar</button>
+          </div>
+        </div>`
+      : `<button onclick="generateApprovalLink('${p.id}')" style="width:100%;margin-top:12px;padding:10px;border-radius:var(--r);font-size:12px;font-weight:700;border:1.5px dashed var(--border);background:transparent;color:var(--ink3);cursor:pointer;font-family:inherit;transition:all .16s" onmouseover="this.style.borderColor='var(--celeste)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">+ Generar link de aprobación</button>`
+
+    const cambiosAlert = p.aprobacion_comentario
+      ? `<div style="background:#FFF5F5;border:1px solid #FECACA;border-radius:var(--r);padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Cambios solicitados</div>
+          <div style="font-size:12px;color:#DC2626;line-height:1.5">${p.aprobacion_comentario}</div>
+        </div>`
+      : ''
+
     document.getElementById('piece-detail-body').innerHTML = `
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px">
+      ${cambiosAlert}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
         <span style="font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;background:${col?.color}22;color:${col?.color}">${col?.name||p.estado}</span>
         ${p.tipo ? `<span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:var(--bg);color:var(--ink2);border:1px solid var(--border)">${p.tipo}</span>` : ''}
         ${due ? `<span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:${due.overdue?'#FEF2F2':'var(--bg)'};color:${due.overdue?'var(--danger)':'var(--ink2)'}">${due.text}</span>` : ''}
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      ${filePreview}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cliente</div>
           <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.clients?.nombre||'—'}</div>
@@ -1475,7 +1512,8 @@
           <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—'}</div>
         </div>
       </div>
-      ${p.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap">${p.descripcion}</div></div>` : ''}
+      ${p.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:12px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap">${p.descripcion}</div></div>` : ''}
+      ${approvalLink}
     `
     document.getElementById('modal-piece-detail').classList.add('show')
   }
@@ -1511,6 +1549,14 @@
     document.getElementById('piece-fecha').value = p?.fecha_entrega || ''
     document.getElementById('piece-descripcion').value = p?.descripcion || ''
     document.getElementById('piece-error').classList.remove('show')
+    document.getElementById('piece-file').value = ''
+    const currentFile = document.getElementById('piece-file-current')
+    if (p?.archivo_nombre) {
+      currentFile.textContent = `Archivo actual: ${p.archivo_nombre}`
+      currentFile.style.display = 'block'
+    } else {
+      currentFile.style.display = 'none'
+    }
 
     // Populate clients
     const cs = document.getElementById('piece-client')
@@ -1552,6 +1598,23 @@
       agency_id: agencyId,
     }
 
+    // Handle file upload
+    const fileInput = document.getElementById('piece-file')
+    const file = fileInput.files[0]
+    if (file) {
+      btnText.textContent = 'Subiendo archivo...'
+      const ext = file.name.split('.').pop()
+      const path = `${agencyId}/${Date.now()}.${ext}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('pieces')
+        .upload(path, file, { upsert: true })
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
+        payload.archivo_url = urlData.publicUrl
+        payload.archivo_nombre = file.name
+      }
+    }
+
     let error
     if (id) {
       ({ error } = await supabase.from('content_pieces').update(payload).eq('id', id))
@@ -1565,6 +1628,29 @@
     closePieceModal()
     showToast(id ? '✓ Pieza actualizada' : '✓ Pieza creada')
     await renderContenido()
+  }
+
+
+  // ── Approval link ──────────────────────────────────────
+  window.generateApprovalLink = async function(pieceId) {
+    const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
+    const { error } = await supabase
+      .from('content_pieces')
+      .update({ aprobacion_token: token, estado: 'aprobacion' })
+      .eq('id', pieceId)
+    if (!error) {
+      showToast('✓ Link generado')
+      await loadPieces()
+      openPieceDetail(pieceId)
+    }
+  }
+
+  window.copyApprovalLink = function(token) {
+    const url = `${window.location.origin}${window.location.pathname.replace('dashboard.html','aprobar.html')}?token=${token}`
+    navigator.clipboard.writeText(url)
+    const btn = document.getElementById('copy-link-btn')
+    if (btn) { btn.textContent = '¡Copiado!'; setTimeout(() => btn.textContent = 'Copiar', 2000) }
+    showToast('✓ Link copiado')
   }
 
   // ── Tasks ─────────────────────────────────────────────
