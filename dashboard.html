@@ -792,6 +792,13 @@
       display: flex; flex-direction: column; justify-content: center;
     }
     .cal-event:hover { opacity: .85; }
+    .cal-event-more {
+      position: absolute; left: 3px; right: 3px;
+      font-size: 10px; font-weight: 800; color: var(--ink3);
+      cursor: pointer; padding: 2px 6px; border-radius: 4px;
+      transition: color var(--t), background var(--t);
+    }
+    .cal-event-more:hover { color: var(--azul); background: var(--celeste-dim); }
     .cal-event-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
     .cal-event-time { font-size: 10px; opacity: .8; margin-top: 2px; }
     .cal-now-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--danger); z-index: 6; }
@@ -2198,35 +2205,35 @@
         bodyHTML += `<div class="cal-now-line" style="top:${top}px"></div>`
       }
 
-      // Events — con detección de colisiones
-      const evMeta = dayEvents.map(e => {
+      // Events — máx 2 visibles, resto en "+X más"
+      const MAX_VISIBLE = 2
+      const visible = dayEvents.slice(0, MAX_VISIBLE)
+      const hidden  = dayEvents.slice(MAX_VISIBLE)
+
+      visible.forEach(e => {
         const start = new Date(e.fecha_inicio)
         const startMins = start.getHours()*60 + start.getMinutes()
         const top = (startMins / 60) * HOUR_H
         const end = e.fecha_fin ? new Date(e.fecha_fin) : new Date(start.getTime() + 60*60*1000)
         const durMins = Math.max((end - start) / 60000, 60)
         const height = Math.max((durMins / 60) * HOUR_H, 44)
-        return { e, top, height, startMins, endMins: startMins + durMins }
-      })
-      const cols = [], colEnd = []
-      evMeta.forEach((em, i) => {
-        let placed = false
-        for (let c = 0; c < colEnd.length; c++) {
-          if (em.startMins >= colEnd[c]) { cols[i] = c; colEnd[c] = em.endMins; placed = true; break }
-        }
-        if (!placed) { cols[i] = colEnd.length; colEnd.push(em.endMins) }
-      })
-      const totalCols = Math.max(colEnd.length, 1)
-      evMeta.forEach(({e, top, height}, i) => {
-        const col = cols[i]
-        const widthPct = 100 / totalCols
-        const leftPct  = col * widthPct
-        const timeStr = new Date(e.fecha_inicio).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-        bodyHTML += `<div class="cal-event" style="top:${top}px;height:${height}px;left:calc(${leftPct}% + 3px);width:calc(${widthPct}% - 6px);right:auto;background:${e.color}22;border-left:3px solid ${e.color};color:${e.color}" onclick="openEventDetail('${e.id}')">
+        const timeStr = start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+        bodyHTML += `<div class="cal-event" style="top:${top}px;height:${height}px;background:${e.color}22;border-left:3px solid ${e.color};color:${e.color}" onclick="openEventDetail('${e.id}')">
           <div class="cal-event-title">${e.titulo}</div>
           <div class="cal-event-time">${timeStr}</div>
         </div>`
       })
+
+      if (hidden.length > 0) {
+        // Posicionar el "+X más" debajo del último evento visible
+        const lastE = visible[visible.length - 1]
+        const lastStart = new Date(lastE.fecha_inicio)
+        const lastMins = lastStart.getHours()*60 + lastStart.getMinutes()
+        const lastEnd = lastE.fecha_fin ? new Date(lastE.fecha_fin) : new Date(lastStart.getTime() + 60*60*1000)
+        const lastDur = Math.max((lastEnd - lastStart) / 60000, 60)
+        const moreTop = ((lastMins + lastDur) / 60) * HOUR_H + 4
+        bodyHTML += `<div class="cal-event-more" style="top:${moreTop}px" onclick="calShowMoreDay('${day.toISOString()}')">+${hidden.length} más</div>`
+      }
 
       bodyHTML += `</div>`
     })
@@ -2280,6 +2287,14 @@
 
     html += `</div>`
     grid.innerHTML = html
+  }
+
+  window.calShowMoreDay = function(isoDate) {
+    calDate = new Date(isoDate)
+    calView = 'mes'
+    document.getElementById('cal-btn-semana').classList.remove('active')
+    document.getElementById('cal-btn-mes').classList.add('active')
+    renderMonth()
   }
 
   window.handleMonthCellClick = function(e, dateStr) {
