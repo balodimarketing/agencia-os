@@ -1782,7 +1782,6 @@
       const { data } = await supabase
         .from('content_tasks')
         .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
-        .eq('agency_id', agencyId)
         .eq('asignado_a', myMemberData.id)
         .order('created_at', { ascending: false })
       tasks = data || []
