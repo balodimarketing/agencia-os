@@ -2496,26 +2496,41 @@
     const unscheduled = calPublishedPieces.filter(p => !p.fecha_publicacion)
     const scheduled = calPublishedPieces.filter(p => p.fecha_publicacion)
 
-    let html = ''
-
     if (unscheduled.length === 0 && scheduled.length === 0) {
-      html = `<div style="text-align:center;padding:40px 20px;color:var(--ink3)">
+      list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ink3)">
         <div style="font-size:32px;margin-bottom:12px">✅</div>
         <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">Todo programado</div>
         <div style="font-size:12px;line-height:1.5">No hay piezas pendientes de programar.</div>
       </div>`
-    } else {
-      if (unscheduled.length > 0) {
-        html += `<div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;padding:4px 2px 8px">Sin fecha (${unscheduled.length})</div>`
-        html += unscheduled.map(p => drawerPieceCard(p)).join('')
-      }
-      if (scheduled.length > 0) {
-        html += `<div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;padding:12px 2px 8px;border-top:1px solid var(--border);margin-top:8px">Programadas (${scheduled.length})</div>`
-        html += scheduled.map(p => drawerPieceCard(p)).join('')
-      }
+      return
     }
 
-    list.innerHTML = html
+    // Clear and rebuild DOM directly to avoid stacking issues
+    list.innerHTML = ''
+
+    if (unscheduled.length > 0) {
+      const label = document.createElement('div')
+      label.style.cssText = 'font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;padding:4px 2px 8px'
+      label.textContent = `Sin fecha (${unscheduled.length})`
+      list.appendChild(label)
+      unscheduled.forEach(p => {
+        const div = document.createElement('div')
+        div.innerHTML = drawerPieceCard(p)
+        list.appendChild(div.firstElementChild)
+      })
+    }
+
+    if (scheduled.length > 0) {
+      const sep = document.createElement('div')
+      sep.style.cssText = 'font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;padding:12px 2px 8px;border-top:1px solid var(--border);margin-top:8px'
+      sep.textContent = `Programadas (${scheduled.length})`
+      list.appendChild(sep)
+      scheduled.forEach(p => {
+        const div = document.createElement('div')
+        div.innerHTML = drawerPieceCard(p)
+        list.appendChild(div.firstElementChild)
+      })
+    }
   }
 
   function drawerPieceCard(p) {
