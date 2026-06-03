@@ -793,12 +793,18 @@
     }
     .cal-event:hover { opacity: .85; }
     .cal-event-more {
-      position: absolute; left: 3px; right: 3px;
-      font-size: 10px; font-weight: 800; color: var(--ink3);
-      cursor: pointer; padding: 2px 6px; border-radius: 4px;
-      transition: color var(--t), background var(--t);
+      position: absolute; left: 3px; right: auto;
+      cursor: pointer;
     }
-    .cal-event-more:hover { color: var(--azul); background: var(--celeste-dim); }
+    .cal-event-more span {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--azul); color: #fff;
+      font-size: 10px; font-weight: 800;
+      min-width: 22px; height: 22px; padding: 0 7px;
+      border-radius: 11px;
+      transition: opacity var(--t);
+    }
+    .cal-event-more:hover span { opacity: .8; }
     .cal-event-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
     .cal-event-time { font-size: 10px; opacity: .8; margin-top: 2px; }
     .cal-now-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--danger); z-index: 6; }
@@ -2205,8 +2211,8 @@
         bodyHTML += `<div class="cal-now-line" style="top:${top}px"></div>`
       }
 
-      // Events — máx 2 visibles, resto en "+X más"
-      const MAX_VISIBLE = 2
+      // Events — solo el primero visible, resto en badge "+X"
+      const MAX_VISIBLE = 1
       const visible = dayEvents.slice(0, MAX_VISIBLE)
       const hidden  = dayEvents.slice(MAX_VISIBLE)
 
@@ -2232,7 +2238,7 @@
         const lastEnd = lastE.fecha_fin ? new Date(lastE.fecha_fin) : new Date(lastStart.getTime() + 60*60*1000)
         const lastDur = Math.max((lastEnd - lastStart) / 60000, 60)
         const moreTop = ((lastMins + lastDur) / 60) * HOUR_H + 4
-        bodyHTML += `<div class="cal-event-more" style="top:${moreTop}px" onclick="calShowMoreDay('${day.toISOString()}')">+${hidden.length} más</div>`
+        bodyHTML += `<div class="cal-event-more" style="top:${moreTop}px" onclick="calShowMoreDay('${day.toISOString()}')"><span>+${hidden.length}</span></div>`
       }
 
       bodyHTML += `</div>`
