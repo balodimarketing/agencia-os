@@ -992,6 +992,24 @@
         <label class="form-label">Brief</label>
         <textarea class="form-input form-textarea" id="client-brief" placeholder="Describí la marca, su tono de comunicación, objetivos, público objetivo..."></textarea>
       </div>
+
+      <div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Contacto</div>
+        <div class="form-field" style="margin-bottom:10px">
+          <label class="form-label">Nombre</label>
+          <input type="text" class="form-input" id="client-contacto-nombre" placeholder="Nombre del contacto">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-field" style="margin-bottom:0">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="client-contacto-email" placeholder="contacto@empresa.com">
+          </div>
+          <div class="form-field" style="margin-bottom:0">
+            <label class="form-label">Teléfono</label>
+            <input type="tel" class="form-input" id="client-contacto-telefono" placeholder="+54 11 1234 5678">
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="tbtn" style="flex:1" onclick="closeClientModal()">Cancelar</button>
@@ -1285,6 +1303,7 @@
     </div>
     <div class="modal-footer">
       <button class="tbtn" style="flex:1" onclick="closeTaskModal()">Cancelar</button>
+      <button class="tbtn danger" id="btn-delete-task" style="display:none" onclick="deleteTask()"><i class="ti ti-trash"></i></button>
       <button class="tbtn primary" style="flex:2" id="btn-save-task" onclick="saveTask()">
         <span id="btn-save-task-text">Guardar tarea</span>
         <div class="spinner" id="task-spinner"></div>
@@ -1736,6 +1755,9 @@
     document.getElementById('client-industria').value = c?.industria || ''
     document.getElementById('client-estado').value = c?.estado || 'activo'
     document.getElementById('client-brief').value = c?.brief || ''
+    document.getElementById('client-contacto-nombre').value = c?.contacto_nombre || ''
+    document.getElementById('client-contacto-email').value = c?.contacto_email || ''
+    document.getElementById('client-contacto-telefono').value = c?.contacto_telefono || ''
     document.getElementById('modal-error').classList.remove('show')
     // Redes
     ;['ig','fb','tt','li','yt','tw'].forEach(r => {
@@ -1776,7 +1798,10 @@
     const btnText = document.getElementById('btn-save-text')
     btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
 
-    const payload = { nombre, industria: industria || null, estado, brief: brief || null, redes, agency_id: agencyId }
+    const contacto_nombre = document.getElementById('client-contacto-nombre').value.trim()
+    const contacto_email = document.getElementById('client-contacto-email').value.trim()
+    const contacto_telefono = document.getElementById('client-contacto-telefono').value.trim()
+    const payload = { nombre, industria: industria || null, estado, brief: brief || null, redes, agency_id: agencyId, contacto_nombre: contacto_nombre||null, contacto_email: contacto_email||null, contacto_telefono: contacto_telefono||null }
 
     let error
     if (id) {
@@ -1952,7 +1977,7 @@
   async function loadPublishedPieces() {
     const { data } = await supabase
       .from('content_pieces')
-      .select('id, titulo, clients(nombre), fecha_publicacion, estado')
+      .select('id, titulo, clients(nombre), fecha_publicacion, estado, archivo_url')
       .eq('agency_id', agencyId)
       .eq('estado', 'publicado')
       .order('created_at', { ascending: false })
@@ -3298,6 +3323,7 @@
     const t = id ? tasks.find(x => x.id === id) : null
     document.getElementById('modal-task-title').textContent = t ? 'Editar tarea' : 'Nueva tarea'
     document.getElementById('task-id').value = t?.id || ''
+    document.getElementById('btn-delete-task').style.display = t ? 'flex' : 'none'
     document.getElementById('task-titulo').value = t?.titulo || ''
     document.getElementById('task-estado').value = t?.estado || 'pendiente'
     document.getElementById('task-fecha').value = t?.fecha_entrega || ''
@@ -3318,6 +3344,15 @@
   }
 
   window.closeTaskModal = function() { document.getElementById('modal-task').classList.remove('show') }
+
+  window.deleteTask = async function() {
+    const id = document.getElementById('task-id').value
+    if (!id) return
+    await supabase.from('content_tasks').delete().eq('id', id)
+    closeTaskModal()
+    showToast('Tarea eliminada')
+    await loadTasks(); renderTasks(); renderContenidoPanel()
+  }
 
   window.saveTask = async function() {
     const id = document.getElementById('task-id').value
