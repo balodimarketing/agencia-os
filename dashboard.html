@@ -2098,14 +2098,14 @@
     const cs = document.getElementById('piece-client')
     cs.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${p?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
 
-    // Show modal first, then populate responsables
+    // Show modal
     document.getElementById('modal-piece').classList.add('show')
     setTimeout(() => document.getElementById('piece-titulo').focus(), 100)
 
-    // Populate responsables multiselect after modal is visible
+    // Load team and store assigned IDs for lazy dropdown render
     if (teamMembers.length === 0) await loadTeam()
-    const assignedIds = (p?.piece_responsables || []).map(r => r.agency_member_id)
-    renderMsDropdown(assignedIds)
+    msSelected = new Set((p?.piece_responsables || []).map(r => r.agency_member_id))
+    updateMsTriggerText()
   }
 
   window.closePieceModal = function() {
@@ -2209,6 +2209,8 @@
       dropdown.classList.remove('open')
       trigger.classList.remove('open')
     } else {
+      // Render on first open (lazy)
+      renderMsDropdown([...msSelected])
       dropdown.classList.add('open')
       trigger.classList.add('open')
     }
