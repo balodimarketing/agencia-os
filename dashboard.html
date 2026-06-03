@@ -1642,13 +1642,6 @@
         </div>
       </div>
 
-      <div class="form-field" style="margin-top:12px">
-        <label class="form-label">Cliente vinculado</label>
-        <select class="form-input form-select" id="crm-client">
-          <option value="">Sin vincular</option>
-        </select>
-      </div>
-
       <div class="form-field">
         <label class="form-label">Notas</label>
         <textarea class="form-input form-textarea" id="crm-notas" style="min-height:72px" placeholder="Información relevante del contacto..."></textarea>
@@ -5011,7 +5004,7 @@
           </div>
           ${c.proximo_contacto ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Próximo contacto</div><div style="font-size:13px;font-weight:600;color:${overdue?'var(--danger)':'var(--ink)'}">${overdue?'⚡ ':''} ${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'long'})}</div></div>` : ''}
           ${c.fecha_cierre_esperada ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cierre esperado</div><div style="font-size:13px;font-weight:600;color:var(--ink)">${new Date(c.fecha_cierre_esperada).toLocaleDateString('es-AR',{day:'numeric',month:'long'})}</div></div>` : ''}
-          ${c.clients?.nombre ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cliente vinculado</div><div style="font-size:13px;font-weight:600;color:var(--ink)">${c.clients.nombre}</div></div>` : ''}
+
         </div>
         ${c.notas ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Notas</div><div style="font-size:13px;color:var(--ink2);line-height:1.6">${c.notas}</div></div>` : ''}
       </div>
@@ -5043,12 +5036,7 @@
     })
 
     // Poblar clientes
-    const clientSel = document.getElementById('crm-client')
-    clientSel.innerHTML = '<option value="">Sin vincular</option>'
-    if (!clients.length) await loadClients()
-    clients.forEach(c => clientSel.innerHTML += `<option value="${c.id}">${c.nombre}</option>`)
-
-    if (id) {
+if (id) {
       const c = crmContacts.find(x => x.id === id)
       if (c) {
         document.getElementById('crm-nombre').value = c.nombre || ''
@@ -5061,8 +5049,7 @@
         document.getElementById('crm-fecha-cierre').value = c.fecha_cierre_esperada || ''
         document.getElementById('crm-proximo-contacto').value = c.proximo_contacto || ''
         document.getElementById('crm-responsable').value = c.responsable_id || ''
-        document.getElementById('crm-client').value = c.client_id || ''
-        document.getElementById('crm-notas').value = c.notas || ''
+          document.getElementById('crm-notas').value = c.notas || ''
       }
     } else {
       document.getElementById('crm-nombre').value = ''
@@ -5075,7 +5062,6 @@
       document.getElementById('crm-fecha-cierre').value = ''
       document.getElementById('crm-proximo-contacto').value = ''
       document.getElementById('crm-responsable').value = ''
-      document.getElementById('crm-client').value = ''
       document.getElementById('crm-notas').value = ''
     }
     document.getElementById('modal-crm').classList.add('show')
@@ -5107,7 +5093,6 @@
       fecha_cierre_esperada: document.getElementById('crm-fecha-cierre').value || null,
       proximo_contacto: document.getElementById('crm-proximo-contacto').value || null,
       responsable_id: document.getElementById('crm-responsable').value || null,
-      client_id: document.getElementById('crm-client').value || null,
       notas: document.getElementById('crm-notas').value.trim() || null,
       agency_id: agencyId,
     }
