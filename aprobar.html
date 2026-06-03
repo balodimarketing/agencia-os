@@ -362,18 +362,25 @@
     // Get piece data for notifications
     const { data: piece } = await supabase
       .from('content_pieces')
-      .select('titulo, agency_id, responsable_id')
+      .select('titulo, agency_id')
       .eq('id', pieceId)
       .single()
 
-    let responsableUserId = null
-    if (piece?.responsable_id) {
-      const { data: rm } = await supabase
-        .from('agency_members')
-        .select('user_id')
-        .eq('id', piece.responsable_id)
-        .maybeSingle()
-      responsableUserId = rm?.user_id
+    // Get all responsables from piece_responsables
+    let responsableUserIds = []
+    if (piece) {
+      const { data: prs } = await supabase
+        .from('piece_responsables')
+        .select('agency_member_id')
+        .eq('piece_id', pieceId)
+      if (prs && prs.length > 0) {
+        const memberIds = prs.map(r => r.agency_member_id)
+        const { data: members } = await supabase
+          .from('agency_members')
+          .select('user_id')
+          .in('id', memberIds)
+        responsableUserIds = (members || []).map(m => m.user_id).filter(Boolean)
+      }
     }
 
     await supabase.from('content_pieces').update({
@@ -406,11 +413,11 @@
         })
       }
 
-      // Notify responsable if different from owner
-      if (responsableUserId && responsableUserId !== owner?.owner_id) {
+      // Notify all responsables
+      for (const uid of responsableUserIds) {
         await supabase.from('notifications').insert({
           agency_id: agencyId,
-          user_id: responsableUserId,
+          user_id: uid,
           tipo: 'pieza_cambios',
           titulo: '🔄 Te pidieron cambios',
           mensaje: `${titulo}: "${comentario}"`,
