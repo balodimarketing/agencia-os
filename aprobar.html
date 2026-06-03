@@ -251,22 +251,21 @@
     btn.disabled = true; document.getElementById('btn-cambios').disabled = true
     spinner.style.display = 'block'; btnText.style.display = 'none'
 
-    // Get piece data before deleting
+    // Get piece data
     const { data: piece } = await supabase
       .from('content_pieces')
-      .select('titulo, agency_id, responsable_id')
+      .select('titulo, agency_id')
       .eq('id', pieceId)
       .single()
 
-    // Get responsable user_id separately
-    let responsableUserId = null
-    if (piece?.responsable_id) {
-      const { data: rm } = await supabase
-        .from('agency_members')
-        .select('user_id')
-        .eq('id', piece.responsable_id)
-        .maybeSingle()
-      responsableUserId = rm?.user_id
+    // Get all responsables from piece_responsables
+    let responsableUserIds = []
+    if (piece) {
+      const { data: prs } = await supabase
+        .from('piece_responsables')
+        .select('agency_members(user_id)')
+        .eq('piece_id', pieceId)
+      responsableUserIds = (prs || []).map(r => r.agency_members?.user_id).filter(Boolean)
     }
 
     // Delete file from storage if exists
@@ -307,16 +306,18 @@
       }
 
       // Notify responsable if different from owner
-      if (responsableUserId && responsableUserId !== owner?.owner_id) {
-        await supabase.from('notifications').insert({
-          agency_id: agencyId,
-          user_id: responsableUserId,
-          tipo: 'pieza_aprobada',
-          titulo: '✅ Tu pieza fue aprobada',
-          mensaje: titulo,
-          link_modulo: 'contenido',
-          link_id: pieceId
-        })
+      for (const uid of responsableUserIds) {
+        if (uid !== owner?.owner_id) {
+          await supabase.from('notifications').insert({
+            agency_id: agencyId,
+            user_id: uid,
+            tipo: 'pieza_aprobada',
+            titulo: '✅ Tu pieza fue aprobada',
+            mensaje: titulo,
+            link_modulo: 'contenido',
+            link_id: pieceId
+          })
+        }
       }
     }
 
