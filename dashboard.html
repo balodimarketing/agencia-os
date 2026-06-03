@@ -1331,7 +1331,7 @@
   async function loadPieces() {
     const { data } = await supabase
       .from('content_pieces')
-      .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido)')
+      .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
       .eq('agency_id', agencyId)
       .order('created_at', { ascending: false })
     pieces = data || []
@@ -1391,8 +1391,9 @@
         : colPieces.map(p => {
             const due = formatDate(p.fecha_entrega)
             const clientName = p.clients?.nombre || '—'
-            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')">
+            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario?'border-left-color:var(--danger)':''}">
               <div class="k-card-title">${p.titulo}</div>
+              ${p.aprobacion_comentario ? `<div style="font-size:10px;color:var(--danger);font-weight:600;margin-bottom:6px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">💬 ${p.aprobacion_comentario}</div>` : ''}
               <div class="k-card-meta">
                 <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
                 ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
@@ -1471,7 +1472,7 @@
     const filePreview = p.archivo_url
       ? `<div style="margin-bottom:16px">
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Archivo</div>
-          ${isImage ? `<img src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:260px;object-fit:contain;background:#000">` : ''}
+          ${isImage ? `<img src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:280px;object-fit:cover;display:block">` : ''}
           ${isVideo ? `<video controls src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:260px"></video>` : ''}
           <a href="${p.archivo_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;font-weight:700;color:var(--ink2);text-decoration:none;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm)">⬇ Descargar</a>
         </div>`
