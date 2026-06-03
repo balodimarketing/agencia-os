@@ -987,6 +987,9 @@
           </button>
         </div>
 
+        <!-- Métricas -->
+        <div id="crm-metrics" style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0"></div>
+
         <!-- Kanban pipeline -->
         <div id="crm-kanban" style="display:flex;gap:0;overflow-x:auto;flex:1;padding:20px;gap:14px;align-items:flex-start"></div>
       </div>
@@ -4840,9 +4843,47 @@
     crmContacts = data || []
   }
 
+  function renderCrmMetrics() {
+    const el = document.getElementById('crm-metrics')
+    if (!el) return
+
+    const activos = crmContacts.filter(c => !['cerrado_ganado','cerrado_perdido','inactivo'].includes(c.pipeline_stage))
+    const cerradosGanados = crmContacts.filter(c => c.pipeline_stage === 'cerrado_ganado')
+    const cerrados = crmContacts.filter(c => ['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage))
+    const valorTotal = activos.reduce((a, c) => a + (c.valor_deal || 0), 0)
+    const tasaCierre = cerrados.length > 0 ? Math.round((cerradosGanados.length / cerrados.length) * 100) : 0
+
+    // Deal más cercano a cerrar
+    const hoy = new Date()
+    const proximosDeal = activos
+      .filter(c => c.fecha_cierre_esperada)
+      .sort((a, b) => new Date(a.fecha_cierre_esperada) - new Date(b.fecha_cierre_esperada))
+    const proximoDeal = proximosDeal[0]
+    const proximoLabel = proximoDeal
+      ? `${proximoDeal.nombre} · ${new Date(proximoDeal.fecha_cierre_esperada).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}`
+      : '—'
+
+    const metric = (icon, label, value, sub = '') => `
+      <div style="flex:1;min-width:140px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <i class="ti ${icon}" style="font-size:13px;color:var(--ink3)"></i>
+          <span style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">${label}</span>
+        </div>
+        <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${value}</div>
+        ${sub ? `<div style="font-size:10px;color:var(--ink3);margin-top:2px">${sub}</div>` : ''}
+      </div>`
+
+    el.innerHTML =
+      metric('ti-currency-dollar', 'Pipeline', valorTotal > 0 ? `$${Number(valorTotal).toLocaleString('es-AR')}` : '—', 'valor total activo') +
+      metric('ti-briefcase', 'Deals activos', activos.length, 'en progreso') +
+      metric('ti-trophy', 'Tasa de cierre', cerrados.length > 0 ? `${tasaCierre}%` : '—', `${cerradosGanados.length} de ${cerrados.length} cerrados`) +
+      metric('ti-clock', 'Cierre más próximo', proximoLabel, proximoDeal?.empresa || '')
+  }
+
   let crmDragId = null
 
   function renderCrmPipeline() {
+    renderCrmMetrics()
     const kanban = document.getElementById('crm-kanban')
     if (!kanban) return
     kanban.innerHTML = CRM_STAGES.map(stage => {
