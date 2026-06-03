@@ -446,6 +446,190 @@
     .ts-en-progreso{ background: #E6F1FB; color: #0C447C; }
     .ts-revision   { background: #FAEEDA; color: #633806; }
     .ts-completada { background: #E6FFE6; color: #1A6B28; }
+
+    /* ══════════════════════════
+       NOTIFICACIONES
+    ══════════════════════════ */
+    .notif-btn {
+      position: relative;
+    }
+
+    .notif-dot {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 8px; height: 8px;
+      background: var(--danger);
+      border-radius: 50%;
+      border: 2px solid var(--azul);
+      display: none;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    .notif-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 360px;
+      height: 100vh;
+      background: var(--white);
+      border-left: 1px solid var(--border);
+      box-shadow: -8px 0 32px rgba(0,0,0,.08);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .notif-panel.open { transform: translateX(0); }
+
+    .notif-panel-head {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .notif-panel-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -.3px;
+    }
+
+    .notif-panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notif-mark-all {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink3);
+      cursor: pointer;
+      transition: color var(--t);
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    .notif-mark-all:hover { color: var(--azul); }
+
+    .notif-close {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: var(--bg);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink3);
+      font-size: 16px;
+      transition: all var(--t);
+    }
+
+    .notif-close:hover { background: var(--border); color: var(--ink); }
+
+    .notif-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .notif-list::-webkit-scrollbar { width: 4px; }
+    .notif-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .notif-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: background var(--t);
+      position: relative;
+      margin-bottom: 2px;
+    }
+
+    .notif-item:hover { background: var(--bg); }
+    .notif-item.unread { background: #EBF5FF; }
+    .notif-item.unread:hover { background: #DAEEFF; }
+
+    .notif-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .notif-body { flex: 1; min-width: 0; }
+
+    .notif-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+
+    .notif-msg {
+      font-size: 11px;
+      color: var(--ink3);
+      line-height: 1.4;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .notif-time {
+      font-size: 10px;
+      color: var(--ink3);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .notif-unread-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--celeste);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .notif-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 10px;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .notif-empty-icon { font-size: 36px; }
+    .notif-empty-title { font-size: 14px; font-weight: 800; color: var(--ink); }
+    .notif-empty-sub { font-size: 12px; color: var(--ink3); line-height: 1.5; }
+
+    .notif-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 49;
+      display: none;
+    }
+
+    .notif-overlay.open { display: block; }
   </style>
 </head>
 <body>
@@ -464,6 +648,10 @@
     <div class="rail-divider"></div>
     <div class="rail-btn" data-module="crm" data-tip="CRM" onclick="switchModule(this)"><i class="ti ti-address-book"></i></div>
     <div class="rail-bottom">
+      <div class="rail-btn notif-btn" data-tip="Notificaciones" onclick="toggleNotifPanel()" id="notif-rail-btn">
+        <i class="ti ti-bell"></i>
+        <div class="notif-dot" id="notif-dot"></div>
+      </div>
       <div class="rail-btn" data-tip="Cerrar sesión" onclick="handleSignOut()"><i class="ti ti-logout"></i></div>
       <div class="rail-av" id="rail-av"></div>
     </div>
@@ -907,6 +1095,27 @@
   </div>
 </div>
 
+<!-- NOTIFICATION OVERLAY -->
+<div class="notif-overlay" id="notif-overlay" onclick="closeNotifPanel()"></div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-panel-head">
+    <div class="notif-panel-title">Notificaciones</div>
+    <div class="notif-panel-actions">
+      <button class="notif-mark-all" onclick="markAllRead()">Marcar todo como leído</button>
+      <button class="notif-close" onclick="closeNotifPanel()"><i class="ti ti-x"></i></button>
+    </div>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div class="notif-empty">
+      <div class="notif-empty-icon">🔔</div>
+      <div class="notif-empty-title">Sin notificaciones</div>
+      <div class="notif-empty-sub">Cuando haya actividad en tu agencia, aparecerá acá.</div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -1253,6 +1462,12 @@
 
     await loadClients()
     await loadInviteCode()
+    currentUserId = session.user.id
+
+    // Start real-time notifications
+    subscribeToNotifications()
+    await loadNotifications()
+    subscribeToContentChanges()
 
     // Inicializar panel de inicio
     document.getElementById('panel-body').innerHTML = ''
@@ -1292,6 +1507,164 @@
     setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied') }, 2000)
   }
 
+
+
+  // ══════════════════════════════════════
+  // NOTIFICACIONES
+  // ══════════════════════════════════════
+
+  let notifications = []
+  let notifSubscription = null
+  let currentUserId = null
+
+  const NOTIF_ICONS = {
+    tarea_asignada:   { icon: '📋', bg: '#E6F1FB' },
+    tarea_vencida:    { icon: '⏰', bg: '#FAEEDA' },
+    pieza_aprobacion: { icon: '👀', bg: '#E6F1FB' },
+    pieza_aprobada:   { icon: '✅', bg: '#E6FFE6' },
+    pieza_cambios:    { icon: '🔄', bg: '#FEF2F2' },
+    solicitud_equipo: { icon: '👤', bg: '#EEEDFE' },
+    default:          { icon: '🔔', bg: '#F5F5F5' },
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
+    if (diff < 60) return 'ahora'
+    if (diff < 3600) return `hace ${Math.floor(diff/60)}min`
+    if (diff < 86400) return `hace ${Math.floor(diff/3600)}h`
+    return `hace ${Math.floor(diff/86400)}d`
+  }
+
+  async function loadNotifications() {
+    if (!agencyId || !currentUserId) return
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', currentUserId)
+      .eq('agency_id', agencyId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    notifications = data || []
+    renderNotifications()
+    updateNotifDot()
+  }
+
+  function renderNotifications() {
+    const list = document.getElementById('notif-list')
+    if (notifications.length === 0) {
+      list.innerHTML = `<div class="notif-empty">
+        <div class="notif-empty-icon">🔔</div>
+        <div class="notif-empty-title">Sin notificaciones</div>
+        <div class="notif-empty-sub">Cuando haya actividad en tu agencia, aparecerá acá.</div>
+      </div>`
+      return
+    }
+    list.innerHTML = notifications.map(n => {
+      const meta = NOTIF_ICONS[n.tipo] || NOTIF_ICONS.default
+      return `<div class="notif-item ${n.leida ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.link_modulo||''}')">
+        <div class="notif-icon" style="background:${meta.bg}">${meta.icon}</div>
+        <div class="notif-body">
+          <div class="notif-title">${n.titulo}</div>
+          ${n.mensaje ? `<div class="notif-msg">${n.mensaje}</div>` : ''}
+          <div class="notif-time">${timeAgo(n.created_at)}</div>
+        </div>
+        ${!n.leida ? '<div class="notif-unread-dot"></div>' : ''}
+      </div>`
+    }).join('')
+  }
+
+  function updateNotifDot() {
+    const unread = notifications.filter(n => !n.leida).length
+    const dot = document.getElementById('notif-dot')
+    dot.style.display = unread > 0 ? 'block' : 'none'
+  }
+
+  window.toggleNotifPanel = function() {
+    const panel = document.getElementById('notif-panel')
+    const overlay = document.getElementById('notif-overlay')
+    const isOpen = panel.classList.contains('open')
+    if (isOpen) {
+      panel.classList.remove('open')
+      overlay.classList.remove('open')
+    } else {
+      panel.classList.add('open')
+      overlay.classList.add('open')
+      loadNotifications()
+    }
+  }
+
+  window.closeNotifPanel = function() {
+    document.getElementById('notif-panel').classList.remove('open')
+    document.getElementById('notif-overlay').classList.remove('open')
+  }
+
+  window.handleNotifClick = async function(id, modulo) {
+    // Mark as read
+    await supabase.from('notifications').update({ leida: true }).eq('id', id)
+    notifications = notifications.map(n => n.id === id ? {...n, leida: true} : n)
+    renderNotifications()
+    updateNotifDot()
+
+    // Navigate to module
+    if (modulo) {
+      const railBtn = document.querySelector(`.rail-btn[data-module="${modulo}"]`)
+      if (railBtn) { closeNotifPanel(); switchModule(railBtn) }
+    }
+  }
+
+  window.markAllRead = async function() {
+    await supabase.from('notifications')
+      .update({ leida: true })
+      .eq('user_id', currentUserId)
+      .eq('agency_id', agencyId)
+    notifications = notifications.map(n => ({...n, leida: true}))
+    renderNotifications()
+    updateNotifDot()
+    showToast('✓ Todo marcado como leído')
+  }
+
+  // ── Create notification helper ────────────────────────
+  async function createNotification(userId, tipo, titulo, mensaje, linkModulo) {
+    await supabase.from('notifications').insert({
+      agency_id: agencyId,
+      user_id: userId,
+      tipo,
+      titulo,
+      mensaje: mensaje || null,
+      link_modulo: linkModulo || null,
+    })
+  }
+
+  // ── Notify all active members ─────────────────────────
+  async function notifyAllMembers(tipo, titulo, mensaje, linkModulo, excludeUserId) {
+    const targets = teamMembers
+      .filter(m => m.user_id !== excludeUserId)
+      .map(m => m.user_id)
+    for (const uid of targets) {
+      await createNotification(uid, tipo, titulo, mensaje, linkModulo)
+    }
+  }
+
+  // ── Real-time subscription ────────────────────────────
+  function subscribeToNotifications() {
+    if (!currentUserId) return
+    notifSubscription = supabase
+      .channel('notifications-' + currentUserId)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${currentUserId}`
+      }, (payload) => {
+        notifications.unshift(payload.new)
+        renderNotifications()
+        updateNotifDot()
+        // Show mini toast
+        const meta = NOTIF_ICONS[payload.new.tipo] || NOTIF_ICONS.default
+        showToast(meta.icon + ' ' + payload.new.titulo)
+      })
+      .subscribe()
+  }
 
   // ══════════════════════════════════════
   // CONTENIDO
@@ -1651,12 +2024,18 @@
 
   window.generateApprovalLink = async function(pieceId) {
     const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
+    const piece = pieces.find(p => p.id === pieceId)
     const { error } = await supabase
       .from('content_pieces')
       .update({ aprobacion_token: token, estado: 'aprobacion' })
       .eq('id', pieceId)
     if (!error) {
       showToast('✓ Link generado')
+      // Notify owner and admins
+      const targets = teamMembers.filter(m => (m.role === 'OWNER' || m.role === 'ADMIN') && m.user_id !== currentUserId)
+      for (const m of targets) {
+        await createNotification(m.user_id, 'pieza_aprobacion', 'Pieza lista para aprobación', piece?.titulo || 'Una pieza', 'contenido')
+      }
       await loadPieces()
       openPieceDetail(pieceId)
     }
@@ -1772,6 +2151,22 @@
     closeTaskModal()
     showToast(id ? '✓ Tarea actualizada' : '✓ Tarea creada')
     await loadTasks(); renderTasks(); renderContenidoPanel()
+
+    // Notify assignee if assigned to someone else
+    const asignadoId = document.getElementById('task-asignado').value
+    if (asignadoId) {
+      const member = teamMembers.find(m => m.id === asignadoId)
+      if (member && member.user_id !== currentUserId) {
+        const taskTitulo = document.getElementById('task-titulo').value.trim()
+        await createNotification(
+          member.user_id,
+          'tarea_asignada',
+          id ? 'Tarea actualizada' : 'Nueva tarea asignada',
+          taskTitulo,
+          'contenido'
+        )
+      }
+    }
   }
 
   // ── Content tab switcher ──────────────────────────────
@@ -1926,7 +2321,12 @@
 
   // ── Approve / Reject ──────────────────────────────────
   window.approveRequest = async function(memberId) {
+    const member = teamMembers.find(m => m.id === memberId) ||
+      (await supabase.from('agency_members').select('user_id').eq('id', memberId).single()).data
     await supabase.from('agency_members').update({ status: 'active' }).eq('id', memberId)
+    if (member?.user_id) {
+      await createNotification(member.user_id, 'solicitud_equipo', '¡Bienvenido al equipo!', 'Tu solicitud fue aprobada.', 'inicio')
+    }
     showToast('✓ Miembro aprobado')
     await renderEquipo()
   }
@@ -2035,7 +2435,38 @@
     await renderEquipo()
   }
 
-  // Escape para cerrar modales
+  // ── Real-time kanban & tasks ─────────────────────────
+  function subscribeToContentChanges() {
+    supabase
+      .channel('content-changes-' + agencyId)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'content_pieces',
+        filter: `agency_id=eq.${agencyId}`
+      }, async () => {
+        if (currentModule === 'contenido') {
+          await loadPieces()
+          renderKanban()
+          renderContenidoPanel()
+        }
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'content_tasks',
+        filter: `agency_id=eq.${agencyId}`
+      }, async () => {
+        if (currentModule === 'contenido') {
+          await loadTasks()
+          renderTasks()
+          renderContenidoPanel()
+        }
+      })
+      .subscribe()
+  }
+
+  // ── Escape para cerrar modales
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeClientModal()
