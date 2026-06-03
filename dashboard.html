@@ -2328,7 +2328,7 @@
       ).join('')
       const more = dayEvents.length > 3 ? `<div data-daymodal style="font-size:9px;color:var(--ink3);font-weight:700;cursor:pointer;padding:2px 4px" onclick="event.stopPropagation();openDayModal('${isoStr}')">+${dayEvents.length-3} más</div>` : ''
 
-      html += `<div class="cal-month-cell" style="${isOther?'background:#FAFBFC':''}" onclick="handleMonthCellClick(event, '${isoStr}')">${dayNum}${eventsHTML}${more}</div>`
+      html += `<div class="cal-month-cell" style="${isOther?'background:#FAFBFC':''}">${dayNum}${eventsHTML}${more}</div>`
     }
 
     html += `</div>`
@@ -2402,15 +2402,7 @@
     }, 200)
   }
 
-  window.handleMonthCellClick = function(e, dateStr) {
-    if (e.target.closest('.cal-month-event')) return
-    if (e.target.closest('.cal-month-day')) return
-    if (e.target.closest('[data-daymodal]')) return
-    // Open new event modal with this date pre-filled
-    const d = new Date(dateStr)
-    d.setHours(9, 0, 0, 0)
-    openEventModal(d.toISOString().slice(0,16))
-  }
+  window.handleMonthCellClick = function() {}
 
   // ── Event detail ──────────────────────────────────────────
   window.openEventDetail = async function(id) {
