@@ -969,8 +969,50 @@
     </div>
 
     <!-- CRM -->
-    <div class="view" id="v-crm">
-      <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">CRM</div><div class="empty-sub">Contactos e historial de clientes. Próximamente.</div></div>
+    <div class="view" id="v-crm" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden">
+
+      <!-- CRM: Vista Pipeline (default) -->
+      <div id="crm-pipeline-view" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
+        <!-- Toolbar -->
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
+          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
+            <div class="cal-view-btn active" id="crm-btn-pipeline" onclick="switchCrmView('pipeline')">Pipeline</div>
+            <div class="cal-view-btn" id="crm-btn-contactos" onclick="switchCrmView('contactos')">Contactos</div>
+          </div>
+          <div style="flex:1"></div>
+          <button class="tbtn primary" onclick="openCrmModal()" style="gap:6px">
+            <i class="ti ti-plus" style="font-size:14px"></i> Nuevo contacto
+          </button>
+        </div>
+
+        <!-- Kanban pipeline -->
+        <div id="crm-kanban" style="display:flex;gap:0;overflow-x:auto;flex:1;padding:20px;gap:14px;align-items:flex-start"></div>
+      </div>
+
+      <!-- CRM: Vista Lista Contactos -->
+      <div id="crm-contactos-view" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
+          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
+            <div class="cal-view-btn" id="crm-btn-pipeline2" onclick="switchCrmView('pipeline')">Pipeline</div>
+            <div class="cal-view-btn active" id="crm-btn-contactos2" onclick="switchCrmView('contactos')">Contactos</div>
+          </div>
+          <input type="text" placeholder="Buscar contacto..." oninput="filterCrmContacts(this.value)" style="flex:1;max-width:280px;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
+          <div style="flex:1"></div>
+          <button class="tbtn primary" onclick="openCrmModal()" style="gap:6px">
+            <i class="ti ti-plus" style="font-size:14px"></i> Nuevo contacto
+          </button>
+        </div>
+        <div id="crm-list" style="flex:1;overflow-y:auto;padding:16px 20px"></div>
+      </div>
+
+      <!-- CRM: Vista detalle de contacto -->
+      <div id="crm-detail-view" style="display:none;flex-direction:column;height:100%;overflow-y:auto;padding:28px 32px;max-width:680px;margin:0 auto;width:100%">
+        <button onclick="closeCrmDetail()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-arrow-left" style="font-size:15px"></i> <span id="crm-detail-back-label">Pipeline</span>
+        </button>
+        <div id="crm-detail-content"></div>
+      </div>
+
     </div>
 
     <!-- HERRAMIENTAS -->
@@ -1524,6 +1566,137 @@
 </div>
 
 <!-- MODAL NUEVO EVENTO -->
+<!-- Modal CRM contacto -->
+<div class="modal-overlay" id="modal-crm" onclick="if(event.target===this)closeCrmModal()">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title" id="crm-modal-title">Nuevo contacto</div>
+      <button class="modal-close" onclick="closeCrmModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="crm-error"></div>
+      <input type="hidden" id="crm-id">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" id="crm-nombre" placeholder="Juan García">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Empresa</label>
+          <input type="text" class="form-input" id="crm-empresa" placeholder="Empresa S.A.">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="crm-email" placeholder="juan@empresa.com">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Teléfono</label>
+          <input type="text" class="form-input" id="crm-telefono" placeholder="+54 11 1234-5678">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Cargo</label>
+          <input type="text" class="form-input" id="crm-cargo" placeholder="Director de Marketing">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Etapa del pipeline</label>
+          <select class="form-input form-select" id="crm-stage">
+            <option value="contacto_inicial">Contacto inicial</option>
+            <option value="propuesta_enviada">Propuesta enviada</option>
+            <option value="negociacion">Negociación</option>
+            <option value="cerrado_ganado">Cerrado ganado</option>
+            <option value="cerrado_perdido">Cerrado perdido</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Valor del deal ($)</label>
+          <input type="number" class="form-input" id="crm-valor" placeholder="0" min="0">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Cierre esperado</label>
+          <input type="date" class="form-input" id="crm-fecha-cierre">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Responsable</label>
+          <select class="form-input form-select" id="crm-responsable">
+            <option value="">Sin asignar</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Próximo contacto</label>
+          <input type="date" class="form-input" id="crm-proximo-contacto">
+        </div>
+      </div>
+
+      <div class="form-field" style="margin-top:12px">
+        <label class="form-label">Cliente vinculado</label>
+        <select class="form-input form-select" id="crm-client">
+          <option value="">Sin vincular</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Notas</label>
+        <textarea class="form-input form-textarea" id="crm-notas" style="min-height:72px" placeholder="Información relevante del contacto..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeCrmModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" id="btn-save-crm" onclick="saveCrmContact()">
+        <span id="btn-save-crm-text">Guardar contacto</span>
+        <div class="spinner" id="crm-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal CRM actividad -->
+<div class="modal-overlay" id="modal-crm-activity" onclick="if(event.target===this)closeCrmActivityModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-title">Registrar actividad</div>
+      <button class="modal-close" onclick="closeCrmActivityModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label class="form-label">Tipo</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s" id="act-llamada" onclick="selectActTipo('llamada')"><i class="ti ti-phone" style="font-size:13px"></i> Llamada</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s" id="act-reunion" onclick="selectActTipo('reunion')"><i class="ti ti-video" style="font-size:13px"></i> Reunión</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s" id="act-email" onclick="selectActTipo('email')"><i class="ti ti-mail" style="font-size:13px"></i> Email</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s" id="act-whatsapp" onclick="selectActTipo('whatsapp')"><i class="ti ti-brand-whatsapp" style="font-size:13px"></i> WhatsApp</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s" id="act-nota" onclick="selectActTipo('nota')"><i class="ti ti-note" style="font-size:13px"></i> Nota</label>
+        </div>
+        <input type="hidden" id="act-tipo" value="llamada">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Duración (minutos)</label>
+        <input type="number" class="form-input" id="act-duracion" placeholder="30" min="1" id="act-duracion-field">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Notas</label>
+        <textarea class="form-input form-textarea" id="act-notas" style="min-height:80px" placeholder="¿De qué se habló? ¿Qué quedó pendiente?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeCrmActivityModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" onclick="saveCrmActivity()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal día completo -->
 <div class="modal-overlay" id="modal-day" onclick="if(event.target===this)closeDayModal()">
   <div class="modal" style="max-width:400px;max-height:80vh;display:flex;flex-direction:column">
@@ -1830,6 +2003,7 @@
     else if (mod === 'contenido') { renderContenido() }
     else if (mod === 'calendario') { renderCalendario() }
     else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); cta.style.display = 'none' }
+    else if (mod === 'crm') { cta.style.display = 'none'; renderCrm() }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -2164,6 +2338,9 @@
     subscribeToNotifications()
     await loadNotifications()
     subscribeToContentChanges()
+
+    // Notificar seguimientos CRM vencidos
+    checkCrmOverdueFollowups()
 
     // Inicializar panel de inicio
     document.getElementById('panel-body').innerHTML = ''
@@ -4387,6 +4564,23 @@
     timerContext = null
   }
 
+  async function checkCrmOverdueFollowups() {
+    const today = new Date().toISOString().slice(0, 10)
+    const { data } = await supabase
+      .from('crm_contacts')
+      .select('id, nombre, responsable_id, agency_members(user_id)')
+      .eq('agency_id', agencyId)
+      .lte('proximo_contacto', today)
+      .not('pipeline_stage', 'in', '("cerrado_ganado","cerrado_perdido")')
+    if (!data?.length) return
+    for (const c of data) {
+      const uid = c.agency_members?.user_id
+      if (uid === currentUserId) {
+        await createNotification(uid, 'crm', `⚡ Seguimiento vencido`, `${c.nombre} está esperando tu contacto`, 'crm')
+      }
+    }
+  }
+
   // ── Herramientas — Navegación ─────────────────────────
   let currentTool = null
 
@@ -4618,6 +4812,394 @@
     pomo = { running: false, interval: null, seconds: POMO_WORK, phase: 'work', cycle: 1, pieceId: null, taskId: null, workSeconds: 0 }
     document.getElementById('pomo-btn').innerHTML = '<i class="ti ti-player-play" id="pomo-icon" style="font-size:15px"></i> Iniciar'
     updatePomoDisplay()
+  }
+
+  // ══════════════════════════════════════
+  // CRM
+  // ══════════════════════════════════════
+
+  let crmContacts = []
+  let crmCurrentContact = null
+  let crmView = 'pipeline' // pipeline | contactos
+  let crmActTipo = 'llamada'
+  let crmBackView = 'pipeline'
+
+  const CRM_STAGES = [
+    { id: 'contacto_inicial',  label: 'Contacto inicial',  color: '#6B7280' },
+    { id: 'propuesta_enviada', label: 'Propuesta enviada', color: '#3B82F6' },
+    { id: 'negociacion',       label: 'Negociación',       color: '#F59E0B' },
+    { id: 'cerrado_ganado',    label: 'Cerrado ganado',    color: '#10B981' },
+    { id: 'cerrado_perdido',   label: 'Cerrado perdido',   color: '#EF4444' },
+  ]
+
+  const ACT_ICONS = { llamada: 'ti-phone', reunion: 'ti-video', email: 'ti-mail', whatsapp: 'ti-brand-whatsapp', nota: 'ti-note' }
+  const ACT_LABELS = { llamada: 'Llamada', reunion: 'Reunión', email: 'Email', whatsapp: 'WhatsApp', nota: 'Nota' }
+
+  async function loadCrmContacts() {
+    if (!agencyId) return
+    const { data } = await supabase
+      .from('crm_contacts')
+      .select('*, clients(nombre), agency_members(profiles(nombre,apellido))')
+      .eq('agency_id', agencyId)
+      .order('created_at', { ascending: false })
+    crmContacts = data || []
+  }
+
+  function renderCrm() {
+    if (crmView === 'pipeline') renderCrmPipeline()
+    else renderCrmList()
+  }
+
+  function renderCrmPipeline() {
+    const kanban = document.getElementById('crm-kanban')
+    if (!kanban) return
+    kanban.innerHTML = CRM_STAGES.map(stage => {
+      const contacts = crmContacts.filter(c => c.pipeline_stage === stage.id)
+      const total = contacts.reduce((a, c) => a + (c.valor_deal || 0), 0)
+      const cards = contacts.map(c => {
+        const resp = c.agency_members?.profiles
+        const respName = resp ? `${resp.nombre} ${resp.apellido}` : null
+        const overdue = c.proximo_contacto && new Date(c.proximo_contacto) < new Date()
+        return `<div onclick="openCrmDetail('${c.id}')" style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s;margin-bottom:8px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+          <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">${c.nombre}</div>
+          ${c.empresa ? `<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">${c.empresa}</div>` : '<div style="margin-bottom:8px"></div>'}
+          ${c.valor_deal ? `<div style="font-size:12px;font-weight:900;color:var(--azul);margin-bottom:6px">$${Number(c.valor_deal).toLocaleString('es-AR')}</div>` : ''}
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+            ${respName ? `<span style="font-size:10px;font-weight:700;color:var(--ink3)">${respName}</span>` : '<span></span>'}
+            ${overdue ? `<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;background:#FEF2F2;color:var(--danger)">⚡ Vencido</span>` : c.proximo_contacto ? `<span style="font-size:9px;color:var(--ink3)">${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>` : ''}
+          </div>
+        </div>`
+      }).join('')
+      return `<div style="flex-shrink:0;width:220px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${stage.color}"></div>
+            <span style="font-size:12px;font-weight:800;color:var(--ink)">${stage.label}</span>
+            <span style="font-size:11px;font-weight:700;background:var(--bg);color:var(--ink3);padding:1px 7px;border-radius:10px">${contacts.length}</span>
+          </div>
+          ${total > 0 ? `<span style="font-size:11px;font-weight:800;color:${stage.color}">$${Number(total).toLocaleString('es-AR')}</span>` : ''}
+        </div>
+        <div style="flex:1">${cards || `<div style="text-align:center;padding:20px 0;color:var(--ink3);font-size:12px">Sin contactos</div>`}</div>
+      </div>`
+    }).join('')
+  }
+
+  function renderCrmList(filter = '') {
+    const el = document.getElementById('crm-list')
+    if (!el) return
+    const filtered = filter
+      ? crmContacts.filter(c => c.nombre.toLowerCase().includes(filter.toLowerCase()) || (c.empresa||'').toLowerCase().includes(filter.toLowerCase()))
+      : crmContacts
+    if (!filtered.length) {
+      el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--ink3);font-size:13px">Sin contactos</div>'
+      return
+    }
+    el.innerHTML = filtered.map(c => {
+      const stage = CRM_STAGES.find(s => s.id === c.pipeline_stage)
+      const overdue = c.proximo_contacto && new Date(c.proximo_contacto) < new Date()
+      return `<div onclick="openCrmDetail('${c.id}')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:8px;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="width:38px;height:38px;border-radius:10px;background:${stage?.color}22;display:flex;align-items:center;justify-content:center;color:${stage?.color};font-size:14px;font-weight:900;flex-shrink:0">${c.nombre.charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:800;color:var(--ink)">${c.nombre}</div>
+          <div style="font-size:11px;color:var(--ink3)">${c.empresa || '—'} ${c.cargo ? '· '+c.cargo : ''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:6px;background:${stage?.color}18;color:${stage?.color};margin-bottom:4px">${stage?.label}</div>
+          ${overdue ? '<div style="font-size:9px;font-weight:800;color:var(--danger)">⚡ Seguimiento vencido</div>' : ''}
+        </div>
+        <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
+      </div>`
+    }).join('')
+  }
+
+  window.filterCrmContacts = function(val) { renderCrmList(val) }
+
+  window.switchCrmView = function(view) {
+    crmView = view
+    document.getElementById('crm-pipeline-view').style.display = view === 'pipeline' ? 'flex' : 'none'
+    document.getElementById('crm-contactos-view').style.display = view === 'contactos' ? 'flex' : 'none'
+    document.getElementById('crm-detail-view').style.display = 'none'
+    if (view === 'pipeline') renderCrmPipeline()
+    else renderCrmList()
+  }
+
+  async function openCrmDetail(id) {
+    crmCurrentContact = crmContacts.find(c => c.id === id)
+    if (!crmCurrentContact) return
+    crmBackView = crmView
+    document.getElementById('crm-pipeline-view').style.display = 'none'
+    document.getElementById('crm-contactos-view').style.display = 'none'
+    document.getElementById('crm-detail-view').style.display = 'flex'
+    document.getElementById('crm-detail-back-label').textContent = crmView === 'pipeline' ? 'Pipeline' : 'Contactos'
+    await renderCrmDetail()
+  }
+
+  window.openCrmDetail = openCrmDetail
+
+  window.closeCrmDetail = function() {
+    crmCurrentContact = null
+    document.getElementById('crm-detail-view').style.display = 'none'
+    if (crmBackView === 'pipeline') {
+      document.getElementById('crm-pipeline-view').style.display = 'flex'
+    } else {
+      document.getElementById('crm-contactos-view').style.display = 'flex'
+    }
+  }
+
+  async function renderCrmDetail() {
+    const c = crmCurrentContact
+    if (!c) return
+    const stage = CRM_STAGES.find(s => s.id === c.pipeline_stage)
+    const resp = c.agency_members?.profiles
+    const respName = resp ? `${resp.nombre} ${resp.apellido}` : '—'
+    const overdue = c.proximo_contacto && new Date(c.proximo_contacto) < new Date()
+
+    // Cargar actividades
+    const { data: activities } = await supabase
+      .from('crm_activities')
+      .select('*, profiles(nombre,apellido)')
+      .eq('contact_id', c.id)
+      .order('created_at', { ascending: false })
+
+    const actHTML = (activities || []).map(a => {
+      const fecha = new Date(a.created_at).toLocaleDateString('es-AR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+      return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="width:32px;height:32px;border-radius:9px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--ink3);flex-shrink:0">
+          <i class="ti ${ACT_ICONS[a.tipo]}" style="font-size:14px"></i>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+            <span style="font-size:12px;font-weight:800;color:var(--ink)">${ACT_LABELS[a.tipo]}</span>
+            ${a.duracion_minutos ? `<span style="font-size:10px;color:var(--ink3)">${a.duracion_minutos} min</span>` : ''}
+          </div>
+          ${a.notas ? `<div style="font-size:12px;color:var(--ink2);line-height:1.5">${a.notas}</div>` : ''}
+          <div style="font-size:10px;color:var(--ink3);margin-top:4px">${fecha}</div>
+        </div>
+      </div>`
+    }).join('')
+
+    document.getElementById('crm-detail-content').innerHTML = `
+      <!-- Header -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:52px;height:52px;border-radius:14px;background:${stage?.color}22;display:flex;align-items:center;justify-content:center;color:${stage?.color};font-size:20px;font-weight:900;flex-shrink:0">${c.nombre.charAt(0).toUpperCase()}</div>
+          <div>
+            <div style="font-size:20px;font-weight:900;color:var(--ink);letter-spacing:-.4px">${c.nombre}</div>
+            <div style="font-size:13px;color:var(--ink3);margin-top:2px">${c.empresa || ''}${c.cargo ? ' · '+c.cargo : ''}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="tbtn" onclick="editCrmContact()" style="gap:6px"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
+          <button class="tbtn danger" onclick="deleteCrmContact()"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        ${c.email ? `<a href="mailto:${c.email}" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-radius:10px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:600"><i class="ti ti-mail" style="color:var(--ink3);font-size:14px"></i>${c.email}</a>` : ''}
+        ${c.telefono ? `<a href="tel:${c.telefono}" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-radius:10px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:600"><i class="ti ti-phone" style="color:var(--ink3);font-size:14px"></i>${c.telefono}</a>` : ''}
+      </div>
+
+      <!-- Stage + datos -->
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Etapa</div>
+            <span style="font-size:12px;font-weight:800;padding:3px 10px;border-radius:6px;background:${stage?.color}18;color:${stage?.color}">${stage?.label}</span>
+          </div>
+          ${c.valor_deal ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Valor del deal</div><div style="font-size:15px;font-weight:900;color:var(--azul)">$${Number(c.valor_deal).toLocaleString('es-AR')}</div></div>` : ''}
+          <div>
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Responsable</div>
+            <div style="font-size:13px;font-weight:600;color:var(--ink)">${respName}</div>
+          </div>
+          ${c.proximo_contacto ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Próximo contacto</div><div style="font-size:13px;font-weight:600;color:${overdue?'var(--danger)':'var(--ink)'}">${overdue?'⚡ ':''} ${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'long'})}</div></div>` : ''}
+          ${c.fecha_cierre_esperada ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cierre esperado</div><div style="font-size:13px;font-weight:600;color:var(--ink)">${new Date(c.fecha_cierre_esperada).toLocaleDateString('es-AR',{day:'numeric',month:'long'})}</div></div>` : ''}
+          ${c.clients?.nombre ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cliente vinculado</div><div style="font-size:13px;font-weight:600;color:var(--ink)">${c.clients.nombre}</div></div>` : ''}
+        </div>
+        ${c.notas ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Notas</div><div style="font-size:13px;color:var(--ink2);line-height:1.6">${c.notas}</div></div>` : ''}
+      </div>
+
+      <!-- Actividades -->
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Actividad</div>
+          <button class="tbtn primary" onclick="openCrmActivityModal('${c.id}')" style="gap:6px;font-size:12px;padding:7px 12px">
+            <i class="ti ti-plus" style="font-size:12px"></i> Registrar
+          </button>
+        </div>
+        ${actHTML || '<div style="text-align:center;padding:20px 0;color:var(--ink3);font-size:13px">Sin actividad registrada</div>'}
+      </div>`
+  }
+
+  window.openCrmModal = async function(id = null) {
+    document.getElementById('crm-modal-title').textContent = id ? 'Editar contacto' : 'Nuevo contacto'
+    document.getElementById('crm-id').value = id || ''
+    document.getElementById('crm-error').classList.remove('show')
+
+    // Poblar responsables
+    const respSel = document.getElementById('crm-responsable')
+    respSel.innerHTML = '<option value="">Sin asignar</option>'
+    if (teamMembers.length === 0) await loadTeam()
+    teamMembers.forEach(m => {
+      const n = `${m.profiles?.nombre||''} ${m.profiles?.apellido||''}`.trim()
+      respSel.innerHTML += `<option value="${m.id}">${n}</option>`
+    })
+
+    // Poblar clientes
+    const clientSel = document.getElementById('crm-client')
+    clientSel.innerHTML = '<option value="">Sin vincular</option>'
+    if (!clients.length) await loadClients()
+    clients.forEach(c => clientSel.innerHTML += `<option value="${c.id}">${c.nombre}</option>`)
+
+    if (id) {
+      const c = crmContacts.find(x => x.id === id)
+      if (c) {
+        document.getElementById('crm-nombre').value = c.nombre || ''
+        document.getElementById('crm-empresa').value = c.empresa || ''
+        document.getElementById('crm-email').value = c.email || ''
+        document.getElementById('crm-telefono').value = c.telefono || ''
+        document.getElementById('crm-cargo').value = c.cargo || ''
+        document.getElementById('crm-stage').value = c.pipeline_stage || 'contacto_inicial'
+        document.getElementById('crm-valor').value = c.valor_deal || ''
+        document.getElementById('crm-fecha-cierre').value = c.fecha_cierre_esperada || ''
+        document.getElementById('crm-proximo-contacto').value = c.proximo_contacto || ''
+        document.getElementById('crm-responsable').value = c.responsable_id || ''
+        document.getElementById('crm-client').value = c.client_id || ''
+        document.getElementById('crm-notas').value = c.notas || ''
+      }
+    } else {
+      document.getElementById('crm-nombre').value = ''
+      document.getElementById('crm-empresa').value = ''
+      document.getElementById('crm-email').value = ''
+      document.getElementById('crm-telefono').value = ''
+      document.getElementById('crm-cargo').value = ''
+      document.getElementById('crm-stage').value = 'contacto_inicial'
+      document.getElementById('crm-valor').value = ''
+      document.getElementById('crm-fecha-cierre').value = ''
+      document.getElementById('crm-proximo-contacto').value = ''
+      document.getElementById('crm-responsable').value = ''
+      document.getElementById('crm-client').value = ''
+      document.getElementById('crm-notas').value = ''
+    }
+    document.getElementById('modal-crm').classList.add('show')
+    setTimeout(() => document.getElementById('crm-nombre').focus(), 100)
+  }
+
+  window.closeCrmModal = function() { document.getElementById('modal-crm').classList.remove('show') }
+
+  window.saveCrmContact = async function() {
+    const id = document.getElementById('crm-id').value
+    const nombre = document.getElementById('crm-nombre').value.trim()
+    const errEl = document.getElementById('crm-error')
+    errEl.classList.remove('show')
+    if (!nombre) { errEl.textContent = 'El nombre es obligatorio.'; errEl.classList.add('show'); return }
+
+    const btn = document.getElementById('btn-save-crm')
+    const spinner = document.getElementById('crm-spinner')
+    const btnText = document.getElementById('btn-save-crm-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    const payload = {
+      nombre,
+      empresa: document.getElementById('crm-empresa').value.trim() || null,
+      email: document.getElementById('crm-email').value.trim() || null,
+      telefono: document.getElementById('crm-telefono').value.trim() || null,
+      cargo: document.getElementById('crm-cargo').value.trim() || null,
+      pipeline_stage: document.getElementById('crm-stage').value,
+      valor_deal: parseFloat(document.getElementById('crm-valor').value) || 0,
+      fecha_cierre_esperada: document.getElementById('crm-fecha-cierre').value || null,
+      proximo_contacto: document.getElementById('crm-proximo-contacto').value || null,
+      responsable_id: document.getElementById('crm-responsable').value || null,
+      client_id: document.getElementById('crm-client').value || null,
+      notas: document.getElementById('crm-notas').value.trim() || null,
+      agency_id: agencyId,
+    }
+
+    let error
+    if (id) {
+      ({ error } = await supabase.from('crm_contacts').update(payload).eq('id', id))
+    } else {
+      ({ error } = await supabase.from('crm_contacts').insert(payload))
+    }
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar contacto'
+    if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
+
+    closeCrmModal()
+    showToast(id ? '✓ Contacto actualizado' : '✓ Contacto creado')
+    await loadCrmContacts()
+    renderCrm()
+    if (crmCurrentContact && id) { crmCurrentContact = crmContacts.find(c => c.id === id); await renderCrmDetail() }
+  }
+
+  window.editCrmContact = function() { openCrmModal(crmCurrentContact?.id) }
+
+  window.deleteCrmContact = async function() {
+    if (!crmCurrentContact) return
+    if (!confirm('¿Eliminar este contacto y toda su actividad?')) return
+    await supabase.from('crm_contacts').delete().eq('id', crmCurrentContact.id)
+    showToast('Contacto eliminado')
+    closeCrmDetail()
+    await loadCrmContacts()
+    renderCrm()
+  }
+
+  window.openCrmActivityModal = function(contactId) {
+    document.getElementById('act-tipo').value = 'llamada'
+    document.getElementById('act-duracion').value = ''
+    document.getElementById('act-notas').value = ''
+    selectActTipo('llamada')
+    document.getElementById('modal-crm-activity').classList.add('show')
+    document.getElementById('modal-crm-activity').dataset.contactId = contactId
+  }
+
+  window.closeCrmActivityModal = function() { document.getElementById('modal-crm-activity').classList.remove('show') }
+
+  window.selectActTipo = function(tipo) {
+    crmActTipo = tipo
+    document.getElementById('act-tipo').value = tipo
+    ;['llamada','reunion','email','whatsapp','nota'].forEach(t => {
+      const el = document.getElementById('act-' + t)
+      if (el) {
+        el.style.background = t === tipo ? 'var(--azul)' : ''
+        el.style.color = t === tipo ? '#fff' : ''
+        el.style.borderColor = t === tipo ? 'var(--azul)' : 'var(--border)'
+      }
+    })
+  }
+
+  window.saveCrmActivity = async function() {
+    const contactId = document.getElementById('modal-crm-activity').dataset.contactId
+    const tipo = document.getElementById('act-tipo').value
+    const notas = document.getElementById('act-notas').value.trim()
+    const duracion = parseInt(document.getElementById('act-duracion').value) || null
+
+    await supabase.from('crm_activities').insert({
+      contact_id: contactId,
+      agency_id: agencyId,
+      user_id: currentUserId,
+      tipo, notas: notas || null,
+      duracion_minutos: duracion
+    })
+
+    // Notificar al responsable si no es quien registra
+    const contact = crmContacts.find(c => c.id === contactId)
+    if (contact?.responsable_id) {
+      const member = teamMembers.find(m => m.id === contact.responsable_id)
+      if (member && member.user_id !== currentUserId) {
+        await createNotification(member.user_id, 'crm', `Nueva actividad en ${contact.nombre}`, `${ACT_LABELS[tipo]}${notas ? ': '+notas.slice(0,60) : ''}`, 'crm')
+      }
+    }
+
+    closeCrmActivityModal()
+    showToast('✓ Actividad registrada')
+    await renderCrmDetail()
+  }
+
+  async function renderCrm() {
+    await loadCrmContacts()
+    if (crmView === 'pipeline') renderCrmPipeline()
+    else renderCrmList()
   }
 
   // ── Escape para cerrar modales
