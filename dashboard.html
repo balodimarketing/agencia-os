@@ -756,7 +756,7 @@
         <div class="notif-dot" id="notif-dot"></div>
       </div>
       <div class="rail-btn" data-tip="Cerrar sesión" onclick="handleSignOut()"><i class="ti ti-logout"></i></div>
-      <div class="rail-av" id="rail-av" data-tip="Mi perfil" onclick="openProfileModal()" style="cursor:pointer"></div>
+      <div class="rail-av" id="rail-av" data-tip="Mi perfil" onclick="handleOpenProfile()" style="cursor:pointer"></div>
     </div>
   </div>
 
@@ -1746,6 +1746,10 @@
       av.style.background = '#1a3a5c'
       av.style.color = 'var(--celeste)'
     }
+  }
+
+  window.handleOpenProfile = function() {
+    openProfileModal().catch(e => console.error('Profile error:', e))
   }
 
   window.openProfileModal = async function() {
