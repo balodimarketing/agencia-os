@@ -159,16 +159,27 @@
       .eq('aprobacion_token', token)
       .maybeSingle()
 
-    // Get responsable separately if exists
+    // Get responsables from piece_responsables
     let responsableNombre = '—'
-    if (piece?.responsable_id) {
-      const { data: member } = await supabase
+    const { data: prsDisplay } = await supabase
+      .from('piece_responsables')
+      .select('agency_member_id')
+      .eq('piece_id', piece?.id || pieceId)
+    if (prsDisplay && prsDisplay.length > 0) {
+      const memberIds = prsDisplay.map(r => r.agency_member_id)
+      const { data: membersDisplay } = await supabase
         .from('agency_members')
-        .select('profiles(nombre, apellido)')
-        .eq('id', piece.responsable_id)
-        .maybeSingle()
-      if (member?.profiles) {
-        responsableNombre = member.profiles.nombre + ' ' + member.profiles.apellido
+        .select('user_id')
+        .in('id', memberIds)
+      if (membersDisplay && membersDisplay.length > 0) {
+        const userIds = membersDisplay.map(m => m.user_id)
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('nombre, apellido')
+          .in('id', userIds)
+        if (profiles && profiles.length > 0) {
+          responsableNombre = profiles.map(p => p.nombre + ' ' + p.apellido).join(', ')
+        }
       }
     }
 
@@ -263,9 +274,16 @@
     if (piece) {
       const { data: prs } = await supabase
         .from('piece_responsables')
-        .select('agency_members(user_id)')
+        .select('agency_member_id')
         .eq('piece_id', pieceId)
-      responsableUserIds = (prs || []).map(r => r.agency_members?.user_id).filter(Boolean)
+      if (prs && prs.length > 0) {
+        const memberIds = prs.map(r => r.agency_member_id)
+        const { data: members } = await supabase
+          .from('agency_members')
+          .select('user_id')
+          .in('id', memberIds)
+        responsableUserIds = (members || []).map(m => m.user_id).filter(Boolean)
+      }
     }
 
     // Delete file from storage if exists
