@@ -108,7 +108,7 @@
         <div class="info-field"><div class="info-lbl">Cliente</div><div class="info-val" id="p-cliente"></div></div>
         <div class="info-field"><div class="info-lbl">Tipo</div><div class="info-val" id="p-tipo"></div></div>
         <div class="info-field"><div class="info-lbl">Fecha de entrega</div><div class="info-val" id="p-fecha"></div></div>
-        <div class="info-field"><div class="info-lbl">Estado actual</div><div class="info-val" id="p-estado"></div></div>
+        <div class="info-field"><div class="info-lbl">Responsable</div><div class="info-val" id="p-responsable"></div></div>
       </div>
       <div class="piece-desc" id="p-desc-section" style="display:none">
         <div class="file-label" style="margin-bottom:8px">Descripción</div>
@@ -151,7 +151,7 @@
 
     const { data: piece, error } = await supabase
       .from('content_pieces')
-      .select('*, clients(nombre)')
+      .select('*, clients(nombre), agency_members!content_pieces_responsable_id_fkey(profiles(nombre,apellido))')
       .eq('aprobacion_token', token)
       .maybeSingle()
 
@@ -166,6 +166,8 @@
     // Fill data
     document.getElementById('p-titulo').textContent = piece.titulo
     document.getElementById('p-cliente').textContent = piece.clients?.nombre || '—'
+    const resp = piece.agency_members?.profiles
+    document.getElementById('p-responsable').textContent = resp ? resp.nombre + ' ' + resp.apellido : '—'
     document.getElementById('p-tipo').textContent = piece.tipo || '—'
     document.getElementById('p-fecha').textContent = piece.fecha_entrega
       ? new Date(piece.fecha_entrega + 'T12:00:00').toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'})
