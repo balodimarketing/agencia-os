@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agencia OS — Aprobar pieza</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --azul: #0A2540; --celeste: #8EDBFF; --white: #FFFFFF; --bg: #F5F7FA;
+      --ink: #111111; --ink2: #4A5568; --ink3: #9AA5B4; --border: #E8ECF0;
+      --success: #34C759; --danger: #FF6B6B; --warn: #FFB800;
+      --r: 12px; --r-lg: 20px; --shadow-lg: 0 12px 48px rgba(0,0,0,.12);
+      --t: .16s cubic-bezier(.4,0,.2,1);
+    }
+    html, body { min-height: 100%; font-family: "Plus Jakarta Sans", sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    .page { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+    .logo-mark { width: 34px; height: 34px; background: var(--azul); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .logo-mark svg { width: 18px; height: 18px; fill: none; stroke: var(--celeste); stroke-width: 2.5; stroke-linecap: round; }
+    .logo-name { font-size: 15px; font-weight: 900; color: var(--azul); letter-spacing: -.3px; }
+
+    .piece-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-lg); margin-bottom: 20px; animation: fadeUp .3s both; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    .piece-header { padding: 24px 28px; border-bottom: 1px solid var(--border); }
+    .piece-title { font-size: 22px; font-weight: 900; color: var(--ink); letter-spacing: -.5px; margin-bottom: 10px; }
+    .piece-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+
+    .piece-file { padding: 24px 28px; border-bottom: 1px solid var(--border); background: #FAFBFC; }
+    .file-label { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+
+    .file-preview { border-radius: var(--r); overflow: hidden; background: #000; max-height: 420px; display: flex; align-items: center; justify-content: center; }
+    .file-preview img { width: 100%; max-height: 420px; object-fit: contain; }
+    .file-preview video { width: 100%; max-height: 420px; }
+    .file-download { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: var(--r); background: var(--bg); border: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--ink2); text-decoration: none; margin-top: 12px; transition: all var(--t); }
+    .file-download:hover { background: var(--border); }
+
+    .piece-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px 28px; border-bottom: 1px solid var(--border); }
+    .info-field { background: var(--bg); border-radius: var(--r); padding: 12px 14px; }
+    .info-lbl { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+    .info-val { font-size: 13px; font-weight: 600; color: var(--ink); }
+
+    .piece-desc { padding: 20px 28px; border-bottom: 1px solid var(--border); }
+    .desc-text { font-size: 13px; color: var(--ink2); line-height: 1.7; }
+
+    /* Actions */
+    .actions-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow-lg); animation: fadeUp .3s .1s both; }
+    .actions-title { font-size: 16px; font-weight: 900; color: var(--ink); letter-spacing: -.3px; margin-bottom: 6px; }
+    .actions-sub { font-size: 13px; color: var(--ink3); margin-bottom: 24px; line-height: 1.5; }
+
+    .comentario-field { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--r); font-size: 13px; font-family: inherit; color: var(--ink); background: var(--white); outline: none; resize: vertical; min-height: 90px; margin-bottom: 16px; transition: border var(--t), box-shadow var(--t); line-height: 1.6; display: none; }
+    .comentario-field.show { display: block; }
+    .comentario-field:focus { border-color: var(--celeste); box-shadow: 0 0 0 3px rgba(142,219,255,.2); }
+    .comentario-field::placeholder { color: var(--ink3); }
+
+    .actions-row { display: flex; gap: 10px; }
+    .btn-aprobar { flex: 1; padding: 14px; background: var(--success); color: #fff; border: none; border-radius: var(--r); font-size: 14px; font-weight: 800; font-family: inherit; cursor: pointer; transition: all var(--t); display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-aprobar:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-cambios { flex: 1; padding: 14px; background: var(--white); color: var(--danger); border: 1.5px solid var(--danger); border-radius: var(--r); font-size: 14px; font-weight: 800; font-family: inherit; cursor: pointer; transition: all var(--t); }
+    .btn-cambios:hover { background: #FFF5F5; }
+    .btn-aprobar:disabled, .btn-cambios:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .result-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 48px 28px; text-align: center; box-shadow: var(--shadow-lg); animation: fadeUp .3s both; display: none; }
+    .result-icon { font-size: 48px; margin-bottom: 16px; }
+    .result-title { font-size: 20px; font-weight: 900; color: var(--ink); letter-spacing: -.4px; margin-bottom: 8px; }
+    .result-sub { font-size: 13px; color: var(--ink3); line-height: 1.6; }
+
+    .error-page { text-align: center; padding: 80px 20px; }
+    .error-page h1 { font-size: 20px; font-weight: 900; color: var(--ink); margin-bottom: 8px; }
+    .error-page p { font-size: 13px; color: var(--ink3); }
+
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 22 22"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>
+    </div>
+    <span class="logo-name">Agencia OS</span>
+  </div>
+
+  <div id="loading" style="text-align:center;padding:60px 0;color:var(--ink3);font-size:13px">Cargando pieza...</div>
+  <div id="error-view" style="display:none" class="error-page">
+    <h1>Link no válido</h1>
+    <p>Este link de aprobación no existe o ya fue utilizado.</p>
+  </div>
+
+  <div id="main-view" style="display:none">
+    <div class="piece-card">
+      <div class="piece-header">
+        <div class="piece-title" id="p-titulo"></div>
+        <div class="piece-tags" id="p-tags"></div>
+      </div>
+      <div class="piece-file" id="p-file-section">
+        <div class="file-label">Archivo</div>
+        <div class="file-preview" id="p-preview"></div>
+        <a id="p-download" class="file-download" target="_blank">⬇ Descargar archivo</a>
+      </div>
+      <div class="piece-info">
+        <div class="info-field"><div class="info-lbl">Cliente</div><div class="info-val" id="p-cliente"></div></div>
+        <div class="info-field"><div class="info-lbl">Tipo</div><div class="info-val" id="p-tipo"></div></div>
+        <div class="info-field"><div class="info-lbl">Fecha de entrega</div><div class="info-val" id="p-fecha"></div></div>
+        <div class="info-field"><div class="info-lbl">Estado actual</div><div class="info-val" id="p-estado"></div></div>
+      </div>
+      <div class="piece-desc" id="p-desc-section" style="display:none">
+        <div class="file-label" style="margin-bottom:8px">Descripción</div>
+        <div class="desc-text" id="p-desc"></div>
+      </div>
+    </div>
+
+    <div class="actions-card" id="actions-card">
+      <div class="actions-title">¿Qué te parece esta pieza?</div>
+      <div class="actions-sub">Tu respuesta le llegará al equipo de la agencia.</div>
+      <textarea class="comentario-field" id="comentario" placeholder="Describí los cambios que necesitás..."></textarea>
+      <div class="actions-row">
+        <button class="btn-aprobar" id="btn-aprobar" onclick="aprobar()">
+          <span id="btn-ap-text">✓ Aprobar</span>
+          <div class="spinner" id="spinner-ap"></div>
+        </button>
+        <button class="btn-cambios" id="btn-cambios" onclick="pedirCambios()">Pedir cambios</button>
+      </div>
+    </div>
+
+    <div class="result-card" id="result-card">
+      <div class="result-icon" id="result-icon"></div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-sub" id="result-sub"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+  const supabase = createClient('https://trsbjjagrpvlzvcveiph.supabase.co', 'sb_publishable_unJoCAXBOTCiLpLkFCG2oA_SdRcKHit')
+
+  const token = new URLSearchParams(window.location.search).get('token')
+  let pieceId = null
+  let archivoUrl = null
+  let pedirCambiosMode = false
+
+  async function init() {
+    if (!token) { showError(); return }
+
+    const { data: piece, error } = await supabase
+      .from('content_pieces')
+      .select('*, clients(nombre)')
+      .eq('aprobacion_token', token)
+      .maybeSingle()
+
+    document.getElementById('loading').style.display = 'none'
+
+    if (error || !piece) { showError(); return }
+    if (piece.estado === 'publicado') { showResult('✅', 'Ya aprobada', 'Esta pieza ya fue aprobada anteriormente.'); return }
+
+    pieceId = piece.id
+    archivoUrl = piece.archivo_url
+
+    // Fill data
+    document.getElementById('p-titulo').textContent = piece.titulo
+    document.getElementById('p-cliente').textContent = piece.clients?.nombre || '—'
+    document.getElementById('p-tipo').textContent = piece.tipo || '—'
+    document.getElementById('p-fecha').textContent = piece.fecha_entrega
+      ? new Date(piece.fecha_entrega + 'T12:00:00').toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'})
+      : '—'
+
+    const estadoLabels = { idea:'Idea', produccion:'En producción', revision:'Revisión interna', aprobacion:'En aprobación', publicado:'Publicado' }
+    document.getElementById('p-estado').textContent = estadoLabels[piece.estado] || piece.estado
+
+    // Tags
+    const colores = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759' }
+    const col = colores[piece.estado] || '#94A3B8'
+    document.getElementById('p-tags').innerHTML = `
+      <span class="tag" style="background:${col}22;color:${col}">${estadoLabels[piece.estado]||piece.estado}</span>
+      ${piece.tipo ? `<span class="tag" style="background:var(--bg);color:var(--ink2);border:1px solid var(--border)">${piece.tipo}</span>` : ''}
+    `
+
+    // File preview
+    if (piece.archivo_url) {
+      const isVideo = /\.(mp4|mov|webm|avi)$/i.test(piece.archivo_url)
+      const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(piece.archivo_url)
+      if (isImage) {
+        document.getElementById('p-preview').innerHTML = `<img src="${piece.archivo_url}" alt="${piece.titulo}">`
+      } else if (isVideo) {
+        document.getElementById('p-preview').innerHTML = `<video controls src="${piece.archivo_url}"></video>`
+      } else {
+        document.getElementById('p-preview').innerHTML = `<div style="padding:32px;color:#fff;font-size:13px">Archivo adjunto</div>`
+      }
+      document.getElementById('p-download').href = piece.archivo_url
+      document.getElementById('p-download').download = piece.archivo_nombre || 'archivo'
+    } else {
+      document.getElementById('p-file-section').style.display = 'none'
+    }
+
+    if (piece.descripcion) {
+      document.getElementById('p-desc').textContent = piece.descripcion
+      document.getElementById('p-desc-section').style.display = 'block'
+    }
+
+    document.getElementById('main-view').style.display = 'block'
+  }
+
+  function showError() {
+    document.getElementById('loading').style.display = 'none'
+    document.getElementById('error-view').style.display = 'block'
+  }
+
+  function showResult(icon, title, sub) {
+    document.getElementById('actions-card').style.display = 'none'
+    const r = document.getElementById('result-card')
+    document.getElementById('result-icon').textContent = icon
+    document.getElementById('result-title').textContent = title
+    document.getElementById('result-sub').textContent = sub
+    r.style.display = 'block'
+  }
+
+  window.aprobar = async function() {
+    const btn = document.getElementById('btn-aprobar')
+    const spinner = document.getElementById('spinner-ap')
+    const btnText = document.getElementById('btn-ap-text')
+    btn.disabled = true; document.getElementById('btn-cambios').disabled = true
+    spinner.style.display = 'block'; btnText.style.display = 'none'
+
+    await supabase.from('content_pieces').update({
+      estado: 'publicado',
+      aprobacion_comentario: null,
+      aprobado_por: 'externo'
+    }).eq('id', pieceId)
+
+    // Delete file from storage if exists
+    if (archivoUrl) {
+      const path = archivoUrl.split('/pieces/')[1]
+      if (path) await supabase.storage.from('pieces').remove([path])
+    }
+
+    showResult('✅', '¡Aprobado!', 'Le avisamos al equipo. La pieza pasó a Publicado.')
+  }
+
+  window.pedirCambios = function() {
+    if (!pedirCambiosMode) {
+      pedirCambiosMode = true
+      const comentario = document.getElementById('comentario')
+      comentario.classList.add('show')
+      document.getElementById('btn-cambios').textContent = 'Enviar cambios'
+      comentario.focus()
+    } else {
+      enviarCambios()
+    }
+  }
+
+  async function enviarCambios() {
+    const comentario = document.getElementById('comentario').value.trim()
+    if (!comentario) { document.getElementById('comentario').focus(); return }
+
+    document.getElementById('btn-aprobar').disabled = true
+    document.getElementById('btn-cambios').disabled = true
+    document.getElementById('btn-cambios').textContent = 'Enviando...'
+
+    await supabase.from('content_pieces').update({
+      estado: 'revision',
+      aprobacion_comentario: comentario,
+      aprobado_por: null
+    }).eq('id', pieceId)
+
+    showResult('🔄', 'Cambios solicitados', 'El equipo recibió tus comentarios y va a trabajar en los ajustes.')
+  }
+
+  init()
+</script>
+</body>
+</html>
