@@ -174,8 +174,6 @@
       : '—'
 
     const estadoLabels = { idea:'Idea', produccion:'En producción', revision:'Revisión interna', aprobacion:'En aprobación', publicado:'Publicado' }
-    document.getElementById('p-estado').textContent = estadoLabels[piece.estado] || piece.estado
-
     // Tags
     const colores = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759' }
     const col = colores[piece.estado] || '#94A3B8'
