@@ -2119,18 +2119,36 @@
   }
 
   // ── View switcher ─────────────────────────────────────────
-  window.switchCalView = function(view) {
-    calView = view
-    document.querySelectorAll('.cal-view-btn').forEach(b => b.classList.remove('active'))
-    document.getElementById('cal-btn-' + view)?.classList.add('active')
-    renderCalGrid()
+  function calFadeTransition(fn) {
+    const grid = document.getElementById('cal-grid')
+    grid.style.transition = 'opacity .2s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1)'
+    grid.style.opacity = '0'
+    grid.style.transform = 'translateY(5px)'
+    setTimeout(() => {
+      fn()
+      requestAnimationFrame(() => {
+        grid.style.opacity = '1'
+        grid.style.transform = 'translateY(0)'
+      })
+    }, 180)
   }
 
-  window.calToday = function() { calDate = new Date(); renderCalGrid() }
+  window.switchCalView = function(view) {
+    calFadeTransition(() => {
+      calView = view
+      document.querySelectorAll('.cal-view-btn').forEach(b => b.classList.remove('active'))
+      document.getElementById('cal-btn-' + view)?.classList.add('active')
+      renderCalGrid()
+    })
+  }
+
+  window.calToday = function() { calFadeTransition(() => { calDate = new Date(); renderCalGrid() }) }
   window.calNav = function(dir) {
-    if (calView === 'semana') calDate.setDate(calDate.getDate() + dir * 7)
-    else calDate.setMonth(calDate.getMonth() + dir)
-    renderCalGrid()
+    calFadeTransition(() => {
+      if (calView === 'semana') calDate.setDate(calDate.getDate() + dir * 7)
+      else calDate.setMonth(calDate.getMonth() + dir)
+      renderCalGrid()
+    })
   }
 
   // ── Render grid ───────────────────────────────────────────
@@ -2296,11 +2314,21 @@
   }
 
   window.calShowMoreDay = function(isoDate) {
-    calDate = new Date(isoDate)
-    calView = 'mes'
-    document.getElementById('cal-btn-semana').classList.remove('active')
-    document.getElementById('cal-btn-mes').classList.add('active')
-    renderMonth()
+    const grid = document.getElementById('cal-grid')
+    grid.style.transition = 'opacity .22s cubic-bezier(.4,0,.2,1), transform .22s cubic-bezier(.4,0,.2,1)'
+    grid.style.opacity = '0'
+    grid.style.transform = 'translateY(6px)'
+    setTimeout(() => {
+      calDate = new Date(isoDate)
+      calView = 'mes'
+      document.getElementById('cal-btn-semana').classList.remove('active')
+      document.getElementById('cal-btn-mes').classList.add('active')
+      renderMonth()
+      requestAnimationFrame(() => {
+        grid.style.opacity = '1'
+        grid.style.transform = 'translateY(0)'
+      })
+    }, 200)
   }
 
   window.handleMonthCellClick = function(e, dateStr) {
