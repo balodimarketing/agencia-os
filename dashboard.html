@@ -1242,9 +1242,11 @@
         </div>
       </div>
 
-      <div class="form-field" style="margin-top:16px">
-        <label class="form-label">Puesto</label>
-        <input type="text" class="form-input" id="profile-puesto" placeholder="Ej: Community Manager, Diseñador...">
+      <div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+        <div class="profile-info-row" style="border-bottom:none;padding:0">
+          <div class="profile-info-lbl">Puesto</div>
+          <div class="profile-info-val" id="profile-puesto-display">—</div>
+        </div>
       </div>
 
       <div class="form-field">
@@ -1759,7 +1761,7 @@
     document.getElementById('profile-email-display').textContent = user?.email || '—'
     document.getElementById('profile-nombre').value = profileData?.nombre || ''
     document.getElementById('profile-apellido').value = profileData?.apellido || ''
-    document.getElementById('profile-puesto').value = profileData?.puesto || ''
+    document.getElementById('profile-puesto-display').textContent = profileData?.puesto || 'Sin puesto asignado'
     document.getElementById('profile-bio').value = profileData?.bio || ''
     document.getElementById('profile-error').classList.remove('show')
     newAvatarFile = null
@@ -1811,7 +1813,7 @@
   window.saveProfile = async function() {
     const nombre = document.getElementById('profile-nombre').value.trim()
     const apellido = document.getElementById('profile-apellido').value.trim()
-    const puesto = document.getElementById('profile-puesto').value.trim()
+    const puesto = profileData?.puesto || null
     const bio = document.getElementById('profile-bio').value.trim()
     const errEl = document.getElementById('profile-error')
     errEl.classList.remove('show')
@@ -1841,7 +1843,7 @@
 
     const { error } = await supabase
       .from('profiles')
-      .update({ nombre, apellido, puesto: puesto||null, bio: bio||null, avatar_url })
+      .update({ nombre, apellido, bio: bio||null, avatar_url })
       .eq('id', currentUserId)
 
     btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
@@ -1851,13 +1853,7 @@
     profileData = { ...profileData, nombre, apellido, puesto, bio, avatar_url }
     updateRailAvatar()
 
-    // Update agency_members puesto too
-    if (puesto) {
-      await supabase.from('agency_members')
-        .update({ puesto })
-        .eq('user_id', currentUserId)
-        .eq('agency_id', agencyId)
-    }
+
 
     closeProfileModal()
     showToast('✓ Perfil actualizado')
