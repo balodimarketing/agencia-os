@@ -1210,13 +1210,24 @@
   async function loadClients() {
     if (!agencyId) return
     if (userRole === 'MEMBER') {
-      // Only load assigned clients
-      const myMember = teamMembers.find(m => m.user_id === currentUserId)
-      if (!myMember) { clients = []; return }
+      // Get the member's own record directly by user_id
+      const { data: myMemberData } = await supabase
+        .from('agency_members')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('agency_id', agencyId)
+        .eq('status', 'active')
+        .single()
+      if (!myMemberData) { clients = []; return }
+      const myMemberId = myMemberData.id
+      // Update teamMembers ref so other functions can use it
+      if (!teamMembers.find(m => m.user_id === currentUserId)) {
+        teamMembers.push({ id: myMemberId, user_id: currentUserId, role: userRole })
+      }
       const { data: mc } = await supabase
         .from('member_clients')
         .select('client_id')
-        .eq('agency_member_id', myMember.id)
+        .eq('agency_member_id', myMemberId)
       const clientIds = (mc || []).map(r => r.client_id)
       if (clientIds.length === 0) { clients = []; return }
       const { data, error } = await supabase
@@ -1760,13 +1771,18 @@
 
   async function loadTasks() {
     if (userRole === 'MEMBER') {
-      const myMember = teamMembers.find(m => m.user_id === currentUserId)
-      if (!myMember) { tasks = []; return }
+      const { data: myMemberData } = await supabase
+        .from('agency_members')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('agency_id', agencyId)
+        .single()
+      if (!myMemberData) { tasks = []; return }
       const { data } = await supabase
         .from('content_tasks')
         .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
         .eq('agency_id', agencyId)
-        .eq('asignado_a', myMember.id)
+        .eq('asignado_a', myMemberData.id)
         .order('created_at', { ascending: false })
       tasks = data || []
     } else {
