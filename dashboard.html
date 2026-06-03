@@ -1942,9 +1942,9 @@
       : `<button onclick="generateApprovalLink('${p.id}')" style="width:100%;margin-top:12px;padding:10px;border-radius:var(--r);font-size:12px;font-weight:700;border:1.5px dashed var(--border);background:transparent;color:var(--ink3);cursor:pointer;font-family:inherit;transition:all .16s" onmouseover="this.style.borderColor='var(--celeste)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">+ Generar link de aprobación</button>`
 
     const cambiosAlert = p.aprobacion_comentario
-      ? `<div style="background:#FFF5F5;border:1px solid #FECACA;border-radius:var(--r);padding:12px 14px;margin-bottom:12px">
-          <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Cambios solicitados</div>
-          <div style="font-size:12px;color:#DC2626;line-height:1.5">${p.aprobacion_comentario}</div>
+      ? `<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+          <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔄 Cambios solicitados por el cliente</div>
+          <div style="font-size:13px;color:#DC2626;line-height:1.6">${p.aprobacion_comentario}</div>
         </div>`
       : ''
 
