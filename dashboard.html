@@ -1208,28 +1208,18 @@
   // ══════════════════════════════════════
 
   async function loadClients() {
-    if (!agencyId) return
     if (userRole === 'MEMBER') {
-      // Get member record with agency_id directly
-      const { data: myMemberData } = await supabase
-        .from('agency_members')
-        .select('id, agency_id')
-        .eq('user_id', currentUserId)
-        .eq('status', 'active')
-        .maybeSingle()
-      if (!myMemberData) { clients = []; return }
-      const myMemberId = myMemberData.id
-      // Set agencyId from member record if not already set
-      if (!agencyId) agencyId = myMemberData.agency_id
-      if (!teamMembers.find(m => m.user_id === currentUserId)) {
-        teamMembers.push({ id: myMemberId, user_id: currentUserId, role: userRole })
-      }
-      const { data: mc } = await supabase
+      // Step 1: get client IDs via RPC-style join avoiding global agencyId
+      const { data: mcRows } = await supabase
         .from('member_clients')
-        .select('client_id')
-        .eq('agency_member_id', myMemberId)
-      const clientIds = (mc || []).map(r => r.client_id)
+        .select('client_id, agency_members!inner(user_id, status)')
+        .eq('agency_members.user_id', currentUserId)
+        .eq('agency_members.status', 'active')
+
+      const clientIds = (mcRows || []).map(r => r.client_id)
       if (clientIds.length === 0) { clients = []; return }
+
+      // Step 2: load those clients
       const { data, error } = await supabase
         .from('clients')
         .select('*')
@@ -1237,6 +1227,7 @@
         .order('created_at', { ascending: false })
       if (!error) clients = data || []
     } else {
+      if (!agencyId) return
       const { data, error } = await supabase
         .from('clients')
         .select('*')
