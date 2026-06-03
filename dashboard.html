@@ -689,6 +689,50 @@
 
     .ms-name { flex: 1; font-weight: 500; }
     .ms-puesto { font-size: 11px; color: var(--ink3); }
+
+    /* ══════════════════════════
+       PERFIL
+    ══════════════════════════ */
+    .profile-av-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 12px; margin-bottom: 24px;
+    }
+
+    .profile-av-lg {
+      width: 80px; height: 80px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: 900; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: all var(--t);
+    }
+
+    .profile-av-lg img {
+      width: 100%; height: 100%; object-fit: cover;
+      position: absolute; inset: 0;
+    }
+
+    .profile-av-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity var(--t);
+      color: #fff; font-size: 20px;
+    }
+
+    .profile-av-lg:hover .profile-av-overlay { opacity: 1; }
+
+    .profile-av-hint {
+      font-size: 11px; color: var(--ink3); font-weight: 600;
+    }
+
+    .profile-info-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .profile-info-row:last-child { border-bottom: none; }
+    .profile-info-lbl { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; width: 80px; flex-shrink: 0; }
+    .profile-info-val { color: var(--ink2); font-weight: 500; flex: 1; }
   </style>
 </head>
 <body>
@@ -712,7 +756,7 @@
         <div class="notif-dot" id="notif-dot"></div>
       </div>
       <div class="rail-btn" data-tip="Cerrar sesión" onclick="handleSignOut()"><i class="ti ti-logout"></i></div>
-      <div class="rail-av" id="rail-av"></div>
+      <div class="rail-av" id="rail-av" data-tip="Mi perfil" onclick="openProfileModal()" style="cursor:pointer"></div>
     </div>
   </div>
 
@@ -1158,6 +1202,66 @@
   </div>
 </div>
 
+<!-- MODAL PERFIL -->
+<div class="modal-overlay" id="modal-profile" onclick="if(event.target===this)closeProfileModal()">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-title">Mi perfil</div>
+      <button class="modal-close" onclick="closeProfileModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="profile-error"></div>
+
+      <!-- Avatar -->
+      <div class="profile-av-wrap">
+        <div class="profile-av-lg" id="profile-av-lg" onclick="document.getElementById('profile-avatar-input').click()">
+          <span id="profile-av-initials"></span>
+          <img id="profile-av-img" style="display:none">
+          <div class="profile-av-overlay"><i class="ti ti-camera"></i></div>
+        </div>
+        <div class="profile-av-hint">Tocá para cambiar la foto</div>
+        <input type="file" id="profile-avatar-input" accept="image/*" style="display:none" onchange="previewAvatar(this)">
+      </div>
+
+      <!-- Email (readonly) -->
+      <div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+        <div class="profile-info-row" style="border-bottom:none;padding:0">
+          <div class="profile-info-lbl">Email</div>
+          <div class="profile-info-val" id="profile-email-display">—</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Nombre</label>
+          <input type="text" class="form-input" id="profile-nombre" placeholder="Tu nombre">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Apellido</label>
+          <input type="text" class="form-input" id="profile-apellido" placeholder="Tu apellido">
+        </div>
+      </div>
+
+      <div class="form-field" style="margin-top:16px">
+        <label class="form-label">Puesto</label>
+        <input type="text" class="form-input" id="profile-puesto" placeholder="Ej: Community Manager, Diseñador...">
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Bio</label>
+        <textarea class="form-input form-textarea" id="profile-bio" style="min-height:80px" placeholder="Contá algo sobre vos, tu especialidad, cómo trabajás..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeProfileModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" id="btn-save-profile" onclick="saveProfile()">
+        <span id="btn-save-profile-text">Guardar cambios</span>
+        <div class="spinner" id="profile-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- NOTIFICATION OVERLAY -->
 <div class="notif-overlay" id="notif-overlay" onclick="closeNotifPanel()"></div>
 
@@ -1563,6 +1667,9 @@
     await loadClients()
     await loadInviteCode()
 
+    // Load profile
+    await loadProfile()
+
     // Start real-time notifications
     subscribeToNotifications()
     await loadNotifications()
@@ -1607,6 +1714,150 @@
   }
 
 
+
+
+  // ══════════════════════════════════════
+  // PERFIL
+  // ══════════════════════════════════════
+
+  let profileData = null
+  let newAvatarFile = null
+  let newAvatarPreview = null
+
+  async function loadProfile() {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUserId)
+      .single()
+    profileData = data
+    updateRailAvatar()
+  }
+
+  function updateRailAvatar() {
+    if (!profileData) return
+    const av = document.getElementById('rail-av')
+    if (profileData.avatar_url) {
+      av.innerHTML = `<img src="${profileData.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover">`
+      av.style.background = 'transparent'
+    } else {
+      const ini = ((profileData.nombre?.[0]||'') + (profileData.apellido?.[0]||'')).toUpperCase()
+      av.textContent = ini
+      av.style.background = '#1a3a5c'
+      av.style.color = 'var(--celeste)'
+    }
+  }
+
+  window.openProfileModal = async function() {
+    if (!profileData) await loadProfile()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    document.getElementById('profile-email-display').textContent = user?.email || '—'
+    document.getElementById('profile-nombre').value = profileData?.nombre || ''
+    document.getElementById('profile-apellido').value = profileData?.apellido || ''
+    document.getElementById('profile-puesto').value = profileData?.puesto || ''
+    document.getElementById('profile-bio').value = profileData?.bio || ''
+    document.getElementById('profile-error').classList.remove('show')
+    newAvatarFile = null
+    newAvatarPreview = null
+
+    // Avatar display
+    const ini = ((profileData?.nombre?.[0]||'') + (profileData?.apellido?.[0]||'')).toUpperCase()
+    const avLg = document.getElementById('profile-av-lg')
+    const avImg = document.getElementById('profile-av-img')
+    const avInitials = document.getElementById('profile-av-initials')
+
+    if (profileData?.avatar_url) {
+      avImg.src = profileData.avatar_url
+      avImg.style.display = 'block'
+      avInitials.style.display = 'none'
+      avLg.style.background = '#f0f0f0'
+    } else {
+      avImg.style.display = 'none'
+      avInitials.style.display = 'block'
+      avInitials.textContent = ini
+      avLg.style.background = '#1a3a5c'
+      avLg.style.color = 'var(--celeste)'
+    }
+
+    document.getElementById('modal-profile').classList.add('show')
+  }
+
+  window.closeProfileModal = function() {
+    document.getElementById('modal-profile').classList.remove('show')
+  }
+
+  window.previewAvatar = function(input) {
+    const file = input.files[0]
+    if (!file) return
+    newAvatarFile = file
+    const reader = new FileReader()
+    reader.onload = e => {
+      newAvatarPreview = e.target.result
+      const avImg = document.getElementById('profile-av-img')
+      const avInitials = document.getElementById('profile-av-initials')
+      avImg.src = newAvatarPreview
+      avImg.style.display = 'block'
+      avInitials.style.display = 'none'
+      document.getElementById('profile-av-lg').style.background = '#f0f0f0'
+    }
+    reader.readAsDataURL(file)
+  }
+
+  window.saveProfile = async function() {
+    const nombre = document.getElementById('profile-nombre').value.trim()
+    const apellido = document.getElementById('profile-apellido').value.trim()
+    const puesto = document.getElementById('profile-puesto').value.trim()
+    const bio = document.getElementById('profile-bio').value.trim()
+    const errEl = document.getElementById('profile-error')
+    errEl.classList.remove('show')
+
+    if (!nombre) { errEl.textContent = 'El nombre es obligatorio.'; errEl.classList.add('show'); return }
+
+    const btn = document.getElementById('btn-save-profile')
+    const spinner = document.getElementById('profile-spinner')
+    const btnText = document.getElementById('btn-save-profile-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    let avatar_url = profileData?.avatar_url || null
+
+    // Upload new avatar if selected
+    if (newAvatarFile) {
+      btnText.textContent = 'Subiendo foto...'
+      const ext = newAvatarFile.name.split('.').pop()
+      const path = `${currentUserId}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, newAvatarFile, { upsert: true })
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
+        avatar_url = urlData.publicUrl + '?t=' + Date.now()
+      }
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ nombre, apellido, puesto: puesto||null, bio: bio||null, avatar_url })
+      .eq('id', currentUserId)
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
+
+    if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
+
+    profileData = { ...profileData, nombre, apellido, puesto, bio, avatar_url }
+    updateRailAvatar()
+
+    // Update agency_members puesto too
+    if (puesto) {
+      await supabase.from('agency_members')
+        .update({ puesto })
+        .eq('user_id', currentUserId)
+        .eq('agency_id', agencyId)
+    }
+
+    closeProfileModal()
+    showToast('✓ Perfil actualizado')
+  }
 
   // ══════════════════════════════════════
   // NOTIFICACIONES
@@ -2746,6 +2997,7 @@
       closeMemberModal()
       closeDeleteMemberModal()
       closeInviteModal()
+      closeProfileModal()
       closePieceModal()
       closePieceDetail()
       closeTaskModal()
