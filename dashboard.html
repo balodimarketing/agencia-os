@@ -644,7 +644,7 @@
     <div class="rail-btn active" data-module="inicio" data-tip="Inicio" onclick="switchModule(this)"><i class="ti ti-layout-dashboard"></i></div>
     <div class="rail-btn" data-module="cuentas" data-tip="Cuentas" onclick="switchModule(this)"><i class="ti ti-building"></i></div>
     <div class="rail-btn" data-module="contenido" data-tip="Contenido" onclick="switchModule(this)"><i class="ti ti-photo"></i></div>
-    <div class="rail-btn" data-module="equipo" data-tip="Equipo" onclick="switchModule(this)"><i class="ti ti-users"></i></div>
+    <div class="rail-btn" data-module="equipo" data-tip="Equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i></div>
     <div class="rail-divider"></div>
     <div class="rail-btn" data-module="crm" data-tip="CRM" onclick="switchModule(this)"><i class="ti ti-address-book"></i></div>
     <div class="rail-bottom">
@@ -1170,6 +1170,15 @@
     document.getElementById('ws-cta-label').textContent = modMeta[mod]?.cta || 'Nuevo'
     document.getElementById('panel-title').textContent = modMeta[mod]?.title || mod
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
+    // Hide CTA for MEMBER where not allowed
+    const cta = document.getElementById('ws-cta')
+    if (userRole === 'MEMBER') {
+      if (mod === 'cuentas' || mod === 'equipo') cta.style.display = 'none'
+      else if (mod === 'contenido') { cta.style.display = 'flex'; document.getElementById('ws-cta-label').textContent = 'Nueva tarea' }
+      else cta.style.display = 'none'
+    } else {
+      cta.style.display = 'flex'
+    }
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
@@ -1186,9 +1195,12 @@
 
   // ── CTA button ────────────────────────────────────────
   window.handleCta = function() {
-    if (currentModule === 'cuentas') openClientModal()
-    else if (currentModule === 'equipo') openInviteModal()
-    else if (currentModule === 'contenido') { if(currentContentTab==='piezas') openPieceModal(); else openTaskModal() }
+    if (currentModule === 'cuentas' && userRole !== 'MEMBER') openClientModal()
+    else if (currentModule === 'equipo' && userRole !== 'MEMBER') openInviteModal()
+    else if (currentModule === 'contenido') {
+      if (currentContentTab === 'piezas' && userRole !== 'MEMBER') openPieceModal()
+      else if (currentContentTab === 'tareas') openTaskModal()
+    }
   }
 
   // ══════════════════════════════════════
@@ -1197,19 +1209,37 @@
 
   async function loadClients() {
     if (!agencyId) return
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('agency_id', agencyId)
-      .order('created_at', { ascending: false })
-    if (!error) clients = data || []
+    if (userRole === 'MEMBER') {
+      // Only load assigned clients
+      const myMember = teamMembers.find(m => m.user_id === currentUserId)
+      if (!myMember) { clients = []; return }
+      const { data: mc } = await supabase
+        .from('member_clients')
+        .select('client_id')
+        .eq('agency_member_id', myMember.id)
+      const clientIds = (mc || []).map(r => r.client_id)
+      if (clientIds.length === 0) { clients = []; return }
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .in('id', clientIds)
+        .order('created_at', { ascending: false })
+      if (!error) clients = data || []
+    } else {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('agency_id', agencyId)
+        .order('created_at', { ascending: false })
+      if (!error) clients = data || []
+    }
   }
 
   // ── Panel list ────────────────────────────────────────
   function renderClientsPanel() {
     const body = document.getElementById('panel-body')
     if (clients.length === 0) {
-      body.innerHTML = `<div class="panel-add" onclick="openClientModal()"><i class="ti ti-plus" style="font-size:12px"></i> Nuevo cliente</div>`
+      body.innerHTML = userRole !== 'MEMBER' ? `<div class="panel-add" onclick="openClientModal()"><i class="ti ti-plus" style="font-size:12px"></i> Nuevo cliente</div>` : `<div style="padding:12px;font-size:12px;color:var(--ink3)">Sin clientes asignados</div>`
       return
     }
     body.innerHTML = clients.map(c => {
@@ -1233,15 +1263,9 @@
   function renderClientsGrid() {
     const grid = document.getElementById('clients-grid')
     if (clients.length === 0) {
-      grid.innerHTML = `
-        <div style="grid-column:1/-1">
-          <div class="empty-state">
-            <div class="empty-icon">🏢</div>
-            <div class="empty-title">Sin clientes todavía</div>
-            <div class="empty-sub">Agregá tu primer cliente para empezar a gestionar tu agencia.</div>
-            <button class="tbtn primary" onclick="openClientModal()"><i class="ti ti-plus"></i> Nuevo cliente</button>
-          </div>
-        </div>`
+      grid.innerHTML = userRole === 'MEMBER'
+        ? `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes asignados</div><div class="empty-sub">Tu administrador todavía no te asignó ningún cliente. Contactalo para que lo haga.</div></div></div>`
+        : `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes todavía</div><div class="empty-sub">Agregá tu primer cliente para empezar a gestionar tu agencia.</div><button class="tbtn primary" onclick="openClientModal()"><i class="ti ti-plus"></i> Nuevo cliente</button></div></div>`
       return
     }
     grid.innerHTML = clients.map(c => {
@@ -1454,15 +1478,23 @@
     document.getElementById('greeting-title').textContent = `${saludo}, ${profile?.nombre || ''} 👋`
     document.getElementById('greeting-agency').textContent = membership.agencies?.nombre || ''
 
+    // Restrict UI for MEMBER
+    if (userRole === 'MEMBER') {
+      document.getElementById('rail-equipo-btn').style.display = 'none'
+      document.getElementById('ws-cta').style.display = 'none'
+    }
+
     const ini = ((profile?.nombre?.[0] || '') + (profile?.apellido?.[0] || '')).toUpperCase()
     const av = document.getElementById('rail-av')
     av.textContent = ini
     av.style.background = '#1a3a5c'
     av.style.color = 'var(--celeste)'
 
+    // Load team first so MEMBER filtering works
+    await loadTeam()
+    currentUserId = session.user.id
     await loadClients()
     await loadInviteCode()
-    currentUserId = session.user.id
 
     // Start real-time notifications
     subscribeToNotifications()
@@ -1706,21 +1738,45 @@
 
   // ── Load ──────────────────────────────────────────────
   async function loadPieces() {
-    const { data } = await supabase
-      .from('content_pieces')
-      .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
-      .eq('agency_id', agencyId)
-      .order('created_at', { ascending: false })
-    pieces = data || []
+    if (userRole === 'MEMBER') {
+      const clientIds = clients.map(c => c.id)
+      if (clientIds.length === 0) { pieces = []; return }
+      const { data } = await supabase
+        .from('content_pieces')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .eq('agency_id', agencyId)
+        .in('client_id', clientIds)
+        .order('created_at', { ascending: false })
+      pieces = data || []
+    } else {
+      const { data } = await supabase
+        .from('content_pieces')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .eq('agency_id', agencyId)
+        .order('created_at', { ascending: false })
+      pieces = data || []
+    }
   }
 
   async function loadTasks() {
-    const { data } = await supabase
-      .from('content_tasks')
-      .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
-      .eq('agency_id', agencyId)
-      .order('created_at', { ascending: false })
-    tasks = data || []
+    if (userRole === 'MEMBER') {
+      const myMember = teamMembers.find(m => m.user_id === currentUserId)
+      if (!myMember) { tasks = []; return }
+      const { data } = await supabase
+        .from('content_tasks')
+        .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
+        .eq('agency_id', agencyId)
+        .eq('asignado_a', myMember.id)
+        .order('created_at', { ascending: false })
+      tasks = data || []
+    } else {
+      const { data } = await supabase
+        .from('content_tasks')
+        .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
+        .eq('agency_id', agencyId)
+        .order('created_at', { ascending: false })
+      tasks = data || []
+    }
   }
 
   async function renderContenido() {
