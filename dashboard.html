@@ -2098,13 +2098,14 @@
     const cs = document.getElementById('piece-client')
     cs.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${p?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
 
-    // Populate responsables multiselect - load team if not loaded yet
+    // Show modal first, then populate responsables
+    document.getElementById('modal-piece').classList.add('show')
+    setTimeout(() => document.getElementById('piece-titulo').focus(), 100)
+
+    // Populate responsables multiselect after modal is visible
     if (teamMembers.length === 0) await loadTeam()
     const assignedIds = (p?.piece_responsables || []).map(r => r.agency_member_id)
     renderMsDropdown(assignedIds)
-
-    document.getElementById('modal-piece').classList.add('show')
-    setTimeout(() => document.getElementById('piece-titulo').focus(), 100)
   }
 
   window.closePieceModal = function() {
