@@ -1204,34 +1204,47 @@
 
 <!-- MODAL PERFIL -->
 <div class="modal-overlay" id="modal-profile" onclick="if(event.target===this)closeProfileModal()">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-head">
-      <div class="modal-title">Mi perfil</div>
-      <button class="modal-close" onclick="closeProfileModal()"><i class="ti ti-x"></i></button>
+  <div class="modal" style="max-width:460px;overflow:hidden">
+
+    <!-- Header con fondo azul y avatar centrado -->
+    <div style="background:var(--azul);padding:32px 24px 48px;text-align:center;position:relative">
+      <button class="modal-close" onclick="closeProfileModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.12);color:#fff"><i class="ti ti-x"></i></button>
+
+      <div style="position:relative;display:inline-block;margin-bottom:12px">
+        <div class="profile-av-lg" id="profile-av-lg" onclick="document.getElementById('profile-avatar-input').click()" style="width:88px;height:88px;border-radius:50%;border:3px solid rgba(255,255,255,.2);margin:0 auto;font-size:28px">
+          <span id="profile-av-initials" style="color:var(--celeste)"></span>
+          <img id="profile-av-img" style="display:none">
+          <div class="profile-av-overlay" style="border-radius:50%"><i class="ti ti-camera"></i></div>
+        </div>
+        <div style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--celeste);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--azul)" onclick="document.getElementById('profile-avatar-input').click()">
+          <i class="ti ti-camera" style="font-size:11px;color:var(--azul)"></i>
+        </div>
+      </div>
+
+      <div id="profile-header-name" style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px"></div>
+      <div id="profile-header-puesto" style="font-size:12px;color:rgba(142,219,255,.7);margin-top:3px;font-weight:500"></div>
+
+      <input type="file" id="profile-avatar-input" accept="image/*" style="display:none" onchange="previewAvatar(this)">
     </div>
-    <div class="modal-body">
+
+    <!-- Puesto badge centrado solapado -->
+    <div style="display:flex;justify-content:center;margin-top:-18px;margin-bottom:4px">
+      <div id="profile-puesto-badge" style="background:var(--white);border:1px solid var(--border);border-radius:20px;padding:5px 16px;font-size:11px;font-weight:800;color:var(--azul);box-shadow:var(--shadow);letter-spacing:.2px"></div>
+    </div>
+
+    <div class="modal-body" style="padding-top:16px">
       <div class="error-msg" id="profile-error"></div>
 
-      <!-- Avatar -->
-      <div class="profile-av-wrap">
-        <div class="profile-av-lg" id="profile-av-lg" onclick="document.getElementById('profile-avatar-input').click()">
-          <span id="profile-av-initials"></span>
-          <img id="profile-av-img" style="display:none">
-          <div class="profile-av-overlay"><i class="ti ti-camera"></i></div>
-        </div>
-        <div class="profile-av-hint">Tocá para cambiar la foto</div>
-        <input type="file" id="profile-avatar-input" accept="image/*" style="display:none" onchange="previewAvatar(this)">
-      </div>
-
-      <!-- Email (readonly) -->
-      <div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
-        <div class="profile-info-row" style="border-bottom:none;padding:0">
-          <div class="profile-info-lbl">Email</div>
-          <div class="profile-info-val" id="profile-email-display">—</div>
+      <!-- Email -->
+      <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:16px">
+        <i class="ti ti-mail" style="font-size:15px;color:var(--ink3);flex-shrink:0"></i>
+        <div>
+          <div style="font-size:9px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Email</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)" id="profile-email-display">—</div>
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Nombre</label>
           <input type="text" class="form-input" id="profile-nombre" placeholder="Tu nombre">
@@ -1242,18 +1255,15 @@
         </div>
       </div>
 
-      <div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
-        <div class="profile-info-row" style="border-bottom:none;padding:0">
-          <div class="profile-info-lbl">Puesto</div>
-          <div class="profile-info-val" id="profile-puesto-display">—</div>
-        </div>
-      </div>
-
       <div class="form-field">
         <label class="form-label">Bio</label>
-        <textarea class="form-input form-textarea" id="profile-bio" style="min-height:80px" placeholder="Contá algo sobre vos, tu especialidad, cómo trabajás..."></textarea>
+        <textarea class="form-input form-textarea" id="profile-bio" style="min-height:90px" placeholder="Contá algo sobre vos, tu especialidad, cómo trabajás..."></textarea>
       </div>
+
+      <!-- Hidden puesto display for JS -->
+      <div id="profile-puesto-display" style="display:none"></div>
     </div>
+
     <div class="modal-footer">
       <button class="tbtn" style="flex:1" onclick="closeProfileModal()">Cancelar</button>
       <button class="tbtn primary" style="flex:2" id="btn-save-profile" onclick="saveProfile()">
@@ -1761,11 +1771,16 @@
     document.getElementById('profile-email-display').textContent = user?.email || '—'
     document.getElementById('profile-nombre').value = profileData?.nombre || ''
     document.getElementById('profile-apellido').value = profileData?.apellido || ''
-    document.getElementById('profile-puesto-display').textContent = profileData?.puesto || 'Sin puesto asignado'
     document.getElementById('profile-bio').value = profileData?.bio || ''
     document.getElementById('profile-error').classList.remove('show')
     newAvatarFile = null
     newAvatarPreview = null
+
+    // Header name and puesto
+    const fullName = ((profileData?.nombre||'') + ' ' + (profileData?.apellido||'')).trim()
+    document.getElementById('profile-header-name').textContent = fullName || 'Tu nombre'
+    document.getElementById('profile-header-puesto').textContent = profileData?.puesto || ''
+    document.getElementById('profile-puesto-badge').textContent = profileData?.puesto || 'Sin puesto asignado'
 
     // Avatar display
     const ini = ((profileData?.nombre?.[0]||'') + (profileData?.apellido?.[0]||'')).toUpperCase()
@@ -1777,13 +1792,12 @@
       avImg.src = profileData.avatar_url
       avImg.style.display = 'block'
       avInitials.style.display = 'none'
-      avLg.style.background = '#f0f0f0'
+      avLg.style.background = 'transparent'
     } else {
       avImg.style.display = 'none'
       avInitials.style.display = 'block'
       avInitials.textContent = ini
       avLg.style.background = '#1a3a5c'
-      avLg.style.color = 'var(--celeste)'
     }
 
     document.getElementById('modal-profile').classList.add('show')
@@ -1850,8 +1864,12 @@
 
     if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
 
-    profileData = { ...profileData, nombre, apellido, puesto, bio, avatar_url }
+    profileData = { ...profileData, nombre, apellido, bio, avatar_url }
     updateRailAvatar()
+    // Update header if modal still open
+    const fullName = (nombre + ' ' + apellido).trim()
+    const hn = document.getElementById('profile-header-name')
+    if (hn) hn.textContent = fullName
 
 
 
