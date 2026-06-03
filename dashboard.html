@@ -1307,6 +1307,7 @@
     <div class="modal-body" id="piece-detail-body"></div>
     <div class="modal-footer">
       <button class="tbtn" onclick="closePieceDetail()">Cerrar</button>
+      <button class="tbtn" id="btn-timer-piece" onclick="startTimerFromPiece()"><i class="ti ti-player-play"></i> Timer</button>
       <button class="tbtn" id="btn-edit-piece" onclick="editPieceFromDetail()"><i class="ti ti-pencil"></i> Editar</button>
       <button class="tbtn danger" id="btn-delete-piece" onclick="deletePieceFromDetail()"><i class="ti ti-trash"></i></button>
     </div>
@@ -1566,11 +1567,17 @@
       <div id="profile-puesto-display" style="display:none"></div>
     </div>
 
-    <div class="modal-footer">
-      <button class="tbtn" style="flex:1" onclick="closeProfileModal()">Cancelar</button>
-      <button class="tbtn primary" style="flex:2" id="btn-save-profile" onclick="saveProfile()">
-        <span id="btn-save-profile-text">Guardar cambios</span>
-        <div class="spinner" id="profile-spinner"></div>
+    <div class="modal-footer" style="flex-direction:column;gap:10px">
+      <div style="display:flex;gap:8px;width:100%">
+        <button class="tbtn" style="flex:1" onclick="closeProfileModal()">Cancelar</button>
+        <button class="tbtn primary" style="flex:2" id="btn-save-profile" onclick="saveProfile()">
+          <span id="btn-save-profile-text">Guardar cambios</span>
+          <div class="spinner" id="profile-spinner"></div>
+        </button>
+      </div>
+      <button class="tbtn" style="width:100%;color:var(--danger);border-color:rgba(255,107,107,.3)" onclick="handleSignOut()">
+        <i class="ti ti-logout" style="font-size:14px"></i>
+        Cerrar sesión
       </button>
     </div>
   </div>
@@ -3728,6 +3735,9 @@
           </div>
         </div>
         <span class="task-status-badge ts-${t.estado}">${t.estado.replace('-',' ')}</span>
+        <div onclick="event.stopPropagation();startTimerFromTask('${t.id}','${t.titulo.replace(/'/g,"\\'")}\')" title="Iniciar timer" style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink3);cursor:pointer;transition:background .15s,color .15s;flex-shrink:0" onmouseover="this.style.background='var(--celeste-dim)';this.style.color='var(--azul)'" onmouseout="this.style.background='';this.style.color='var(--ink3)'">
+          <i class="ti ti-player-play" style="font-size:14px"></i>
+        </div>
       </div>`
     }).join('')
   }
@@ -4130,6 +4140,105 @@
       .subscribe()
   }
 
+  // ── Timer flotante ──────────────────────────────────────
+  let timerInterval = null
+  let timerSeconds = 0
+  let timerRunning = false
+  let timerPieceId = null
+  let timerTaskId = null
+  let timerContext = null // { tipo: 'pieza'|'tarea', id, titulo }
+
+  function formatTimerTime(s) {
+    const h = Math.floor(s / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+  }
+
+  function tickTimer() {
+    timerSeconds++
+    document.getElementById('timer-display').textContent = formatTimerTime(timerSeconds)
+  }
+
+  window.startTimerFromPiece = function() {
+    const title = document.getElementById('piece-detail-title')?.textContent || 'Pieza'
+    const pieceId = detailPieceId
+    if (!pieceId) return
+    launchTimer('pieza', pieceId, null, title)
+    closePieceDetail()
+  }
+
+  window.startTimerFromTask = function(taskId, titulo) {
+    launchTimer('tarea', null, taskId, titulo)
+  }
+
+  function launchTimer(tipo, pieceId, taskId, titulo) {
+    // Si ya hay un timer corriendo, pregunta
+    if (timerRunning || timerInterval) {
+      if (!confirm('Ya hay un timer corriendo. ¿Descartarlo y empezar uno nuevo?')) return
+      clearInterval(timerInterval)
+      timerInterval = null
+    }
+    timerSeconds = 0
+    timerRunning = true
+    timerPieceId = pieceId
+    timerTaskId = taskId
+    timerContext = { tipo, titulo }
+
+    document.getElementById('timer-label').textContent = tipo === 'pieza' ? 'Pieza' : 'Tarea'
+    document.getElementById('timer-title').textContent = titulo
+    document.getElementById('timer-display').textContent = '00:00:00'
+    document.getElementById('timer-play-icon').className = 'ti ti-player-pause'
+    document.getElementById('timer-play-btn').childNodes[1].textContent = ' Pausar'
+    document.getElementById('float-timer').style.display = 'block'
+
+    timerInterval = setInterval(tickTimer, 1000)
+  }
+
+  window.toggleTimer = function() {
+    if (timerRunning) {
+      clearInterval(timerInterval)
+      timerInterval = null
+      timerRunning = false
+      document.getElementById('timer-play-icon').className = 'ti ti-player-play'
+      document.getElementById('timer-play-btn').innerHTML = '<i class="ti ti-player-play" id="timer-play-icon" style="font-size:14px"></i> Reanudar'
+    } else {
+      timerRunning = true
+      timerInterval = setInterval(tickTimer, 1000)
+      document.getElementById('timer-play-btn').innerHTML = '<i class="ti ti-player-pause" id="timer-play-icon" style="font-size:14px"></i> Pausar'
+    }
+  }
+
+  window.stopTimer = async function() {
+    if (timerSeconds < 5) {
+      clearInterval(timerInterval)
+      timerInterval = null
+      timerRunning = false
+      document.getElementById('float-timer').style.display = 'none'
+      return
+    }
+    clearInterval(timerInterval)
+    timerInterval = null
+    timerRunning = false
+
+    // Guardar en DB
+    await supabase.from('time_logs').insert({
+      agency_id: agencyId,
+      user_id: currentUserId,
+      piece_id: timerPieceId || null,
+      task_id: timerTaskId || null,
+      duracion_segundos: timerSeconds,
+      tipo: 'pomodoro'
+    })
+
+    showToast(`✓ ${formatTimerTime(timerSeconds)} registrado`)
+    document.getElementById('float-timer').style.display = 'none'
+    timerSeconds = 0
+    timerPieceId = null
+    timerTaskId = null
+    timerContext = null
+  }
+
   // ── Escape para cerrar modales
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
@@ -4150,5 +4259,20 @@
 
   init()
 </script>
+<!-- ── Timer flotante ── -->
+<div id="float-timer" style="display:none;position:fixed;bottom:24px;right:24px;z-index:500;background:var(--azul);color:#fff;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,.25);padding:14px 20px;min-width:240px;font-family:'Plus Jakarta Sans',sans-serif;transition:all .22s cubic-bezier(.4,0,.2,1)">
+  <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;opacity:.6;margin-bottom:4px" id="timer-label">Pieza</div>
+  <div style="font-size:11px;font-weight:700;opacity:.8;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px" id="timer-title">—</div>
+  <div style="font-size:32px;font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums;margin-bottom:12px" id="timer-display">00:00:00</div>
+  <div style="display:flex;gap:8px">
+    <button id="timer-play-btn" onclick="toggleTimer()" style="flex:1;padding:8px;border:none;border-radius:10px;background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+      <i class="ti ti-player-pause" id="timer-play-icon" style="font-size:14px"></i> Pausar
+    </button>
+    <button onclick="stopTimer()" style="padding:8px 14px;border:none;border-radius:10px;background:rgba(255,107,107,.25);color:#ff9999;font-size:12px;font-weight:800;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(255,107,107,.4)'" onmouseout="this.style.background='rgba(255,107,107,.25)'">
+      <i class="ti ti-square" style="font-size:14px"></i>
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
