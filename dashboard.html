@@ -1045,8 +1045,14 @@
       </div>
 
       <div class="form-field" style="margin-top:16px">
-        <label class="form-label">Responsable</label>
-        <div id="piece-responsables-list" class="redes-grid" style="gap:8px"></div>
+        <label class="form-label">Responsables</label>
+        <div class="ms-wrap" id="ms-responsables-wrap">
+          <div class="ms-trigger" id="ms-responsables-trigger" onclick="toggleMsDropdown(event)">
+            <span class="ms-trigger-text" id="ms-trigger-text">Sin asignar</span>
+            <span class="ms-trigger-arrow">▼</span>
+          </div>
+          <div class="ms-dropdown" id="ms-responsables-dropdown"></div>
+        </div>
       </div>
 
       <div class="form-field">
