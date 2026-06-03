@@ -1358,7 +1358,7 @@
 
 <!-- MODAL NUEVO EVENTO -->
 <!-- Modal día completo -->
-<div class="modal-overlay" id="modal-day" onclick="if(event.target===this)closeDayModal()" style="display:none">
+<div class="modal-overlay" id="modal-day" onclick="if(event.target===this)closeDayModal()">
   <div class="modal" style="max-width:400px">
     <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between">
       <div>
@@ -1367,13 +1367,7 @@
       </div>
       <button class="modal-close" onclick="closeDayModal()">✕</button>
     </div>
-    <div id="day-modal-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;padding:4px 2px"></div>
-    <div style="margin-top:20px">
-      <button class="btn btn-primary" onclick="closeDayModal();setTimeout(()=>openEventModal(window.dayModalIso),250)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nuevo evento
-      </button>
-    </div>
+    <div id="day-modal-list" style="display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;padding:4px 2px"></div>
   </div>
 </div>
 
@@ -2319,20 +2313,28 @@
       const isoStr = cellDate.toISOString()
       const dayNumStyle = !isOther ? 'cursor:pointer' : ''
       const dayNum = isToday
-        ? `<div class="cal-month-day today-m" onclick="event.stopPropagation();openDayModal('${isoStr}')" style="cursor:pointer">${cellDate.getDate()}</div>`
-        : `<div class="cal-month-day ${isOther?'other-m':''}" onclick="event.stopPropagation();openDayModal('${isoStr}')" style="${dayNumStyle}">${cellDate.getDate()}</div>`
+        ? `<div class="cal-month-day today-m cal-day-num-click" data-iso="${isoStr}" style="cursor:pointer">${cellDate.getDate()}</div>`
+        : `<div class="cal-month-day ${isOther?'other-m':''} ${!isOther?'cal-day-num-click':''}" data-iso="${isoStr}" style="${dayNumStyle}">${cellDate.getDate()}</div>`
 
       const dayEvents = allEvents.filter(e => new Date(e.fecha_inicio).toDateString() === cellDate.toDateString())
       const eventsHTML = dayEvents.slice(0,3).map(e =>
         `<div class="cal-month-event" style="background:${e.color}22;color:${e.color}" onclick="openEventDetail('${e.id}')">${e.titulo}</div>`
       ).join('')
-      const more = dayEvents.length > 3 ? `<div data-daymodal style="font-size:9px;color:var(--ink3);font-weight:700;cursor:pointer;padding:2px 4px" onclick="event.stopPropagation();openDayModal('${isoStr}')">+${dayEvents.length-3} más</div>` : ''
+      const more = dayEvents.length > 3 ? `<div class="cal-day-num-click" data-iso="${isoStr}" style="font-size:9px;color:var(--ink3);font-weight:700;cursor:pointer;padding:2px 4px">+${dayEvents.length-3} más</div>` : ''
 
       html += `<div class="cal-month-cell" style="${isOther?'background:#FAFBFC':''}">${dayNum}${eventsHTML}${more}</div>`
     }
 
     html += `</div>`
     grid.innerHTML = html
+
+    // Event delegation para número de día y +X más
+    grid.querySelectorAll('.cal-day-num-click').forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation()
+        openDayModal(el.dataset.iso)
+      })
+    })
   }
 
   window.dayModalIso = ''
@@ -2374,14 +2376,11 @@
     }
 
     const overlay = document.getElementById('modal-day')
-    overlay.style.display = 'flex'
-    requestAnimationFrame(() => overlay.classList.add('open'))
+    requestAnimationFrame(() => overlay.classList.add('show'))
   }
 
   window.closeDayModal = function() {
-    const overlay = document.getElementById('modal-day')
-    overlay.classList.remove('open')
-    setTimeout(() => { overlay.style.display = 'none' }, 220)
+    document.getElementById('modal-day').classList.remove('show')
   }
 
   window.calShowMoreDay = function(isoDate) {
