@@ -920,34 +920,22 @@
     </div>
 
     <!-- CALENDARIO -->
-    <div class="view" id="v-calendario" style="padding:0;display:none;flex-direction:row;overflow:hidden;height:calc(100vh - 52px)">
-      <!-- Side panel: piezas publicadas sin fecha -->
-      <div id="cal-sidepanel" style="width:260px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden">
-        <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
-          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Por programar</div>
-          <div style="font-size:11px;color:var(--ink3);font-weight:500">Piezas aprobadas sin fecha</div>
+    <div class="view" id="v-calendario" style="padding:0;display:none;flex-direction:column;overflow:hidden;height:calc(100vh - 52px)">
+      <!-- Cal toolbar -->
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
+        <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
+          <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
+          <div class="cal-view-btn" id="cal-btn-mes" onclick="switchCalView('mes')">Mes</div>
         </div>
-        <div id="cal-pieces-list" style="flex:1;overflow-y:auto;padding:8px"></div>
-      </div>
-
-      <!-- Calendar main -->
-      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0">
-        <!-- Cal toolbar -->
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
-          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
-            <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
-            <div class="cal-view-btn" id="cal-btn-mes" onclick="switchCalView('mes')">Mes</div>
-          </div>
-          <button class="tbtn" onclick="calToday()" style="padding:6px 12px;font-size:11px">Hoy</button>
-          <div style="display:flex;gap:4px">
-            <button class="tbtn" onclick="calNav(-1)" style="padding:6px 10px"><i class="ti ti-chevron-left" style="font-size:13px"></i></button>
-            <button class="tbtn" onclick="calNav(1)" style="padding:6px 10px"><i class="ti ti-chevron-right" style="font-size:13px"></i></button>
-          </div>
-          <div id="cal-range-label" style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.2px;flex:1;text-align:center"></div>
+        <button class="tbtn" onclick="calToday()" style="padding:6px 12px;font-size:11px">Hoy</button>
+        <div style="display:flex;gap:4px">
+          <button class="tbtn" onclick="calNav(-1)" style="padding:6px 10px"><i class="ti ti-chevron-left" style="font-size:13px"></i></button>
+          <button class="tbtn" onclick="calNav(1)" style="padding:6px 10px"><i class="ti ti-chevron-right" style="font-size:13px"></i></button>
         </div>
-        <!-- Cal grid -->
-        <div id="cal-grid" style="flex:1;overflow:auto"></div>
+        <div id="cal-range-label" style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;flex:1;text-align:center"></div>
       </div>
+      <!-- Cal grid -->
+      <div id="cal-grid" style="flex:1;overflow:auto"></div>
     </div>
 
   </div>
@@ -1344,14 +1332,37 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Inicio</label>
-          <input type="datetime-local" class="form-input" id="event-inicio" style="font-size:12px">
+      <div style="margin-top:16px;background:var(--bg);border-radius:var(--r);padding:14px 16px">
+        <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Fecha y horario</div>
+        <div class="form-field" style="margin-bottom:12px">
+          <label class="form-label">Fecha</label>
+          <input type="date" class="form-input" id="event-date" style="font-size:13px">
         </div>
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Fin</label>
-          <input type="datetime-local" class="form-input" id="event-fin" style="font-size:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label class="form-label">Hora inicio</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <select class="form-input form-select" id="event-h-inicio" style="flex:1">
+                ${Array.from({length:24},(_,i)=>`<option value="${i}">${String(i).padStart(2,'0')}</option>`).join('')}
+              </select>
+              <span style="font-size:14px;font-weight:800;color:var(--ink3)">:</span>
+              <select class="form-input form-select" id="event-m-inicio" style="flex:1">
+                <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Hora fin</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <select class="form-input form-select" id="event-h-fin" style="flex:1">
+                ${Array.from({length:24},(_,i)=>`<option value="${i}">${String(i).padStart(2,'0')}</option>`).join('')}
+              </select>
+              <span style="font-size:14px;font-weight:800;color:var(--ink3)">:</span>
+              <select class="form-input form-select" id="event-m-fin" style="flex:1">
+                <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1954,7 +1965,6 @@
 
   async function renderCalendario() {
     await Promise.all([loadCalendarEvents(), loadPublishedPieces()])
-    renderCalSidePanel()
     renderCalGrid()
     renderCalPanel()
   }
@@ -1962,46 +1972,62 @@
   function renderCalPanel() {
     const body = document.getElementById('panel-body')
     document.getElementById('panel-sub').textContent = `${calEvents.length} evento${calEvents.length!==1?'s':''}`
-    body.innerHTML = calEvents.slice(0,8).map(e => {
+
+    // Upcoming events
+    const eventsHTML = calEvents.slice(0,6).map(e => {
       const d = new Date(e.fecha_inicio)
       const label = d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})
+      const time = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
       return `<div class="panel-item" onclick="openEventDetail('${e.id}')">
         <div class="pi-row">
           <div class="pi-av" style="background:${e.color}22;color:${e.color}"><i class="ti ti-${e.tipo==='reunion'?'video':'calendar-event'}" style="font-size:12px"></i></div>
           <div class="pi-name">${e.titulo}</div>
         </div>
-        <div class="pi-meta">${label}${e.fecha_inicio ? ' · ' + new Date(e.fecha_inicio).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
-      </div>`
-    }).join('') + `<div class="panel-add" onclick="openEventModal()"><i class="ti ti-plus" style="font-size:12px"></i> Nuevo evento</div>`
-  }
-
-  // ── Side panel: published pieces ─────────────────────────
-  function renderCalSidePanel() {
-    const list = document.getElementById('cal-pieces-list')
-    if (!list) return
-    if (calPublishedPieces.length === 0) {
-      list.innerHTML = `<div style="padding:12px;font-size:11px;color:var(--ink3);text-align:center;line-height:1.5">Las piezas aprobadas aparecerán acá para programarlas.</div>`
-      return
-    }
-    list.innerHTML = calPublishedPieces.map(p => {
-      const scheduled = p.fecha_publicacion
-        ? `<div class="cal-scheduled-date">📅 ${new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`
-        : ''
-      return `<div class="cal-piece-card" id="calp-${p.id}">
-        <div class="cal-piece-head" onclick="toggleCalPiece('${p.id}')">
-          <div class="cal-piece-dot" style="background:#34C759"></div>
-          <div class="cal-piece-title">${p.titulo}</div>
-          <div class="cal-piece-arrow">▼</div>
-        </div>
-        <div class="cal-piece-body">
-          <div class="cal-piece-client">${p.clients?.nombre || 'Sin cliente'}</div>
-          <input type="datetime-local" class="form-input" id="cal-date-${p.id}" value="${p.fecha_publicacion ? new Date(p.fecha_publicacion).toISOString().slice(0,16) : ''}" style="font-size:11px;padding:7px 10px;margin-bottom:8px">
-          <div class="cal-piece-schedule-btn" onclick="schedulePiece('${p.id}')">📅 Programar publicación</div>
-          ${scheduled}
-        </div>
+        <div class="pi-meta">${label} · ${time}</div>
       </div>`
     }).join('')
+
+    // Pieces to schedule section
+    const unpublished = calPublishedPieces.filter(p => !p.fecha_publicacion)
+    const piecesSection = unpublished.length > 0 ? `
+      <div style="margin:8px 2px 4px;padding:8px 10px 6px;border-radius:var(--r-sm);background:var(--bg)">
+        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Por programar (${unpublished.length})</div>
+        ${unpublished.map(p => `
+          <div class="cal-piece-card" id="calp-${p.id}" style="margin-bottom:5px">
+            <div class="cal-piece-head" onclick="toggleCalPiece('${p.id}')">
+              <div class="cal-piece-dot" style="background:#34C759"></div>
+              <div class="cal-piece-title">${p.titulo}</div>
+              <div class="cal-piece-arrow">▼</div>
+            </div>
+            <div class="cal-piece-body">
+              <div class="cal-piece-client">${p.clients?.nombre || 'Sin cliente'}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+                <div>
+                  <div style="font-size:9px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Fecha</div>
+                  <input type="date" class="form-input" id="calp-date-${p.id}" style="font-size:11px;padding:6px 8px">
+                </div>
+                <div>
+                  <div style="font-size:9px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Hora</div>
+                  <div style="display:flex;gap:3px;align-items:center">
+                    <select class="form-input form-select" id="calp-h-${p.id}" style="font-size:11px;padding:6px 4px;padding-right:20px">
+                      ${Array.from({length:24},(_,i)=>`<option value="${i}">${String(i).padStart(2,'0')}</option>`).join('')}
+                    </select>
+                    <span style="font-size:12px;font-weight:700;color:var(--ink3)">:</span>
+                    <select class="form-input form-select" id="calp-m-${p.id}" style="font-size:11px;padding:6px 4px;padding-right:20px">
+                      <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="cal-piece-schedule-btn" onclick="schedulePiece('${p.id}')">Programar publicación</div>
+            </div>
+          </div>`).join('')}
+      </div>` : ''
+
+    body.innerHTML = eventsHTML + piecesSection + `<div class="panel-add" onclick="openEventModal()"><i class="ti ti-plus" style="font-size:12px"></i> Nuevo evento</div>`
   }
+
+  // renderCalSidePanel moved to renderCalPanel
 
   window.toggleCalPiece = function(id) {
     const card = document.getElementById('calp-' + id)
@@ -2009,14 +2035,20 @@
   }
 
   window.schedulePiece = async function(id) {
-    const input = document.getElementById('cal-date-' + id)
-    const val = input?.value
-    if (!val) { showToast('Seleccioná una fecha'); return }
-    await supabase.from('content_pieces').update({ fecha_publicacion: new Date(val).toISOString() }).eq('id', id)
+    const dateInput = document.getElementById('calp-date-' + id)
+    const hInput = document.getElementById('calp-h-' + id)
+    const mInput = document.getElementById('calp-m-' + id)
+    const dateVal = dateInput?.value
+    if (!dateVal) { showToast('Seleccioná una fecha'); return }
+    const h = hInput?.value || '9'
+    const m = mInput?.value || '0'
+    const d = new Date(dateVal + 'T00:00:00')
+    d.setHours(parseInt(h), parseInt(m), 0, 0)
+    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString() }).eq('id', id)
     showToast('✓ Publicación programada')
     await loadPublishedPieces()
-    renderCalSidePanel()
     await loadCalendarEvents()
+    renderCalPanel()
     renderCalGrid()
   }
 
@@ -2265,10 +2297,12 @@
     document.querySelectorAll('#event-colors div').forEach(d => { d.style.borderColor='transparent'; d.style.boxShadow='none' })
     document.querySelectorAll('#event-colors div')[0].style.boxShadow = '0 0 0 2px #0A2540'
 
-    const now = defaultDate || new Date().toISOString().slice(0,16)
-    document.getElementById('event-inicio').value = now
-    const end = new Date(now); end.setHours(end.getHours()+1)
-    document.getElementById('event-fin').value = end.toISOString().slice(0,16)
+    const now = defaultDate ? new Date(defaultDate) : new Date()
+    document.getElementById('event-date').value = now.toISOString().slice(0,10)
+    document.getElementById('event-h-inicio').value = now.getHours()
+    document.getElementById('event-m-inicio').value = 0
+    document.getElementById('event-h-fin').value = (now.getHours()+1) % 24
+    document.getElementById('event-m-fin').value = 0
 
     document.getElementById('modal-event').classList.add('show')
     setTimeout(() => document.getElementById('event-titulo').focus(), 100)
@@ -2288,8 +2322,13 @@
       document.getElementById('event-tipo').value = ev.tipo
       document.getElementById('event-link').value = ev.link || ''
       document.getElementById('event-descripcion').value = ev.descripcion || ''
-      document.getElementById('event-inicio').value = new Date(ev.fecha_inicio).toISOString().slice(0,16)
-      document.getElementById('event-fin').value = ev.fecha_fin ? new Date(ev.fecha_fin).toISOString().slice(0,16) : ''
+      const evStart = new Date(ev.fecha_inicio)
+      const evEnd = ev.fecha_fin ? new Date(ev.fecha_fin) : null
+      document.getElementById('event-date').value = evStart.toISOString().slice(0,10)
+      document.getElementById('event-h-inicio').value = evStart.getHours()
+      document.getElementById('event-m-inicio').value = [0,15,30,45].reduce((a,b) => Math.abs(b-evStart.getMinutes()) < Math.abs(a-evStart.getMinutes()) ? b : a)
+      document.getElementById('event-h-fin').value = evEnd ? evEnd.getHours() : (evStart.getHours()+1)%24
+      document.getElementById('event-m-fin').value = evEnd ? [0,15,30,45].reduce((a,b) => Math.abs(b-evEnd.getMinutes()) < Math.abs(a-evEnd.getMinutes()) ? b : a) : 0
       selectEventColor(ev.color, document.querySelector(`#event-colors div[style*="${ev.color}"]`) || document.querySelectorAll('#event-colors div')[0])
       document.getElementById('modal-event').classList.add('show')
     }, 150)
@@ -2311,8 +2350,16 @@
     const errEl = document.getElementById('event-error')
     errEl.classList.remove('show')
     if (!titulo) { errEl.textContent = 'El título es obligatorio.'; errEl.classList.add('show'); return }
-    const inicio = document.getElementById('event-inicio').value
-    if (!inicio) { errEl.textContent = 'La fecha de inicio es obligatoria.'; errEl.classList.add('show'); return }
+    const dateVal = document.getElementById('event-date').value
+    if (!dateVal) { errEl.textContent = 'La fecha es obligatoria.'; errEl.classList.add('show'); return }
+    const hI = document.getElementById('event-h-inicio').value
+    const mI = document.getElementById('event-m-inicio').value
+    const hF = document.getElementById('event-h-fin').value
+    const mF = document.getElementById('event-m-fin').value
+    const startDate = new Date(dateVal + 'T00:00:00')
+    startDate.setHours(parseInt(hI), parseInt(mI), 0, 0)
+    const endDate = new Date(dateVal + 'T00:00:00')
+    endDate.setHours(parseInt(hF), parseInt(mF), 0, 0)
 
     const btn = document.getElementById('btn-save-event')
     const spinner = document.getElementById('event-spinner')
@@ -2323,8 +2370,8 @@
       titulo,
       tipo: document.getElementById('event-tipo').value,
       color: document.getElementById('event-color').value || '#0A2540',
-      fecha_inicio: new Date(inicio).toISOString(),
-      fecha_fin: document.getElementById('event-fin').value ? new Date(document.getElementById('event-fin').value).toISOString() : null,
+      fecha_inicio: startDate.toISOString(),
+      fecha_fin: endDate > startDate ? endDate.toISOString() : null,
       link: document.getElementById('event-link').value.trim() || null,
       descripcion: document.getElementById('event-descripcion').value.trim() || null,
       agency_id: agencyId,
