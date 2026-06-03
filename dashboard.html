@@ -2039,9 +2039,11 @@
     const cs = document.getElementById('piece-client')
     cs.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${p?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
 
-    // Populate responsables checkboxes
+    // Populate responsables checkboxes - load team if not loaded yet
+    if (teamMembers.length === 0) await loadTeam()
     const assignedIds = (p?.piece_responsables || []).map(r => r.agency_member_id)
     const rList = document.getElementById('piece-responsables-list')
+    if (!rList) { document.getElementById('modal-piece').classList.add('show'); return }
     rList.innerHTML = teamMembers.map(m => {
       const n = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
       return `<input type="checkbox" class="red-check" id="pr-${m.id}" value="${m.id}" ${assignedIds.includes(m.id)?'checked':''}>
