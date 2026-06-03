@@ -23,7 +23,7 @@
       --danger:      #FF6B6B;
       --warn:        #FFB800;
       --rail-w:      62px;
-      --panel-w:     248px;
+      --panel-w:     0px;
       --topbar-h:    52px;
       --r-sm:        8px;
       --r:           12px;
@@ -833,7 +833,7 @@
   </div>
 
   <!-- PANEL -->
-  <div class="panel">
+  <div class="panel" style="display:none">
     <div class="panel-head">
       <div class="panel-title" id="panel-title">Inicio</div>
       <div class="panel-sub" id="panel-sub">Resumen del día</div>
@@ -1554,8 +1554,6 @@
     } else {
       cta.style.display = 'flex'
     }
-    // Hide left panel for calendario
-    document.querySelector('.panel').style.display = mod === 'calendario' ? 'none' : 'flex'
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
