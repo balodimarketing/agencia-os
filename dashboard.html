@@ -630,6 +630,65 @@
     }
 
     .notif-overlay.open { display: block; }
+
+    /* ── Multi-select dropdown ── */
+    .ms-wrap { position: relative; }
+
+    .ms-trigger {
+      width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+      border-radius: var(--r); font-size: 13px; font-family: inherit;
+      color: var(--ink); background: var(--white); outline: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+      transition: border var(--t), box-shadow var(--t); user-select: none;
+    }
+
+    .ms-trigger:focus, .ms-trigger.open {
+      border-color: var(--celeste);
+      box-shadow: 0 0 0 3px rgba(142,219,255,.2);
+    }
+
+    .ms-trigger-text { color: var(--ink3); }
+    .ms-trigger-text.has-value { color: var(--ink); font-weight: 600; }
+    .ms-trigger-arrow { font-size: 11px; color: var(--ink3); transition: transform var(--t); }
+    .ms-trigger.open .ms-trigger-arrow { transform: rotate(180deg); }
+
+    .ms-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: var(--r); box-shadow: var(--shadow-lg);
+      z-index: 200; max-height: 220px; overflow-y: auto;
+      display: none; animation: fadeUp .15s both;
+    }
+
+    .ms-dropdown.open { display: block; }
+    .ms-dropdown::-webkit-scrollbar { width: 4px; }
+    .ms-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .ms-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; cursor: pointer; transition: background var(--t);
+      font-size: 13px; color: var(--ink);
+    }
+
+    .ms-option:hover { background: var(--bg); }
+    .ms-option.selected { background: #EBF5FF; }
+
+    .ms-checkbox {
+      width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all var(--t); background: var(--white);
+    }
+
+    .ms-option.selected .ms-checkbox {
+      background: var(--azul); border-color: var(--azul);
+    }
+
+    .ms-option.selected .ms-checkbox::after {
+      content: '✓'; color: #fff; font-size: 10px; font-weight: 900;
+    }
+
+    .ms-name { flex: 1; font-weight: 500; }
+    .ms-puesto { font-size: 11px; color: var(--ink3); }
   </style>
 </head>
 <body>
@@ -2039,22 +2098,21 @@
     const cs = document.getElementById('piece-client')
     cs.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${p?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
 
-    // Populate responsables checkboxes - load team if not loaded yet
+    // Populate responsables multiselect - load team if not loaded yet
     if (teamMembers.length === 0) await loadTeam()
     const assignedIds = (p?.piece_responsables || []).map(r => r.agency_member_id)
-    const rList = document.getElementById('piece-responsables-list')
-    if (!rList) { document.getElementById('modal-piece').classList.add('show'); return }
-    rList.innerHTML = teamMembers.map(m => {
-      const n = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
-      return `<input type="checkbox" class="red-check" id="pr-${m.id}" value="${m.id}" ${assignedIds.includes(m.id)?'checked':''}>
-              <label class="red-label" for="pr-${m.id}">${n}</label>`
-    }).join('')
+    renderMsDropdown(assignedIds)
 
     document.getElementById('modal-piece').classList.add('show')
     setTimeout(() => document.getElementById('piece-titulo').focus(), 100)
   }
 
-  window.closePieceModal = function() { document.getElementById('modal-piece').classList.remove('show') }
+  window.closePieceModal = function() {
+    document.getElementById('modal-piece').classList.remove('show')
+    document.getElementById('ms-responsables-dropdown')?.classList.remove('open')
+    document.getElementById('ms-responsables-trigger')?.classList.remove('open')
+    msSelected = new Set()
+  }
 
   window.savePiece = async function() {
     const id = document.getElementById('piece-id').value
@@ -2068,9 +2126,7 @@
     const btnText = document.getElementById('btn-save-piece-text')
     btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
 
-    const selectedResponsables = teamMembers
-      .filter(m => document.getElementById('pr-' + m.id)?.checked)
-      .map(m => m.id)
+    const selectedResponsables = [...msSelected]
 
     const payload = {
       titulo,
@@ -2138,6 +2194,76 @@
     await renderContenido()
   }
 
+
+
+  // ── Multi-select responsables ─────────────────────────
+  let msSelected = new Set()
+
+  window.toggleMsDropdown = function() {
+    const trigger = document.getElementById('ms-responsables-trigger')
+    const dropdown = document.getElementById('ms-responsables-dropdown')
+    const isOpen = dropdown.classList.contains('open')
+    if (isOpen) {
+      dropdown.classList.remove('open')
+      trigger.classList.remove('open')
+    } else {
+      dropdown.classList.add('open')
+      trigger.classList.add('open')
+    }
+  }
+
+  window.toggleMsOption = function(memberId) {
+    if (msSelected.has(memberId)) {
+      msSelected.delete(memberId)
+    } else {
+      msSelected.add(memberId)
+    }
+    const option = document.querySelector(`.ms-option[data-id="${memberId}"]`)
+    if (option) option.classList.toggle('selected', msSelected.has(memberId))
+    updateMsTriggerText()
+  }
+
+  function updateMsTriggerText() {
+    const text = document.getElementById('ms-trigger-text')
+    const count = msSelected.size
+    if (count === 0) {
+      text.textContent = 'Sin asignar'
+      text.classList.remove('has-value')
+    } else if (count === 1) {
+      const id = [...msSelected][0]
+      const m = teamMembers.find(m => m.id === id)
+      const name = m ? ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim() : '1 seleccionado'
+      text.textContent = name
+      text.classList.add('has-value')
+    } else {
+      text.textContent = `${count} responsables`
+      text.classList.add('has-value')
+    }
+  }
+
+  function renderMsDropdown(assignedIds) {
+    msSelected = new Set(assignedIds)
+    const dropdown = document.getElementById('ms-responsables-dropdown')
+    dropdown.innerHTML = teamMembers.map(m => {
+      const nombre = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
+      const isSelected = msSelected.has(m.id)
+      return `<div class="ms-option ${isSelected?'selected':''}" data-id="${m.id}" onclick="toggleMsOption('${m.id}')">
+        <div class="ms-checkbox"></div>
+        <div class="ms-name">${nombre}</div>
+        ${m.puesto ? `<div class="ms-puesto">${m.puesto}</div>` : ''}
+      </div>`
+    }).join('')
+    updateMsTriggerText()
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('ms-responsables-wrap')
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('ms-responsables-dropdown')?.classList.remove('open')
+      document.getElementById('ms-responsables-trigger')?.classList.remove('open')
+    }
+  })
 
   // ── Approval link ──────────────────────────────────────
 
