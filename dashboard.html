@@ -972,11 +972,17 @@
           <button class="tbtn" onclick="calNav(1)" style="padding:6px 10px"><i class="ti ti-chevron-right" style="font-size:13px"></i></button>
         </div>
         <div id="cal-range-label" style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;flex:1;text-align:center"></div>
-          <button class="tbtn" id="btn-por-programar" onclick="toggleDrawer()" style="gap:6px;flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <button class="tbtn primary" onclick="openEventModal()" style="gap:6px">
+            <i class="ti ti-plus" style="font-size:14px"></i>
+            Nuevo evento
+          </button>
+          <button class="tbtn" id="btn-por-programar" onclick="toggleDrawer()" style="gap:6px">
             <i class="ti ti-stack-2" style="font-size:14px"></i>
             Por programar
             <span id="por-programar-badge" style="display:none;background:var(--danger);color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:10px;min-width:16px;text-align:center"></span>
           </button>
+        </div>
       </div>
       <!-- Cal grid -->
       <div id="cal-grid" style="flex:1;overflow:auto"></div>
@@ -1437,6 +1443,15 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="form-field" style="margin-top:16px;position:relative">
+        <label class="form-label">Participantes</label>
+        <div id="event-participantes-wrap" style="display:flex;flex-wrap:wrap;gap:6px;min-height:38px;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--white);align-items:center" onclick="togglePartDrop()">
+          <div id="event-participantes-tags" style="display:contents"></div>
+          <span style="font-size:13px;color:var(--ink3)" id="event-part-placeholder">Seleccionar miembros...</span>
+        </div>
+        <div id="event-participantes-drop" style="display:none;position:absolute;left:0;right:0;z-index:200;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-lg);margin-top:4px;max-height:180px;overflow-y:auto"></div>
       </div>
 
       <div class="form-field" style="margin-top:16px">
@@ -2454,6 +2469,64 @@
 
   // ── Event modal ───────────────────────────────────────────
   let calSelectedColor = '#0A2540'
+  let selectedParticipantes = [] // [{id, nombre}]
+
+  async function loadPartDrop() {
+    const drop = document.getElementById('event-participantes-drop')
+    if (!drop) return
+    const { data: members } = await supabase
+      .from('agency_members')
+      .select('id, profiles(nombre, apellido)')
+      .eq('agency_id', agencyId)
+      .eq('status', 'active')
+    if (!members) return
+    drop.innerHTML = members.map(m => {
+      const nombre = `${m.profiles?.nombre || ''} ${m.profiles?.apellido || ''}`.trim()
+      const sel = selectedParticipantes.find(p => p.id === m.id)
+      return `<div onclick="toggleParticipante('${m.id}','${nombre}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink);transition:background .12s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" id="part-opt-${m.id}">
+        <div style="width:16px;height:16px;border-radius:4px;border:2px solid ${sel?'var(--azul)':'var(--border)'};background:${sel?'var(--azul)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s">
+          ${sel?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+        </div>
+        ${nombre}
+      </div>`
+    }).join('')
+  }
+
+  window.togglePartDrop = function() {
+    const drop = document.getElementById('event-participantes-drop')
+    const isOpen = drop.style.display === 'block'
+    drop.style.display = isOpen ? 'none' : 'block'
+    if (!isOpen) loadPartDrop()
+  }
+
+  window.toggleParticipante = function(id, nombre) {
+    const idx = selectedParticipantes.findIndex(p => p.id === id)
+    if (idx >= 0) selectedParticipantes.splice(idx, 1)
+    else selectedParticipantes.push({ id, nombre })
+    renderPartTags()
+    loadPartDrop()
+  }
+
+  function renderPartTags() {
+    const tags = document.getElementById('event-participantes-tags')
+    const placeholder = document.getElementById('event-part-placeholder')
+    if (!tags) return
+    tags.innerHTML = selectedParticipantes.map(p =>
+      `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--celeste-dim);color:var(--azul);font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px">
+        ${p.nombre}
+        <span onclick="event.stopPropagation();toggleParticipante('${p.id}','${p.nombre}')" style="cursor:pointer;opacity:.6;font-size:13px;line-height:1">×</span>
+      </span>`
+    ).join('')
+    if (placeholder) placeholder.style.display = selectedParticipantes.length ? 'none' : ''
+  }
+
+  // Cerrar dropdown de participantes al click fuera
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#event-participantes-wrap') && !e.target.closest('#event-participantes-drop')) {
+      const drop = document.getElementById('event-participantes-drop')
+      if (drop) drop.style.display = 'none'
+    }
+  })
   let calEditingEventId = null
 
   window.selectEventColor = function(color, el) {
@@ -2477,6 +2550,9 @@
     document.getElementById('event-color').value = '#0A2540'
     document.querySelectorAll('#event-colors div').forEach(d => { d.style.borderColor='transparent'; d.style.boxShadow='none' })
     document.querySelectorAll('#event-colors div')[0].style.boxShadow = '0 0 0 2px #0A2540'
+    selectedParticipantes = []
+    renderPartTags()
+    loadPartDrop()
 
     const now = defaultDate ? new Date(defaultDate) : new Date()
     document.getElementById('event-date').value = now.toISOString().slice(0,10)
@@ -2559,12 +2635,25 @@
       agency_id: agencyId,
     }
 
-    let error
+    let error, savedId
     if (id) {
       ({ error } = await supabase.from('calendar_events').update(payload).eq('id', id))
+      savedId = id
     } else {
       payload.created_by = currentUserId
-      ;({ error } = await supabase.from('calendar_events').insert(payload))
+      const { data: inserted, error: insertErr } = await supabase.from('calendar_events').insert(payload).select('id').single()
+      error = insertErr
+      savedId = inserted?.id
+    }
+
+    // Guardar participantes
+    if (!error && savedId) {
+      await supabase.from('event_participants').delete().eq('event_id', savedId)
+      if (selectedParticipantes.length > 0) {
+        await supabase.from('event_participants').insert(
+          selectedParticipantes.map(p => ({ event_id: savedId, agency_member_id: p.id }))
+        )
+      }
     }
 
     btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar evento'
