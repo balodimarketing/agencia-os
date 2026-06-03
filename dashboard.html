@@ -1469,6 +1469,7 @@
 
     agencyId = membership.agencies?.id
     userRole = membership.role
+    currentUserId = session.user.id
 
     const { data: profile } = await supabase
       .from('profiles').select('nombre, apellido').eq('id', session.user.id).single()
@@ -1492,7 +1493,6 @@
 
     // Load team first so MEMBER filtering works
     await loadTeam()
-    currentUserId = session.user.id
     await loadClients()
     await loadInviteCode()
 
