@@ -189,12 +189,8 @@
       box-shadow: var(--shadow-lg);
       transform: translateY(16px) scale(.98);
       transition: transform .22s cubic-bezier(.4,0,.2,1);
-      max-height: 90vh;
-      display: flex; flex-direction: column;
-      overflow: hidden;
+      max-height: 90vh; overflow-y: auto;
     }
-    .modal .modal-body { overflow-y: auto; flex: 1; }
-    .modal .modal-footer { flex-shrink: 0; }
 
     .modal-overlay.show .modal { transform: translateY(0) scale(1); }
 
@@ -822,14 +818,13 @@
         </div>
         <input type="file" id="piece-file" accept="image/*,video/*" style="display:none" onchange="updateUploadLabel(this)">
         <div id="piece-file-current" style="font-size:11px;color:var(--ink3);margin-top:6px;display:none"></div>
+      <div style="display:flex;gap:10px;padding-top:8px;margin-top:8px">
+        <button class="tbtn" style="flex:1" onclick="closePieceModal()">Cancelar</button>
+        <button class="tbtn primary" style="flex:2" id="btn-save-piece" onclick="savePiece()">
+          <span id="btn-save-piece-text">Guardar pieza</span>
+          <div class="spinner" id="piece-spinner"></div>
+        </button>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="tbtn" style="flex:1" onclick="closePieceModal()">Cancelar</button>
-      <button class="tbtn primary" style="flex:2" id="btn-save-piece" onclick="savePiece()">
-        <span id="btn-save-piece-text">Guardar pieza</span>
-        <div class="spinner" id="piece-spinner"></div>
-      </button>
     </div>
   </div>
 </div>
