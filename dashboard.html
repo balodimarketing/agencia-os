@@ -2075,7 +2075,7 @@
   }
 
   // ── Piece modal ───────────────────────────────────────
-  window.openPieceModal = function(id, defaultEstado) {
+  window.openPieceModal = async function(id, defaultEstado) {
     const p = id ? pieces.find(x => x.id === id) : null
     document.getElementById('modal-piece-title').textContent = p ? 'Editar pieza' : 'Nueva pieza'
     document.getElementById('piece-id').value = p?.id || ''
