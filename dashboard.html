@@ -733,6 +733,77 @@
     .profile-info-row:last-child { border-bottom: none; }
     .profile-info-lbl { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; width: 80px; flex-shrink: 0; }
     .profile-info-val { color: var(--ink2); font-weight: 500; flex: 1; }
+
+    /* ══════════════════════════
+       CALENDARIO
+    ══════════════════════════ */
+    #v-calendario.active { display: flex !important; }
+
+    .cal-view-btn {
+      padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      cursor: pointer; color: var(--ink3); transition: all var(--t); user-select: none;
+    }
+    .cal-view-btn.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+    /* Side panel piece cards */
+    .cal-piece-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-sm);
+      margin-bottom: 6px; cursor: pointer; overflow: hidden; transition: all var(--t);
+    }
+    .cal-piece-card:hover { border-color: var(--celeste); background: var(--celeste-dim); }
+    .cal-piece-head {
+      display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+    }
+    .cal-piece-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .cal-piece-title { font-size: 11px; font-weight: 700; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cal-piece-arrow { font-size: 11px; color: var(--ink3); transition: transform var(--t); flex-shrink: 0; }
+    .cal-piece-card.open .cal-piece-arrow { transform: rotate(180deg); }
+    .cal-piece-body { display: none; padding: 0 10px 10px; border-top: 1px solid var(--border); margin-top: 0; }
+    .cal-piece-card.open .cal-piece-body { display: block; }
+    .cal-piece-client { font-size: 10px; color: var(--ink3); font-weight: 600; margin-bottom: 8px; margin-top: 8px; }
+    .cal-piece-schedule-btn {
+      width: 100%; padding: 7px; border-radius: var(--r-sm); font-size: 11px; font-weight: 700;
+      border: 1.5px solid var(--celeste); background: var(--celeste-dim); color: var(--azul);
+      cursor: pointer; font-family: inherit; transition: all var(--t); text-align: center;
+    }
+    .cal-piece-schedule-btn:hover { background: var(--celeste); }
+    .cal-scheduled-date { font-size: 10px; color: var(--success); font-weight: 700; margin-top: 6px; text-align: center; }
+
+    /* Semana grid */
+    .cal-week {
+      display: grid; grid-template-columns: 52px repeat(7, 1fr);
+      min-width: 600px;
+    }
+    .cal-week-header { display: grid; grid-template-columns: 52px repeat(7, 1fr); position: sticky; top: 0; z-index: 10; background: var(--white); border-bottom: 1px solid var(--border); }
+    .cal-day-head { padding: 8px 4px; text-align: center; border-right: 1px solid var(--border); }
+    .cal-day-name { font-size: 10px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
+    .cal-day-num { font-size: 18px; font-weight: 900; color: var(--ink); letter-spacing: -.5px; margin-top: 2px; }
+    .cal-day-num.today { background: var(--azul); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 2px auto 0; font-size: 14px; }
+    .cal-time-col { border-right: 1px solid var(--border); }
+    .cal-time-slot { height: 52px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: flex-end; padding: 3px 6px 0 0; }
+    .cal-time-label { font-size: 10px; color: var(--ink3); font-weight: 600; white-space: nowrap; }
+    .cal-day-col { border-right: 1px solid var(--border); position: relative; }
+    .cal-hour-row { height: 52px; border-bottom: 1px solid var(--border); }
+    .cal-event {
+      position: absolute; left: 3px; right: 3px; border-radius: 6px; padding: 3px 6px;
+      font-size: 10px; font-weight: 700; cursor: pointer; overflow: hidden;
+      transition: opacity var(--t); z-index: 5; min-height: 22px;
+    }
+    .cal-event:hover { opacity: .85; }
+    .cal-event-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cal-event-time { font-size: 9px; opacity: .8; margin-top: 1px; }
+    .cal-now-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--danger); z-index: 6; }
+    .cal-now-line::before { content: ''; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--danger); }
+
+    /* Mes grid */
+    .cal-month { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-month-head { padding: 8px 4px; text-align: center; font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+    .cal-month-cell { min-height: 100px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 6px; }
+    .cal-month-day { font-size: 12px; font-weight: 800; color: var(--ink3); margin-bottom: 4px; }
+    .cal-month-day.today-m { background: var(--azul); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .cal-month-day.other-m { color: var(--border); }
+    .cal-month-event { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 2px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cal-month-event:hover { opacity: .8; }
   </style>
 </head>
 <body>
@@ -750,6 +821,7 @@
     <div class="rail-btn" data-module="equipo" data-tip="Equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i></div>
     <div class="rail-divider"></div>
     <div class="rail-btn" data-module="crm" data-tip="CRM" onclick="switchModule(this)"><i class="ti ti-address-book"></i></div>
+    <div class="rail-btn" data-module="calendario" data-tip="Calendario" onclick="switchModule(this)"><i class="ti ti-calendar"></i></div>
     <div class="rail-bottom">
       <div class="rail-btn notif-btn" data-tip="Notificaciones" onclick="toggleNotifPanel()" id="notif-rail-btn">
         <i class="ti ti-bell"></i>
@@ -845,6 +917,37 @@
     <!-- CRM -->
     <div class="view" id="v-crm">
       <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">CRM</div><div class="empty-sub">Contactos e historial de clientes. Próximamente.</div></div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div class="view" id="v-calendario" style="padding:0;display:none;flex-direction:row;overflow:hidden;height:calc(100vh - 52px)">
+      <!-- Side panel: piezas publicadas sin fecha -->
+      <div id="cal-sidepanel" style="width:260px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
+          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Por programar</div>
+          <div style="font-size:11px;color:var(--ink3);font-weight:500">Piezas aprobadas sin fecha</div>
+        </div>
+        <div id="cal-pieces-list" style="flex:1;overflow-y:auto;padding:8px"></div>
+      </div>
+
+      <!-- Calendar main -->
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0">
+        <!-- Cal toolbar -->
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
+          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
+            <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
+            <div class="cal-view-btn" id="cal-btn-mes" onclick="switchCalView('mes')">Mes</div>
+          </div>
+          <button class="tbtn" onclick="calToday()" style="padding:6px 12px;font-size:11px">Hoy</button>
+          <div style="display:flex;gap:4px">
+            <button class="tbtn" onclick="calNav(-1)" style="padding:6px 10px"><i class="ti ti-chevron-left" style="font-size:13px"></i></button>
+            <button class="tbtn" onclick="calNav(1)" style="padding:6px 10px"><i class="ti ti-chevron-right" style="font-size:13px"></i></button>
+          </div>
+          <div id="cal-range-label" style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.2px;flex:1;text-align:center"></div>
+        </div>
+        <!-- Cal grid -->
+        <div id="cal-grid" style="flex:1;overflow:auto"></div>
+      </div>
     </div>
 
   </div>
@@ -1202,6 +1305,92 @@
   </div>
 </div>
 
+<!-- MODAL NUEVO EVENTO -->
+<div class="modal-overlay" id="modal-event" onclick="if(event.target===this)closeEventModal()">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-event-title">Nuevo evento</div>
+      <button class="modal-close" onclick="closeEventModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="error-msg" id="event-error"></div>
+      <input type="hidden" id="event-id">
+
+      <div class="form-field">
+        <label class="form-label">Título</label>
+        <input type="text" class="form-input" id="event-titulo" placeholder="Ej: Reunión semanal de equipo">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Tipo</label>
+          <select class="form-input form-select" id="event-tipo">
+            <option value="evento">Evento</option>
+            <option value="reunion">Reunión</option>
+          </select>
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Color</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="event-colors">
+            <div style="width:22px;height:22px;border-radius:50%;background:#0A2540;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#0A2540',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#3B82F6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#3B82F6',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#8B5CF6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#8B5CF6',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#EC4899;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EC4899',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#F59E0B;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#F59E0B',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#10B981;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#10B981',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#EF4444;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EF4444',this)"></div>
+          </div>
+          <input type="hidden" id="event-color" value="#0A2540">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Inicio</label>
+          <input type="datetime-local" class="form-input" id="event-inicio" style="font-size:12px">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Fin</label>
+          <input type="datetime-local" class="form-input" id="event-fin" style="font-size:12px">
+        </div>
+      </div>
+
+      <div class="form-field" style="margin-top:16px">
+        <label class="form-label">Link (Meet, Zoom, etc.)</label>
+        <input type="url" class="form-input" id="event-link" placeholder="https://meet.google.com/...">
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-input form-textarea" id="event-descripcion" style="min-height:80px" placeholder="Agenda, notas, contexto..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeEventModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" id="btn-save-event" onclick="saveEvent()">
+        <span id="btn-save-event-text">Guardar evento</span>
+        <div class="spinner" id="event-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE EVENTO -->
+<div class="modal-overlay" id="modal-event-detail" onclick="if(event.target===this)closeEventDetail()">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-title" id="event-detail-title"></div>
+      <button class="modal-close" onclick="closeEventDetail()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="event-detail-body"></div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closeEventDetail()">Cerrar</button>
+      <button class="tbtn" id="event-detail-edit" onclick="editEventFromDetail()" style="display:none"><i class="ti ti-pencil"></i> Editar</button>
+      <button class="tbtn" id="event-detail-delete" onclick="deleteEventFromDetail()" style="color:var(--danger);border-color:var(--danger);display:none"><i class="ti ti-trash"></i></button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL PERFIL -->
 <div class="modal-overlay" id="modal-profile" onclick="if(event.target===this)closeProfileModal()">
   <div class="modal" style="max-width:460px;overflow:hidden">
@@ -1361,6 +1550,7 @@
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
+    else if (mod === 'calendario') { renderCalendario() }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -1370,6 +1560,7 @@
     contenido: { title: 'Contenido', sub: 'Workflow de piezas',   cta: 'Nueva pieza'    },
     equipo:    { title: 'Equipo',    sub: 'Miembros activos',      cta: 'Invitar'        },
     crm:       { title: 'CRM',       sub: 'Contactos',             cta: 'Nuevo contacto' },
+    calendario:{ title: 'Calendario', sub: 'Eventos y publicaciones', cta: 'Nuevo evento'   },
   }
 
   // ── CTA button ────────────────────────────────────────
@@ -1380,6 +1571,7 @@
       if (currentContentTab === 'piezas' && userRole !== 'MEMBER') openPieceModal()
       else if (currentContentTab === 'tareas') openTaskModal()
     }
+    else if (currentModule === 'calendario') openEventModal()
   }
 
   // ══════════════════════════════════════
@@ -1727,6 +1919,433 @@
 
 
 
+
+
+  // ══════════════════════════════════════
+  // CALENDARIO
+  // ══════════════════════════════════════
+
+  let calView = 'semana'
+  let calDate = new Date()
+  let calEvents = []
+  let calPublishedPieces = []
+  const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  const EVENT_COLORS = ['#0A2540','#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444']
+
+  async function loadCalendarEvents() {
+    const { data } = await supabase
+      .from('calendar_events')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .order('fecha_inicio')
+    calEvents = data || []
+  }
+
+  async function loadPublishedPieces() {
+    const { data } = await supabase
+      .from('content_pieces')
+      .select('id, titulo, clients(nombre), fecha_publicacion, estado')
+      .eq('agency_id', agencyId)
+      .eq('estado', 'publicado')
+      .order('created_at', { ascending: false })
+    calPublishedPieces = data || []
+  }
+
+  async function renderCalendario() {
+    await Promise.all([loadCalendarEvents(), loadPublishedPieces()])
+    renderCalSidePanel()
+    renderCalGrid()
+    renderCalPanel()
+  }
+
+  function renderCalPanel() {
+    const body = document.getElementById('panel-body')
+    document.getElementById('panel-sub').textContent = `${calEvents.length} evento${calEvents.length!==1?'s':''}`
+    body.innerHTML = calEvents.slice(0,8).map(e => {
+      const d = new Date(e.fecha_inicio)
+      const label = d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})
+      return `<div class="panel-item" onclick="openEventDetail('${e.id}')">
+        <div class="pi-row">
+          <div class="pi-av" style="background:${e.color}22;color:${e.color}"><i class="ti ti-${e.tipo==='reunion'?'video':'calendar-event'}" style="font-size:12px"></i></div>
+          <div class="pi-name">${e.titulo}</div>
+        </div>
+        <div class="pi-meta">${label}${e.fecha_inicio ? ' · ' + new Date(e.fecha_inicio).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
+      </div>`
+    }).join('') + `<div class="panel-add" onclick="openEventModal()"><i class="ti ti-plus" style="font-size:12px"></i> Nuevo evento</div>`
+  }
+
+  // ── Side panel: published pieces ─────────────────────────
+  function renderCalSidePanel() {
+    const list = document.getElementById('cal-pieces-list')
+    if (!list) return
+    if (calPublishedPieces.length === 0) {
+      list.innerHTML = `<div style="padding:12px;font-size:11px;color:var(--ink3);text-align:center;line-height:1.5">Las piezas aprobadas aparecerán acá para programarlas.</div>`
+      return
+    }
+    list.innerHTML = calPublishedPieces.map(p => {
+      const scheduled = p.fecha_publicacion
+        ? `<div class="cal-scheduled-date">📅 ${new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`
+        : ''
+      return `<div class="cal-piece-card" id="calp-${p.id}">
+        <div class="cal-piece-head" onclick="toggleCalPiece('${p.id}')">
+          <div class="cal-piece-dot" style="background:#34C759"></div>
+          <div class="cal-piece-title">${p.titulo}</div>
+          <div class="cal-piece-arrow">▼</div>
+        </div>
+        <div class="cal-piece-body">
+          <div class="cal-piece-client">${p.clients?.nombre || 'Sin cliente'}</div>
+          <input type="datetime-local" class="form-input" id="cal-date-${p.id}" value="${p.fecha_publicacion ? new Date(p.fecha_publicacion).toISOString().slice(0,16) : ''}" style="font-size:11px;padding:7px 10px;margin-bottom:8px">
+          <div class="cal-piece-schedule-btn" onclick="schedulePiece('${p.id}')">📅 Programar publicación</div>
+          ${scheduled}
+        </div>
+      </div>`
+    }).join('')
+  }
+
+  window.toggleCalPiece = function(id) {
+    const card = document.getElementById('calp-' + id)
+    if (card) card.classList.toggle('open')
+  }
+
+  window.schedulePiece = async function(id) {
+    const input = document.getElementById('cal-date-' + id)
+    const val = input?.value
+    if (!val) { showToast('Seleccioná una fecha'); return }
+    await supabase.from('content_pieces').update({ fecha_publicacion: new Date(val).toISOString() }).eq('id', id)
+    showToast('✓ Publicación programada')
+    await loadPublishedPieces()
+    renderCalSidePanel()
+    await loadCalendarEvents()
+    renderCalGrid()
+  }
+
+  // ── View switcher ─────────────────────────────────────────
+  window.switchCalView = function(view) {
+    calView = view
+    document.querySelectorAll('.cal-view-btn').forEach(b => b.classList.remove('active'))
+    document.getElementById('cal-btn-' + view)?.classList.add('active')
+    renderCalGrid()
+  }
+
+  window.calToday = function() { calDate = new Date(); renderCalGrid() }
+  window.calNav = function(dir) {
+    if (calView === 'semana') calDate.setDate(calDate.getDate() + dir * 7)
+    else calDate.setMonth(calDate.getMonth() + dir)
+    renderCalGrid()
+  }
+
+  // ── Render grid ───────────────────────────────────────────
+  function renderCalGrid() {
+    if (calView === 'semana') renderWeek()
+    else renderMonth()
+  }
+
+  function getWeekStart(d) {
+    const date = new Date(d)
+    const day = date.getDay()
+    date.setDate(date.getDate() - day + 1) // Monday
+    return date
+  }
+
+  function getAllEvents() {
+    // Combine calendar events + scheduled pieces
+    const pieceEvents = calPublishedPieces
+      .filter(p => p.fecha_publicacion)
+      .map(p => ({
+        id: 'piece-' + p.id,
+        titulo: '📸 ' + p.titulo,
+        fecha_inicio: p.fecha_publicacion,
+        fecha_fin: null,
+        color: '#34C759',
+        tipo: 'publicacion',
+        link: null,
+        descripcion: p.clients?.nombre || ''
+      }))
+    return [...calEvents, ...pieceEvents]
+  }
+
+  function renderWeek() {
+    const grid = document.getElementById('cal-grid')
+    if (!grid) return
+    const weekStart = getWeekStart(calDate)
+    const days = Array.from({length:7}, (_,i) => { const d = new Date(weekStart); d.setDate(d.getDate()+i); return d })
+    const today = new Date()
+
+    // Update label
+    const endDay = days[6]
+    document.getElementById('cal-range-label').textContent =
+      `${days[0].getDate()} – ${endDay.getDate()} ${MONTHS_ES[endDay.getMonth()]} ${endDay.getFullYear()}`
+
+    const allEvents = getAllEvents()
+    const HOURS = Array.from({length:24}, (_,i) => i)
+    const HOUR_H = 52
+
+    // Build header
+    let headerHTML = `<div class="cal-week-header">
+      <div style="border-right:1px solid var(--border)"></div>
+      ${days.map(d => {
+        const isToday = d.toDateString() === today.toDateString()
+        const num = isToday ? `<div class="cal-day-num today">${d.getDate()}</div>` : `<div class="cal-day-num">${d.getDate()}</div>`
+        return `<div class="cal-day-head"><div class="cal-day-name">${DAYS_ES[d.getDay()]}</div>${num}</div>`
+      }).join('')}
+    </div>`
+
+    // Build body
+    let bodyHTML = `<div class="cal-week" style="position:relative">`
+
+    // Time column
+    bodyHTML += `<div class="cal-time-col">${HOURS.map(h => `<div class="cal-time-slot"><span class="cal-time-label">${h===0?'':String(h).padStart(2,'0')+':00'}</span></div>`).join('')}</div>`
+
+    // Day columns
+    days.forEach(day => {
+      const dayEvents = allEvents.filter(e => {
+        const ed = new Date(e.fecha_inicio)
+        return ed.toDateString() === day.toDateString()
+      })
+      bodyHTML += `<div class="cal-day-col">`
+      bodyHTML += HOURS.map(() => `<div class="cal-hour-row"></div>`).join('')
+
+      // Now line
+      if (day.toDateString() === today.toDateString()) {
+        const mins = today.getHours()*60 + today.getMinutes()
+        const top = (mins / 60) * HOUR_H
+        bodyHTML += `<div class="cal-now-line" style="top:${top}px"></div>`
+      }
+
+      // Events
+      dayEvents.forEach(e => {
+        const start = new Date(e.fecha_inicio)
+        const startMins = start.getHours()*60 + start.getMinutes()
+        const top = (startMins / 60) * HOUR_H
+        const end = e.fecha_fin ? new Date(e.fecha_fin) : new Date(start.getTime() + 60*60*1000)
+        const durMins = (end - start) / 60000
+        const height = Math.max((durMins / 60) * HOUR_H, 22)
+        const timeStr = start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+        bodyHTML += `<div class="cal-event" style="top:${top}px;height:${height}px;background:${e.color}22;border-left:3px solid ${e.color};color:${e.color}" onclick="openEventDetail('${e.id}')">
+          <div class="cal-event-title">${e.titulo}</div>
+          <div class="cal-event-time">${timeStr}</div>
+        </div>`
+      })
+
+      bodyHTML += `</div>`
+    })
+
+    bodyHTML += `</div>`
+    grid.innerHTML = headerHTML + bodyHTML
+
+    // Scroll to 8am
+    setTimeout(() => { grid.scrollTop = 8 * HOUR_H - 20 }, 50)
+  }
+
+  function renderMonth() {
+    const grid = document.getElementById('cal-grid')
+    if (!grid) return
+    const year = calDate.getFullYear()
+    const month = calDate.getMonth()
+    const today = new Date()
+
+    document.getElementById('cal-range-label').textContent = `${MONTHS_ES[month]} ${year}`
+
+    const firstDay = new Date(year, month, 1)
+    const startDay = new Date(firstDay)
+    const dow = firstDay.getDay()
+    startDay.setDate(startDay.getDate() - (dow === 0 ? 6 : dow - 1)) // Start Monday
+
+    const allEvents = getAllEvents()
+    const WEEK_DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+
+    let html = `<div class="cal-month">`
+    // Headers
+    WEEK_DAYS.forEach(d => { html += `<div class="cal-month-head">${d}</div>` })
+
+    // Cells (6 weeks)
+    for (let i = 0; i < 42; i++) {
+      const cellDate = new Date(startDay)
+      cellDate.setDate(startDay.getDate() + i)
+      const isToday = cellDate.toDateString() === today.toDateString()
+      const isOther = cellDate.getMonth() !== month
+      const dayNum = isToday
+        ? `<div class="cal-month-day today-m">${cellDate.getDate()}</div>`
+        : `<div class="cal-month-day ${isOther?'other-m':''}">${cellDate.getDate()}</div>`
+
+      const dayEvents = allEvents.filter(e => new Date(e.fecha_inicio).toDateString() === cellDate.toDateString())
+      const eventsHTML = dayEvents.slice(0,3).map(e =>
+        `<div class="cal-month-event" style="background:${e.color}22;color:${e.color}" onclick="openEventDetail('${e.id}')">${e.titulo}</div>`
+      ).join('')
+      const more = dayEvents.length > 3 ? `<div style="font-size:9px;color:var(--ink3);font-weight:700">+${dayEvents.length-3} más</div>` : ''
+
+      html += `<div class="cal-month-cell" style="${isOther?'background:#FAFBFC':''}" onclick="handleMonthCellClick(event, '${cellDate.toISOString()}')">${dayNum}${eventsHTML}${more}</div>`
+    }
+
+    html += `</div>`
+    grid.innerHTML = html
+  }
+
+  window.handleMonthCellClick = function(e, dateStr) {
+    if (e.target.closest('.cal-month-event')) return
+    // Open new event modal with this date pre-filled
+    const d = new Date(dateStr)
+    d.setHours(9, 0, 0, 0)
+    openEventModal(d.toISOString().slice(0,16))
+  }
+
+  // ── Event detail ──────────────────────────────────────────
+  window.openEventDetail = async function(id) {
+    if (id.startsWith('piece-')) {
+      const pieceId = id.replace('piece-', '')
+      const p = calPublishedPieces.find(x => x.id === pieceId)
+      if (!p) return
+      // Show piece info in a simple detail
+      document.getElementById('event-detail-title').textContent = p.titulo
+      document.getElementById('event-detail-body').innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:#E6FFE6;color:#1A6B28">Publicación programada</span>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:10px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cliente</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.clients?.nombre||'—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Fecha programada</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.fecha_publicacion ? new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—'}</div>
+        </div>`
+      document.getElementById('event-detail-edit').style.display = 'none'
+      document.getElementById('event-detail-delete').style.display = 'none'
+      document.getElementById('modal-event-detail').classList.add('show')
+      return
+    }
+    const ev = calEvents.find(x => x.id === id)
+    if (!ev) return
+    calEditingEventId = id
+    const start = new Date(ev.fecha_inicio)
+    const end = ev.fecha_fin ? new Date(ev.fecha_fin) : null
+    document.getElementById('event-detail-title').textContent = ev.titulo
+    document.getElementById('event-detail-body').innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div style="width:12px;height:12px;border-radius:50%;background:${ev.color};flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">${ev.tipo === 'reunion' ? 'Reunión' : 'Evento'}</span>
+      </div>
+      <div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Fecha y hora</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink)">${start.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:2px">${start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}${end?' – '+end.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):''}</div>
+      </div>
+      ${ev.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:10px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.6">${ev.descripcion}</div></div>` : ''}
+      ${ev.link ? `<a href="${ev.link}" target="_blank" style="display:flex;align-items:center;gap:8px;background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--azul);font-size:13px;font-weight:700"><i class="ti ti-link" style="font-size:16px"></i>${ev.link}</a>` : ''}`
+    document.getElementById('event-detail-edit').style.display = 'flex'
+    document.getElementById('event-detail-delete').style.display = 'flex'
+    document.getElementById('modal-event-detail').classList.add('show')
+  }
+
+
+  // ── Event modal ───────────────────────────────────────────
+  let calSelectedColor = '#0A2540'
+  let calEditingEventId = null
+
+  window.selectEventColor = function(color, el) {
+    calSelectedColor = color
+    document.getElementById('event-color').value = color
+    document.querySelectorAll('#event-colors div').forEach(d => d.style.borderColor = 'transparent')
+    el.style.borderColor = '#fff'
+    el.style.boxShadow = `0 0 0 2px ${color}`
+  }
+
+  window.openEventModal = function(defaultDate) {
+    calEditingEventId = null
+    document.getElementById('modal-event-title').textContent = 'Nuevo evento'
+    document.getElementById('event-id').value = ''
+    document.getElementById('event-titulo').value = ''
+    document.getElementById('event-tipo').value = 'evento'
+    document.getElementById('event-link').value = ''
+    document.getElementById('event-descripcion').value = ''
+    document.getElementById('event-error').classList.remove('show')
+    calSelectedColor = '#0A2540'
+    document.getElementById('event-color').value = '#0A2540'
+    document.querySelectorAll('#event-colors div').forEach(d => { d.style.borderColor='transparent'; d.style.boxShadow='none' })
+    document.querySelectorAll('#event-colors div')[0].style.boxShadow = '0 0 0 2px #0A2540'
+
+    const now = defaultDate || new Date().toISOString().slice(0,16)
+    document.getElementById('event-inicio').value = now
+    const end = new Date(now); end.setHours(end.getHours()+1)
+    document.getElementById('event-fin').value = end.toISOString().slice(0,16)
+
+    document.getElementById('modal-event').classList.add('show')
+    setTimeout(() => document.getElementById('event-titulo').focus(), 100)
+  }
+
+  window.closeEventModal = function() { document.getElementById('modal-event').classList.remove('show') }
+  window.closeEventDetail = function() { document.getElementById('modal-event-detail').classList.remove('show'); calEditingEventId = null }
+
+  window.editEventFromDetail = function() {
+    const ev = calEvents.find(x => x.id === calEditingEventId)
+    if (!ev) return
+    closeEventDetail()
+    setTimeout(() => {
+      document.getElementById('modal-event-title').textContent = 'Editar evento'
+      document.getElementById('event-id').value = ev.id
+      document.getElementById('event-titulo').value = ev.titulo
+      document.getElementById('event-tipo').value = ev.tipo
+      document.getElementById('event-link').value = ev.link || ''
+      document.getElementById('event-descripcion').value = ev.descripcion || ''
+      document.getElementById('event-inicio').value = new Date(ev.fecha_inicio).toISOString().slice(0,16)
+      document.getElementById('event-fin').value = ev.fecha_fin ? new Date(ev.fecha_fin).toISOString().slice(0,16) : ''
+      selectEventColor(ev.color, document.querySelector(`#event-colors div[style*="${ev.color}"]`) || document.querySelectorAll('#event-colors div')[0])
+      document.getElementById('modal-event').classList.add('show')
+    }, 150)
+  }
+
+  window.deleteEventFromDetail = async function() {
+    if (!calEditingEventId) return
+    await supabase.from('calendar_events').delete().eq('id', calEditingEventId)
+    closeEventDetail()
+    showToast('Evento eliminado')
+    await loadCalendarEvents()
+    renderCalGrid()
+    renderCalPanel()
+  }
+
+  window.saveEvent = async function() {
+    const id = document.getElementById('event-id').value
+    const titulo = document.getElementById('event-titulo').value.trim()
+    const errEl = document.getElementById('event-error')
+    errEl.classList.remove('show')
+    if (!titulo) { errEl.textContent = 'El título es obligatorio.'; errEl.classList.add('show'); return }
+    const inicio = document.getElementById('event-inicio').value
+    if (!inicio) { errEl.textContent = 'La fecha de inicio es obligatoria.'; errEl.classList.add('show'); return }
+
+    const btn = document.getElementById('btn-save-event')
+    const spinner = document.getElementById('event-spinner')
+    const btnText = document.getElementById('btn-save-event-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    const payload = {
+      titulo,
+      tipo: document.getElementById('event-tipo').value,
+      color: document.getElementById('event-color').value || '#0A2540',
+      fecha_inicio: new Date(inicio).toISOString(),
+      fecha_fin: document.getElementById('event-fin').value ? new Date(document.getElementById('event-fin').value).toISOString() : null,
+      link: document.getElementById('event-link').value.trim() || null,
+      descripcion: document.getElementById('event-descripcion').value.trim() || null,
+      agency_id: agencyId,
+    }
+
+    let error
+    if (id) {
+      ({ error } = await supabase.from('calendar_events').update(payload).eq('id', id))
+    } else {
+      payload.created_by = currentUserId
+      ;({ error } = await supabase.from('calendar_events').insert(payload))
+    }
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar evento'
+    if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
+    closeEventModal()
+    showToast(id ? '✓ Evento actualizado' : '✓ Evento creado')
+    await loadCalendarEvents()
+    renderCalGrid()
+    renderCalPanel()
+  }
 
   // ══════════════════════════════════════
   // PERFIL
@@ -3016,6 +3635,8 @@
       closeDeleteMemberModal()
       closeInviteModal()
       closeProfileModal()
+      closeEventModal()
+      closeEventDetail()
       closePieceModal()
       closePieceDetail()
       closeTaskModal()
