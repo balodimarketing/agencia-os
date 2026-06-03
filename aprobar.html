@@ -195,7 +195,7 @@
       ? new Date(piece.fecha_entrega + 'T12:00:00').toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'})
       : '—'
 
-    const estadoLabels = { idea:'Idea', produccion:'En producción', revision:'Revisión interna', aprobacion:'En aprobación', aprobado:'Aprobado', publicado:'Publicado' }
+    const estadoLabels = { idea:'Idea', produccion:'En producción', revision:'Revisión interna', aprobacion:'En aprobación', publicado:'Publicado' }
     // Tags
     const colores = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759' }
     const col = colores[piece.estado] || '#94A3B8'
