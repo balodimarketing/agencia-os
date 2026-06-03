@@ -324,17 +324,15 @@
 
       // Notify responsable if different from owner
       for (const uid of responsableUserIds) {
-        if (uid !== owner?.owner_id) {
-          await supabase.from('notifications').insert({
-            agency_id: agencyId,
-            user_id: uid,
-            tipo: 'pieza_aprobada',
-            titulo: '✅ Tu pieza fue aprobada',
-            mensaje: titulo,
-            link_modulo: 'contenido',
-            link_id: pieceId
-          })
-        }
+        await supabase.from('notifications').insert({
+          agency_id: agencyId,
+          user_id: uid,
+          tipo: 'pieza_aprobada',
+          titulo: '✅ Tu pieza fue aprobada',
+          mensaje: titulo,
+          link_modulo: 'contenido',
+          link_id: pieceId
+        })
       }
     }
 
