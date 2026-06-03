@@ -977,9 +977,9 @@
     <div class="view" id="v-herramientas" style="padding:0">
 
       <!-- Vista: grid de herramientas -->
-      <div id="tools-home" style="padding:28px 32px">
+      <div id="tools-home" style="padding:28px 32px;max-width:540px;margin:0 auto">
         <p style="font-size:13px;color:var(--ink3);margin-bottom:24px">Herramientas de productividad para tu equipo.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:720px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
           <!-- Card Timer -->
           <div onclick="openTool('timer')" style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:24px;cursor:pointer;transition:box-shadow .18s,border-color .18s;display:flex;flex-direction:column;gap:16px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
@@ -1013,7 +1013,7 @@
       </div>
 
       <!-- Vista: Timer detalle -->
-      <div id="tools-timer" style="display:none;padding:28px 32px;max-width:600px">
+      <div id="tools-timer" style="display:none;padding:28px 32px;max-width:540px;margin:0 auto">
         <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
           <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
         </button>
@@ -1063,7 +1063,7 @@
       </div>
 
       <!-- Vista: Pomodoro detalle -->
-      <div id="tools-pomodoro" style="display:none;padding:28px 32px;max-width:600px">
+      <div id="tools-pomodoro" style="display:none;padding:28px 32px;max-width:540px;margin:0 auto">
         <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
           <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
         </button>
