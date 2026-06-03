@@ -656,7 +656,7 @@
       position: absolute; top: calc(100% + 4px); left: 0; right: 0;
       background: var(--white); border: 1.5px solid var(--border);
       border-radius: var(--r); box-shadow: var(--shadow-lg);
-      z-index: 200; max-height: 220px; overflow-y: auto;
+      z-index: 500; max-height: 220px; overflow-y: auto;
       display: none; animation: fadeUp .15s both;
     }
 
@@ -2199,7 +2199,8 @@
   // ── Multi-select responsables ─────────────────────────
   let msSelected = new Set()
 
-  window.toggleMsDropdown = function() {
+  window.toggleMsDropdown = function(e) {
+    if (e) e.stopPropagation()
     const trigger = document.getElementById('ms-responsables-trigger')
     const dropdown = document.getElementById('ms-responsables-dropdown')
     const isOpen = dropdown.classList.contains('open')
@@ -2212,7 +2213,8 @@
     }
   }
 
-  window.toggleMsOption = function(memberId) {
+  window.toggleMsOption = function(memberId, e) {
+    if (e) e.stopPropagation()
     if (msSelected.has(memberId)) {
       msSelected.delete(memberId)
     } else {
@@ -2247,7 +2249,7 @@
     dropdown.innerHTML = teamMembers.map(m => {
       const nombre = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
       const isSelected = msSelected.has(m.id)
-      return `<div class="ms-option ${isSelected?'selected':''}" data-id="${m.id}" onclick="toggleMsOption('${m.id}')">
+      return `<div class="ms-option ${isSelected?'selected':''}" data-id="${m.id}" onclick="toggleMsOption('${m.id}', event)">
         <div class="ms-checkbox"></div>
         <div class="ms-name">${nombre}</div>
         ${m.puesto ? `<div class="ms-puesto">${m.puesto}</div>` : ''}
