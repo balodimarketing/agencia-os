@@ -117,6 +117,10 @@
     </div>
 
     <div class="actions-card" id="actions-card">
+      <div id="prev-comentario" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px 16px;margin-bottom:20px">
+        <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Cambios solicitados anteriormente</div>
+        <div style="font-size:13px;color:#DC2626;line-height:1.6" id="prev-comentario-text"></div>
+      </div>
       <div class="actions-title">¿Qué te parece esta pieza?</div>
       <div class="actions-sub">Tu respuesta le llegará al equipo de la agencia.</div>
       <textarea class="comentario-field" id="comentario" placeholder="Describí los cambios que necesitás..."></textarea>
@@ -151,9 +155,22 @@
 
     const { data: piece, error } = await supabase
       .from('content_pieces')
-      .select('*, clients(nombre), agency_members!content_pieces_responsable_id_fkey(profiles(nombre,apellido))')
+      .select('*, clients(nombre)')
       .eq('aprobacion_token', token)
       .maybeSingle()
+
+    // Get responsable separately if exists
+    let responsableNombre = '—'
+    if (piece?.responsable_id) {
+      const { data: member } = await supabase
+        .from('agency_members')
+        .select('profiles(nombre, apellido)')
+        .eq('id', piece.responsable_id)
+        .maybeSingle()
+      if (member?.profiles) {
+        responsableNombre = member.profiles.nombre + ' ' + member.profiles.apellido
+      }
+    }
 
     document.getElementById('loading').style.display = 'none'
 
@@ -166,8 +183,13 @@
     // Fill data
     document.getElementById('p-titulo').textContent = piece.titulo
     document.getElementById('p-cliente').textContent = piece.clients?.nombre || '—'
-    const resp = piece.agency_members?.profiles
-    document.getElementById('p-responsable').textContent = resp ? resp.nombre + ' ' + resp.apellido : '—'
+
+    // Show previous cambios if any
+    if (piece.aprobacion_comentario) {
+      document.getElementById('prev-comentario').style.display = 'block'
+      document.getElementById('prev-comentario-text').textContent = piece.aprobacion_comentario
+    }
+    document.getElementById('p-responsable').textContent = responsableNombre
     document.getElementById('p-tipo').textContent = piece.tipo || '—'
     document.getElementById('p-fecha').textContent = piece.fecha_entrega
       ? new Date(piece.fecha_entrega + 'T12:00:00').toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'})
@@ -231,9 +253,20 @@
     // Get piece data before deleting
     const { data: piece } = await supabase
       .from('content_pieces')
-      .select('titulo, agency_id, responsable_id, agency_members!content_pieces_responsable_id_fkey(user_id)')
+      .select('titulo, agency_id, responsable_id')
       .eq('id', pieceId)
       .single()
+
+    // Get responsable user_id separately
+    let responsableUserId = null
+    if (piece?.responsable_id) {
+      const { data: rm } = await supabase
+        .from('agency_members')
+        .select('user_id')
+        .eq('id', piece.responsable_id)
+        .maybeSingle()
+      responsableUserId = rm?.user_id
+    }
 
     // Delete file from storage if exists
     if (archivoUrl) {
@@ -269,7 +302,6 @@
       }
 
       // Notify responsable if different from owner
-      const responsableUserId = piece.agency_members?.user_id
       if (responsableUserId && responsableUserId !== owner?.owner_id) {
         await supabase.from('notifications').insert({
           agency_id: agencyId,
@@ -309,9 +341,19 @@
     // Get piece data for notifications
     const { data: piece } = await supabase
       .from('content_pieces')
-      .select('titulo, agency_id, agency_members!content_pieces_responsable_id_fkey(user_id)')
+      .select('titulo, agency_id, responsable_id')
       .eq('id', pieceId)
       .single()
+
+    let responsableUserId = null
+    if (piece?.responsable_id) {
+      const { data: rm } = await supabase
+        .from('agency_members')
+        .select('user_id')
+        .eq('id', piece.responsable_id)
+        .maybeSingle()
+      responsableUserId = rm?.user_id
+    }
 
     await supabase.from('content_pieces').update({
       estado: 'revision',
@@ -344,7 +386,6 @@
       }
 
       // Notify responsable if different from owner
-      const responsableUserId = piece.agency_members?.user_id
       if (responsableUserId && responsableUserId !== owner?.owner_id) {
         await supabase.from('notifications').insert({
           agency_id: agencyId,
