@@ -5034,12 +5034,15 @@
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div style="grid-column:1/-1">
-            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Etapa</div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px">
-              ${CRM_STAGES.map(s => `
-                <button onclick="changeCrmStage('${c.id}','${s.id}')" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${s.id === c.pipeline_stage ? s.color : 'var(--border)'};background:${s.id === c.pipeline_stage ? s.color+'18' : 'transparent'};color:${s.id === c.pipeline_stage ? s.color : 'var(--ink3)'};font-size:11px;font-weight:800;cursor:pointer;transition:all .15s;font-family:inherit">
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Cambiar etapa</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              ${CRM_STAGES.map(s => {
+                const isActive = s.id === c.pipeline_stage
+                return `<button onclick="changeCrmStage('${c.id}','${s.id}')" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;border:${isActive ? '2px solid '+s.color : '1.5px solid var(--border)'};background:${isActive ? s.color+'15' : 'transparent'};color:${isActive ? s.color : 'var(--ink3)'};font-size:12px;font-weight:${isActive ? '800' : '600'};cursor:pointer;transition:all .15s;font-family:inherit">
+                  <div style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
                   ${s.label}
-                </button>`).join('')}
+                </button>`
+              }).join('')}
             </div>
           </div>
           ${c.valor_deal ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Valor del deal</div><div style="font-size:15px;font-weight:900;color:var(--azul)">$${Number(c.valor_deal).toLocaleString('es-AR')}</div></div>` : ''}
