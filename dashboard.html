@@ -873,6 +873,7 @@
     <div class="rail-btn" data-module="contenido" data-tip="Contenido" onclick="switchModule(this)"><i class="ti ti-photo"></i></div>
     <div class="rail-btn" data-module="calendario" data-tip="Calendario" onclick="switchModule(this)"><i class="ti ti-calendar"></i></div>
     <div class="rail-btn" data-module="crm" data-tip="CRM" onclick="switchModule(this)"><i class="ti ti-address-book"></i></div>
+    <div class="rail-btn" data-module="herramientas" data-tip="Herramientas" onclick="switchModule(this)"><i class="ti ti-tools"></i></div>
     <div class="rail-divider"></div>
     <div class="rail-btn" data-module="equipo" data-tip="Equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i></div>
     <div class="rail-btn" data-module="cuentas" data-tip="Cuentas" onclick="switchModule(this)"><i class="ti ti-building"></i></div>
@@ -970,6 +971,96 @@
     <!-- CRM -->
     <div class="view" id="v-crm">
       <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">CRM</div><div class="empty-sub">Contactos e historial de clientes. Próximamente.</div></div>
+    </div>
+
+    <!-- HERRAMIENTAS -->
+    <div class="view" id="v-herramientas">
+      <div style="max-width:720px;margin:0 auto">
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:28px">Herramientas de productividad para tu equipo.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+          <!-- Timer -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;border-radius:12px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);flex-shrink:0">
+                <i class="ti ti-clock" style="font-size:22px"></i>
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Timer</div>
+                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Cronómetro vinculado a tareas o piezas</div>
+              </div>
+            </div>
+
+            <div style="text-align:center;padding:16px 0">
+              <div style="font-size:52px;font-weight:900;color:var(--ink);letter-spacing:-2px;font-variant-numeric:tabular-nums" id="tool-timer-display">00:00:00</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:6px;min-height:18px" id="tool-timer-context">Sin vincular</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <select class="form-input form-select" id="tool-timer-type" onchange="loadToolTimerItems()" style="font-size:13px">
+                <option value="">Vincular a... (opcional)</option>
+                <option value="pieza">Pieza</option>
+                <option value="tarea">Tarea</option>
+              </select>
+              <select class="form-input form-select" id="tool-timer-item" style="font-size:13px;display:none">
+                <option value="">Seleccionar...</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button id="tool-timer-btn" onclick="toolTimerToggle()" class="tbtn primary" style="flex:1;justify-content:center;gap:8px">
+                <i class="ti ti-player-play" id="tool-timer-icon" style="font-size:15px"></i> Iniciar
+              </button>
+              <button onclick="toolTimerStop()" class="tbtn danger" style="padding:10px 14px" title="Detener y guardar">
+                <i class="ti ti-square" style="font-size:15px"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pomodoro -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;color:#E65100;flex-shrink:0">
+                <i class="ti ti-tomato" style="font-size:22px"></i>
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Pomodoro</div>
+                <div style="font-size:12px;color:var(--ink3);margin-top:2px">25 min trabajo · 5 min descanso</div>
+              </div>
+            </div>
+
+            <div style="text-align:center;padding:16px 0">
+              <div style="font-size:52px;font-weight:900;letter-spacing:-2px;font-variant-numeric:tabular-nums" id="pomo-display" style="color:var(--ink)">25:00</div>
+              <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px">
+                <span id="pomo-phase-badge" style="font-size:11px;font-weight:800;padding:3px 12px;border-radius:20px;background:#FFF3E0;color:#E65100">Trabajo</span>
+                <span style="font-size:11px;color:var(--ink3)" id="pomo-cycle">Ciclo 1</span>
+              </div>
+              <div style="display:flex;justify-content:center;gap:5px;margin-top:10px" id="pomo-dots"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <select class="form-input form-select" id="pomo-type" onchange="loadPomoItems()" style="font-size:13px">
+                <option value="">Vincular a... (opcional)</option>
+                <option value="pieza">Pieza</option>
+                <option value="tarea">Tarea</option>
+              </select>
+              <select class="form-input form-select" id="pomo-item" style="font-size:13px;display:none">
+                <option value="">Seleccionar...</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button id="pomo-btn" onclick="pomoToggle()" class="tbtn" style="flex:1;justify-content:center;gap:8px;background:#FFF3E0;color:#E65100;border-color:#FFCCBC">
+                <i class="ti ti-player-play" id="pomo-icon" style="font-size:15px"></i> Iniciar
+              </button>
+              <button onclick="pomoReset()" class="tbtn" style="padding:10px 14px" title="Reiniciar">
+                <i class="ti ti-refresh" style="font-size:15px"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <!-- CALENDARIO -->
@@ -1683,6 +1774,7 @@
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
     else if (mod === 'calendario') { renderCalendario() }
+    else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); cta.style.display = 'none' }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -1691,8 +1783,9 @@
     cuentas:   { title: 'Cuentas',   sub: 'Tus clientes',         cta: 'Nuevo cliente'  },
     contenido: { title: 'Contenido', sub: 'Workflow de piezas',   cta: 'Nueva pieza'    },
     equipo:    { title: 'Equipo',    sub: 'Miembros activos',      cta: 'Invitar'        },
-    crm:       { title: 'CRM',       sub: 'Contactos',             cta: 'Nuevo contacto' },
-    calendario:{ title: 'Calendario', sub: 'Eventos y publicaciones', cta: 'Nuevo evento'   },
+    crm:          { title: 'CRM',          sub: 'Contactos',              cta: 'Nuevo contacto' },
+    herramientas: { title: 'Herramientas', sub: 'Productividad del equipo', cta: ''              },
+    calendario:   { title: 'Calendario',   sub: 'Eventos y publicaciones', cta: 'Nuevo evento'   },
   }
 
   // ── CTA button ────────────────────────────────────────
@@ -4237,6 +4330,147 @@
     timerPieceId = null
     timerTaskId = null
     timerContext = null
+  }
+
+  // ── Herramientas — Timer ──────────────────────────────
+  let toolTimer = { running: false, interval: null, seconds: 0, pieceId: null, taskId: null }
+
+  window.loadToolTimerItems = async function() {
+    const type = document.getElementById('tool-timer-type').value
+    const sel = document.getElementById('tool-timer-item')
+    sel.style.display = type ? 'block' : 'none'
+    sel.innerHTML = '<option value="">Seleccionar...</option>'
+    if (type === 'pieza') {
+      if (!pieces.length) await loadPieces()
+      pieces.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.titulo}</option>`)
+    } else if (type === 'tarea') {
+      if (!tasks.length) await loadTasks()
+      tasks.forEach(t => sel.innerHTML += `<option value="${t.id}">${t.titulo}</option>`)
+    }
+  }
+
+  window.toolTimerToggle = function() {
+    if (!toolTimer.running) {
+      toolTimer.running = true
+      toolTimer.interval = setInterval(() => {
+        toolTimer.seconds++
+        const h = Math.floor(toolTimer.seconds/3600)
+        const m = Math.floor((toolTimer.seconds%3600)/60)
+        const s = toolTimer.seconds%60
+        document.getElementById('tool-timer-display').textContent =
+          `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      }, 1000)
+      document.getElementById('tool-timer-icon').className = 'ti ti-player-pause'
+      document.getElementById('tool-timer-btn').innerHTML = '<i class="ti ti-player-pause" id="tool-timer-icon" style="font-size:15px"></i> Pausar'
+      // Contexto
+      const type = document.getElementById('tool-timer-type').value
+      const item = document.getElementById('tool-timer-item')
+      const label = item.options[item.selectedIndex]?.text || ''
+      document.getElementById('tool-timer-context').textContent = label || 'Sin vincular'
+      toolTimer.pieceId = type === 'pieza' ? item.value || null : null
+      toolTimer.taskId  = type === 'tarea' ? item.value || null : null
+    } else {
+      toolTimer.running = false
+      clearInterval(toolTimer.interval)
+      document.getElementById('tool-timer-btn').innerHTML = '<i class="ti ti-player-play" id="tool-timer-icon" style="font-size:15px"></i> Reanudar'
+    }
+  }
+
+  window.toolTimerStop = async function() {
+    clearInterval(toolTimer.interval)
+    toolTimer.running = false
+    if (toolTimer.seconds < 5) { toolTimer.seconds = 0; document.getElementById('tool-timer-display').textContent = '00:00:00'; document.getElementById('tool-timer-context').textContent = 'Sin vincular'; document.getElementById('tool-timer-btn').innerHTML = '<i class="ti ti-player-play" id="tool-timer-icon" style="font-size:15px"></i> Iniciar'; return }
+    await supabase.from('time_logs').insert({ agency_id: agencyId, user_id: currentUserId, piece_id: toolTimer.pieceId, task_id: toolTimer.taskId, duracion_segundos: toolTimer.seconds, tipo: 'manual' })
+    const h = Math.floor(toolTimer.seconds/3600), m = Math.floor((toolTimer.seconds%3600)/60), s = toolTimer.seconds%60
+    showToast(`✓ ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} registrado`)
+    toolTimer.seconds = 0; toolTimer.pieceId = null; toolTimer.taskId = null
+    document.getElementById('tool-timer-display').textContent = '00:00:00'
+    document.getElementById('tool-timer-context').textContent = 'Sin vincular'
+    document.getElementById('tool-timer-btn').innerHTML = '<i class="ti ti-player-play" id="tool-timer-icon" style="font-size:15px"></i> Iniciar'
+  }
+
+  // ── Herramientas — Pomodoro ───────────────────────────
+  const POMO_WORK = 25 * 60
+  const POMO_BREAK = 5 * 60
+  let pomo = { running: false, interval: null, seconds: POMO_WORK, phase: 'work', cycle: 1, pieceId: null, taskId: null, workSeconds: 0 }
+
+  function renderPomoDots() {
+    const el = document.getElementById('pomo-dots')
+    if (!el) return
+    el.innerHTML = Array.from({length: 4}, (_, i) =>
+      `<div style="width:8px;height:8px;border-radius:50%;background:${i < pomo.cycle ? '#E65100' : 'var(--border)'}"></div>`
+    ).join('')
+  }
+
+  function updatePomoDisplay() {
+    const m = Math.floor(pomo.seconds / 60)
+    const s = pomo.seconds % 60
+    const el = document.getElementById('pomo-display')
+    if (el) el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+    const badge = document.getElementById('pomo-phase-badge')
+    if (badge) {
+      badge.textContent = pomo.phase === 'work' ? 'Trabajo' : 'Descanso'
+      badge.style.background = pomo.phase === 'work' ? '#FFF3E0' : '#E8F5E9'
+      badge.style.color = pomo.phase === 'work' ? '#E65100' : '#2E7D32'
+    }
+    const cyc = document.getElementById('pomo-cycle')
+    if (cyc) cyc.textContent = `Ciclo ${pomo.cycle}`
+    renderPomoDots()
+  }
+
+  window.loadPomoItems = async function() {
+    const type = document.getElementById('pomo-type').value
+    const sel = document.getElementById('pomo-item')
+    sel.style.display = type ? 'block' : 'none'
+    sel.innerHTML = '<option value="">Seleccionar...</option>'
+    if (type === 'pieza') {
+      if (!pieces.length) await loadPieces()
+      pieces.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.titulo}</option>`)
+    } else if (type === 'tarea') {
+      if (!tasks.length) await loadTasks()
+      tasks.forEach(t => sel.innerHTML += `<option value="${t.id}">${t.titulo}</option>`)
+    }
+  }
+
+  window.pomoToggle = function() {
+    if (!pomo.running) {
+      pomo.running = true
+      const type = document.getElementById('pomo-type').value
+      const item = document.getElementById('pomo-item')
+      pomo.pieceId = type === 'pieza' ? item.value || null : null
+      pomo.taskId  = type === 'tarea' ? item.value || null : null
+      pomo.interval = setInterval(async () => {
+        pomo.seconds--
+        if (pomo.phase === 'work') pomo.workSeconds++
+        if (pomo.seconds <= 0) {
+          if (pomo.phase === 'work') {
+            // Guardar tiempo del pomodoro
+            await supabase.from('time_logs').insert({ agency_id: agencyId, user_id: currentUserId, piece_id: pomo.pieceId, task_id: pomo.taskId, duracion_segundos: POMO_WORK, tipo: 'pomodoro' })
+            showToast('🍅 ¡Pomodoro completado! Tomá un descanso.')
+            pomo.phase = 'break'
+            pomo.seconds = POMO_BREAK
+          } else {
+            pomo.phase = 'work'
+            pomo.seconds = POMO_WORK
+            pomo.cycle = pomo.cycle < 4 ? pomo.cycle + 1 : 1
+            showToast('💪 ¡Descanso terminado! A trabajar.')
+          }
+        }
+        updatePomoDisplay()
+      }, 1000)
+      document.getElementById('pomo-btn').innerHTML = '<i class="ti ti-player-pause" id="pomo-icon" style="font-size:15px"></i> Pausar'
+    } else {
+      pomo.running = false
+      clearInterval(pomo.interval)
+      document.getElementById('pomo-btn').innerHTML = '<i class="ti ti-player-play" id="pomo-icon" style="font-size:15px"></i> Reanudar'
+    }
+  }
+
+  window.pomoReset = function() {
+    clearInterval(pomo.interval)
+    pomo = { running: false, interval: null, seconds: POMO_WORK, phase: 'work', cycle: 1, pieceId: null, taskId: null, workSeconds: 0 }
+    document.getElementById('pomo-btn').innerHTML = '<i class="ti ti-player-play" id="pomo-icon" style="font-size:15px"></i> Iniciar'
+    updatePomoDisplay()
   }
 
   // ── Escape para cerrar modales
