@@ -974,96 +974,151 @@
     </div>
 
     <!-- HERRAMIENTAS -->
-    <div class="view" id="v-herramientas">
-      <div style="max-width:720px;margin:0 auto">
-        <p style="font-size:13px;color:var(--ink3);margin-bottom:28px">Herramientas de productividad para tu equipo.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="view" id="v-herramientas" style="padding:0">
 
-          <!-- Timer -->
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:20px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:44px;height:44px;border-radius:12px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);flex-shrink:0">
-                <i class="ti ti-clock" style="font-size:22px"></i>
-              </div>
-              <div>
-                <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Timer</div>
-                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Cronómetro vinculado a tareas o piezas</div>
-              </div>
+      <!-- Vista: grid de herramientas -->
+      <div id="tools-home" style="padding:28px 32px">
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:24px">Herramientas de productividad para tu equipo.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:720px">
+
+          <!-- Card Timer -->
+          <div onclick="openTool('timer')" style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:24px;cursor:pointer;transition:box-shadow .18s,border-color .18s;display:flex;flex-direction:column;gap:16px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+            <div style="width:48px;height:48px;border-radius:14px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul)">
+              <i class="ti ti-clock" style="font-size:24px"></i>
             </div>
-
-            <div style="text-align:center;padding:16px 0">
-              <div style="font-size:52px;font-weight:900;color:var(--ink);letter-spacing:-2px;font-variant-numeric:tabular-nums" id="tool-timer-display">00:00:00</div>
-              <div style="font-size:12px;color:var(--ink3);margin-top:6px;min-height:18px" id="tool-timer-context">Sin vincular</div>
+            <div>
+              <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Timer</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:4px;line-height:1.5">Cronómetro vinculado a piezas o tareas</div>
             </div>
-
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <select class="form-input form-select" id="tool-timer-type" onchange="loadToolTimerItems()" style="font-size:13px">
-                <option value="">Vincular a... (opcional)</option>
-                <option value="pieza">Pieza</option>
-                <option value="tarea">Tarea</option>
-              </select>
-              <select class="form-input form-select" id="tool-timer-item" style="font-size:13px;display:none">
-                <option value="">Seleccionar...</option>
-              </select>
-            </div>
-
-            <div style="display:flex;gap:8px">
-              <button id="tool-timer-btn" onclick="toolTimerToggle()" class="tbtn primary" style="flex:1;justify-content:center;gap:8px">
-                <i class="ti ti-player-play" id="tool-timer-icon" style="font-size:15px"></i> Iniciar
-              </button>
-              <button onclick="toolTimerStop()" class="tbtn danger" style="padding:10px 14px" title="Detener y guardar">
-                <i class="ti ti-square" style="font-size:15px"></i>
-              </button>
+            <div style="font-size:11px;font-weight:800;color:var(--azul);display:flex;align-items:center;gap:4px">
+              Abrir <i class="ti ti-arrow-right" style="font-size:12px"></i>
             </div>
           </div>
 
-          <!-- Pomodoro -->
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:20px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;color:#E65100;flex-shrink:0">
-                <i class="ti ti-tomato" style="font-size:22px"></i>
-              </div>
-              <div>
-                <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Pomodoro</div>
-                <div style="font-size:12px;color:var(--ink3);margin-top:2px">25 min trabajo · 5 min descanso</div>
-              </div>
+          <!-- Card Pomodoro -->
+          <div onclick="openTool('pomodoro')" style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:24px;cursor:pointer;transition:box-shadow .18s,border-color .18s;display:flex;flex-direction:column;gap:16px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+            <div style="width:48px;height:48px;border-radius:14px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;color:#E65100">
+              <i class="ti ti-tomato" style="font-size:24px"></i>
             </div>
-
-            <div style="text-align:center;padding:16px 0">
-              <div style="font-size:52px;font-weight:900;letter-spacing:-2px;font-variant-numeric:tabular-nums" id="pomo-display" style="color:var(--ink)">25:00</div>
-              <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px">
-                <span id="pomo-phase-badge" style="font-size:11px;font-weight:800;padding:3px 12px;border-radius:20px;background:#FFF3E0;color:#E65100">Trabajo</span>
-                <span style="font-size:11px;color:var(--ink3)" id="pomo-cycle">Ciclo 1</span>
-              </div>
-              <div style="display:flex;justify-content:center;gap:5px;margin-top:10px" id="pomo-dots"></div>
+            <div>
+              <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Pomodoro</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:4px;line-height:1.5">Ciclos 25 min trabajo · 5 min descanso</div>
             </div>
-
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <select class="form-input form-select" id="pomo-type" onchange="loadPomoItems()" style="font-size:13px">
-                <option value="">Vincular a... (opcional)</option>
-                <option value="pieza">Pieza</option>
-                <option value="tarea">Tarea</option>
-              </select>
-              <select class="form-input form-select" id="pomo-item" style="font-size:13px;display:none">
-                <option value="">Seleccionar...</option>
-              </select>
-            </div>
-
-            <div style="display:flex;gap:8px">
-              <button id="pomo-btn" onclick="pomoToggle()" class="tbtn" style="flex:1;justify-content:center;gap:8px;background:#FFF3E0;color:#E65100;border-color:#FFCCBC">
-                <i class="ti ti-player-play" id="pomo-icon" style="font-size:15px"></i> Iniciar
-              </button>
-              <button onclick="pomoReset()" class="tbtn" style="padding:10px 14px" title="Reiniciar">
-                <i class="ti ti-refresh" style="font-size:15px"></i>
-              </button>
+            <div style="font-size:11px;font-weight:800;color:#E65100;display:flex;align-items:center;gap:4px">
+              Abrir <i class="ti ti-arrow-right" style="font-size:12px"></i>
             </div>
           </div>
 
         </div>
       </div>
+
+      <!-- Vista: Timer detalle -->
+      <div id="tools-timer" style="display:none;padding:28px 32px;max-width:600px">
+        <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
+        </button>
+
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul)">
+              <i class="ti ti-clock" style="font-size:22px"></i>
+            </div>
+            <div>
+              <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.4px">Timer</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:2px">Cronómetro vinculado a tareas o piezas</div>
+            </div>
+          </div>
+
+          <div style="text-align:center;padding:20px 0">
+            <div style="font-size:64px;font-weight:900;color:var(--ink);letter-spacing:-3px;font-variant-numeric:tabular-nums" id="tool-timer-display">00:00:00</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:8px;min-height:18px" id="tool-timer-context">Sin vincular</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+            <select class="form-input form-select" id="tool-timer-type" onchange="loadToolTimerItems()" style="font-size:13px">
+              <option value="">Vincular a... (opcional)</option>
+              <option value="pieza">Pieza</option>
+              <option value="tarea">Tarea</option>
+            </select>
+            <select class="form-input form-select" id="tool-timer-item" style="font-size:13px;display:none">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <button id="tool-timer-btn" onclick="toolTimerToggle()" class="tbtn primary" style="flex:1;justify-content:center;gap:8px">
+              <i class="ti ti-player-play" id="tool-timer-icon" style="font-size:15px"></i> Iniciar
+            </button>
+            <button onclick="toolTimerStop()" class="tbtn danger" style="padding:10px 16px" title="Detener y guardar">
+              <i class="ti ti-square" style="font-size:15px"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Historial timer -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:24px">
+          <div style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:16px;letter-spacing:-.3px">Mis registros</div>
+          <div id="timer-logs-list"></div>
+        </div>
+      </div>
+
+      <!-- Vista: Pomodoro detalle -->
+      <div id="tools-pomodoro" style="display:none;padding:28px 32px;max-width:600px">
+        <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
+        </button>
+
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+            <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;color:#E65100">
+              <i class="ti ti-tomato" style="font-size:22px"></i>
+            </div>
+            <div>
+              <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.4px">Pomodoro</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:2px">25 min trabajo · 5 min descanso</div>
+            </div>
+          </div>
+
+          <div style="text-align:center;padding:20px 0">
+            <div style="font-size:64px;font-weight:900;color:var(--ink);letter-spacing:-3px;font-variant-numeric:tabular-nums" id="pomo-display">25:00</div>
+            <div style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px">
+              <span id="pomo-phase-badge" style="font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;background:#FFF3E0;color:#E65100">Trabajo</span>
+              <span style="font-size:11px;color:var(--ink3)" id="pomo-cycle">Ciclo 1</span>
+            </div>
+            <div style="display:flex;justify-content:center;gap:6px;margin-top:12px" id="pomo-dots"></div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+            <select class="form-input form-select" id="pomo-type" onchange="loadPomoItems()" style="font-size:13px">
+              <option value="">Vincular a... (opcional)</option>
+              <option value="pieza">Pieza</option>
+              <option value="tarea">Tarea</option>
+            </select>
+            <select class="form-input form-select" id="pomo-item" style="font-size:13px;display:none">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <button id="pomo-btn" onclick="pomoToggle()" class="tbtn" style="flex:1;justify-content:center;gap:8px;background:#FFF3E0;color:#E65100;border-color:#FFCCBC">
+              <i class="ti ti-player-play" id="pomo-icon" style="font-size:15px"></i> Iniciar
+            </button>
+            <button onclick="pomoReset()" class="tbtn" style="padding:10px 16px" title="Reiniciar">
+              <i class="ti ti-refresh" style="font-size:15px"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Historial pomodoro -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:24px">
+          <div style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:16px;letter-spacing:-.3px">Mis registros</div>
+          <div id="pomo-logs-list"></div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- CALENDARIO -->
+        <!-- CALENDARIO -->
     <div class="view" id="v-calendario" style="padding:0;display:none;flex-direction:column;overflow:hidden;height:calc(100vh - 52px)">
       <!-- Cal toolbar -->
       <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
@@ -4332,6 +4387,96 @@
     timerContext = null
   }
 
+  // ── Herramientas — Navegación ─────────────────────────
+  let currentTool = null
+
+  window.openTool = async function(tool) {
+    currentTool = tool
+    document.getElementById('tools-home').style.display = 'none'
+    document.getElementById('tools-timer').style.display = tool === 'timer' ? 'block' : 'none'
+    document.getElementById('tools-pomodoro').style.display = tool === 'pomodoro' ? 'block' : 'none'
+    document.getElementById('ws-title').textContent = tool === 'timer' ? 'Timer' : 'Pomodoro'
+    if (tool === 'timer') { await loadTimerLogs(); updatePomoDisplay(); renderPomoDots() }
+    if (tool === 'pomodoro') { await loadPomoLogs(); updatePomoDisplay(); renderPomoDots() }
+  }
+
+  window.closeTool = function() {
+    currentTool = null
+    document.getElementById('tools-home').style.display = 'block'
+    document.getElementById('tools-timer').style.display = 'none'
+    document.getElementById('tools-pomodoro').style.display = 'none'
+    document.getElementById('ws-title').textContent = 'Herramientas'
+  }
+
+  async function loadTimerLogs() {
+    const el = document.getElementById('timer-logs-list')
+    if (!el) return
+    el.innerHTML = '<div style="color:var(--ink3);font-size:13px">Cargando...</div>'
+    const { data } = await supabase
+      .from('time_logs')
+      .select('*, content_pieces(titulo), content_tasks(titulo)')
+      .eq('user_id', currentUserId)
+      .eq('tipo', 'manual')
+      .order('created_at', { ascending: false })
+      .limit(20)
+    renderTimeLogs(el, data || [])
+  }
+
+  async function loadPomoLogs() {
+    const el = document.getElementById('pomo-logs-list')
+    if (!el) return
+    el.innerHTML = '<div style="color:var(--ink3);font-size:13px">Cargando...</div>'
+    const { data } = await supabase
+      .from('time_logs')
+      .select('*, content_pieces(titulo), content_tasks(titulo)')
+      .eq('user_id', currentUserId)
+      .eq('tipo', 'pomodoro')
+      .order('created_at', { ascending: false })
+      .limit(20)
+    renderTimeLogs(el, data || [])
+  }
+
+  function renderTimeLogs(el, logs) {
+    if (!logs.length) {
+      el.innerHTML = '<div style="text-align:center;padding:24px 0;color:var(--ink3);font-size:13px">Sin registros todavía</div>'
+      return
+    }
+    // Agrupar por día
+    const byDay = {}
+    logs.forEach(l => {
+      const d = new Date(l.created_at).toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'})
+      if (!byDay[d]) byDay[d] = []
+      byDay[d].push(l)
+    })
+    el.innerHTML = Object.entries(byDay).map(([day, entries]) => {
+      const totalSecs = entries.reduce((a, b) => a + b.duracion_segundos, 0)
+      const rows = entries.map(l => {
+        const h = Math.floor(l.duracion_segundos/3600)
+        const m = Math.floor((l.duracion_segundos%3600)/60)
+        const s = l.duracion_segundos%60
+        const dur = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+        const linked = l.content_pieces?.titulo || l.content_tasks?.titulo || null
+        const hora = new Date(l.created_at).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--ink)">${linked || 'Sin vincular'}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${hora}</div>
+          </div>
+          <div style="font-size:13px;font-weight:900;color:var(--azul);font-variant-numeric:tabular-nums">${dur}</div>
+        </div>`
+      }).join('')
+      const th = Math.floor(totalSecs/3600), tm = Math.floor((totalSecs%3600)/60)
+      const totalStr = th > 0 ? `${th}h ${tm}m` : `${tm}m`
+      return `<div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:capitalize">${day}</div>
+          <div style="font-size:11px;font-weight:800;color:var(--ink3)">Total: ${totalStr}</div>
+        </div>
+        ${rows}
+      </div>`
+    }).join('')
+  }
+
   // ── Herramientas — Timer ──────────────────────────────
   let toolTimer = { running: false, interval: null, seconds: 0, pieceId: null, taskId: null }
 
@@ -4387,6 +4532,7 @@
     document.getElementById('tool-timer-display').textContent = '00:00:00'
     document.getElementById('tool-timer-context').textContent = 'Sin vincular'
     document.getElementById('tool-timer-btn').innerHTML = '<i class="ti ti-player-play" id="tool-timer-icon" style="font-size:15px"></i> Iniciar'
+    await loadTimerLogs()
   }
 
   // ── Herramientas — Pomodoro ───────────────────────────
@@ -4447,6 +4593,7 @@
             // Guardar tiempo del pomodoro
             await supabase.from('time_logs').insert({ agency_id: agencyId, user_id: currentUserId, piece_id: pomo.pieceId, task_id: pomo.taskId, duracion_segundos: POMO_WORK, tipo: 'pomodoro' })
             showToast('🍅 ¡Pomodoro completado! Tomá un descanso.')
+            await loadPomoLogs()
             pomo.phase = 'break'
             pomo.seconds = POMO_BREAK
           } else {
