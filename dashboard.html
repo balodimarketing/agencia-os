@@ -2198,16 +2198,31 @@
         bodyHTML += `<div class="cal-now-line" style="top:${top}px"></div>`
       }
 
-      // Events
-      dayEvents.forEach(e => {
+      // Events — con detección de colisiones
+      const evMeta = dayEvents.map(e => {
         const start = new Date(e.fecha_inicio)
         const startMins = start.getHours()*60 + start.getMinutes()
         const top = (startMins / 60) * HOUR_H
         const end = e.fecha_fin ? new Date(e.fecha_fin) : new Date(start.getTime() + 60*60*1000)
         const durMins = Math.max((end - start) / 60000, 60)
         const height = Math.max((durMins / 60) * HOUR_H, 44)
-        const timeStr = start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-        bodyHTML += `<div class="cal-event" style="top:${top}px;height:${height}px;background:${e.color}22;border-left:3px solid ${e.color};color:${e.color}" onclick="openEventDetail('${e.id}')">
+        return { e, top, height, startMins, endMins: startMins + durMins }
+      })
+      const cols = [], colEnd = []
+      evMeta.forEach((em, i) => {
+        let placed = false
+        for (let c = 0; c < colEnd.length; c++) {
+          if (em.startMins >= colEnd[c]) { cols[i] = c; colEnd[c] = em.endMins; placed = true; break }
+        }
+        if (!placed) { cols[i] = colEnd.length; colEnd.push(em.endMins) }
+      })
+      const totalCols = Math.max(colEnd.length, 1)
+      evMeta.forEach(({e, top, height}, i) => {
+        const col = cols[i]
+        const widthPct = 100 / totalCols
+        const leftPct  = col * widthPct
+        const timeStr = new Date(e.fecha_inicio).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+        bodyHTML += `<div class="cal-event" style="top:${top}px;height:${height}px;left:calc(${leftPct}% + 3px);width:calc(${widthPct}% - 6px);right:auto;background:${e.color}22;border-left:3px solid ${e.color};color:${e.color}" onclick="openEventDetail('${e.id}')">
           <div class="cal-event-title">${e.titulo}</div>
           <div class="cal-event-time">${timeStr}</div>
         </div>`
