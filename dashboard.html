@@ -4840,6 +4840,8 @@
     crmContacts = data || []
   }
 
+  let crmDragId = null
+
   function renderCrmPipeline() {
     const kanban = document.getElementById('crm-kanban')
     if (!kanban) return
@@ -4850,7 +4852,7 @@
         const resp = c.agency_members?.profiles
         const respName = resp ? `${resp.nombre} ${resp.apellido}` : null
         const overdue = c.proximo_contacto && new Date(c.proximo_contacto) < new Date()
-        return `<div onclick="openCrmDetail('${c.id}')" style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s;margin-bottom:8px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        return `<div class="crm-card" draggable="true" data-id="${c.id}" onclick="openCrmDetail('${c.id}')" style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:grab;transition:box-shadow .15s,border-color .15s,opacity .15s;margin-bottom:8px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
           <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">${c.nombre}</div>
           ${c.empresa ? `<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">${c.empresa}</div>` : '<div style="margin-bottom:8px"></div>'}
           ${c.valor_deal ? `<div style="font-size:12px;font-weight:900;color:var(--azul);margin-bottom:6px">$${Number(c.valor_deal).toLocaleString('es-AR')}</div>` : ''}
@@ -4860,7 +4862,7 @@
           </div>
         </div>`
       }).join('')
-      return `<div style="flex-shrink:0;width:220px;display:flex;flex-direction:column">
+      return `<div class="crm-col" data-stage="${stage.id}" style="flex-shrink:0;width:220px;display:flex;flex-direction:column;border-radius:12px;transition:background .15s;padding:8px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:7px">
             <div style="width:8px;height:8px;border-radius:50%;background:${stage.color}"></div>
@@ -4869,9 +4871,47 @@
           </div>
           ${total > 0 ? `<span style="font-size:11px;font-weight:800;color:${stage.color}">$${Number(total).toLocaleString('es-AR')}</span>` : ''}
         </div>
-        <div style="flex:1">${cards || `<div style="text-align:center;padding:20px 0;color:var(--ink3);font-size:12px">Sin contactos</div>`}</div>
+        <div style="flex:1;min-height:60px">${cards || `<div style="text-align:center;padding:20px 0;color:var(--ink3);font-size:12px">Sin contactos</div>`}</div>
       </div>`
     }).join('')
+
+    // Drag & drop
+    document.querySelectorAll('.crm-card').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        crmDragId = card.dataset.id
+        card.style.opacity = '.4'
+        e.dataTransfer.effectAllowed = 'move'
+      })
+      card.addEventListener('dragend', () => {
+        card.style.opacity = ''
+        document.querySelectorAll('.crm-col').forEach(c => c.style.background = '')
+      })
+    })
+
+    document.querySelectorAll('.crm-col').forEach(col => {
+      col.addEventListener('dragover', e => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        document.querySelectorAll('.crm-col').forEach(c => c.style.background = '')
+        col.style.background = 'rgba(142,219,255,.08)'
+      })
+      col.addEventListener('dragleave', e => {
+        if (!col.contains(e.relatedTarget)) col.style.background = ''
+      })
+      col.addEventListener('drop', async e => {
+        e.preventDefault()
+        col.style.background = ''
+        const newStage = col.dataset.stage
+        if (!crmDragId || !newStage) return
+        const contact = crmContacts.find(c => c.id === crmDragId)
+        if (!contact || contact.pipeline_stage === newStage) return
+        contact.pipeline_stage = newStage
+        renderCrmPipeline()
+        await supabase.from('crm_contacts').update({ pipeline_stage: newStage }).eq('id', crmDragId)
+        crmDragId = null
+        showToast('✓ Etapa actualizada')
+      })
+    })
   }
 
   function renderCrmList(filter = '') {
@@ -4993,9 +5033,14 @@
       <!-- Stage + datos -->
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Etapa</div>
-            <span style="font-size:12px;font-weight:800;padding:3px 10px;border-radius:6px;background:${stage?.color}18;color:${stage?.color}">${stage?.label}</span>
+          <div style="grid-column:1/-1">
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Etapa</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${CRM_STAGES.map(s => `
+                <button onclick="changeCrmStage('${c.id}','${s.id}')" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${s.id === c.pipeline_stage ? s.color : 'var(--border)'};background:${s.id === c.pipeline_stage ? s.color+'18' : 'transparent'};color:${s.id === c.pipeline_stage ? s.color : 'var(--ink3)'};font-size:11px;font-weight:800;cursor:pointer;transition:all .15s;font-family:inherit">
+                  ${s.label}
+                </button>`).join('')}
+            </div>
           </div>
           ${c.valor_deal ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Valor del deal</div><div style="font-size:15px;font-weight:900;color:var(--azul)">$${Number(c.valor_deal).toLocaleString('es-AR')}</div></div>` : ''}
           <div>
@@ -5112,6 +5157,17 @@ if (id) {
     await loadCrmContacts()
     renderCrm()
     if (crmCurrentContact && id) { crmCurrentContact = crmContacts.find(c => c.id === id); await renderCrmDetail() }
+  }
+
+  window.changeCrmStage = async function(id, stage) {
+    const contact = crmContacts.find(c => c.id === id)
+    if (!contact || contact.pipeline_stage === stage) return
+    contact.pipeline_stage = stage
+    await supabase.from('crm_contacts').update({ pipeline_stage: stage }).eq('id', id)
+    if (crmCurrentContact?.id === id) crmCurrentContact.pipeline_stage = stage
+    showToast('✓ Etapa actualizada')
+    await renderCrmDetail()
+    if (crmView === 'pipeline') renderCrmPipeline()
   }
 
   window.editCrmContact = function() { openCrmModal(crmCurrentContact?.id) }
