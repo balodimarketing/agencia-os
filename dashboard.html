@@ -189,8 +189,12 @@
       box-shadow: var(--shadow-lg);
       transform: translateY(16px) scale(.98);
       transition: transform .22s cubic-bezier(.4,0,.2,1);
-      max-height: 90vh; overflow-y: auto;
+      max-height: 90vh;
+      display: flex; flex-direction: column;
+      overflow: hidden;
     }
+    .modal .modal-body { overflow-y: auto; flex: 1; }
+    .modal .modal-footer { flex-shrink: 0; }
 
     .modal-overlay.show .modal { transform: translateY(0) scale(1); }
 
@@ -820,7 +824,7 @@
         <div id="piece-file-current" style="font-size:11px;color:var(--ink3);margin-top:6px;display:none"></div>
       </div>
     </div>
-    <div class="modal-footer" style="position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--border);padding:16px 24px;display:flex;gap:10px;margin:0 -24px -24px;border-radius:0 0 20px 20px">
+    <div class="modal-footer">
       <button class="tbtn" style="flex:1" onclick="closePieceModal()">Cancelar</button>
       <button class="tbtn primary" style="flex:2" id="btn-save-piece" onclick="savePiece()">
         <span id="btn-save-piece-text">Guardar pieza</span>
