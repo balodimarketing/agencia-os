@@ -1469,10 +1469,13 @@
     const session = await requireAuth()
     if (!session) return
 
+    // Set currentUserId FIRST before any queries
+    currentUserId = session.user.id
+
     const { data: membership } = await supabase
       .from('agency_members')
       .select('role, status, agencies(id, nombre)')
-      .eq('user_id', session.user.id)
+      .eq('user_id', currentUserId)
       .maybeSingle()
 
     if (!membership) { window.location.href = 'onboarding.html'; return }
@@ -1480,10 +1483,9 @@
 
     agencyId = membership.agencies?.id
     userRole = membership.role
-    currentUserId = session.user.id
 
     const { data: profile } = await supabase
-      .from('profiles').select('nombre, apellido').eq('id', session.user.id).single()
+      .from('profiles').select('nombre, apellido').eq('id', currentUserId).single()
 
     const hour = new Date().getHours()
     const saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
