@@ -274,8 +274,7 @@
       if (path) await supabase.storage.from('pieces').remove([path])
     }
 
-    // Delete piece record entirely
-    await supabase.from('content_pieces').delete().eq('id', pieceId)
+    // Keep piece record - just update estado to publicado (already done above)
 
     // Send notifications
     if (piece) {
