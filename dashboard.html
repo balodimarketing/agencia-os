@@ -976,7 +976,6 @@
             <option value="produccion">Producción</option>
             <option value="revision">Revisión interna</option>
             <option value="aprobacion">Aprobación</option>
-            <option value="aprobado">Aprobado</option>
             <option value="publicado">Publicado</option>
           </select>
         </div>
@@ -1564,6 +1563,18 @@
     default:          { icon: '🔔', bg: '#F5F5F5' },
   }
 
+
+  function getResponsableNames(p) {
+    if (!p.piece_responsables || p.piece_responsables.length === 0) return null
+    return p.piece_responsables
+      .map(r => {
+        const prof = r.agency_members?.profiles
+        return prof ? prof.nombre + ' ' + prof.apellido : null
+      })
+      .filter(Boolean)
+      .join(', ')
+  }
+
   function timeAgo(dateStr) {
     const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
     if (diff < 60) return 'ahora'
@@ -1733,8 +1744,7 @@
     { id: 'produccion', name: 'Producción',         color: '#60A5FA' },
     { id: 'revision',   name: 'Revisión interna',   color: '#FBBF24' },
     { id: 'aprobacion', name: 'Aprobación',         color: '#F87171' },
-    { id: 'aprobado',   name: 'Aprobado',           color: '#34C759' },
-    { id: 'publicado',  name: 'Publicado',          color: '#8B5CF6' },
+    { id: 'publicado',  name: 'Publicado',          color: '#34C759' },
   ]
 
   const CLIENT_COLORS = ['#E1F5EE','#EEEDFE','#FAECE7','#E6F1FB','#FFF3E0','#FCE4EC']
@@ -1764,7 +1774,7 @@
       if (clientIds.length === 0) { pieces = []; return }
       const { data } = await supabase
         .from('content_pieces')
-        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), agency_members!content_pieces_responsable_id_fkey(profiles(nombre,apellido)), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), piece_responsables(agency_member_id, agency_members(profiles(nombre,apellido))), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
         .eq('agency_id', agencyId)
         .in('client_id', clientIds)
         .order('created_at', { ascending: false })
@@ -1772,7 +1782,7 @@
     } else {
       const { data } = await supabase
         .from('content_pieces')
-        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), agency_members!content_pieces_responsable_id_fkey(profiles(nombre,apellido)), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), piece_responsables(agency_member_id, agency_members(profiles(nombre,apellido))), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
         .eq('agency_id', agencyId)
         .order('created_at', { ascending: false })
       pieces = data || []
@@ -1858,7 +1868,7 @@
                 ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
                 ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
               </div>
-              ${(() => { const r = p.agency_members?.profiles; return r ? `<div style="font-size:10px;color:var(--ink3);margin-top:5px;display:flex;align-items:center;gap:4px"><i class="ti ti-user" style="font-size:10px"></i>${r.nombre} ${r.apellido}</div>` : '' })()}
+              ${(() => { const names = getResponsableNames(p); return names ? `<div style="font-size:10px;color:var(--ink3);margin-top:5px;display:flex;align-items:center;gap:4px"><i class="ti ti-user" style="font-size:10px"></i>${names}</div>` : '' })()}
             </div>`
           }).join('')
       return `<div class="k-col" data-col="${col.id}">
@@ -1973,8 +1983,8 @@
           <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—'}</div>
         </div>
         <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Responsable</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.agency_members?.profiles ? p.agency_members.profiles.nombre + ' ' + p.agency_members.profiles.apellido : '—'}</div>
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Responsable${(p.piece_responsables?.length||0) > 1 ? 's' : ''}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${getResponsableNames(p) || '—'}</div>
         </div>
         <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Tipo</div>
@@ -2031,11 +2041,13 @@
     const cs = document.getElementById('piece-client')
     cs.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${p?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
 
-    // Populate responsable
-    const rs = document.getElementById('piece-responsable')
-    rs.innerHTML = '<option value="">Sin asignar</option>' + teamMembers.map(m => {
-      const n = (m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')
-      return `<option value="${m.id}" ${p?.responsable_id===m.id?'selected':''}>${n.trim()}</option>`
+    // Populate responsables checkboxes
+    const assignedIds = (p?.piece_responsables || []).map(r => r.agency_member_id)
+    const rList = document.getElementById('piece-responsables-list')
+    rList.innerHTML = teamMembers.map(m => {
+      const n = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
+      return `<input type="checkbox" class="red-check" id="pr-${m.id}" value="${m.id}" ${assignedIds.includes(m.id)?'checked':''}>
+              <label class="red-label" for="pr-${m.id}">${n}</label>`
     }).join('')
 
     document.getElementById('modal-piece').classList.add('show')
@@ -2056,6 +2068,10 @@
     const btnText = document.getElementById('btn-save-piece-text')
     btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
 
+    const selectedResponsables = teamMembers
+      .filter(m => document.getElementById('pr-' + m.id)?.checked)
+      .map(m => m.id)
+
     const payload = {
       titulo,
       tipo: document.getElementById('piece-tipo').value || null,
@@ -2063,7 +2079,6 @@
       fecha_entrega: document.getElementById('piece-fecha').value || null,
       descripcion: document.getElementById('piece-descripcion').value.trim() || null,
       client_id: document.getElementById('piece-client').value || null,
-      responsable_id: document.getElementById('piece-responsable').value || null,
       agency_id: agencyId,
     }
 
@@ -2094,6 +2109,30 @@
 
     btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar pieza'
     if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
+
+    // Get piece id (for new pieces, re-fetch)
+    let savedPieceId = id
+    if (!savedPieceId) {
+      const { data: newPiece } = await supabase
+        .from('content_pieces')
+        .select('id')
+        .eq('agency_id', agencyId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+      savedPieceId = newPiece?.id
+    }
+
+    // Update piece_responsables
+    if (savedPieceId) {
+      await supabase.from('piece_responsables').delete().eq('piece_id', savedPieceId)
+      if (selectedResponsables.length > 0) {
+        await supabase.from('piece_responsables').insert(
+          selectedResponsables.map(mid => ({ piece_id: savedPieceId, agency_member_id: mid }))
+        )
+      }
+    }
+
     closePieceModal()
     showToast(id ? '✓ Pieza actualizada' : '✓ Pieza creada')
     await renderContenido()
