@@ -1554,6 +1554,8 @@
     } else {
       cta.style.display = 'flex'
     }
+    // Hide left panel for calendario
+    document.querySelector('.panel').style.display = mod === 'calendario' ? 'none' : 'flex'
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
@@ -2819,27 +2821,28 @@
   // ── Panel ─────────────────────────────────────────────
   function renderContenidoPanel() {
     const body = document.getElementById('panel-body')
-    const byEstado = {}
-    KANBAN_COLS.forEach(c => { byEstado[c.id] = pieces.filter(p => p.estado === c.id).length })
     const statusColors = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759' }
     body.innerHTML = KANBAN_COLS.map(c => `
-      <div class="panel-item" onclick="switchContentTab('piezas')">
+      <div class="panel-item" onclick="switchContentTab('piezas');scrollToKanbanCol('${c.id}')">
         <div class="pi-row">
-          <div class="pi-av" style="background:${statusColors[c.id]}22;color:${statusColors[c.id]}">
-            <i class="ti ti-circle-filled" style="font-size:8px"></i>
-          </div>
-          <div class="pi-name">${c.name}</div>
-          <div class="pi-badge" style="background:var(--bg);color:var(--ink3)">${byEstado[c.id]}</div>
+          <div style="width:8px;height:8px;border-radius:50%;background:${statusColors[c.id]};flex-shrink:0;margin:0 4px"></div>
+          <div class="pi-name" style="font-size:12px">${c.name}</div>
         </div>
       </div>`).join('') +
-      `<div class="panel-item" onclick="switchContentTab('tareas')">
+      `<div style="height:1px;background:var(--border);margin:6px 4px"></div>
+      <div class="panel-item" onclick="switchContentTab('tareas')">
         <div class="pi-row">
-          <div class="pi-av" style="background:#E6F1FB;color:#0C447C"><i class="ti ti-checkbox" style="font-size:13px"></i></div>
-          <div class="pi-name">Tareas</div>
-          <div class="pi-badge" style="background:var(--bg);color:var(--ink3)">${tasks.length}</div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#60A5FA;flex-shrink:0;margin:0 4px"></div>
+          <div class="pi-name" style="font-size:12px">Tareas</div>
         </div>
       </div>`
     document.getElementById('panel-sub').textContent = `${pieces.length} piezas · ${tasks.length} tareas`
+  }
+
+  window.scrollToKanbanCol = function(colId) {
+    const board = document.getElementById('kanban-board')
+    const col = board?.querySelector(`[data-col="${colId}"]`)
+    if (col) col.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
   }
 
   // ── Kanban ────────────────────────────────────────────
