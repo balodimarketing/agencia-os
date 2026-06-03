@@ -811,11 +811,16 @@
     </div>
       <div class="form-field">
         <label class="form-label">Archivo (imagen o video)</label>
-        <input type="file" class="form-input" id="piece-file" accept="image/*,video/*" style="padding:8px">
+        <div id="upload-area" onclick="document.getElementById('piece-file').click()" style="border:1.5px dashed var(--border);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:all var(--t);background:var(--bg)" onmouseover="this.style.borderColor='var(--celeste)';this.style.background='var(--celeste-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
+          <div style="font-size:22px;margin-bottom:6px">📎</div>
+          <div style="font-size:12px;font-weight:700;color:var(--ink2)" id="upload-label">Seleccionar archivo</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:3px">Imágenes o videos · Máx. 50MB</div>
+        </div>
+        <input type="file" id="piece-file" accept="image/*,video/*" style="display:none" onchange="updateUploadLabel(this)">
         <div id="piece-file-current" style="font-size:11px;color:var(--ink3);margin-top:6px;display:none"></div>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="position:sticky;bottom:0;background:var(--white);border-top:1px solid var(--border);padding:16px 24px;display:flex;gap:10px;margin:0 -24px -24px;border-radius:0 0 20px 20px">
       <button class="tbtn" style="flex:1" onclick="closePieceModal()">Cancelar</button>
       <button class="tbtn primary" style="flex:2" id="btn-save-piece" onclick="savePiece()">
         <span id="btn-save-piece-text">Guardar pieza</span>
@@ -1633,6 +1638,18 @@
 
 
   // ── Approval link ──────────────────────────────────────
+
+  window.updateUploadLabel = function(input) {
+    const label = document.getElementById('upload-label')
+    if (input.files[0]) {
+      label.textContent = input.files[0].name
+      label.style.color = 'var(--azul)'
+    } else {
+      label.textContent = 'Seleccionar archivo'
+      label.style.color = 'var(--ink2)'
+    }
+  }
+
   window.generateApprovalLink = async function(pieceId) {
     const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
     const { error } = await supabase
