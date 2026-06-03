@@ -2236,6 +2236,7 @@
 
   function updateMsTriggerText() {
     const text = document.getElementById('ms-trigger-text')
+    if (!text) return
     const count = msSelected.size
     if (count === 0) {
       text.textContent = 'Sin asignar'
@@ -2255,6 +2256,7 @@
   function renderMsDropdown(assignedIds) {
     msSelected = new Set(assignedIds)
     const dropdown = document.getElementById('ms-responsables-dropdown')
+    if (!dropdown) return
     dropdown.innerHTML = teamMembers.map(m => {
       const nombre = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
       const isSelected = msSelected.has(m.id)
