@@ -947,7 +947,7 @@
     <div class="topbar">
       <div class="topbar-title" id="ws-title">Inicio</div>
       <div class="topbar-search"><i class="ti ti-search"></i><input type="text" placeholder="Buscar en la app..."><span class="topbar-kbd">⌘K</span></div>
-      <button class="tbtn primary" id="ws-cta" onclick="handleCta()"><i class="ti ti-plus"></i><span id="ws-cta-label">Nuevo</span></button>
+      <button class="tbtn primary" id="ws-cta" onclick="handleCta()" style="display:none"><i class="ti ti-plus"></i><span id="ws-cta-label">Nuevo</span></button>
     </div>
 
     <!-- INICIO -->
@@ -6267,7 +6267,7 @@ if (id) {
 
     // ── Banner Agencia OS Pro ──
     const bannerEl = document.getElementById('inicio-banner')
-    if (bannerEl) bannerEl.innerHTML = `
+    if (bannerEl && userRole === 'OWNER') bannerEl.innerHTML = `
       <div style="background:var(--azul);border-radius:18px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(142,219,255,.07)"></div>
         <div style="position:absolute;bottom:-50px;right:140px;width:120px;height:120px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
