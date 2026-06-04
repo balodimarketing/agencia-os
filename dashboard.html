@@ -2184,7 +2184,7 @@
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
     const cta = document.getElementById('ws-cta')
     // Módulos con su propio CTA interno o sin CTA
-    const noCta = ['contenido', 'herramientas', 'crm', 'reportes', 'calendario']
+    const noCta = ['contenido', 'herramientas', 'crm', 'reportes', 'calendario', 'inicio']
     if (userRole === 'MEMBER' || noCta.includes(mod)) {
       cta.style.display = 'none'
     } else {
@@ -6209,18 +6209,26 @@ if (id) {
     ]
 
     const metricsEl = document.getElementById('inicio-metrics')
-    if (metricsEl) metricsEl.innerHTML = metrics.map((m,i) => {
-      const isDark = i === 0
-      const bg = isDark ? '#0A2540' : 'var(--white)'
-      const border = isDark ? 'none' : '1.5px solid var(--border)'
-      const labelColor = isDark ? '#fff' : 'var(--ink)'
-      const subColor = isDark ? 'rgba(142,219,255,.6)' : 'var(--ink3)'
-      return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=${m.mod}]'))" style="background:${bg};border:${border};border-radius:16px;padding:18px 16px;cursor:pointer;transition:box-shadow .15s,transform .15s" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="font-size:32px;font-weight:900;color:${m.numColor};letter-spacing:-1px;line-height:1">${m.value}</div>
-        <div style="font-size:12px;font-weight:800;color:${labelColor};margin-top:8px;letter-spacing:-.1px">${m.label}</div>
-        <div style="font-size:11px;color:${subColor};margin-top:3px">${m.sub}</div>
-      </div>`
-    }).join('')
+    if (metricsEl) {
+      metricsEl.style.background = 'var(--white)'
+      metricsEl.style.border = '1.5px solid var(--border)'
+      metricsEl.style.borderRadius = '18px'
+      metricsEl.style.padding = '4px'
+      metricsEl.innerHTML = metrics.map((m,i) => {
+        const isDark = i === 0
+        const bg = isDark ? '#0A2540' : 'transparent'
+        const border = isDark ? 'none' : 'none'
+        const labelColor = isDark ? '#fff' : 'var(--ink)'
+        const subColor = isDark ? 'rgba(142,219,255,.65)' : 'var(--ink3)'
+        const numColor = isDark ? '#8EDBFF' : m.numColor
+        const sep = i < metrics.length-1 && !isDark ? 'border-right:1px solid var(--border)' : ''
+        return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=${m.mod}]'))" style="background:${bg};border-radius:14px;padding:18px 20px;cursor:pointer;transition:opacity .15s;${sep}" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <div style="font-size:32px;font-weight:900;color:${numColor};letter-spacing:-1px;line-height:1">${m.value}</div>
+          <div style="font-size:12px;font-weight:800;color:${labelColor};margin-top:8px;letter-spacing:-.1px">${m.label}</div>
+          <div style="font-size:11px;color:${subColor};margin-top:3px">${m.sub}</div>
+        </div>`
+      }).join('')
+    }
 
     // ── Próximas publicaciones ──
     const pubEl = document.getElementById('inicio-publicaciones')
@@ -6251,7 +6259,6 @@ if (id) {
       pubEl.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Próximas publicaciones</div>
-          <span onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="font-size:11px;font-weight:800;color:var(--azul);background:var(--celeste-dim);padding:4px 12px;border-radius:20px;cursor:pointer">Ver calendario →</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
           ${pubs.length ? pubCards + verTodoCard : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin eventos próximos en el calendario.</div>'}
