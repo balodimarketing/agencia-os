@@ -951,15 +951,27 @@
     </div>
 
     <!-- INICIO -->
-    <div class="view active" id="v-inicio"><div style="max-width:900px;margin:0 auto;width:100%">
+    <div class="view active" id="v-inicio" style="padding:32px 32px 40px"><div style="max-width:860px;margin:0 auto;width:100%">
+
       <!-- Saludo -->
-      <div class="fade-up" style="margin-bottom:32px">
-        <h1 style="font-size:28px;font-weight:900;letter-spacing:-.6px;color:var(--ink)" id="greeting-title">Buenos días 👋</h1>
+      <div class="fade-up" style="margin-bottom:28px">
+        <h1 style="font-size:30px;font-weight:900;letter-spacing:-.6px;color:var(--ink)" id="greeting-title">Buenos días 👋</h1>
         <p style="font-size:14px;color:var(--ink3);margin-top:6px" id="greeting-agency"></p>
+        <p style="font-size:13px;color:var(--ink3);margin-top:2px">Esto es lo más importante hoy.</p>
       </div>
 
-      <!-- Grid de cards -->
-      <div id="inicio-grid" style="display:flex;flex-direction:column;gap:16px"></div>
+      <!-- 4 métricas -->
+      <div id="inicio-metrics" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px"></div>
+
+      <!-- Próximas publicaciones -->
+      <div id="inicio-publicaciones" style="margin-bottom:28px"></div>
+
+      <!-- Banner Agencia OS -->
+      <div id="inicio-banner" style="margin-bottom:28px"></div>
+
+      <!-- Cards de alertas -->
+      <div id="inicio-alerts" style="display:flex;flex-direction:column;gap:12px"></div>
+
     </div></div>
 
     <!-- CUENTAS -->
@@ -6169,119 +6181,170 @@ if (id) {
   // ══════════════════════════════════════
 
   async function renderInicio() {
-    const grid = document.getElementById('inicio-grid')
-    if (!grid) return
-    grid.innerHTML = '<div style="color:var(--ink3);font-size:13px">Cargando...</div>'
-
     const today = new Date()
     const todayStr = today.toISOString().slice(0,10)
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString()
+    const monthEnd = new Date(today.getFullYear(), today.getMonth()+1, 0).toISOString()
 
-    // Cargar datos en paralelo
     const [
       { data: piezasUrgentes },
       { data: tareasVencidas },
-      { data: eventosHoy },
-      { data: crmVencidos }
+      { data: crmVencidos },
+      { data: piezasPublicadas },
+      { data: proximasPublicaciones }
     ] = await Promise.all([
-      supabase.from('content_pieces').select('id, titulo, estado, client_id, clients(nombre)').eq('agency_id', agencyId).in('estado', ['revision_interna', 'aprobacion']).order('created_at', { ascending: false }).limit(5),
-      supabase.from('content_tasks').select('id, titulo, estado, fecha_entrega, client_id, clients(nombre)').eq('agency_id', agencyId).neq('estado', 'completada').lte('fecha_entrega', todayStr).order('fecha_entrega', { ascending: true }).limit(5),
-      supabase.from('calendar_events').select('id, titulo, fecha_inicio, tipo, color').eq('agency_id', agencyId).gte('fecha_inicio', todayStr + 'T00:00:00').lte('fecha_inicio', todayStr + 'T23:59:59').order('fecha_inicio', { ascending: true }).limit(5),
-      supabase.from('crm_contacts').select('id, nombre, empresa, proximo_contacto').eq('agency_id', agencyId).lte('proximo_contacto', todayStr).not('pipeline_stage', 'in', '("cerrado_ganado","cerrado_perdido")').limit(5)
+      supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).in('estado',['revision_interna','aprobacion']).limit(10),
+      supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(10),
+      supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(10),
+      supabase.from('content_pieces').select('id').eq('agency_id',agencyId).eq('estado','publicado').gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
+      supabase.from('calendar_events').select('id,titulo,fecha_inicio,color,tipo').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(6)
     ])
 
-    const sections = []
+    // ── 4 Métricas ──
+    const metrics = [
+      { icon:'ti-photo', iconBg:'#EEF2FF', iconColor:'#3730A3', value: (piezasUrgentes||[]).length, label:'Piezas en revisión', sub:'esperando atención', mod:'contenido' },
+      { icon:'ti-check', iconBg:'#FEF2F2', iconColor:'var(--danger)', value: (tareasVencidas||[]).length, label:'Tareas vencidas', sub:'requieren acción', mod:'contenido' },
+      { icon:'ti-address-book', iconBg:'#F0FDF4', iconColor:'#166534', value: (crmVencidos||[]).length, label:'Seguimientos CRM', sub:'sin contactar', mod:'crm' },
+      { icon:'ti-layout-kanban', iconBg:'var(--celeste-dim)', iconColor:'var(--azul)', value: (piezasPublicadas||[]).length, label:'Publicadas este mes', sub:'contenido entregado', mod:'contenido' },
+    ]
 
-    // ── Eventos de hoy ──
-    const evHTML = (eventosHoy||[]).length
-      ? (eventosHoy||[]).map(e => {
-          const hora = new Date(e.fecha_inicio).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
-          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-            <div style="width:4px;height:36px;border-radius:2px;background:${e.color};flex-shrink:0"></div>
-            <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">${e.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${hora}</div></div>
-            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px"></i>
-          </div>`
-        }).join('')
-      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin eventos hoy — día libre 🎉</div>'
+    const metricsEl = document.getElementById('inicio-metrics')
+    if (metricsEl) metricsEl.innerHTML = metrics.map(m => `
+      <div onclick="switchModule(document.querySelector('.rail-btn[data-module=${m.mod}]'))" class="fade-up" style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:18px 16px;cursor:pointer;transition:box-shadow .15s,border-color .15s;display:flex;align-items:center;gap:14px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="width:40px;height:40px;border-radius:11px;background:${m.iconBg};display:flex;align-items:center;justify-content:center;color:${m.iconColor};flex-shrink:0">
+          <i class="ti ${m.icon}" style="font-size:20px"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:24px;font-weight:900;color:var(--ink);letter-spacing:-.5px;line-height:1">${m.value}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-top:3px">${m.label}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${m.sub}</div>
+        </div>
+        <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:15px;flex-shrink:0"></i>
+      </div>`).join('')
 
-    sections.push({
-      icon: 'ti-calendar', iconBg: 'var(--celeste-dim)', iconColor: 'var(--azul)',
-      title: 'Hoy', subtitle: `${(eventosHoy||[]).length} evento${(eventosHoy||[]).length !== 1 ? 's' : ''}`,
-      accentColor: 'var(--azul)', content: evHTML, mod: 'calendario'
-    })
+    // ── Próximas publicaciones ──
+    const pubEl = document.getElementById('inicio-publicaciones')
+    if (pubEl) {
+      const pubs = proximasPublicaciones || []
+      const pubCards = pubs.slice(0,3).map(e => {
+        const d = new Date(e.fecha_inicio)
+        const dia = d.getDate()
+        const mes = d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
+        const hora = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+        return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="flex:1;min-width:180px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div style="background:${e.color};border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0">
+              <div style="font-size:16px;font-weight:900;color:#fff;line-height:1">${dia}</div>
+              <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.5px">${mes}</div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
+              <div style="font-size:11px;color:var(--ink3);margin-top:2px">${hora}</div>
+            </div>
+          </div>
+        </div>`
+      }).join('')
 
-    // ── Piezas que necesitan atención ──
-    const piezasHTML = (piezasUrgentes||[]).length
-      ? (piezasUrgentes||[]).map(p => {
-          const estadoLabel = p.estado === 'revision_interna' ? 'Revisión interna' : 'Aprobación'
-          const estadoColor = p.estado === 'revision_interna' ? '#F59E0B' : '#EF4444'
-          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${p.clients?.nombre || '—'}</div></div>
+      pubEl.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Próximas publicaciones</div>
+          <button onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="font-size:12px;font-weight:800;color:var(--azul);background:none;border:none;cursor:pointer">Ver calendario →</button>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          ${pubCards || '<div style="font-size:13px;color:var(--ink3)">Sin eventos próximos en el calendario.</div>'}
+        </div>`
+    }
+
+    // ── Banner Agencia OS ──
+    const bannerEl = document.getElementById('inicio-banner')
+    if (bannerEl) bannerEl.innerHTML = `
+      <div style="background:var(--azul);border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:rgba(142,219,255,.08)"></div>
+        <div style="position:absolute;bottom:-40px;right:120px;width:100px;height:100px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
+        <div style="position:relative">
+          <div style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Agencia OS Pro</div>
+          <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:4px">Llevá tu agencia al siguiente nivel</div>
+          <div style="font-size:13px;color:rgba(142,219,255,.8);line-height:1.5">Métricas avanzadas, más clientes, reportes ilimitados y soporte prioritario.</div>
+        </div>
+        <button style="flex-shrink:0;padding:10px 20px;background:var(--celeste);color:var(--azul);border:none;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Conocer Pro →</button>
+      </div>`
+
+    // ── Alertas (piezas + tareas + CRM) ──
+    const alertsEl = document.getElementById('inicio-alerts')
+    if (!alertsEl) return
+
+    const alertSections = []
+
+    if ((piezasUrgentes||[]).length) {
+      alertSections.push({
+        icon:'ti-photo', iconBg:'#EEF2FF', iconColor:'#3730A3', accentColor:'#3730A3',
+        title:'Piezas que necesitan atención', mod:'contenido',
+        items: piezasUrgentes.map(p => {
+          const estadoColor = p.estado==='revision_interna' ? '#F59E0B' : '#EF4444'
+          const estadoLabel = p.estado==='revision_interna' ? 'Revisión interna' : 'Aprobación'
+          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">${p.clients?.nombre||'—'}</div></div>
             <span style="font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;background:${estadoColor}18;color:${estadoColor};flex-shrink:0">${estadoLabel}</span>
-            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
+            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:13px;flex-shrink:0"></i>
           </div>`
         }).join('')
-      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Todo al día ✓</div>'
+      })
+    }
 
-    sections.push({
-      icon: 'ti-photo', iconBg: '#EEF2FF', iconColor: '#3730A3',
-      title: 'Piezas que necesitan atención', subtitle: `${(piezasUrgentes||[]).length} pendiente${(piezasUrgentes||[]).length !== 1 ? 's' : ''}`,
-      accentColor: '#3730A3', content: piezasHTML, mod: 'contenido'
-    })
-
-    // ── Tareas vencidas ──
-    const tareasHTML = (tareasVencidas||[]).length
-      ? (tareasVencidas||[]).map(t => {
-          const fecha = new Date(t.fecha_entrega).toLocaleDateString('es-AR', {day:'numeric', month:'short'})
-          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${t.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${t.clients?.nombre || '—'}</div></div>
+    if ((tareasVencidas||[]).length) {
+      alertSections.push({
+        icon:'ti-check', iconBg:'#FEF2F2', iconColor:'var(--danger)', accentColor:'var(--danger)',
+        title:'Tareas vencidas', mod:'contenido',
+        items: tareasVencidas.map(t => {
+          const fecha = new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'})
+          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${t.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">${t.clients?.nombre||'—'}</div></div>
             <span style="font-size:10px;font-weight:800;color:var(--danger);flex-shrink:0">${fecha}</span>
-            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
+            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:13px;flex-shrink:0"></i>
           </div>`
         }).join('')
-      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin tareas vencidas ✓</div>'
+      })
+    }
 
-    sections.push({
-      icon: 'ti-check', iconBg: '#FEF2F2', iconColor: 'var(--danger)',
-      title: 'Tareas vencidas', subtitle: `${(tareasVencidas||[]).length} tarea${(tareasVencidas||[]).length !== 1 ? 's' : ''}`,
-      accentColor: 'var(--danger)', content: tareasHTML, mod: 'contenido'
-    })
-
-    // ── Seguimientos CRM ──
-    const crmHTML = (crmVencidos||[]).length
-      ? (crmVencidos||[]).map(c => {
-          const fecha = new Date(c.proximo_contacto).toLocaleDateString('es-AR', {day:'numeric', month:'short'})
-          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${c.nombre}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${c.empresa || '—'}</div></div>
+    if ((crmVencidos||[]).length) {
+      alertSections.push({
+        icon:'ti-address-book', iconBg:'#F0FDF4', iconColor:'#166534', accentColor:'#166534',
+        title:'Seguimientos CRM vencidos', mod:'crm',
+        items: crmVencidos.map(c => {
+          const fecha = new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})
+          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${c.nombre}</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">${c.empresa||'—'}</div></div>
             <span style="font-size:10px;font-weight:800;color:var(--danger);flex-shrink:0">⚡ ${fecha}</span>
-            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
+            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:13px;flex-shrink:0"></i>
           </div>`
         }).join('')
-      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin seguimientos vencidos ✓</div>'
+      })
+    }
 
-    sections.push({
-      icon: 'ti-address-book', iconBg: '#F0FDF4', iconColor: '#166534',
-      title: 'Seguimientos CRM', subtitle: `${(crmVencidos||[]).length} vencido${(crmVencidos||[]).length !== 1 ? 's' : ''}`,
-      accentColor: '#166534', content: crmHTML, mod: 'crm'
-    })
+    if (!alertSections.length) {
+      alertsEl.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:32px;text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">✅</div>
+        <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px">Todo al día</div>
+        <div style="font-size:13px;color:var(--ink3)">No hay nada urgente por atender hoy.</div>
+      </div>`
+      return
+    }
 
-    // Renderizar cards
-    grid.innerHTML = sections.map((s, i) => `
-      <div class="fade-up" style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;animation-delay:${i*0.05}s">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:36px;height:36px;border-radius:10px;background:${s.iconBg};display:flex;align-items:center;justify-content:center;color:${s.iconColor}">
-              <i class="ti ${s.icon}" style="font-size:18px"></i>
+    alertsEl.innerHTML = alertSections.map(s => `
+      <div class="fade-up" style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:${s.iconBg};display:flex;align-items:center;justify-content:center;color:${s.iconColor}">
+              <i class="ti ${s.icon}" style="font-size:17px"></i>
             </div>
-            <div>
-              <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">${s.title}</div>
-              <div style="font-size:11px;color:var(--ink3);margin-top:1px">${s.subtitle}</div>
-            </div>
+            <div style="font-size:14px;font-weight:800;color:var(--ink)">${s.title}</div>
           </div>
           <button onclick="switchModule(document.querySelector('.rail-btn[data-module=${s.mod}]'))" style="font-size:11px;font-weight:800;color:${s.accentColor};background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:3px">Ver todo <i class="ti ti-arrow-right" style="font-size:11px"></i></button>
         </div>
-        <div style="padding:0 20px 4px">${s.content}</div>
+        <div style="padding:0 20px 4px">${s.items}</div>
       </div>`).join('')
   }
+
 
   // ── Escape para cerrar modales
   document.addEventListener('keydown', e => {
