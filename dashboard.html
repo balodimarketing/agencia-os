@@ -2240,6 +2240,23 @@
 
     if (error) { errEl.textContent = 'Error al guardar. Intentá de nuevo.'; errEl.classList.add('show'); return }
 
+    // Notificar si viene de conversión CRM
+    const fromCrm = document.getElementById('modal-client').dataset.fromCrm
+    if (!id && fromCrm) {
+      document.getElementById('modal-client').dataset.fromCrm = ''
+      // Notificar al owner
+      const owner = teamMembers.find(m => m.role === 'OWNER')
+      if (owner) {
+        await createNotification(
+          owner.user_id,
+          'cuentas',
+          `🎉 Nuevo cliente: ${nombre}`,
+          `El deal de ${fromCrm} se convirtió en cliente. Completá su perfil.`,
+          'cuentas'
+        )
+      }
+    }
+
     closeClientModal()
     showToast(id ? '✓ Cliente actualizado' : '✓ Cliente creado')
     await loadClients()
@@ -5059,7 +5076,8 @@
             <div style="font-size:13px;color:var(--ink3);margin-top:2px">${c.empresa || ''}${c.cargo ? ' · '+c.cargo : ''}</div>
           </div>
         </div>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${c.pipeline_stage === 'cerrado_ganado' ? `<button class="tbtn primary" onclick="convertirACliente()" style="gap:6px"><i class="ti ti-building-store" style="font-size:13px"></i> Convertir a cliente</button>` : ''}
           <button class="tbtn" onclick="editCrmContact()" style="gap:6px"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
           <button class="tbtn danger" onclick="deleteCrmContact()"><i class="ti ti-trash" style="font-size:13px"></i></button>
         </div>
@@ -5212,6 +5230,29 @@ if (id) {
     showToast('✓ Etapa actualizada')
     await renderCrmDetail()
     if (crmView === 'pipeline') renderCrmPipeline()
+  }
+
+  window.convertirACliente = function() {
+    const c = crmCurrentContact
+    if (!c) return
+    // Pre-cargar modal de cliente con datos del contacto CRM
+    document.getElementById('modal-client-title').textContent = 'Nuevo cliente'
+    document.getElementById('client-id').value = ''
+    document.getElementById('client-nombre').value = c.empresa || c.nombre || ''
+    document.getElementById('client-industria').value = ''
+    document.getElementById('client-estado').value = 'activo'
+    document.getElementById('client-brief').value = c.notas || ''
+    document.getElementById('client-contacto-nombre').value = c.nombre || ''
+    document.getElementById('client-contacto-email').value = c.email || ''
+    document.getElementById('client-contacto-telefono').value = c.telefono || ''
+    document.getElementById('modal-error').classList.remove('show')
+    ;['ig','fb','tt','li','yt','tw'].forEach(r => {
+      document.getElementById('red-' + r).checked = false
+    })
+    // Marcar que viene de CRM para notificar al guardar
+    document.getElementById('modal-client').dataset.fromCrm = c.nombre
+    document.getElementById('modal-client').classList.add('show')
+    setTimeout(() => document.getElementById('client-nombre').focus(), 100)
   }
 
   window.editCrmContact = function() { openCrmModal(crmCurrentContact?.id) }
