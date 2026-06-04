@@ -960,6 +960,9 @@
         <p style="font-size:13px;color:var(--ink3);margin-top:2px">Esto es lo más importante hoy.</p>
       </div>
 
+      <!-- Banner de novedades -->
+      <div id="inicio-novedad" style="margin-bottom:28px"></div>
+
       <!-- Checklist de bienvenida -->
       <div id="inicio-checklist" style="margin-bottom:28px"></div>
 
@@ -6185,6 +6188,7 @@ if (id) {
   // ══════════════════════════════════════
 
   async function renderInicio() {
+    renderNovedad()
     renderChecklist()
     const today = new Date()
     const todayStr = today.toISOString().slice(0,10)
@@ -6523,6 +6527,60 @@ if (id) {
       el.style.opacity = '0'
       setTimeout(() => { el.innerHTML = '' }, 300)
     }
+  }
+
+  // ══════════════════════════════════════
+  // BANNER DE NOVEDADES
+  // ══════════════════════════════════════
+
+  // Para agregar una novedad nueva: cambiá el ID y el contenido
+  const NOVEDAD_ACTUAL = {
+    id: 'novedad_reportes_v1', // ID único — cambiarlo fuerza que todos vean la nueva novedad
+    titulo: 'Reportes por cliente con estadísticas',
+    desc: 'Ahora podés cargar métricas por pieza y descargar el reporte en PDF para compartir con tu cliente.',
+    fecha: 'Nuevo',
+    mod: 'reportes'
+  }
+
+  async function renderNovedad() {
+    const el = document.getElementById('inicio-novedad')
+    if (!el) return
+
+    // Ver si ya fue cerrada
+    try {
+      const { data } = await supabase.from('onboarding_progress').select('completed_steps').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+      const steps = data?.completed_steps || []
+      if (steps.includes(NOVEDAD_ACTUAL.id)) { el.innerHTML = ''; return }
+    } catch(e) {}
+
+    el.innerHTML = `
+      <div onclick="switchModule(document.querySelector('.rail-btn[data-module=${NOVEDAD_ACTUAL.mod}]'));dismissNovedad()" style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="width:40px;height:40px;border-radius:12px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-sparkles" style="font-size:20px;color:#3730A3"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:10px;font-weight:800;color:#3730A3;background:#EEF2FF;padding:2px 9px;border-radius:20px">${NOVEDAD_ACTUAL.fecha}</span>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">${NOVEDAD_ACTUAL.titulo}</div>
+          <div style="font-size:12px;color:var(--ink3);line-height:1.5">${NOVEDAD_ACTUAL.desc}</div>
+        </div>
+        <button onclick="event.stopPropagation();dismissNovedad()" style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:var(--bg);border:none;cursor:pointer;color:var(--ink3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg)'">×</button>
+      </div>`
+  }
+
+  window.dismissNovedad = async function() {
+    const el = document.getElementById('inicio-novedad')
+    if (el) {
+      el.style.transition = 'opacity .2s'
+      el.style.opacity = '0'
+      setTimeout(() => { el.innerHTML = ''; el.style.opacity = '1' }, 200)
+    }
+    try {
+      const { data } = await supabase.from('onboarding_progress').select('completed_steps').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+      const steps = [...new Set([...(data?.completed_steps || []), NOVEDAD_ACTUAL.id])]
+      await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: steps }, { onConflict: 'user_id,agency_id' })
+    } catch(e) {}
   }
 
   // ══════════════════════════════════════
