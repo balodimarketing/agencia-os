@@ -283,7 +283,22 @@
     /* ══════════════════════════
        EQUIPO
     ══════════════════════════ */
-    .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+    .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+    .equipo-filter-btn {
+      padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border);
+      background: transparent; color: var(--ink3); font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all var(--t);
+    }
+    .equipo-filter-btn.active { background: var(--azul); color: var(--celeste); border-color: var(--azul); }
+    .equipo-filter-btn:not(.active):hover { background: var(--bg); color: var(--ink); }
+
+    .member-card {
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: box-shadow var(--t), border-color var(--t);
+    }
+    .member-card:hover { box-shadow: var(--shadow); border-color: #D0DCE8; }
 
     .member-card {
       background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg);
@@ -1008,6 +1023,18 @@
       <div id="equipo-requests" style="display:none;margin-bottom:24px">
         <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Solicitudes pendientes <span id="req-count"></span></div>
         <div id="equipo-requests-list"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px;position:relative">
+          <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3)"></i>
+          <input type="text" id="equipo-search" placeholder="Buscar miembro..." oninput="filterEquipo()" style="width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none;background:var(--white)" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="equipo-filter-btn active" data-filter="todos" onclick="setEquipoFilter(this,'todos')">Todos</button>
+          <button class="equipo-filter-btn" data-filter="OWNER" onclick="setEquipoFilter(this,'OWNER')">Owner</button>
+          <button class="equipo-filter-btn" data-filter="ADMIN" onclick="setEquipoFilter(this,'ADMIN')">Admin</button>
+          <button class="equipo-filter-btn" data-filter="MEMBER" onclick="setEquipoFilter(this,'MEMBER')">Member</button>
+        </div>
       </div>
       <div id="equipo-members-grid" class="members-grid"></div>
     </div></div>
@@ -4436,7 +4463,7 @@
     if (!agencyId) return
     const { data, error } = await supabase
       .from('agency_members')
-      .select('id, role, status, puesto, activity_status, user_id, profiles(nombre, apellido)')
+      .select('id, role, status, puesto, activity_status, user_id, profiles(nombre, apellido, avatar_url)')
       .eq('agency_id', agencyId)
       .eq('status', 'active')
     if (!error) teamMembers = data || []
@@ -4525,45 +4552,64 @@
     }).join('')
   }
 
+  let equipoFilter = 'todos'
+  let equipoSearch = ''
+
+  window.setEquipoFilter = function(btn, filter) {
+    equipoFilter = filter
+    document.querySelectorAll('.equipo-filter-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    renderEquipoGrid()
+  }
+
+  window.filterEquipo = function() {
+    equipoSearch = document.getElementById('equipo-search')?.value.toLowerCase() || ''
+    renderEquipoGrid()
+  }
+
+  const ROL_COLORS = {
+    'OWNER':  { bar: '#0A2540', badge: 'var(--azul)', text: 'var(--celeste)' },
+    'ADMIN':  { bar: '#3730A3', badge: '#EEF2FF',     text: '#3730A3'         },
+    'MEMBER': { bar: '#E8ECF0', badge: 'var(--bg)',   text: 'var(--ink3)'    },
+  }
+
   function renderEquipoGrid() {
     const grid = document.getElementById('equipo-members-grid')
+    if (!grid) return
     if (teamMembers.length === 0) {
       grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Sin miembros todavía</div><div class="empty-sub">Invitá a tu equipo usando el código de invitación.</div></div></div>`
       return
     }
-    grid.innerHTML = teamMembers.map(m => {
+    let filtered = [...teamMembers]
+    if (equipoFilter !== 'todos') filtered = filtered.filter(m => m.role === equipoFilter)
+    if (equipoSearch) filtered = filtered.filter(m => {
+      const full = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).toLowerCase()
+      return full.includes(equipoSearch) || (m.puesto||'').toLowerCase().includes(equipoSearch)
+    })
+    if (!filtered.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--ink3);font-size:13px">Sin resultados</div>`
+      return
+    }
+    grid.innerHTML = filtered.map(m => {
       const nombre = m.profiles?.nombre || '—'
       const apellido = m.profiles?.apellido || ''
-      const full = nombre + ' ' + apellido
+      const full = (nombre + ' ' + apellido).trim()
       const ini = initials(full)
       const col = getAvColor(full)
+      const avatarUrl = m.profiles?.avatar_url
+      const rolColors = ROL_COLORS[m.role] || ROL_COLORS.MEMBER
       const assignedClients = memberClientMap[m.id] || []
       const clientTags = assignedClients.length
         ? assignedClients.map(c => `<span class="member-client-tag">${c.nombre}</span>`).join('')
         : `<span class="member-no-clients">Sin clientes asignados</span>`
       const canEdit = userRole === 'OWNER' && m.role !== 'OWNER'
-      return `<div class="member-card fade-up">
-        <div class="member-card-top">
-          <div class="member-av-lg" style="background:${col.bg};color:${col.color}">${ini}</div>
-          <div style="flex:1;min-width:0">
-            <div class="member-card-name">${full.trim()}</div>
-            <div class="member-card-puesto">${m.puesto || 'Sin puesto asignado'}</div>
-            <div class="member-card-badges" style="margin-top:6px">
-              <span class="role-badge-sm role-${m.role.toLowerCase()}">${m.role}</span>
-              <span class="status-badge status-${m.activity_status||'activo'}">${m.activity_status||'activo'}</span>
-            </div>
-          </div>
-        </div>
-        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Clientes asignados</div>
-        <div class="member-clients-row">${clientTags}</div>
-        ${canEdit ? `<div class="member-card-actions">
-          <button class="btn-action" style="flex:1" onclick="openMemberModal('${m.id}')"><i class="ti ti-pencil"></i> Editar</button>
-          <button class="btn-action del" onclick="openDeleteMemberModal('${m.id}','${full.trim().replace(/'/g,"\'")}')"><i class="ti ti-trash"></i></button>
-        </div>` : ''}
-      </div>`
+      const statusColor = m.activity_status==='activo' ? 'var(--success)' : m.activity_status==='ocupado' ? 'var(--warn)' : 'var(--ink3)'
+      const avatarImg = avatarUrl ? `<img src="${avatarUrl}" style="width:52px;height:52px;border-radius:14px;object-fit:cover;flex-shrink:0;display:block" onerror="this.style.display='none';this.nextSibling.style.display='flex'">` : ''
+      const avatarIni = `<div style="width:52px;height:52px;border-radius:14px;background:${col.bg};color:${col.color};font-size:18px;font-weight:900;display:${avatarUrl?'none':'flex'};align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`
+      const actionsHTML = canEdit ? `<div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border)"><button class="tbtn" style="flex:1;font-size:12px;gap:5px" onclick="openMemberModal('${m.id}')"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button><button class="tbtn danger" style="padding:8px 12px" onclick="openDeleteMemberModal('${m.id}','${full.replace(/'/g,"\'")}')"><i class="ti ti-trash" style="font-size:13px"></i></button></div>` : ''
+      return `<div class="member-card fade-up"><div style="height:5px;background:${rolColors.bar}"></div><div style="padding:18px 18px 14px"><div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px"><div style="position:relative;flex-shrink:0">${avatarImg}${avatarIni}<div style="position:absolute;bottom:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:${statusColor};border:2px solid var(--white)"></div></div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:2px">${full}</div><div style="font-size:12px;color:var(--ink3);margin-bottom:8px">${m.puesto||'Sin puesto asignado'}</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:${rolColors.badge};color:${rolColors.text}">${m.role}</span><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--bg);color:var(--ink3)">${m.activity_status||'activo'}</span></div></div></div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Clientes asignados</div><div class="member-clients-row" style="margin-bottom:${canEdit?'14px':'0'}">${clientTags}</div>${actionsHTML}</div></div>`
     }).join('')
   }
-
   // ── Approve / Reject ──────────────────────────────────
   window.approveRequest = async function(memberId) {
     const member = teamMembers.find(m => m.id === memberId) ||
