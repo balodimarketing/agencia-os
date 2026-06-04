@@ -952,17 +952,14 @@
 
     <!-- INICIO -->
     <div class="view active" id="v-inicio"><div style="max-width:900px;margin:0 auto;width:100%">
-      <div class="fade-up" style="margin-bottom:24px">
-        <h1 style="font-size:24px;font-weight:900;letter-spacing:-.6px" id="greeting-title">Buenos días 👋</h1>
-        <p style="font-size:13px;color:var(--ink3);margin-top:4px" id="greeting-agency"></p>
+      <!-- Saludo -->
+      <div class="fade-up" style="margin-bottom:32px">
+        <h1 style="font-size:28px;font-weight:900;letter-spacing:-.6px;color:var(--ink)" id="greeting-title">Buenos días 👋</h1>
+        <p style="font-size:14px;color:var(--ink3);margin-top:6px" id="greeting-agency"></p>
       </div>
-      <div class="fade-up" style="animation-delay:.04s">
-        <div class="empty-state" style="min-height:200px">
-          <div class="empty-icon">🚀</div>
-          <div class="empty-title">Tu espacio está listo</div>
-          <div class="empty-sub">Empezá agregando tus primeros clientes en la sección Cuentas.</div>
-        </div>
-      </div>
+
+      <!-- Grid de cards -->
+      <div id="inicio-grid" style="display:flex;flex-direction:column;gap:16px"></div>
     </div></div>
 
     <!-- CUENTAS -->
@@ -2182,6 +2179,7 @@
       cta.style.display = 'flex'
     }
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
+    else if (mod === 'inicio') { renderInicio() }
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
     else if (mod === 'calendario') { renderCalendario() }
@@ -2658,6 +2656,7 @@
 
     // Inicializar panel de inicio
     document.getElementById('panel-body').innerHTML = ''
+    renderInicio()
   }
 
 
@@ -6163,6 +6162,125 @@ if (id) {
     }
     setTimeout(() => URL.revokeObjectURL(url), 60000)
     showToast('✓ Guardá como PDF en el diálogo de impresión')
+  }
+
+  // ══════════════════════════════════════
+  // INICIO
+  // ══════════════════════════════════════
+
+  async function renderInicio() {
+    const grid = document.getElementById('inicio-grid')
+    if (!grid) return
+    grid.innerHTML = '<div style="color:var(--ink3);font-size:13px">Cargando...</div>'
+
+    const today = new Date()
+    const todayStr = today.toISOString().slice(0,10)
+
+    // Cargar datos en paralelo
+    const [
+      { data: piezasUrgentes },
+      { data: tareasVencidas },
+      { data: eventosHoy },
+      { data: crmVencidos }
+    ] = await Promise.all([
+      supabase.from('content_pieces').select('id, titulo, estado, client_id, clients(nombre)').eq('agency_id', agencyId).in('estado', ['revision_interna', 'aprobacion']).order('created_at', { ascending: false }).limit(5),
+      supabase.from('content_tasks').select('id, titulo, estado, fecha_entrega, client_id, clients(nombre)').eq('agency_id', agencyId).neq('estado', 'completada').lte('fecha_entrega', todayStr).order('fecha_entrega', { ascending: true }).limit(5),
+      supabase.from('calendar_events').select('id, titulo, fecha_inicio, tipo, color').eq('agency_id', agencyId).gte('fecha_inicio', todayStr + 'T00:00:00').lte('fecha_inicio', todayStr + 'T23:59:59').order('fecha_inicio', { ascending: true }).limit(5),
+      supabase.from('crm_contacts').select('id, nombre, empresa, proximo_contacto').eq('agency_id', agencyId).lte('proximo_contacto', todayStr).not('pipeline_stage', 'in', '("cerrado_ganado","cerrado_perdido")').limit(5)
+    ])
+
+    const sections = []
+
+    // ── Eventos de hoy ──
+    const evHTML = (eventosHoy||[]).length
+      ? (eventosHoy||[]).map(e => {
+          const hora = new Date(e.fecha_inicio).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
+          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+            <div style="width:4px;height:36px;border-radius:2px;background:${e.color};flex-shrink:0"></div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">${e.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${hora}</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px"></i>
+          </div>`
+        }).join('')
+      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin eventos hoy — día libre 🎉</div>'
+
+    sections.push({
+      icon: 'ti-calendar', iconBg: 'var(--celeste-dim)', iconColor: 'var(--azul)',
+      title: 'Hoy', subtitle: `${(eventosHoy||[]).length} evento${(eventosHoy||[]).length !== 1 ? 's' : ''}`,
+      accentColor: 'var(--azul)', content: evHTML, mod: 'calendario'
+    })
+
+    // ── Piezas que necesitan atención ──
+    const piezasHTML = (piezasUrgentes||[]).length
+      ? (piezasUrgentes||[]).map(p => {
+          const estadoLabel = p.estado === 'revision_interna' ? 'Revisión interna' : 'Aprobación'
+          const estadoColor = p.estado === 'revision_interna' ? '#F59E0B' : '#EF4444'
+          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${p.clients?.nombre || '—'}</div></div>
+            <span style="font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;background:${estadoColor}18;color:${estadoColor};flex-shrink:0">${estadoLabel}</span>
+            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
+          </div>`
+        }).join('')
+      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Todo al día ✓</div>'
+
+    sections.push({
+      icon: 'ti-photo', iconBg: '#EEF2FF', iconColor: '#3730A3',
+      title: 'Piezas que necesitan atención', subtitle: `${(piezasUrgentes||[]).length} pendiente${(piezasUrgentes||[]).length !== 1 ? 's' : ''}`,
+      accentColor: '#3730A3', content: piezasHTML, mod: 'contenido'
+    })
+
+    // ── Tareas vencidas ──
+    const tareasHTML = (tareasVencidas||[]).length
+      ? (tareasVencidas||[]).map(t => {
+          const fecha = new Date(t.fecha_entrega).toLocaleDateString('es-AR', {day:'numeric', month:'short'})
+          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${t.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${t.clients?.nombre || '—'}</div></div>
+            <span style="font-size:10px;font-weight:800;color:var(--danger);flex-shrink:0">${fecha}</span>
+            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
+          </div>`
+        }).join('')
+      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin tareas vencidas ✓</div>'
+
+    sections.push({
+      icon: 'ti-check', iconBg: '#FEF2F2', iconColor: 'var(--danger)',
+      title: 'Tareas vencidas', subtitle: `${(tareasVencidas||[]).length} tarea${(tareasVencidas||[]).length !== 1 ? 's' : ''}`,
+      accentColor: 'var(--danger)', content: tareasHTML, mod: 'contenido'
+    })
+
+    // ── Seguimientos CRM ──
+    const crmHTML = (crmVencidos||[]).length
+      ? (crmVencidos||[]).map(c => {
+          const fecha = new Date(c.proximo_contacto).toLocaleDateString('es-AR', {day:'numeric', month:'short'})
+          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${c.nombre}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${c.empresa || '—'}</div></div>
+            <span style="font-size:10px;font-weight:800;color:var(--danger);flex-shrink:0">⚡ ${fecha}</span>
+            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
+          </div>`
+        }).join('')
+      : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin seguimientos vencidos ✓</div>'
+
+    sections.push({
+      icon: 'ti-address-book', iconBg: '#F0FDF4', iconColor: '#166534',
+      title: 'Seguimientos CRM', subtitle: `${(crmVencidos||[]).length} vencido${(crmVencidos||[]).length !== 1 ? 's' : ''}`,
+      accentColor: '#166534', content: crmHTML, mod: 'crm'
+    })
+
+    // Renderizar cards
+    grid.innerHTML = sections.map((s, i) => `
+      <div class="fade-up" style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;animation-delay:${i*0.05}s">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;border-radius:10px;background:${s.iconBg};display:flex;align-items:center;justify-content:center;color:${s.iconColor}">
+              <i class="ti ${s.icon}" style="font-size:18px"></i>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">${s.title}</div>
+              <div style="font-size:11px;color:var(--ink3);margin-top:1px">${s.subtitle}</div>
+            </div>
+          </div>
+          <button onclick="switchModule(document.querySelector('.rail-btn[data-module=${s.mod}]'))" style="font-size:11px;font-weight:800;color:${s.accentColor};background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:3px">Ver todo <i class="ti ti-arrow-right" style="font-size:11px"></i></button>
+        </div>
+        <div style="padding:0 20px 4px">${s.content}</div>
+      </div>`).join('')
   }
 
   // ── Escape para cerrar modales
