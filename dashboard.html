@@ -2196,11 +2196,11 @@
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
     else if (mod === 'inicio') { renderInicio() }
     else if (mod === 'equipo') { renderEquipo() }
-    else if (mod === 'contenido') { renderContenido() }
-    else if (mod === 'calendario') { renderCalendario() }
-    else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); renderToolsGrid() }
-    else if (mod === 'crm') { renderCrm() }
-    else if (mod === 'reportes') { renderReportes() }
+    else if (mod === 'contenido') { renderContenido(); setTimeout(()=>showTooltipBanner('contenido'),300) }
+    else if (mod === 'calendario') { renderCalendario(); setTimeout(()=>showTooltipBanner('calendario'),300) }
+    else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); renderToolsGrid(); setTimeout(()=>showTooltipBanner('herramientas'),300) }
+    else if (mod === 'crm') { renderCrm(); setTimeout(()=>showTooltipBanner('crm'),300) }
+    else if (mod === 'reportes') { renderReportes(); setTimeout(()=>showTooltipBanner('reportes'),300) }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -2671,6 +2671,7 @@
 
     // Inicializar panel de inicio
     document.getElementById('panel-body').innerHTML = ''
+    loadTooltipsSeen()
     renderInicio()
   }
 
@@ -6522,6 +6523,101 @@ if (id) {
       el.style.opacity = '0'
       setTimeout(() => { el.innerHTML = '' }, 300)
     }
+  }
+
+  // ══════════════════════════════════════
+  // TOOLTIPS DE PRIMER USO
+  // ══════════════════════════════════════
+
+  const TOOLTIPS = {
+    crm: {
+      icon: 'ti-address-book',
+      title: 'CRM — Seguimiento de clientes',
+      desc: 'Gestioná tus contactos y deals. Arrastrá las tarjetas entre columnas para avanzar en el pipeline y registrá cada interacción en el historial.',
+    },
+    reportes: {
+      icon: 'ti-chart-bar',
+      title: 'Reportes — Rendimiento por cliente',
+      desc: 'Seleccioná un cliente y un mes para ver sus métricas. Cargá las estadísticas de cada pieza y descargá el reporte para compartir con el cliente.',
+    },
+    herramientas: {
+      icon: 'ti-tools',
+      title: 'Herramientas — Productividad del equipo',
+      desc: 'Encontrá herramientas para trabajar mejor. El Timer mide el tiempo por pieza o tarea, el Pomodoro te ayuda a mantener el foco con bloques de 25 minutos.',
+    },
+    calendario: {
+      icon: 'ti-calendar',
+      title: 'Calendario — Publicaciones y eventos',
+      desc: 'Organizá tus publicaciones y reuniones. Hacé click en cualquier día para agregar un evento y arrastrá para moverlo.',
+    },
+    contenido: {
+      icon: 'ti-photo',
+      title: 'Contenido — Flujo de piezas',
+      desc: 'Gestioná tus piezas en el kanban arrastrándolas entre columnas. Usá el tab Tareas para ver y asignar tareas específicas de cada pieza.',
+    },
+  }
+
+  let tooltipsSeen = {}
+
+  async function loadTooltipsSeen() {
+    try {
+      const { data } = await supabase
+        .from('onboarding_progress')
+        .select('completed_steps')
+        .eq('user_id', currentUserId)
+        .eq('agency_id', agencyId)
+        .maybeSingle()
+      const steps = data?.completed_steps || []
+      steps.forEach(s => { if (s.startsWith('tooltip_')) tooltipsSeen[s.replace('tooltip_','')] = true })
+    } catch(e) {}
+  }
+
+  async function markTooltipSeen(mod) {
+    tooltipsSeen[mod] = true
+    try {
+      const { data } = await supabase.from('onboarding_progress').select('completed_steps').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+      const steps = [...(data?.completed_steps || []), `tooltip_${mod}`]
+      await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: steps }, { onConflict: 'user_id,agency_id' })
+    } catch(e) {}
+  }
+
+  function showTooltipBanner(mod) {
+    if (tooltipsSeen[mod]) return
+    const t = TOOLTIPS[mod]
+    if (!t) return
+
+    const bannerId = `tooltip-banner-${mod}`
+    if (document.getElementById(bannerId)) return
+
+    const view = document.getElementById(`v-${mod}`)
+    if (!view) return
+
+    const banner = document.createElement('div')
+    banner.id = bannerId
+    banner.style.cssText = 'flex-shrink:0;margin:0'
+    banner.innerHTML = `
+      <div style="background:var(--azul);padding:14px 20px;display:flex;align-items:center;gap:14px">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(142,219,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ${t.icon}" style="font-size:18px;color:var(--celeste)"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px">${t.title}</div>
+          <div style="font-size:12px;color:rgba(142,219,255,.75);line-height:1.5">${t.desc}</div>
+        </div>
+        <button onclick="dismissTooltip('${mod}')" style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:rgba(142,219,255,.15);border:none;cursor:pointer;color:rgba(142,219,255,.7);font-size:16px;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:background .15s" onmouseover="this.style.background='rgba(142,219,255,.25)'" onmouseout="this.style.background='rgba(142,219,255,.15)'">×</button>
+      </div>`
+
+    view.insertBefore(banner, view.firstChild)
+  }
+
+  window.dismissTooltip = function(mod) {
+    const banner = document.getElementById(`tooltip-banner-${mod}`)
+    if (banner) {
+      banner.style.transition = 'opacity .2s'
+      banner.style.opacity = '0'
+      setTimeout(() => banner.remove(), 200)
+    }
+    markTooltipSeen(mod)
   }
 
   // ── Escape para cerrar modales
