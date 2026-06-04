@@ -6292,46 +6292,39 @@ if (id) {
     if ((piezasUrgentes||[]).length) {
       alertSections.push({
         icon:'ti-photo', iconBg:'#EEF2FF', iconColor:'#3730A3', accentColor:'#3730A3',
-        title:'Piezas que necesitan atención', count: piezasUrgentes.length, mod:'contenido',
-        items: piezasUrgentes.map(p => {
-          const estadoColor = p.estado==='revision_interna' ? '#F59E0B' : '#EF4444'
-          const estadoLabel = p.estado==='revision_interna' ? 'Revisión interna' : 'Aprobación'
-          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${p.clients?.nombre||'—'}</div></div>
-            <span style="font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;background:${estadoColor}18;color:${estadoColor};flex-shrink:0">${estadoLabel}</span>
-            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:13px;flex-shrink:0"></i>
-          </div>`
-        }).join('')
+        title:'Piezas que necesitan atención', sub:'esperando revisión', count: piezasUrgentes.length, mod:'contenido',
+        rawItems: piezasUrgentes.map(p => ({
+          titulo: p.titulo, sub: p.clients?.nombre||'—',
+          date: p.estado==='revision_interna' ? 'Revisión' : 'Aprobación',
+          dateColor: p.estado==='revision_interna' ? '#F59E0B' : '#EF4444',
+          onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)`
+        }))
       })
     }
 
     if ((tareasVencidas||[]).length) {
       alertSections.push({
         icon:'ti-check', iconBg:'#FEF2F2', iconColor:'var(--danger)', accentColor:'var(--danger)',
-        title:'Tareas vencidas', count: tareasVencidas.length, mod:'contenido',
-        items: tareasVencidas.map(t => {
-          const fecha = new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'})
-          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${t.titulo}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${t.clients?.nombre||'—'}</div></div>
-            <span style="font-size:10px;font-weight:800;color:var(--danger);flex-shrink:0">${fecha}</span>
-            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:13px;flex-shrink:0"></i>
-          </div>`
-        }).join('')
+        title:'Tareas vencidas', sub:'requieren acción', count: tareasVencidas.length, mod:'contenido',
+        rawItems: tareasVencidas.map(t => ({
+          titulo: t.titulo, sub: t.clients?.nombre||'—',
+          date: new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
+          dateColor: '#EF4444',
+          onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)`
+        }))
       })
     }
 
     if ((crmVencidos||[]).length) {
       alertSections.push({
         icon:'ti-address-book', iconBg:'#F0FDF4', iconColor:'#166634', accentColor:'#166534',
-        title:'Seguimientos CRM vencidos', count: crmVencidos.length, mod:'crm',
-        items: crmVencidos.map(c => {
-          const fecha = new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})
-          return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--ink)">${c.nombre}</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${c.empresa||'—'}</div></div>
-            <span style="font-size:10px;font-weight:800;color:var(--danger);flex-shrink:0">⚡ ${fecha}</span>
-            <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:13px;flex-shrink:0"></i>
-          </div>`
-        }).join('')
+        title:'Seguimientos CRM vencidos', sub:'sin contactar', count: crmVencidos.length, mod:'crm',
+        rawItems: crmVencidos.map(c => ({
+          titulo: c.nombre, sub: c.empresa||'—',
+          date: '⚡ ' + new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
+          dateColor: '#F59E0B',
+          onclick: `switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)`
+        }))
       })
     }
 
@@ -6344,22 +6337,49 @@ if (id) {
       return
     }
 
-    alertsEl.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${
-      alertSections.map(s => `
-      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
-        <div style="background:${s.iconBg};padding:16px 18px 14px;border-bottom:1.5px solid var(--border)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <div style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;color:${s.iconColor}">
-              <i class="ti ${s.icon}" style="font-size:16px"></i>
-            </div>
-            <span onclick="switchModule(document.querySelector('.rail-btn[data-module=${s.mod}]'))" style="font-size:10px;font-weight:800;color:${s.iconColor};background:rgba(255,255,255,.6);padding:3px 10px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:3px">Ver todo <i class="ti ti-arrow-right" style="font-size:10px"></i></span>
+    // Una card unificada: primera mitad azul, segunda blanca
+    const az = alertSections[0]
+    const bl = alertSections[1]
+
+    const renderHalf = (s, dark) => {
+      const bg = dark ? 'var(--azul)' : 'var(--white)'
+      const numColor = dark ? 'var(--celeste)' : s.iconColor
+      const titleColor = dark ? '#fff' : 'var(--ink)'
+      const subColor = dark ? 'rgba(142,219,255,.6)' : 'var(--ink3)'
+      const borderColor = dark ? 'rgba(142,219,255,.15)' : 'var(--border)'
+      const itemsHTML = s.rawItems.map(item => {
+        const dotColor = dark ? item.dateColor : item.dateColor
+        const nameColor = dark ? '#fff' : 'var(--ink)'
+        const subNameColor = dark ? 'rgba(142,219,255,.5)' : 'var(--ink3)'
+        const chevColor = dark ? 'rgba(142,219,255,.3)' : 'var(--border)'
+        return `<div onclick="${item.onclick}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:${nameColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo}</div>
+            <div style="font-size:11px;color:${subNameColor};margin-top:2px">${item.sub}</div>
           </div>
-          <div style="font-size:22px;font-weight:900;color:${s.iconColor};letter-spacing:-.5px;line-height:1">${s.count}</div>
-          <div style="font-size:12px;font-weight:800;color:${s.iconColor};margin-top:4px;opacity:.8">${s.title}</div>
-        </div>
-        <div style="padding:0 16px 4px">${s.items}</div>
-      </div>`).join('')
-    }</div>`
+          <span style="font-size:10px;font-weight:800;color:${dotColor};flex-shrink:0">${item.date}</span>
+          <i class="ti ti-chevron-right" style="font-size:13px;color:${chevColor};flex-shrink:0"></i>
+        </div>`
+      }).join('')
+      return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=${s.mod}]'))" style="background:${bg};padding:18px 20px;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+        <div style="font-size:32px;font-weight:900;color:${numColor};letter-spacing:-1px;line-height:1">${s.count}</div>
+        <div style="font-size:12px;font-weight:800;color:${titleColor};margin-top:8px;letter-spacing:-.1px">${s.title}</div>
+        <div style="font-size:11px;color:${subColor};margin-top:2px;margin-bottom:14px">${s.sub}</div>
+        <div style="border-top:1px solid ${borderColor};padding-top:12px;display:flex;flex-direction:column;gap:10px">${itemsHTML}</div>
+      </div>`
+    }
+
+    if (az && bl) {
+      alertsEl.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr">
+        ${renderHalf(az, true)}
+        <div style="border-left:1px solid var(--border)">${renderHalf(bl, false).replace(/^<div/, '<div')}</div>
+      </div>`
+    } else if (az) {
+      alertsEl.innerHTML = `<div style="background:var(--azul);border:1.5px solid var(--border);border-radius:18px;overflow:hidden">${renderHalf(az, true)}</div>`
+    } else if (bl) {
+      alertsEl.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden">${renderHalf(bl, false)}</div>`
+    }
   }
 
 
