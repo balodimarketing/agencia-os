@@ -2015,6 +2015,25 @@
         <textarea class="form-input form-textarea" id="profile-bio" style="min-height:90px" placeholder="Contá algo sobre vos, tu especialidad, cómo trabajás..."></textarea>
       </div>
 
+      <!-- Cambio de contraseña -->
+      <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:800;color:var(--ink)">Cambiar contraseña</div>
+          <button onclick="togglePasswordSection()" id="btn-toggle-password" style="font-size:12px;font-weight:700;color:var(--azul);background:none;border:none;cursor:pointer;padding:0">Cambiar</button>
+        </div>
+        <div id="password-section" style="display:none;flex-direction:column;gap:10px">
+          <div class="form-field" style="margin-bottom:0">
+            <label class="form-label">Nueva contraseña</label>
+            <input type="password" class="form-input" id="new-password" placeholder="Mínimo 8 caracteres">
+          </div>
+          <div class="form-field" style="margin-bottom:0">
+            <label class="form-label">Confirmar contraseña</label>
+            <input type="password" class="form-input" id="confirm-password" placeholder="Repetí la nueva contraseña">
+          </div>
+          <div id="password-error" style="font-size:12px;color:var(--danger);display:none"></div>
+        </div>
+      </div>
+
       <!-- Hidden puesto display for JS -->
       <div id="profile-puesto-display" style="display:none"></div>
     </div>
@@ -3367,6 +3386,17 @@
   }
 
   window.handleOpenProfile = function() {
+    // Reset password section
+    const ps = document.getElementById('password-section')
+    const pb = document.getElementById('btn-toggle-password')
+    if (ps) { ps.style.display = 'none' }
+    if (pb) { pb.textContent = 'Cambiar' }
+    const np = document.getElementById('new-password')
+    const cp = document.getElementById('confirm-password')
+    const pe = document.getElementById('password-error')
+    if (np) np.value = ''
+    if (cp) cp.value = ''
+    if (pe) pe.style.display = 'none'
     openProfileModal().catch(e => console.error('Profile error:', e))
   }
 
@@ -3479,8 +3509,52 @@
 
 
 
+    // Cambio de contraseña si está visible
+    const passwordSection = document.getElementById('password-section')
+    if (passwordSection && passwordSection.style.display !== 'none') {
+      const newPass = document.getElementById('new-password').value
+      const confirmPass = document.getElementById('confirm-password').value
+      const passErr = document.getElementById('password-error')
+      passErr.style.display = 'none'
+
+      if (newPass || confirmPass) {
+        if (newPass.length < 8) {
+          passErr.textContent = 'La contraseña debe tener al menos 8 caracteres.'
+          passErr.style.display = 'block'
+          btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
+          return
+        }
+        if (newPass !== confirmPass) {
+          passErr.textContent = 'Las contraseñas no coinciden.'
+          passErr.style.display = 'block'
+          btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
+          return
+        }
+        const { error: passError } = await supabase.auth.updateUser({ password: newPass })
+        if (passError) {
+          passErr.textContent = 'Error al cambiar la contraseña. Intentá de nuevo.'
+          passErr.style.display = 'block'
+          btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
+          return
+        }
+        document.getElementById('new-password').value = ''
+        document.getElementById('confirm-password').value = ''
+        passwordSection.style.display = 'none'
+        document.getElementById('btn-toggle-password').textContent = 'Cambiar'
+      }
+    }
+
     closeProfileModal()
     showToast('✓ Perfil actualizado')
+  }
+
+  window.togglePasswordSection = function() {
+    const section = document.getElementById('password-section')
+    const btn = document.getElementById('btn-toggle-password')
+    const isOpen = section.style.display !== 'none'
+    section.style.display = isOpen ? 'none' : 'flex'
+    btn.textContent = isOpen ? 'Cambiar' : 'Cancelar'
+    if (!isOpen) setTimeout(() => document.getElementById('new-password').focus(), 100)
   }
 
   // ══════════════════════════════════════
