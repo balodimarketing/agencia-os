@@ -2141,12 +2141,11 @@
     document.getElementById('ws-cta-label').textContent = modMeta[mod]?.cta || 'Nuevo'
     document.getElementById('panel-title').textContent = modMeta[mod]?.title || mod
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
-    // Hide CTA for MEMBER where not allowed
     const cta = document.getElementById('ws-cta')
-    if (userRole === 'MEMBER') {
-      if (mod === 'cuentas' || mod === 'equipo') cta.style.display = 'none'
-      else if (mod === 'contenido') { cta.style.display = 'none' }
-      else cta.style.display = 'none'
+    // Módulos con su propio CTA interno o sin CTA
+    const noCta = ['contenido', 'herramientas', 'crm', 'reportes', 'calendario']
+    if (userRole === 'MEMBER' || noCta.includes(mod)) {
+      cta.style.display = 'none'
     } else {
       cta.style.display = 'flex'
     }
@@ -2154,9 +2153,9 @@
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
     else if (mod === 'calendario') { renderCalendario() }
-    else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); cta.style.display = 'none' }
-    else if (mod === 'crm') { cta.style.display = 'none'; renderCrm() }
-    else if (mod === 'reportes') { cta.style.display = 'none'; renderReportes() }
+    else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots() }
+    else if (mod === 'crm') { renderCrm() }
+    else if (mod === 'reportes') { renderReportes() }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
