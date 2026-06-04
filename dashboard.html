@@ -5241,8 +5241,8 @@ if (id) {
     const contact = crmContacts.find(c => c.id === id)
     if (!contact || contact.pipeline_stage === stage) return
     contact.pipeline_stage = stage
-    await supabase.from('crm_contacts').update({ pipeline_stage: stage }).eq('id', id)
     if (crmCurrentContact?.id === id) crmCurrentContact.pipeline_stage = stage
+    await supabase.from('crm_contacts').update({ pipeline_stage: stage }).eq('id', id)
     showToast('✓ Etapa actualizada')
     await renderCrmDetail()
     if (crmView === 'pipeline') renderCrmPipeline()
