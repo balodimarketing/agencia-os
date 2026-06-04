@@ -969,11 +969,24 @@
     <div class="view" id="v-cuentas"><div style="max-width:900px;margin:0 auto;width:100%">
       <!-- Lista de clientes -->
       <div id="cuentas-list-view">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px;position:relative">
+            <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3)"></i>
+            <input type="text" id="clientes-search" placeholder="Buscar cliente..." oninput="filterClientes()" style="width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none;background:var(--white)" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="equipo-filter-btn active" data-filter="todos" onclick="setClientesFilter(this,'todos')">Todos</button>
+            <button class="equipo-filter-btn" data-filter="activo" onclick="setClientesFilter(this,'activo')">Activos</button>
+            <button class="equipo-filter-btn" data-filter="inactivo" onclick="setClientesFilter(this,'inactivo')">Inactivos</button>
+          </div>
+        </div>
         <div id="clients-grid" class="clients-grid"></div>
       </div>
       <!-- Detalle de cliente -->
       <div id="cuentas-detail-view" style="display:none">
-        <button class="back-btn" onclick="showClientsList()"><i class="ti ti-arrow-left"></i> Volver a Cuentas</button>
+        <button style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onclick="showClientsList()" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-arrow-left" style="font-size:15px"></i> Cuentas
+        </button>
         <div id="client-detail-content"></div>
       </div>
     </div></div>
@@ -2266,36 +2279,76 @@
   }
 
   // ── Grid ─────────────────────────────────────────────
+  let clientesFilter = 'todos'
+  let clientesSearch = ''
+
+  window.setClientesFilter = function(btn, filter) {
+    clientesFilter = filter
+    document.querySelectorAll('[data-filter]').forEach(b => {
+      if (b.closest('#cuentas-list-view')) b.classList.remove('active')
+    })
+    btn.classList.add('active')
+    renderClientsGrid()
+  }
+
+  window.filterClientes = function() {
+    clientesSearch = document.getElementById('clientes-search')?.value.toLowerCase() || ''
+    renderClientsGrid()
+  }
+
+  const IND_COLORS = {
+    'Marketing': '#E8F4FF', 'Financiero': '#F0FDF4', 'Logística': '#FFF7ED',
+    'Tecnología': '#EEF2FF', 'Salud': '#F0FDF4', 'Educación': '#FEFCE8',
+    'Retail': '#FDF4FF', 'Gastronomía': '#FFF7ED', 'Inmobiliario': '#F0FDF4',
+  }
+
   function renderClientsGrid() {
     const grid = document.getElementById('clients-grid')
+    if (!grid) return
+
+    let filtered = [...clients]
+    if (clientesFilter !== 'todos') filtered = filtered.filter(c => c.estado === clientesFilter)
+    if (clientesSearch) filtered = filtered.filter(c =>
+      c.nombre.toLowerCase().includes(clientesSearch) ||
+      (c.industria||'').toLowerCase().includes(clientesSearch)
+    )
+
     if (clients.length === 0) {
       grid.innerHTML = userRole === 'MEMBER'
-        ? `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes asignados</div><div class="empty-sub">Tu administrador todavía no te asignó ningún cliente. Contactalo para que lo haga.</div></div></div>`
-        : `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes todavía</div><div class="empty-sub">Agregá tu primer cliente para empezar a gestionar tu agencia.</div><button class="tbtn primary" onclick="openClientModal()"><i class="ti ti-plus"></i> Nuevo cliente</button></div></div>`
+        ? `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes asignados</div><div class="empty-sub">Tu administrador todavía no te asignó ningún cliente.</div></div></div>`
+        : `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes todavía</div><div class="empty-sub">Agregá tu primer cliente para empezar.</div><button class="tbtn primary" onclick="openClientModal()"><i class="ti ti-plus"></i> Nuevo cliente</button></div></div>`
       return
     }
-    grid.innerHTML = clients.map(c => {
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--ink3);font-size:13px">Sin resultados</div>'
+      return
+    }
+
+    grid.innerHTML = filtered.map(c => {
       const ini = initials(c.nombre)
       const col = getAvColor(c.nombre)
-      const redes = c.redes?.length ? c.redes.map(r => `<span class="red-tag">${r}</span>`).join('') : '<span style="font-size:11px;color:var(--ink3)">Sin redes</span>'
-      return `
-        <div class="client-card fade-up" onclick="showClientDetail('${c.id}')">
-          <div class="client-card-top">
-            <div class="client-av" style="background:${col.bg};color:${col.color}">${ini}</div>
-            <div class="client-info">
-              <div class="client-name">${c.nombre}</div>
-              <div class="client-ind">${c.industria || 'Sin industria'}</div>
-            </div>
-            <span class="client-status status-${c.estado}">${c.estado}</span>
+      const redes = c.redes?.slice(0,3).map(r => `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--bg);color:var(--ink3)">${r}</span>`).join('') || ''
+      const extra = c.redes?.length > 3 ? `<span style="font-size:10px;color:var(--ink3)">+${c.redes.length-3}</span>` : ''
+      const estadoBg = c.estado === 'activo' ? '#F0FDF4' : '#FEF2F2'
+      const estadoColor = c.estado === 'activo' ? '#166534' : '#991B1B'
+
+      return `<div class="client-card fade-up" onclick="showClientDetail('${c.id}')" style="cursor:pointer">
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+          <div style="width:44px;height:44px;border-radius:12px;background:${col.bg};color:${col.color};font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:2px">${c.nombre}</div>
+            <div style="font-size:11px;color:var(--ink3)">${c.industria || 'Sin industria'}</div>
           </div>
-          <div class="client-redes">${redes}</div>
-          ${c.brief ? `<div class="client-brief-preview">${c.brief}</div>` : '<div style="font-size:11px;color:var(--ink3)">Sin brief</div>'}
-          <div class="client-card-actions" onclick="event.stopPropagation()">
-            <button class="btn-action" onclick="openClientModal('${c.id}')"><i class="ti ti-pencil"></i> Editar</button>
-            <button class="btn-action del" onclick="openDeleteModal('${c.id}', '${c.nombre.replace(/'/g,"\\'")}')"><i class="ti ti-trash"></i> Eliminar</button>
-          </div>
+          <span style="font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;background:${estadoBg};color:${estadoColor};flex-shrink:0">${c.estado}</span>
         </div>
-      `
+        ${c.redes?.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">${redes}${extra}</div>` : ''}
+        ${c.brief ? `<div style="font-size:11px;color:var(--ink3);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:10px">${c.brief}</div>` : ''}
+        <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border)" onclick="event.stopPropagation()">
+          <button class="tbtn" style="flex:1;font-size:12px;gap:5px" onclick="openClientModal('${c.id}')"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
+          <button class="tbtn danger" style="padding:8px 12px" onclick="openDeleteModal('${c.id}','${c.nombre.replace(/'/g,"\'")}')"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </div>
+      </div>`
     }).join('')
   }
 
@@ -2305,47 +2358,108 @@
     if (!c) return
     const ini = initials(c.nombre)
     const col = getAvColor(c.nombre)
-    const redes = c.redes?.length ? c.redes.map(r => `<span class="red-tag" style="font-size:11px">${r}</span>`).join('') : '<span style="font-size:12px;color:var(--ink3)">Sin redes cargadas</span>'
+    const estadoBg = c.estado === 'activo' ? '#F0FDF4' : '#FEF2F2'
+    const estadoColor = c.estado === 'activo' ? '#166534' : '#991B1B'
+
+    // Miembros asignados
+    const assignedMembers = []
+    if (typeof memberClientMap !== 'undefined') {
+      Object.entries(memberClientMap).forEach(([memberId, clientList]) => {
+        if (clientList.some(cl => cl.id === id)) {
+          const m = teamMembers.find(tm => tm.id === memberId)
+          if (m) assignedMembers.push(m)
+        }
+      })
+    }
+    const membersHTML = assignedMembers.length
+      ? assignedMembers.map(m => {
+          const mNombre = `${m.profiles?.nombre||''} ${m.profiles?.apellido||''}`.trim()
+          const mIni = initials(mNombre)
+          const mCol = getAvColor(mNombre)
+          const mAvatar = m.profiles?.avatar_url
+          return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+            ${mAvatar
+              ? `<img src="${mAvatar}" style="width:32px;height:32px;border-radius:9px;object-fit:cover;flex-shrink:0">`
+              : `<div style="width:32px;height:32px;border-radius:9px;background:${mCol.bg};color:${mCol.color};font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${mIni}</div>`}
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--ink)">${mNombre}</div>
+              <div style="font-size:11px;color:var(--ink3)">${m.puesto||m.role}</div>
+            </div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--bg);color:var(--ink3)">${m.role}</span>
+          </div>`
+        }).join('')
+      : '<div style="font-size:13px;color:var(--ink3);padding:10px 0">Sin miembros asignados</div>'
 
     document.getElementById('client-detail-content').innerHTML = `
-      <div class="detail-header fade-up">
-        <div class="detail-av" style="background:${col.bg};color:${col.color}">${ini}</div>
-        <div>
-          <div class="detail-name">${c.nombre}</div>
-          <div class="detail-ind">${c.industria || 'Sin industria'}</div>
-          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${redes}</div>
+      <!-- Header azul -->
+      <div style="background:var(--azul);border-radius:16px;padding:28px;margin-bottom:20px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="width:56px;height:56px;border-radius:16px;background:rgba(142,219,255,.2);color:var(--celeste);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+            <div>
+              <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.4px;margin-bottom:4px">${c.nombre}</div>
+              <div style="font-size:13px;color:var(--celeste);opacity:.8">${c.industria || 'Sin industria'}</div>
+              <span style="display:inline-block;margin-top:8px;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:${estadoBg};color:${estadoColor}">${c.estado}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="tbtn" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;gap:6px" onclick="openClientModal('${c.id}')"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
+            <button class="tbtn" style="background:rgba(255,107,107,.15);border-color:rgba(255,107,107,.3);color:#ff9999;padding:8px 12px" onclick="openDeleteModal('${c.id}','${c.nombre.replace(/'/g,"\'")}')"><i class="ti ti-trash" style="font-size:13px"></i></button>
+          </div>
         </div>
-        <div class="detail-actions">
-          <button class="tbtn" onclick="openClientModal('${c.id}')"><i class="ti ti-pencil"></i> Editar</button>
-          <button class="tbtn" style="color:var(--danger);border-color:var(--danger)" onclick="openDeleteModal('${c.id}', '${c.nombre.replace(/'/g,"\\'")}')"><i class="ti ti-trash"></i></button>
+        ${c.redes?.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(142,219,255,.2)">${c.redes.map(r=>`<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(142,219,255,.15);color:var(--celeste)">${r}</span>`).join('')}</div>` : ''}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <!-- Contacto -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px">
+          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Contacto</div>
+          ${c.contacto_nombre ? `<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px">${c.contacto_nombre}</div>` : ''}
+          ${c.contacto_email ? `<a href="mailto:${c.contacto_email}" style="display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--ink2);font-size:12px;text-decoration:none;border-bottom:1px solid var(--border)"><i class="ti ti-mail" style="font-size:14px;color:var(--ink3)"></i>${c.contacto_email}</a>` : ''}
+          ${c.contacto_telefono ? `<a href="tel:${c.contacto_telefono}" style="display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--ink2);font-size:12px;text-decoration:none"><i class="ti ti-phone" style="font-size:14px;color:var(--ink3)"></i>${c.contacto_telefono}</a>` : ''}
+          ${!c.contacto_email && !c.contacto_telefono && !c.contacto_nombre ? '<div style="font-size:12px;color:var(--ink3)">Sin datos de contacto</div>' : ''}
+        </div>
+
+        <!-- Miembros -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Equipo asignado</div>
+          </div>
+          ${membersHTML}
         </div>
       </div>
-      <div class="detail-grid fade-up" style="animation-delay:.04s">
-        <div class="detail-field">
-          <div class="detail-field-lbl">Estado</div>
-          <div class="detail-field-val"><span class="client-status status-${c.estado}">${c.estado}</span></div>
+
+      <!-- Brief -->
+      ${c.brief ? `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Brief</div>
+        <div style="font-size:13px;color:var(--ink2);line-height:1.7">${c.brief}</div>
+      </div>` : ''}
+
+      <!-- Acceso a reportes -->
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--ink)">Reportes</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Ver rendimiento mensual de este cliente</div>
+          </div>
+          <button onclick="goToClientReport('${c.id}')" class="tbtn primary" style="gap:6px;font-size:12px">
+            <i class="ti ti-chart-bar" style="font-size:13px"></i> Ver reportes
+          </button>
         </div>
-        <div class="detail-field">
-          <div class="detail-field-lbl">Industria</div>
-          <div class="detail-field-val">${c.industria || '—'}</div>
-        </div>
-        <div class="detail-field">
-          <div class="detail-field-lbl">Cliente desde</div>
-          <div class="detail-field-val">${new Date(c.created_at).toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'})}</div>
-        </div>
-        <div class="detail-field">
-          <div class="detail-field-lbl">Redes</div>
-          <div class="detail-field-val">${c.redes?.join(', ') || '—'}</div>
-        </div>
-      </div>
-      <div class="brief-box fade-up" style="animation-delay:.08s">
-        <div class="brief-title">Brief</div>
-        <div class="brief-text">${c.brief || 'Sin brief. Editá el cliente para agregar uno.'}</div>
-      </div>
-    `
+      </div>`
 
     document.getElementById('cuentas-list-view').style.display = 'none'
     document.getElementById('cuentas-detail-view').style.display = 'block'
+  }
+
+  window.goToClientReport = function(clientId) {
+    showClientsList()
+    const railBtn = document.querySelector('.rail-btn[data-module="reportes"]')
+    if (railBtn) {
+      switchModule(railBtn)
+      setTimeout(() => repOpenClient(clientId), 400)
+    }
   }
 
   window.showClientsList = function() {
