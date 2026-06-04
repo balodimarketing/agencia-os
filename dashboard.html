@@ -1159,51 +1159,31 @@
     <div class="view" id="v-herramientas" style="padding:0;overflow-y:auto">
 
       <!-- Vista: grid de herramientas -->
-      <div id="tools-home" style="padding:28px 32px;max-width:560px;margin:0 auto">
+      <div id="tools-home" style="padding:28px 32px;max-width:680px;margin:0 auto">
 
         <!-- Intro -->
-        <div style="margin-bottom:28px">
+        <div style="margin-bottom:24px">
           <div style="font-size:22px;font-weight:900;color:var(--ink);letter-spacing:-.4px;margin-bottom:8px">Trabajá mejor, no más.</div>
           <div style="font-size:14px;color:var(--ink3);line-height:1.6">Cada agencia tiene su ritmo. Encontrá las herramientas que se adaptan a tu forma de trabajar y la de tu equipo — sin complicaciones.</div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-
-          <!-- Card Timer -->
-          <div onclick="openTool('timer')" style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;cursor:pointer;transition:box-shadow .18s,border-color .18s;display:flex;flex-direction:column" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
-            <div style="height:5px;background:var(--azul)"></div>
-            <div style="padding:22px;display:flex;flex-direction:column;gap:14px;flex:1">
-              <div style="width:44px;height:44px;border-radius:12px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul)">
-                <i class="ti ti-clock" style="font-size:22px"></i>
-              </div>
-              <div style="flex:1">
-                <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:5px">Timer</div>
-                <div style="font-size:12px;color:var(--ink3);line-height:1.5">Medí exactamente cuánto tiempo le dedicás a cada pieza o tarea.</div>
-              </div>
-              <div style="font-size:11px;font-weight:800;color:var(--azul);display:flex;align-items:center;gap:4px">
-                Abrir <i class="ti ti-arrow-right" style="font-size:12px"></i>
-              </div>
-            </div>
+        <!-- Buscador y filtros -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px;position:relative">
+            <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3)"></i>
+            <input type="text" id="tools-search" placeholder="Buscar herramienta..." oninput="filterTools()" style="width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none;background:var(--white)" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
           </div>
-
-          <!-- Card Pomodoro -->
-          <div onclick="openTool('pomodoro')" style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;cursor:pointer;transition:box-shadow .18s,border-color .18s;display:flex;flex-direction:column" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
-            <div style="height:5px;background:#E65100"></div>
-            <div style="padding:22px;display:flex;flex-direction:column;gap:14px;flex:1">
-              <div style="width:44px;height:44px;border-radius:12px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;color:#E65100">
-                <i class="ti ti-clock-hour-4" style="font-size:22px"></i>
-              </div>
-              <div style="flex:1">
-                <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:5px">Pomodoro</div>
-                <div style="font-size:12px;color:var(--ink3);line-height:1.5">Bloques de foco de 25 minutos con descansos cortos para rendir más.</div>
-              </div>
-              <div style="font-size:11px;font-weight:800;color:#E65100;display:flex;align-items:center;gap:4px">
-                Abrir <i class="ti ti-arrow-right" style="font-size:12px"></i>
-              </div>
-            </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="equipo-filter-btn active" data-tool-filter="todas" onclick="setToolFilter(this,'todas')">Todas</button>
+            <button class="equipo-filter-btn" data-tool-filter="Tiempo" onclick="setToolFilter(this,'Tiempo')">Tiempo</button>
+            <button class="equipo-filter-btn" data-tool-filter="Productividad" onclick="setToolFilter(this,'Productividad')">Productividad</button>
+            <button class="equipo-filter-btn" data-tool-filter="Creatividad" onclick="setToolFilter(this,'Creatividad')">Creatividad</button>
+            <button class="equipo-filter-btn" data-tool-filter="Gestión" onclick="setToolFilter(this,'Gestión')">Gestión</button>
+            <button class="equipo-filter-btn" data-tool-filter="Análisis" onclick="setToolFilter(this,'Análisis')">Análisis</button>
           </div>
-
         </div>
+
+        <div id="tools-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
       </div>
 
       <!-- Vista: Timer detalle -->
@@ -2205,7 +2185,7 @@
     else if (mod === 'equipo') { renderEquipo() }
     else if (mod === 'contenido') { renderContenido() }
     else if (mod === 'calendario') { renderCalendario() }
-    else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots() }
+    else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); renderToolsGrid() }
     else if (mod === 'crm') { renderCrm() }
     else if (mod === 'reportes') { renderReportes() }
     else { document.getElementById('panel-body').innerHTML = '' }
@@ -5002,6 +4982,58 @@
 
   // ── Herramientas — Navegación ─────────────────────────
   let currentTool = null
+  let toolFilter = 'todas'
+  let toolSearch = ''
+
+  const TOOLS_CATALOG = [
+    { id: 'timer',    nombre: 'Timer',    categoria: 'Tiempo', color: 'var(--azul)', iconBg: 'var(--celeste-dim)', iconColor: 'var(--azul)', icon: 'ti-clock', desc: 'Medí exactamente cuánto tiempo le dedicás a cada pieza o tarea.' },
+    { id: 'pomodoro', nombre: 'Pomodoro', categoria: 'Tiempo', color: '#E65100',     iconBg: '#FFF3E0',            iconColor: '#E65100',      icon: 'ti-clock-hour-4', desc: 'Bloques de foco de 25 minutos con descansos cortos para rendir más.' },
+  ]
+
+  window.setToolFilter = function(btn, filter) {
+    toolFilter = filter
+    document.querySelectorAll('[data-tool-filter]').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    renderToolsGrid()
+  }
+
+  window.filterTools = function() {
+    toolSearch = document.getElementById('tools-search')?.value.toLowerCase() || ''
+    renderToolsGrid()
+  }
+
+  function renderToolsGrid() {
+    const grid = document.getElementById('tools-grid')
+    if (!grid) return
+    let filtered = TOOLS_CATALOG
+    if (toolFilter !== 'todas') filtered = filtered.filter(t => t.categoria === toolFilter)
+    if (toolSearch) filtered = filtered.filter(t => t.nombre.toLowerCase().includes(toolSearch) || t.desc.toLowerCase().includes(toolSearch) || t.categoria.toLowerCase().includes(toolSearch))
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--ink3);font-size:13px">Sin herramientas en esta categoría todavía.</div>'
+      return
+    }
+
+    grid.innerHTML = filtered.map(t => `
+      <div onclick="openTool('${t.id}')" style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;cursor:pointer;transition:box-shadow .18s,border-color .18s;display:flex;flex-direction:column" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="height:5px;background:${t.color}"></div>
+        <div style="padding:22px;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div style="width:44px;height:44px;border-radius:12px;background:${t.iconBg};display:flex;align-items:center;justify-content:center;color:${t.iconColor}">
+              <i class="ti ${t.icon}" style="font-size:22px"></i>
+            </div>
+            <span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--bg);color:var(--ink3)">${t.categoria}</span>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:5px">${t.nombre}</div>
+            <div style="font-size:12px;color:var(--ink3);line-height:1.5">${t.desc}</div>
+          </div>
+          <div style="font-size:11px;font-weight:800;color:${t.color};display:flex;align-items:center;gap:4px">
+            Abrir <i class="ti ti-arrow-right" style="font-size:12px"></i>
+          </div>
+        </div>
+      </div>`).join('')
+  }
 
   window.openTool = async function(tool) {
     currentTool = tool
@@ -5019,6 +5051,7 @@
     document.getElementById('tools-timer').style.display = 'none'
     document.getElementById('tools-pomodoro').style.display = 'none'
     document.getElementById('ws-title').textContent = 'Herramientas'
+    renderToolsGrid()
   }
 
   async function loadTimerLogs() {
