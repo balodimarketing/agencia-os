@@ -1044,7 +1044,9 @@
             <i class="ti ti-download" style="font-size:15px"></i> Descargar reporte
           </button>
         </div>
-        <div id="rep-pieces-list" style="display:flex;flex-direction:column;gap:12px"></div>
+        <div id="rep-pieces-list" style="display:flex;flex-direction:column;gap:12px">
+          <!-- métricas y gráfico se insertan aquí desde JS -->
+        </div>
       </div>
 
     </div>
@@ -5598,7 +5600,89 @@ if (id) {
 
   function renderRepPieces(pieces) {
     const el = document.getElementById('rep-pieces-list')
-    el.innerHTML = pieces.map(p => {
+
+    // ── Calcular métricas ──
+    const tiposCount = {}
+    pieces.forEach(p => { tiposCount[p.tipo] = (tiposCount[p.tipo] || 0) + 1 })
+
+    // Tiempo promedio de aprobación (fecha_publicacion - created_at en días)
+    const aprobTiempos = pieces
+      .filter(p => p.fecha_publicacion && p.created_at)
+      .map(p => (new Date(p.fecha_publicacion) - new Date(p.created_at)) / (1000*60*60*24))
+      .filter(d => d >= 0)
+    const promAprobacion = aprobTiempos.length
+      ? (aprobTiempos.reduce((a,b) => a+b, 0) / aprobTiempos.length).toFixed(1)
+      : null
+
+    // Tasa de aprobación: piezas que NO tuvieron feedback vs las que sí
+    const sinCambios = pieces.filter(p => !p.aprobacion_comentario).length
+    const tasaAprobacion = pieces.length > 0 ? Math.round((sinCambios / pieces.length) * 100) : null
+
+    // ── Gráfico de torta SVG ──
+    const TIPO_COLORS = {
+      'Reel': '#0A2540', 'Story': '#3B82F6', 'Feed': '#8EDBFF',
+      'Video': '#F59E0B', 'Carousel': '#10B981', 'TikTok': '#EF4444',
+      'Otro': '#9AA5B4'
+    }
+    const total = pieces.length
+    const tiposArr = Object.entries(tiposCount).sort((a,b) => b[1]-a[1])
+    let startAngle = -Math.PI/2
+    const cx = 80, cy = 80, r = 70
+    const slices = tiposArr.map(([tipo, count]) => {
+      const angle = (count / total) * 2 * Math.PI
+      const x1 = cx + r * Math.cos(startAngle)
+      const y1 = cy + r * Math.sin(startAngle)
+      startAngle += angle
+      const x2 = cx + r * Math.cos(startAngle)
+      const y2 = cy + r * Math.sin(startAngle)
+      const large = angle > Math.PI ? 1 : 0
+      const color = TIPO_COLORS[tipo] || '#9AA5B4'
+      const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`
+      return { tipo, count, color, path }
+    })
+    const svgSlices = slices.map(s => `<path d="${s.path}" fill="${s.color}" stroke="#fff" stroke-width="2"/>`)
+
+    const legendHTML = tiposArr.map(([tipo, count]) => {
+      const color = TIPO_COLORS[tipo] || '#9AA5B4'
+      const pct = Math.round((count/total)*100)
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:10px;height:10px;border-radius:3px;background:${color};flex-shrink:0"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink);flex:1">${tipo}</div>
+        <div style="font-size:12px;color:var(--ink3)">${count} <span style="color:var(--ink3);font-size:10px">(${pct}%)</span></div>
+      </div>`
+    }).join('')
+
+    const metricsHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:900;color:var(--azul);letter-spacing:-.5px">${pieces.length}</div>
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Piezas publicadas</div>
+        </div>
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:900;color:var(--azul);letter-spacing:-.5px">${tasaAprobacion !== null ? tasaAprobacion+'%' : '—'}</div>
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Aprobación directa</div>
+        </div>
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;text-align:center">
+          <div style="font-size:28px;font-weight:900;color:var(--azul);letter-spacing:-.5px">${promAprobacion !== null ? promAprobacion+'d' : '—'}</div>
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Tiempo promedio</div>
+        </div>
+      </div>
+
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:16px;letter-spacing:-.2px">Piezas por tipo</div>
+        <div style="display:flex;align-items:center;gap:28px">
+          <svg width="160" height="160" viewBox="0 0 160 160" style="flex-shrink:0">
+            ${svgSlices.join('')}
+            <circle cx="${cx}" cy="${cy}" r="30" fill="white"/>
+            <text x="${cx}" y="${cy}" text-anchor="middle" dy="5" style="font-size:14px;font-weight:900;fill:#0A2540">${total}</text>
+          </svg>
+          <div style="flex:1">${legendHTML}</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Publicaciones</div>`
+
+    el.innerHTML = metricsHTML + pieces.map(p => {
       const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {day:'numeric', month:'long'})
       const stats = repStats[p.id]
       const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
