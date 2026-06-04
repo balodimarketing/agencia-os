@@ -1017,7 +1017,21 @@
 
       <!-- Vista: lista de clientes -->
       <div id="rep-home" style="padding:28px 32px;max-width:800px;margin:0 auto">
-        <p style="font-size:13px;color:var(--ink3);margin-bottom:24px">Seleccioná un cliente para ver su reporte mensual.</p>
+
+        <!-- Métricas de agencia (placeholder) -->
+        <div style="background:var(--azul);border-radius:16px;padding:24px 28px;margin-bottom:28px;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(142,219,255,.08)"></div>
+          <div style="position:absolute;bottom:-30px;right:60px;width:80px;height:80px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <i class="ti ti-chart-line" style="font-size:16px;color:var(--celeste)"></i>
+            <span style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px">Métricas de agencia</span>
+          </div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px">Próximamente</div>
+          <div style="font-size:12px;color:rgba(142,219,255,.7);line-height:1.5">Rendimiento global, tasas de cierre, productividad del equipo y más.</div>
+        </div>
+
+        <!-- Clientes -->
+        <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Reportes por cliente</div>
         <div id="rep-clients-list" style="display:flex;flex-direction:column;gap:10px"></div>
       </div>
 
@@ -5515,13 +5529,34 @@ if (id) {
         const d = new Date(p.fecha_publicacion)
         return `${d.getFullYear()}-${d.getMonth()}`
       }))].length
-      return `<div onclick="repOpenClient('${clientId}')" style="display:flex;align-items:center;gap:14px;padding:16px 20px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
-        <div style="width:44px;height:44px;border-radius:12px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);font-size:16px;font-weight:900;flex-shrink:0">${client?.nombre?.charAt(0).toUpperCase() || '?'}</div>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:800;color:var(--ink)">${client?.nombre || 'Cliente'}</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">${pieces.length} piezas · ${meses} ${meses === 1 ? 'mes' : 'meses'}</div>
+
+      // Mes más reciente
+      const sorted = [...pieces].sort((a,b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion))
+      const lastDate = new Date(sorted[0].fecha_publicacion)
+      const lastLabel = `${MESES[lastDate.getMonth()]} ${lastDate.getFullYear()}`
+
+      // Verificar si el mes actual tiene stats
+      const now = new Date()
+      const currentMonthPieces = pieces.filter(p => {
+        const d = new Date(p.fecha_publicacion)
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+      })
+      const hasCurrentMonth = currentMonthPieces.length > 0
+
+      return `<div onclick="repOpenClient('${clientId}')" style="display:flex;align-items:center;gap:16px;padding:18px 20px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="width:48px;height:48px;border-radius:14px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);font-size:18px;font-weight:900;flex-shrink:0">${client?.nombre?.charAt(0).toUpperCase() || '?'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px">${client?.nombre || 'Cliente'}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--ink3)">${pieces.length} piezas</span>
+            <span style="font-size:11px;color:var(--border)">·</span>
+            <span style="font-size:11px;color:var(--ink3)">${meses} ${meses === 1 ? 'mes' : 'meses'}</span>
+            <span style="font-size:11px;color:var(--border)">·</span>
+            <span style="font-size:11px;color:var(--ink3)">Último: ${lastLabel}</span>
+          </div>
         </div>
-        <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:15px"></i>
+        ${hasCurrentMonth ? `<span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:#F0FDF4;color:#166534;flex-shrink:0">Este mes ✓</span>` : ''}
+        <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:15px;flex-shrink:0"></i>
       </div>`
     }).join('')
   }
