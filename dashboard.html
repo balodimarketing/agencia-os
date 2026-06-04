@@ -2244,9 +2244,9 @@
     if (error) { errEl.textContent = 'Error al guardar. Intentá de nuevo.'; errEl.classList.add('show'); return }
 
     // Notificar si viene de conversión CRM
-    const fromCrm = document.getElementById('modal-client').dataset.fromCrm
+    const fromCrm = crmFromContact
     if (!id && fromCrm) {
-      document.getElementById('modal-client').dataset.fromCrm = ''
+      crmFromContact = null
       if (teamMembers.length === 0) await loadTeam()
       const owner = teamMembers.find(m => m.role === 'OWNER')
       if (owner) {
@@ -4850,6 +4850,7 @@
   // ══════════════════════════════════════
 
   let crmContacts = []
+  let crmFromContact = null // nombre del contacto CRM al convertir a cliente
   let crmCurrentContact = null
   let crmView = 'pipeline' // pipeline | contactos
   let crmActTipo = 'llamada'
@@ -5266,7 +5267,8 @@ if (id) {
       document.getElementById('red-' + r).checked = false
     })
     // Marcar que viene de CRM para notificar al guardar
-    document.getElementById('modal-client').dataset.fromCrm = c.nombre
+    document.getElementById('modal-client').dataset.fromCrm = ''
+    crmFromContact = c.nombre
     document.getElementById('modal-client').classList.add('show')
     setTimeout(() => document.getElementById('client-nombre').focus(), 100)
   }
