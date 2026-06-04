@@ -5771,69 +5771,50 @@ if (id) {
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
 
     const agencyName = document.getElementById('greeting-agency')?.textContent || ''
+    const logoSVG = '<svg viewBox="0 0 22 22" width="13" height="13" fill="none" stroke="#8EDBFF" stroke-width="2.5" style="display:block"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>'
 
-    const logoSVG = `<svg viewBox="0 0 22 22" width="13" height="13" fill="none" stroke="#8EDBFF" stroke-width="2.5" style="display:block"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>`
-
-    const TIPO_COLORS = {
-      'Reel': '#E8F4FF:#0C447C', 'Story': '#EEF2FF:#3730A3', 'Feed': '#F0FDF4:#166534',
-      'Video': '#FFF7ED:#9A3412', 'Carousel': '#F0FDF4:#166534', 'TikTok': '#FEF2F2:#991B1B',
-    }
+    const TIPO_BG = { 'Reel':'#E8F4FF', 'Story':'#EEF2FF', 'Feed':'#F0FDF4', 'Video':'#FFF7ED', 'Carousel':'#F0FDF4', 'TikTok':'#FEF2F2' }
+    const TIPO_TX = { 'Reel':'#0C447C', 'Story':'#3730A3', 'Feed':'#166534', 'Video':'#9A3412', 'Carousel':'#166534', 'TikTok':'#991B1B' }
 
     const piezasHTML = clientPieces.map(p => {
       const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {day:'numeric', month:'long'})
       const stats = repStats[p.id]
       const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
-      const colors = (TIPO_COLORS[p.tipo] || '#F0F4F8:#9AA5B4').split(':')
-      const badgeBg = colors[0], badgeColor = colors[1]
+      const bg = TIPO_BG[p.tipo] || '#F0F4F8'
+      const tx = TIPO_TX[p.tipo] || '#9AA5B4'
 
-      const statsHTML = hasStats ? `
-        <div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E8ECF0;margin-top:12px">
-          ${stats.visitas ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.visitas).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Visitas</div></div>` : ''}
-          ${stats.likes ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.likes).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Likes</div></div>` : ''}
-          ${stats.comentarios ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.comentarios).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Comentarios</div></div>` : ''}
-          ${stats.compartidos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.compartidos).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Compartidos</div></div>` : ''}
-          ${stats.reposteos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.reposteos).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Reposteos</div></div>` : ''}
-        </div>` : ''
+      const statsHTML = hasStats ? `<div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E8ECF0;margin-top:12px">${
+        [['visitas','Visitas'],['likes','Likes'],['comentarios','Comentarios'],['compartidos','Compartidos'],['reposteos','Reposteos']]
+          .filter(([k]) => stats[k])
+          .map(([k,l]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${l}</div></div>`)
+          .join('')
+      }</div>` : ''
 
-      return `<div style="border:1.5px solid #0A2540;border-radius:12px;padding:18px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:5px">${p.titulo}</div>
-            <span style="font-size:10px;font-weight:600;padding:2px 9px;background:${badgeBg};color:${badgeColor};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span>
-          </div>
-          <div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div>
-        </div>
-        ${statsHTML}
-      </div>`
+      return `<div style="border:1.5px solid #0A2540;border-radius:12px;padding:18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:5px">${p.titulo}</div><span style="font-size:10px;font-weight:600;padding:2px 9px;background:${bg};color:${tx};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span></div><div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div></div>${statsHTML}</div>`
     }).join('')
+
+    const agencyLine = agencyName ? agencyName + ' &middot; ' : ''
+    const fechaGen = new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})
 
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Reporte ${repCurrentClient.nombre} — ${repCurrentMonth.label}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #F5F7FA; color: #111; padding: 40px; }
-  @media print {
-    body { background: #fff; padding: 0; }
-    @page { margin: 20mm; }
-  }
-</style>
+<title>Reporte ${repCurrentClient.nombre} \u2014 ${repCurrentMonth.label}</title>
+<style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: -apple-system,'Segoe UI',sans-serif; background: #F5F7FA; padding: 40px; } @media print { body { background: #fff; padding: 0; } @page { margin: 15mm; } }</style>
 </head>
 <body>
 <div style="background:#fff;max-width:680px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #0A2540">
-
   <div style="padding:36px 40px 28px;border-bottom:2px solid #0A2540">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
       <div style="width:26px;height:26px;background:#0A2540;border-radius:6px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
-      <span style="font-size:11px;font-weight:600;color:#9AA5B4;letter-spacing:.6px;text-transform:uppercase">Agencia OS · Reporte de contenido</span>
+      <span style="font-size:11px;font-weight:600;color:#9AA5B4;letter-spacing:.6px;text-transform:uppercase">Agencia OS &middot; Reporte de contenido</span>
     </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between">
       <div>
         <div style="font-size:11px;font-weight:600;color:#0A2540;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Cliente</div>
         <div style="font-size:32px;font-weight:700;color:#0A2540;letter-spacing:-.5px;line-height:1.1">${repCurrentClient.nombre}</div>
-        <div style="font-size:13px;color:#9AA5B4;margin-top:5px">${agencyName ? agencyName + ' · ' : ''}${repCurrentMonth.label}</div>
+        <div style="font-size:13px;color:#9AA5B4;margin-top:5px">${agencyLine}${repCurrentMonth.label}</div>
       </div>
       <div style="text-align:right">
         <div style="font-size:44px;font-weight:700;color:#0A2540;line-height:1">${clientPieces.length}</div>
@@ -5841,7 +5822,6 @@ if (id) {
       </div>
     </div>
   </div>
-
   <div style="padding:28px 40px">
     <div style="font-size:11px;font-weight:600;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Publicaciones</div>
     ${piezasHTML}
@@ -5850,10 +5830,9 @@ if (id) {
         <div style="width:18px;height:18px;background:#0A2540;border-radius:4px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
         <span style="font-size:11px;font-weight:600;color:#0A2540">Generado con Agencia OS</span>
       </div>
-      <span style="font-size:11px;color:#9AA5B4">${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</span>
+      <span style="font-size:11px;color:#9AA5B4">${fechaGen}</span>
     </div>
   </div>
-
 </div>
 <script>window.onload = () => window.print()</script>
 </body>
@@ -5863,12 +5842,11 @@ if (id) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `Reporte_${repCurrentClient.nombre}_${repCurrentMonth.label}.html`.replace(/\s/g, '_')
+    a.download = ('Reporte_' + repCurrentClient.nombre + '_' + repCurrentMonth.label + '.html').replace(/\s/g, '_')
     a.click()
     URL.revokeObjectURL(url)
     showToast('✓ Reporte listo — guardá como PDF al imprimir')
   }
-
 
   // ── Escape para cerrar modales
   document.addEventListener('keydown', e => {
