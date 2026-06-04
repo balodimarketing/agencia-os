@@ -2229,11 +2229,14 @@
     const contacto_telefono = document.getElementById('client-contacto-telefono').value.trim()
     const payload = { nombre, industria: industria || null, estado, brief: brief || null, redes, agency_id: agencyId, contacto_nombre: contacto_nombre||null, contacto_email: contacto_email||null, contacto_telefono: contacto_telefono||null }
 
-    let error
+    let error, newClientId
     if (id) {
       ({ error } = await supabase.from('clients').update(payload).eq('id', id))
+      newClientId = id
     } else {
-      ({ error } = await supabase.from('clients').insert(payload))
+      const { data: inserted, error: insertErr } = await supabase.from('clients').insert(payload).select('id').single()
+      error = insertErr
+      newClientId = inserted?.id
     }
 
     btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cliente'
@@ -2244,6 +2247,7 @@
     const fromCrm = document.getElementById('modal-client').dataset.fromCrm
     if (!id && fromCrm) {
       document.getElementById('modal-client').dataset.fromCrm = ''
+      if (teamMembers.length === 0) await loadTeam()
       // Notificar al owner
       const owner = teamMembers.find(m => m.role === 'OWNER')
       if (owner) {
@@ -2252,7 +2256,8 @@
           'cuentas',
           `🎉 Nuevo cliente: ${nombre}`,
           `El deal de ${fromCrm} se convirtió en cliente. Completá su perfil.`,
-          'cuentas'
+          'cuentas',
+          newClientId
         )
       }
     }
@@ -3450,11 +3455,14 @@
       const railBtn = document.querySelector(`.rail-btn[data-module="${modulo}"]`)
       if (railBtn) {
         await switchModule(railBtn)
-        // Open specific piece if linkId provided
         if (linkId && modulo === 'contenido') {
           setTimeout(() => {
             const piece = pieces.find(p => p.id === linkId)
             if (piece) openPieceDetail(linkId)
+          }, 400)
+        } else if (linkId && modulo === 'cuentas') {
+          setTimeout(() => {
+            openClientModal(linkId)
           }, 400)
         }
       }
@@ -3473,7 +3481,7 @@
   }
 
   // ── Create notification helper ────────────────────────
-  async function createNotification(userId, tipo, titulo, mensaje, linkModulo) {
+  async function createNotification(userId, tipo, titulo, mensaje, linkModulo, linkId = null) {
     await supabase.from('notifications').insert({
       agency_id: agencyId,
       user_id: userId,
@@ -3481,6 +3489,7 @@
       titulo,
       mensaje: mensaje || null,
       link_modulo: linkModulo || null,
+      link_id: linkId || null,
     })
   }
 
