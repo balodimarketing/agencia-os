@@ -960,6 +960,9 @@
         <p style="font-size:13px;color:var(--ink3);margin-top:2px">Esto es lo más importante hoy.</p>
       </div>
 
+      <!-- Checklist de bienvenida -->
+      <div id="inicio-checklist" style="margin-bottom:28px"></div>
+
       <!-- 4 métricas -->
       <div id="inicio-metrics" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px"></div>
 
@@ -6181,6 +6184,7 @@ if (id) {
   // ══════════════════════════════════════
 
   async function renderInicio() {
+    renderChecklist()
     const today = new Date()
     const todayStr = today.toISOString().slice(0,10)
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString()
@@ -6358,6 +6362,136 @@ if (id) {
     }</div>`
   }
 
+
+  // ══════════════════════════════════════
+  // CHECKLIST DE BIENVENIDA
+  // ══════════════════════════════════════
+
+  const ONBOARDING_STEPS = [
+    { id: 'cuenta',   icon: 'ti-user-check',    label: 'Creá tu cuenta',           desc: 'Ya estás dentro.',                          action: null },
+    { id: 'perfil',   icon: 'ti-id-badge',      label: 'Completá tu perfil',        desc: 'Agregá tu foto y bio.',                     action: () => handleOpenProfile() },
+    { id: 'cliente',  icon: 'ti-building',      label: 'Agregá tu primer cliente',  desc: 'Empezá a gestionar tus cuentas.',           action: () => switchModule(document.querySelector('.rail-btn[data-module=cuentas]')) },
+    { id: 'miembro',  icon: 'ti-users',         label: 'Invitá a tu equipo',        desc: 'Sumá miembros a tu agencia.',               action: () => switchModule(document.querySelector('.rail-btn[data-module=equipo]')) },
+    { id: 'pieza',    icon: 'ti-photo',         label: 'Creá tu primera pieza',     desc: 'Empezá tu flujo de contenido.',             action: () => switchModule(document.querySelector('.rail-btn[data-module=contenido]')) },
+    { id: 'evento',   icon: 'ti-calendar',      label: 'Programá algo en el calendario', desc: 'Organizá tus publicaciones.',          action: () => switchModule(document.querySelector('.rail-btn[data-module=calendario]')) },
+  ]
+
+  let onboardingCompleted = []
+  let onboardingDone = false
+
+  async function loadOnboarding() {
+    const { data } = await supabase
+      .from('onboarding_progress')
+      .select('completed_steps, completed')
+      .eq('user_id', currentUserId)
+      .eq('agency_id', agencyId)
+      .maybeSingle()
+
+    if (data) {
+      onboardingCompleted = data.completed_steps || []
+      onboardingDone = data.completed
+    } else {
+      // Primera vez — crear registro con cuenta ya completada
+      onboardingCompleted = ['cuenta']
+      await supabase.from('onboarding_progress').insert({
+        user_id: currentUserId,
+        agency_id: agencyId,
+        completed_steps: ['cuenta']
+      })
+    }
+  }
+
+  async function renderChecklist() {
+    const el = document.getElementById('inicio-checklist')
+    if (!el) return
+    await loadOnboarding()
+
+    if (onboardingDone) { el.innerHTML = ''; return }
+
+    const total = ONBOARDING_STEPS.length
+    const done = onboardingCompleted.length
+    const pct = Math.round((done / total) * 100)
+
+    const stepsHTML = ONBOARDING_STEPS.map(s => {
+      const isCompleted = onboardingCompleted.includes(s.id)
+      const isFirst = s.id === 'cuenta'
+      return `<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="width:28px;height:28px;border-radius:50%;background:${isCompleted ? 'var(--success)' : 'var(--bg)'};border:2px solid ${isCompleted ? 'var(--success)' : 'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s">
+          ${isCompleted ? '<i class="ti ti-check" style="font-size:14px;color:#fff"></i>' : `<i class="ti ${s.icon}" style="font-size:13px;color:var(--ink3)"></i>`}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:${isCompleted ? '600' : '700'};color:${isCompleted ? 'var(--ink3)' : 'var(--ink)'};text-decoration:${isCompleted ? 'line-through' : 'none'}">${s.label}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${s.desc}</div>
+        </div>
+        ${!isCompleted && !isFirst && s.action ? `<button onclick="completeStep('${s.id}')" style="flex-shrink:0;font-size:11px;font-weight:800;color:var(--azul);background:var(--celeste-dim);border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit;transition:opacity .15s" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">Hacerlo →</button>` : ''}
+      </div>`
+    }).join('')
+
+    el.innerHTML = `
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div>
+              <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Empezá con Agencia OS</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:2px">${done} de ${total} pasos completados</div>
+            </div>
+            <button onclick="dismissChecklist()" style="font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">Ocultar</button>
+          </div>
+          <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
+            <div style="height:6px;width:${pct}%;background:var(--azul);border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)"></div>
+          </div>
+        </div>
+        <div style="padding:0 22px 8px">${stepsHTML}</div>
+      </div>`
+  }
+
+  window.completeStep = async function(stepId) {
+    const step = ONBOARDING_STEPS.find(s => s.id === stepId)
+    if (!step) return
+
+    if (!onboardingCompleted.includes(stepId)) {
+      onboardingCompleted.push(stepId)
+    }
+
+    const allDone = ONBOARDING_STEPS.every(s => onboardingCompleted.includes(s.id))
+
+    await supabase.from('onboarding_progress').upsert({
+      user_id: currentUserId,
+      agency_id: agencyId,
+      completed_steps: onboardingCompleted,
+      completed: allDone
+    }, { onConflict: 'user_id,agency_id' })
+
+    if (allDone) {
+      onboardingDone = true
+      showToast('🎉 ¡Completaste el setup de Agencia OS!')
+      const el = document.getElementById('inicio-checklist')
+      if (el) {
+        el.style.transition = 'opacity .3s'
+        el.style.opacity = '0'
+        setTimeout(() => { el.innerHTML = '' }, 300)
+      }
+    } else {
+      await renderChecklist()
+      if (step.action) setTimeout(step.action, 200)
+    }
+  }
+
+  window.dismissChecklist = async function() {
+    await supabase.from('onboarding_progress').upsert({
+      user_id: currentUserId,
+      agency_id: agencyId,
+      completed_steps: onboardingCompleted,
+      completed: true
+    }, { onConflict: 'user_id,agency_id' })
+    onboardingDone = true
+    const el = document.getElementById('inicio-checklist')
+    if (el) {
+      el.style.transition = 'opacity .3s'
+      el.style.opacity = '0'
+      setTimeout(() => { el.innerHTML = '' }, 300)
+    }
+  }
 
   // ── Escape para cerrar modales
   document.addEventListener('keydown', e => {
