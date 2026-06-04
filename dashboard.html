@@ -5840,12 +5840,15 @@ if (id) {
 
     const blob = new Blob([html], { type: 'text/html' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = ('Reporte_' + repCurrentClient.nombre + '_' + repCurrentMonth.label + '.html').replace(/\s/g, '_')
-    a.click()
-    URL.revokeObjectURL(url)
-    showToast('✓ Reporte listo — guardá como PDF al imprimir')
+    const win = window.open(url, '_blank')
+    if (!win) {
+      const a = document.createElement('a')
+      a.href = url
+      a.download = ('Reporte_' + repCurrentClient.nombre + '_' + repCurrentMonth.label + '.html').replace(/\s/g, '_')
+      a.click()
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    showToast('✓ Guardá como PDF en el diálogo de impresión')
   }
 
   // ── Escape para cerrar modales
