@@ -773,6 +773,7 @@
     #v-calendario.active { display: flex !important; }
     #v-crm.active { display: flex !important; }
     #v-contenido.active { display: flex !important; }
+    #v-reportes.active { display: block !important; }
 
     .cal-view-btn {
       padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 700;
@@ -906,6 +907,7 @@
     <div class="rail-divider"></div>
     <div class="rail-btn" data-module="equipo" data-tip="Equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i></div>
     <div class="rail-btn" data-module="cuentas" data-tip="Cuentas" onclick="switchModule(this)"><i class="ti ti-building"></i></div>
+    <div class="rail-btn" data-module="reportes" data-tip="Reportes" onclick="switchModule(this)"><i class="ti ti-chart-bar"></i></div>
     <div class="rail-bottom">
       <div class="rail-btn notif-btn" data-tip="Notificaciones" onclick="toggleNotifPanel()" id="notif-rail-btn">
         <i class="ti ti-bell"></i>
@@ -1009,6 +1011,43 @@
       </div>
       <div id="equipo-members-grid" class="members-grid"></div>
     </div></div>
+
+    <!-- REPORTES -->
+    <div class="view" id="v-reportes" style="padding:0;overflow-y:auto">
+
+      <!-- Vista: lista de clientes -->
+      <div id="rep-home" style="padding:28px 32px;max-width:800px;margin:0 auto">
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:24px">Seleccioná un cliente para ver su reporte mensual.</p>
+        <div id="rep-clients-list" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <!-- Vista: meses de un cliente -->
+      <div id="rep-months" style="display:none;padding:28px 32px;max-width:800px;margin:0 auto">
+        <button onclick="repGoHome()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-arrow-left" style="font-size:15px"></i> Reportes
+        </button>
+        <div id="rep-client-header" style="margin-bottom:24px"></div>
+        <div id="rep-months-list" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <!-- Vista: piezas del mes -->
+      <div id="rep-detail" style="display:none;padding:28px 32px;max-width:800px;margin:0 auto">
+        <button onclick="repGoMonths()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-arrow-left" style="font-size:15px"></i> <span id="rep-back-label">Cliente</span>
+        </button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <div id="rep-detail-title" style="font-size:20px;font-weight:900;color:var(--ink);letter-spacing:-.4px"></div>
+            <div id="rep-detail-sub" style="font-size:13px;color:var(--ink3);margin-top:2px"></div>
+          </div>
+          <button onclick="downloadReport()" style="display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--azul);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <i class="ti ti-download" style="font-size:15px"></i> Descargar reporte
+          </button>
+        </div>
+        <div id="rep-pieces-list" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
+    </div>
 
     <!-- CRM -->
     <div class="view flex-view" id="v-crm" style="padding:0;flex-direction:column;height:calc(100vh - 52px);overflow:hidden">
@@ -1735,6 +1774,46 @@
   </div>
 </div>
 
+<!-- Modal estadísticas pieza -->
+<div class="modal-overlay" id="modal-stats" onclick="if(event.target===this)closeStatsModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-title">Cargar estadísticas</div>
+      <button class="modal-close" onclick="closeStatsModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="stats-piece-id">
+      <div id="stats-piece-name" style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:20px;padding:10px 14px;background:var(--bg);border-radius:8px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Visitas</label>
+          <input type="number" class="form-input" id="stats-visitas" placeholder="0" min="0">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Likes</label>
+          <input type="number" class="form-input" id="stats-likes" placeholder="0" min="0">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Comentarios</label>
+          <input type="number" class="form-input" id="stats-comentarios" placeholder="0" min="0">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Compartidos</label>
+          <input type="number" class="form-input" id="stats-compartidos" placeholder="0" min="0">
+        </div>
+        <div class="form-field" style="margin-bottom:0;grid-column:1/-1">
+          <label class="form-label">Reposteos</label>
+          <input type="number" class="form-input" id="stats-reposteos" placeholder="0" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" style="flex:1" onclick="closeStatsModal()">Cancelar</button>
+      <button class="tbtn primary" style="flex:2" onclick="saveStats()">Guardar estadísticas</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal día completo -->
 <div class="modal-overlay" id="modal-day" onclick="if(event.target===this)closeDayModal()">
   <div class="modal" style="max-width:400px;max-height:80vh;display:flex;flex-direction:column">
@@ -2042,6 +2121,7 @@
     else if (mod === 'calendario') { renderCalendario() }
     else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); cta.style.display = 'none' }
     else if (mod === 'crm') { cta.style.display = 'none'; renderCrm() }
+    else if (mod === 'reportes') { cta.style.display = 'none'; renderReportes() }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -2051,7 +2131,7 @@
     contenido: { title: 'Contenido', sub: 'Workflow de piezas',   cta: 'Nueva pieza'    },
     equipo:    { title: 'Equipo',    sub: 'Miembros activos',      cta: 'Invitar'        },
     crm:          { title: 'CRM',          sub: 'Contactos',              cta: 'Nuevo contacto' },
-    herramientas: { title: 'Herramientas', sub: 'Productividad del equipo', cta: ''              },
+    reportes:     { title: 'Reportes',      sub: 'Rendimiento por cliente',   cta: ''              },
     calendario:   { title: 'Calendario',   sub: 'Eventos y publicaciones', cta: 'Nuevo evento'   },
   }
 
@@ -5387,6 +5467,323 @@ if (id) {
     await loadCrmContacts()
     if (crmView === 'pipeline') renderCrmPipeline()
     else renderCrmList()
+  }
+
+  // ══════════════════════════════════════
+  // REPORTES
+  // ══════════════════════════════════════
+
+  let repCurrentClient = null
+  let repCurrentMonth = null // { year, month, label }
+  let repPieces = []
+  let repStats = {}
+
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
+  async function renderReportes() {
+    // Cargar piezas publicadas con fecha
+    const { data: piezas } = await supabase
+      .from('content_pieces')
+      .select('*, clients(nombre, industria)')
+      .eq('agency_id', agencyId)
+      .eq('estado', 'publicado')
+      .not('fecha_publicacion', 'is', null)
+      .order('fecha_publicacion', { ascending: false })
+
+    repPieces = piezas || []
+
+    // Agrupar por cliente
+    const byClient = {}
+    repPieces.forEach(p => {
+      if (!p.client_id) return
+      if (!byClient[p.client_id]) byClient[p.client_id] = { client: p.clients, pieces: [] }
+      byClient[p.client_id].pieces.push(p)
+    })
+
+    const el = document.getElementById('rep-clients-list')
+    if (!el) return
+
+    if (!Object.keys(byClient).length) {
+      el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--ink3);font-size:13px">No hay piezas publicadas con fecha asignada todavía.</div>'
+      return
+    }
+
+    el.innerHTML = Object.entries(byClient).map(([clientId, { client, pieces }]) => {
+      const meses = [...new Set(pieces.map(p => {
+        const d = new Date(p.fecha_publicacion)
+        return `${d.getFullYear()}-${d.getMonth()}`
+      }))].length
+      return `<div onclick="repOpenClient('${clientId}')" style="display:flex;align-items:center;gap:14px;padding:16px 20px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);font-size:16px;font-weight:900;flex-shrink:0">${client?.nombre?.charAt(0).toUpperCase() || '?'}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:800;color:var(--ink)">${client?.nombre || 'Cliente'}</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">${pieces.length} piezas · ${meses} ${meses === 1 ? 'mes' : 'meses'}</div>
+        </div>
+        <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:15px"></i>
+      </div>`
+    }).join('')
+  }
+
+  window.repOpenClient = function(clientId) {
+    const clientPieces = repPieces.filter(p => p.client_id === clientId)
+    repCurrentClient = clientPieces[0]?.clients
+    repCurrentClient = { ...repCurrentClient, id: clientId }
+
+    // Agrupar por mes
+    const byMonth = {}
+    clientPieces.forEach(p => {
+      const d = new Date(p.fecha_publicacion)
+      const key = `${d.getFullYear()}-${d.getMonth()}`
+      if (!byMonth[key]) byMonth[key] = { year: d.getFullYear(), month: d.getMonth(), pieces: [] }
+      byMonth[key].pieces.push(p)
+    })
+
+    document.getElementById('rep-client-header').innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);font-size:16px;font-weight:900">${repCurrentClient?.nombre?.charAt(0).toUpperCase() || '?'}</div>
+        <div>
+          <div style="font-size:18px;font-weight:900;color:var(--ink)">${repCurrentClient?.nombre || 'Cliente'}</div>
+          <div style="font-size:12px;color:var(--ink3)">${repCurrentClient?.industria || ''}</div>
+        </div>
+      </div>`
+
+    document.getElementById('rep-months-list').innerHTML = Object.entries(byMonth)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([key, { year, month, pieces }]) => `
+        <div onclick="repOpenMonth('${key}')" style="display:flex;align-items:center;gap:14px;padding:16px 20px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="ti ti-calendar-month" style="font-size:20px;color:var(--ink3)"></i>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:800;color:var(--ink)">${MESES[month]} ${year}</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">${pieces.length} piezas publicadas</div>
+          </div>
+          <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:15px"></i>
+        </div>`).join('')
+
+    document.getElementById('rep-home').style.display = 'none'
+    document.getElementById('rep-months').style.display = 'block'
+    document.getElementById('rep-detail').style.display = 'none'
+  }
+
+  window.repOpenMonth = async function(monthKey) {
+    const [year, month] = monthKey.split('-').map(Number)
+    repCurrentMonth = { year, month, label: `${MESES[month]} ${year}` }
+
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === year && d.getMonth() === month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+
+    // Cargar estadísticas existentes
+    const pieceIds = clientPieces.map(p => p.id)
+    const { data: stats } = await supabase
+      .from('piece_stats')
+      .select('*')
+      .in('piece_id', pieceIds)
+    repStats = {}
+    ;(stats || []).forEach(s => repStats[s.piece_id] = s)
+
+    document.getElementById('rep-detail-title').textContent = `${repCurrentClient.nombre}`
+    document.getElementById('rep-detail-sub').textContent = repCurrentMonth.label
+    document.getElementById('rep-back-label').textContent = repCurrentClient.nombre
+
+    renderRepPieces(clientPieces)
+
+    document.getElementById('rep-home').style.display = 'none'
+    document.getElementById('rep-months').style.display = 'none'
+    document.getElementById('rep-detail').style.display = 'block'
+  }
+
+  function renderRepPieces(pieces) {
+    const el = document.getElementById('rep-pieces-list')
+    el.innerHTML = pieces.map(p => {
+      const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {day:'numeric', month:'long'})
+      const stats = repStats[p.id]
+      const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
+
+      const statsHTML = hasStats ? `
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+          ${stats.visitas ? `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--ink2)"><i class="ti ti-eye" style="font-size:12px;color:var(--ink3)"></i>${Number(stats.visitas).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.likes ? `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--ink2)"><i class="ti ti-heart" style="font-size:12px;color:var(--danger)"></i>${Number(stats.likes).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.comentarios ? `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--ink2)"><i class="ti ti-message" style="font-size:12px;color:var(--ink3)"></i>${Number(stats.comentarios).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.compartidos ? `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--ink2)"><i class="ti ti-share" style="font-size:12px;color:var(--ink3)"></i>${Number(stats.compartidos).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.reposteos ? `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--ink2)"><i class="ti ti-repeat" style="font-size:12px;color:var(--ink3)"></i>${Number(stats.reposteos).toLocaleString('es-AR')}</div>` : ''}
+        </div>` : ''
+
+      return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px 20px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px">${p.titulo}</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;padding:2px 8px;background:var(--celeste-dim);color:var(--azul);border-radius:6px">${p.tipo}</span>
+              <span style="font-size:11px;color:var(--ink3)">${fecha}</span>
+            </div>
+            ${statsHTML}
+          </div>
+          <button onclick="openStatsModal('${p.id}','${p.titulo.replace(/'/g, "\\'")}')" style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--ink3);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--azul)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">
+            <i class="ti ti-chart-bar" style="font-size:13px"></i>
+            ${hasStats ? 'Editar stats' : 'Cargar stats'}
+          </button>
+        </div>
+      </div>`
+    }).join('')
+  }
+
+  window.repGoHome = function() {
+    repCurrentClient = null
+    repCurrentMonth = null
+    document.getElementById('rep-home').style.display = 'block'
+    document.getElementById('rep-months').style.display = 'none'
+    document.getElementById('rep-detail').style.display = 'none'
+  }
+
+  window.repGoMonths = function() {
+    document.getElementById('rep-home').style.display = 'none'
+    document.getElementById('rep-months').style.display = 'block'
+    document.getElementById('rep-detail').style.display = 'none'
+  }
+
+  window.openStatsModal = function(pieceId, titulo) {
+    document.getElementById('stats-piece-id').value = pieceId
+    document.getElementById('stats-piece-name').textContent = titulo
+    const s = repStats[pieceId] || {}
+    document.getElementById('stats-visitas').value = s.visitas || ''
+    document.getElementById('stats-likes').value = s.likes || ''
+    document.getElementById('stats-comentarios').value = s.comentarios || ''
+    document.getElementById('stats-compartidos').value = s.compartidos || ''
+    document.getElementById('stats-reposteos').value = s.reposteos || ''
+    document.getElementById('modal-stats').classList.add('show')
+  }
+
+  window.closeStatsModal = function() {
+    document.getElementById('modal-stats').classList.remove('show')
+  }
+
+  window.saveStats = async function() {
+    const pieceId = document.getElementById('stats-piece-id').value
+    const payload = {
+      piece_id: pieceId,
+      agency_id: agencyId,
+      visitas: parseInt(document.getElementById('stats-visitas').value) || 0,
+      likes: parseInt(document.getElementById('stats-likes').value) || 0,
+      comentarios: parseInt(document.getElementById('stats-comentarios').value) || 0,
+      compartidos: parseInt(document.getElementById('stats-compartidos').value) || 0,
+      reposteos: parseInt(document.getElementById('stats-reposteos').value) || 0,
+      updated_at: new Date().toISOString()
+    }
+
+    const existing = repStats[pieceId]
+    if (existing) {
+      await supabase.from('piece_stats').update(payload).eq('piece_id', pieceId)
+    } else {
+      await supabase.from('piece_stats').insert(payload)
+    }
+
+    repStats[pieceId] = payload
+    closeStatsModal()
+    showToast('✓ Estadísticas guardadas')
+
+    // Re-renderizar piezas del mes actual
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient?.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+    renderRepPieces(clientPieces)
+  }
+
+  window.downloadReport = async function() {
+    if (!repCurrentClient || !repCurrentMonth) return
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth.year && d.getMonth() === repCurrentMonth.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+
+    const piezasHTML = clientPieces.map(p => {
+      const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {day:'numeric', month:'long'})
+      const stats = repStats[p.id]
+      const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
+      const statsHTML = hasStats ? `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+          ${stats.visitas ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.visitas).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Visitas</div></div>` : ''}
+          ${stats.likes ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.likes).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Likes</div></div>` : ''}
+          ${stats.comentarios ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.comentarios).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Comentarios</div></div>` : ''}
+          ${stats.compartidos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.compartidos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Compartidos</div></div>` : ''}
+          ${stats.reposteos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.reposteos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Reposteos</div></div>` : ''}
+        </div>` : '<div style="font-size:11px;color:#9AA5B4;margin-top:8px;font-style:italic">Sin estadísticas cargadas</div>'
+      return `<div style="background:#fff;border:1px solid #E8ECF0;border-radius:12px;padding:20px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:15px;font-weight:800;color:#111">${p.titulo}</div>
+          <div style="font-size:11px;color:#9AA5B4">${fecha}</div>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;background:#E8F4FF;color:#0A2540;border-radius:6px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span>
+        ${statsHTML}
+      </div>`
+    }).join('')
+
+    const totalStats = clientPieces.reduce((acc, p) => {
+      const s = repStats[p.id] || {}
+      return {
+        visitas: acc.visitas + (s.visitas || 0),
+        likes: acc.likes + (s.likes || 0),
+        comentarios: acc.comentarios + (s.comentarios || 0),
+        compartidos: acc.compartidos + (s.compartidos || 0),
+        reposteos: acc.reposteos + (s.reposteos || 0),
+      }
+    }, { visitas:0, likes:0, comentarios:0, compartidos:0, reposteos:0 })
+
+    const hasAnyStats = Object.values(totalStats).some(v => v > 0)
+    const totalesHTML = hasAnyStats ? `
+      <div style="background:#0A2540;border-radius:14px;padding:24px;margin-bottom:32px;display:flex;gap:24px;flex-wrap:wrap;justify-content:center">
+        ${totalStats.visitas ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.visitas).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Visitas totales</div></div>` : ''}
+        ${totalStats.likes ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.likes).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Likes totales</div></div>` : ''}
+        ${totalStats.comentarios ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.comentarios).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Comentarios</div></div>` : ''}
+        ${totalStats.compartidos ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.compartidos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Compartidos</div></div>` : ''}
+        ${totalStats.reposteos ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.reposteos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Reposteos</div></div>` : ''}
+      </div>` : ''
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte ${repCurrentClient.nombre} — ${repCurrentMonth.label}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #F5F7FA; color: #111; padding: 40px; max-width: 720px; margin: 0 auto; }
+</style>
+</head>
+<body>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Reporte de contenido</div>
+      <div style="font-size:28px;font-weight:900;color:#0A2540;letter-spacing:-.5px">${repCurrentClient.nombre}</div>
+      <div style="font-size:15px;color:#9AA5B4;margin-top:4px">${repCurrentMonth.label}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:32px;font-weight:900;color:#0A2540">${clientPieces.length}</div>
+      <div style="font-size:11px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Piezas publicadas</div>
+    </div>
+  </div>
+  ${totalesHTML}
+  <div style="font-size:11px;font-weight:800;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Detalle de publicaciones</div>
+  ${piezasHTML}
+  <div style="margin-top:32px;padding-top:20px;border-top:1px solid #E8ECF0;font-size:11px;color:#9AA5B4;text-align:center">
+    Generado con Agencia OS · ${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}
+  </div>
+</body>
+</html>`
+
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Reporte_${repCurrentClient.nombre}_${repCurrentMonth.label}.html`.replace(/\s/g, '_')
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('✓ Reporte descargado')
   }
 
   // ── Escape para cerrar modales
