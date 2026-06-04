@@ -6288,7 +6288,7 @@ if (id) {
     if ((piezasUrgentes||[]).length) {
       alertSections.push({
         icon:'ti-photo', iconBg:'#EEF2FF', iconColor:'#3730A3', accentColor:'#3730A3',
-        title:'Piezas que necesitan atención', mod:'contenido',
+        title:'Piezas que necesitan atención', count: piezasUrgentes.length, mod:'contenido',
         items: piezasUrgentes.map(p => {
           const estadoColor = p.estado==='revision_interna' ? '#F59E0B' : '#EF4444'
           const estadoLabel = p.estado==='revision_interna' ? 'Revisión interna' : 'Aprobación'
@@ -6304,7 +6304,7 @@ if (id) {
     if ((tareasVencidas||[]).length) {
       alertSections.push({
         icon:'ti-check', iconBg:'#FEF2F2', iconColor:'var(--danger)', accentColor:'var(--danger)',
-        title:'Tareas vencidas', mod:'contenido',
+        title:'Tareas vencidas', count: tareasVencidas.length, mod:'contenido',
         items: tareasVencidas.map(t => {
           const fecha = new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'})
           return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
@@ -6318,8 +6318,8 @@ if (id) {
 
     if ((crmVencidos||[]).length) {
       alertSections.push({
-        icon:'ti-address-book', iconBg:'#F0FDF4', iconColor:'#166534', accentColor:'#166534',
-        title:'Seguimientos CRM vencidos', mod:'crm',
+        icon:'ti-address-book', iconBg:'#F0FDF4', iconColor:'#166634', accentColor:'#166534',
+        title:'Seguimientos CRM vencidos', count: crmVencidos.length, mod:'crm',
         items: crmVencidos.map(c => {
           const fecha = new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})
           return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer">
@@ -6340,19 +6340,22 @@ if (id) {
       return
     }
 
-    alertsEl.innerHTML = alertSections.map(s => `
+    alertsEl.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">${
+      alertSections.map(s => `
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:34px;height:34px;border-radius:10px;background:${s.iconBg};display:flex;align-items:center;justify-content:center;color:${s.iconColor}">
-              <i class="ti ${s.icon}" style="font-size:17px"></i>
+        <div style="background:${s.iconBg};padding:16px 18px 14px;border-bottom:1.5px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;color:${s.iconColor}">
+              <i class="ti ${s.icon}" style="font-size:16px"></i>
             </div>
-            <div style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.2px">${s.title}</div>
+            <span onclick="switchModule(document.querySelector('.rail-btn[data-module=${s.mod}]'))" style="font-size:10px;font-weight:800;color:${s.iconColor};background:rgba(255,255,255,.6);padding:3px 10px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:3px">Ver todo <i class="ti ti-arrow-right" style="font-size:10px"></i></span>
           </div>
-          <span onclick="switchModule(document.querySelector('.rail-btn[data-module=${s.mod}]'))" style="font-size:11px;font-weight:800;color:${s.accentColor};background:${s.iconBg};padding:4px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:3px">Ver todo <i class="ti ti-arrow-right" style="font-size:11px"></i></span>
+          <div style="font-size:22px;font-weight:900;color:${s.iconColor};letter-spacing:-.5px;line-height:1">${s.count}</div>
+          <div style="font-size:12px;font-weight:800;color:${s.iconColor};margin-top:4px;opacity:.8">${s.title}</div>
         </div>
-        <div style="padding:0 20px 6px">${s.items}</div>
+        <div style="padding:0 16px 4px">${s.items}</div>
       </div>`).join('')
+    }</div>`
   }
 
 
