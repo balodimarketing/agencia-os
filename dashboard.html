@@ -5770,48 +5770,42 @@ if (id) {
       return d.getFullYear() === repCurrentMonth.year && d.getMonth() === repCurrentMonth.month
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
 
+    const agencyName = document.getElementById('greeting-agency')?.textContent || ''
+
+    const logoSVG = `<svg viewBox="0 0 22 22" width="13" height="13" fill="none" stroke="#8EDBFF" stroke-width="2.5" style="display:block"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>`
+
+    const TIPO_COLORS = {
+      'Reel': '#E8F4FF:#0C447C', 'Story': '#EEF2FF:#3730A3', 'Feed': '#F0FDF4:#166534',
+      'Video': '#FFF7ED:#9A3412', 'Carousel': '#F0FDF4:#166534', 'TikTok': '#FEF2F2:#991B1B',
+    }
+
     const piezasHTML = clientPieces.map(p => {
       const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {day:'numeric', month:'long'})
       const stats = repStats[p.id]
       const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
+      const colors = (TIPO_COLORS[p.tipo] || '#F0F4F8:#9AA5B4').split(':')
+      const badgeBg = colors[0], badgeColor = colors[1]
+
       const statsHTML = hasStats ? `
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
-          ${stats.visitas ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.visitas).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Visitas</div></div>` : ''}
-          ${stats.likes ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.likes).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Likes</div></div>` : ''}
-          ${stats.comentarios ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.comentarios).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Comentarios</div></div>` : ''}
-          ${stats.compartidos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.compartidos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Compartidos</div></div>` : ''}
-          ${stats.reposteos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:900;color:#0A2540">${Number(stats.reposteos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Reposteos</div></div>` : ''}
-        </div>` : '<div style="font-size:11px;color:#9AA5B4;margin-top:8px;font-style:italic">Sin estadísticas cargadas</div>'
-      return `<div style="background:#fff;border:1px solid #E8ECF0;border-radius:12px;padding:20px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-size:15px;font-weight:800;color:#111">${p.titulo}</div>
-          <div style="font-size:11px;color:#9AA5B4">${fecha}</div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E8ECF0;margin-top:12px">
+          ${stats.visitas ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.visitas).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Visitas</div></div>` : ''}
+          ${stats.likes ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.likes).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Likes</div></div>` : ''}
+          ${stats.comentarios ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.comentarios).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Comentarios</div></div>` : ''}
+          ${stats.compartidos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.compartidos).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Compartidos</div></div>` : ''}
+          ${stats.reposteos ? `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats.reposteos).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Reposteos</div></div>` : ''}
+        </div>` : ''
+
+      return `<div style="border:1.5px solid #0A2540;border-radius:12px;padding:18px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:5px">${p.titulo}</div>
+            <span style="font-size:10px;font-weight:600;padding:2px 9px;background:${badgeBg};color:${badgeColor};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span>
+          </div>
+          <div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div>
         </div>
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;background:#E8F4FF;color:#0A2540;border-radius:6px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span>
         ${statsHTML}
       </div>`
     }).join('')
-
-    const totalStats = clientPieces.reduce((acc, p) => {
-      const s = repStats[p.id] || {}
-      return {
-        visitas: acc.visitas + (s.visitas || 0),
-        likes: acc.likes + (s.likes || 0),
-        comentarios: acc.comentarios + (s.comentarios || 0),
-        compartidos: acc.compartidos + (s.compartidos || 0),
-        reposteos: acc.reposteos + (s.reposteos || 0),
-      }
-    }, { visitas:0, likes:0, comentarios:0, compartidos:0, reposteos:0 })
-
-    const hasAnyStats = Object.values(totalStats).some(v => v > 0)
-    const totalesHTML = hasAnyStats ? `
-      <div style="background:#0A2540;border-radius:14px;padding:24px;margin-bottom:32px;display:flex;gap:24px;flex-wrap:wrap;justify-content:center">
-        ${totalStats.visitas ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.visitas).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Visitas totales</div></div>` : ''}
-        ${totalStats.likes ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.likes).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Likes totales</div></div>` : ''}
-        ${totalStats.comentarios ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.comentarios).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Comentarios</div></div>` : ''}
-        ${totalStats.compartidos ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.compartidos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Compartidos</div></div>` : ''}
-        ${totalStats.reposteos ? `<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#fff">${Number(totalStats.reposteos).toLocaleString('es-AR')}</div><div style="font-size:10px;color:#8EDBFF;text-transform:uppercase;letter-spacing:.6px;margin-top:4px">Reposteos</div></div>` : ''}
-      </div>` : ''
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -5820,27 +5814,48 @@ if (id) {
 <title>Reporte ${repCurrentClient.nombre} — ${repCurrentMonth.label}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #F5F7FA; color: #111; padding: 40px; max-width: 720px; margin: 0 auto; }
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #F5F7FA; color: #111; padding: 40px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    @page { margin: 20mm; }
+  }
 </style>
 </head>
 <body>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
-    <div>
-      <div style="font-size:11px;font-weight:700;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Reporte de contenido</div>
-      <div style="font-size:28px;font-weight:900;color:#0A2540;letter-spacing:-.5px">${repCurrentClient.nombre}</div>
-      <div style="font-size:15px;color:#9AA5B4;margin-top:4px">${repCurrentMonth.label}</div>
+<div style="background:#fff;max-width:680px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #0A2540">
+
+  <div style="padding:36px 40px 28px;border-bottom:2px solid #0A2540">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+      <div style="width:26px;height:26px;background:#0A2540;border-radius:6px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+      <span style="font-size:11px;font-weight:600;color:#9AA5B4;letter-spacing:.6px;text-transform:uppercase">Agencia OS · Reporte de contenido</span>
     </div>
-    <div style="text-align:right">
-      <div style="font-size:32px;font-weight:900;color:#0A2540">${clientPieces.length}</div>
-      <div style="font-size:11px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px">Piezas publicadas</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#0A2540;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Cliente</div>
+        <div style="font-size:32px;font-weight:700;color:#0A2540;letter-spacing:-.5px;line-height:1.1">${repCurrentClient.nombre}</div>
+        <div style="font-size:13px;color:#9AA5B4;margin-top:5px">${agencyName ? agencyName + ' · ' : ''}${repCurrentMonth.label}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:44px;font-weight:700;color:#0A2540;line-height:1">${clientPieces.length}</div>
+        <div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">piezas publicadas</div>
+      </div>
     </div>
   </div>
-  ${totalesHTML}
-  <div style="font-size:11px;font-weight:800;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Detalle de publicaciones</div>
-  ${piezasHTML}
-  <div style="margin-top:32px;padding-top:20px;border-top:1px solid #E8ECF0;font-size:11px;color:#9AA5B4;text-align:center">
-    Generado con Agencia OS · ${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}
+
+  <div style="padding:28px 40px">
+    <div style="font-size:11px;font-weight:600;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Publicaciones</div>
+    ${piezasHTML}
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #E8ECF0;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="width:18px;height:18px;background:#0A2540;border-radius:4px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+        <span style="font-size:11px;font-weight:600;color:#0A2540">Generado con Agencia OS</span>
+      </div>
+      <span style="font-size:11px;color:#9AA5B4">${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</span>
+    </div>
   </div>
+
+</div>
+<script>window.onload = () => window.print()</script>
 </body>
 </html>`
 
@@ -5851,8 +5866,9 @@ if (id) {
     a.download = `Reporte_${repCurrentClient.nombre}_${repCurrentMonth.label}.html`.replace(/\s/g, '_')
     a.click()
     URL.revokeObjectURL(url)
-    showToast('✓ Reporte descargado')
+    showToast('✓ Reporte listo — guardá como PDF al imprimir')
   }
+
 
   // ── Escape para cerrar modales
   document.addEventListener('keydown', e => {
