@@ -2244,27 +2244,26 @@
     if (error) { errEl.textContent = 'Error al guardar. Intentá de nuevo.'; errEl.classList.add('show'); return }
 
     // Notificar si viene de conversión CRM
-    const fromCrm = crmFromContact
-    if (!id && fromCrm) {
+    if (crmFromContact && newClientId) {
+      const contactName = crmFromContact
       crmFromContact = null
       if (teamMembers.length === 0) await loadTeam()
       const owner = teamMembers.find(m => m.role === 'OWNER')
       if (owner) {
-        const { data: notif } = await supabase.from('notifications').insert({
+        const notifPayload = {
           agency_id: agencyId,
           user_id: owner.user_id,
           tipo: 'cuentas',
           titulo: `🎉 Nuevo cliente: ${nombre}`,
-          mensaje: `El deal de ${fromCrm} se convirtió en cliente. Completá su perfil.`,
+          mensaje: `El deal de ${contactName} se convirtió en cliente.`,
           link_modulo: 'cuentas',
-          link_id: newClientId || null,
-        }).select().single()
-        // Si el owner es el usuario actual, agregar localmente (realtime no dispara en mismo usuario)
-        if (owner.user_id === currentUserId && notif) {
+          link_id: newClientId,
+        }
+        const { data: notif } = await supabase.from('notifications').insert(notifPayload).select().single()
+        if (notif) {
           notifications.unshift(notif)
           renderNotifications()
           updateNotifDot()
-          showToast('🎉 Nuevo cliente creado — completá su perfil')
         }
       }
     }
