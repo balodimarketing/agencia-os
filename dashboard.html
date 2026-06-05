@@ -1861,8 +1861,8 @@
             <option value="idea">Idea</option>
             <option value="produccion">Producción</option>
             <option value="revision">Revisión interna</option>
-            <option value="aprobacion">Aprobación</option>
-            <option value="publicado">Publicado</option>
+            <option value="aprobacion">Esperando aprobación</option>
+            <option value="publicado">Lista para programar</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom:0">
@@ -4333,11 +4333,11 @@
   let detailPieceId = null
 
   const KANBAN_COLS = [
-    { id: 'idea',       name: 'Idea',              color: '#94A3B8' },
-    { id: 'produccion', name: 'Producción',         color: '#60A5FA' },
-    { id: 'revision',   name: 'Revisión interna',   color: '#FBBF24' },
-    { id: 'aprobacion', name: 'Aprobación',         color: '#F87171' },
-    { id: 'publicado',  name: 'Publicado',          color: '#34C759' },
+    { id: 'idea',       name: 'Idea',                    color: '#94A3B8' },
+    { id: 'produccion', name: 'Producción',               color: '#60A5FA' },
+    { id: 'revision',   name: 'Revisión interna',         color: '#FBBF24' },
+    { id: 'aprobacion', name: 'Esperando aprobación',     color: '#F87171' },
+    { id: 'publicado',  name: 'Lista para programar',     color: '#34C759' },
   ]
 
   const CLIENT_COLORS = ['#E1F5EE','#EEEDFE','#FAECE7','#E6F1FB','#FFF3E0','#FCE4EC']
@@ -4560,7 +4560,12 @@
     const cambiosAlert = p.aprobacion_comentario
       ? `<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
           <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔄 Cambios solicitados por el cliente</div>
-          <div style="font-size:13px;color:#DC2626;line-height:1.6">${p.aprobacion_comentario}</div>
+          <div style="font-size:13px;color:#DC2626;line-height:1.6;margin-bottom:12px">${p.aprobacion_comentario}</div>
+          <label style="display:flex;align-items:center;gap:8px;padding:9px 13px;background:#fff;border:1.5px dashed #FECACA;border-radius:var(--r);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--danger)'" onmouseout="this.style.borderColor='#FECACA'">
+            <i class="ti ti-upload" style="font-size:14px;color:var(--danger);flex-shrink:0"></i>
+            <span id="replace-file-label-${p.id}" style="font-size:12px;font-weight:700;color:var(--danger)">Subir archivo corregido</span>
+            <input type="file" style="display:none" onchange="replaceFile('${p.id}', this)">
+          </label>
         </div>`
       : ''
 
@@ -4868,6 +4873,54 @@
     const btn = document.getElementById('copy-link-btn')
     if (btn) { btn.textContent = '¡Copiado!'; setTimeout(() => btn.textContent = 'Copiar', 2000) }
     showToast('✓ Link copiado')
+  }
+
+  window.replaceFile = async function(pieceId, input) {
+    const file = input.files[0]
+    if (!file) return
+    const label = document.getElementById('replace-file-label-' + pieceId)
+    if (label) label.textContent = 'Subiendo...'
+
+    const ext = file.name.split('.').pop()
+    const path = `${agencyId}/${Date.now()}.${ext}`
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('pieces')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      if (label) label.textContent = 'Error al subir. Intentá de nuevo.'
+      showToast('✗ Error al subir el archivo')
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
+    const newUrl = urlData.publicUrl
+
+    // Actualizar archivo, limpiar comentario y volver a Aprobación
+    const { error } = await supabase.from('content_pieces').update({
+      archivo_url: newUrl,
+      archivo_nombre: file.name,
+      aprobacion_comentario: null,
+      estado: 'aprobacion'
+    }).eq('id', pieceId)
+
+    if (!error) {
+      // Actualizar array local
+      const piece = pieces.find(p => p.id === pieceId)
+      if (piece) {
+        piece.archivo_url = newUrl
+        piece.archivo_nombre = file.name
+        piece.aprobacion_comentario = null
+        piece.estado = 'aprobacion'
+      }
+      showToast('✓ Archivo actualizado — pieza en Esperando aprobación')
+      renderKanban()
+      renderContenidoPanel()
+      openPieceDetail(pieceId)
+    } else {
+      if (label) label.textContent = 'Error al guardar. Intentá de nuevo.'
+      showToast('✗ Error al guardar el archivo')
+    }
   }
 
   // ── Tasks ─────────────────────────────────────────────
