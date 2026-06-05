@@ -3078,6 +3078,9 @@
     // Inicializar panel de inicio
     document.getElementById('panel-body').innerHTML = ''
     loadTooltipsSeen()
+    // FIX: Cargar piezas publicadas al iniciar para que el badge del drawer sea correcto desde el primer momento
+    await loadPublishedPieces()
+    updateDrawerBadge()
     renderInicio()
   }
 
@@ -3147,6 +3150,8 @@
       .select('id, titulo, clients(nombre), fecha_publicacion, estado, archivo_url')
       .eq('agency_id', agencyId)
       .eq('estado', 'publicado')
+      // FIX: Eliminar el filtro .not('fecha_publicacion', 'is', null)
+      // Las piezas SIN fecha deben aparecer en el drawer "Por programar"
       .order('created_at', { ascending: false })
     calPublishedPieces = data || []
   }
@@ -3201,8 +3206,12 @@
     const m = mInput?.value || '0'
     const d = new Date(dateVal + 'T00:00:00')
     d.setHours(parseInt(h), parseInt(m), 0, 0)
-    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString() }).eq('id', id)
-    showToast('✓ Publicación programada')
+    // FIX: Guardar fecha_publicacion y garantizar estado publicado para que aparezca en Reportes
+    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString(), estado: 'publicado' }).eq('id', id)
+    // FIX: Actualizar el array local de piezas también
+    const localPiece = pieces.find(p => p.id === id)
+    if (localPiece) { localPiece.fecha_publicacion = d.toISOString(); localPiece.estado = 'publicado' }
+    showToast('✓ Publicación programada — disponible en Reportes')
     await loadPublishedPieces()
     await loadCalendarEvents()
     renderCalGrid()
@@ -3220,8 +3229,12 @@
     const m = mInput?.value || '0'
     const d = new Date(dateVal + 'T00:00:00')
     d.setHours(parseInt(h), parseInt(m), 0, 0)
-    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString() }).eq('id', id)
-    showToast('✓ Publicación programada')
+    // FIX: Guardar fecha_publicacion y garantizar estado publicado para que aparezca en Reportes
+    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString(), estado: 'publicado' }).eq('id', id)
+    // FIX: Actualizar el array local de piezas también
+    const localPiece = pieces.find(p => p.id === id)
+    if (localPiece) { localPiece.fecha_publicacion = d.toISOString(); localPiece.estado = 'publicado' }
+    showToast('✓ Publicación programada — disponible en Reportes')
     await loadPublishedPieces()
     await loadCalendarEvents()
     renderCalGrid()
@@ -4505,6 +4518,11 @@
         await supabase.from('content_pieces').update({ estado: newEstado }).eq('id', dragId)
         dragId = null
         showToast('✓ Estado actualizado')
+        // FIX: Si la pieza llegó a publicado, sincronizar con Calendario
+        if (newEstado === 'publicado') {
+          await loadPublishedPieces()
+          updateDrawerBadge()
+        }
       })
     })
   }
@@ -4717,6 +4735,11 @@
     closePieceModal()
     showToast(id ? '✓ Pieza actualizada' : '✓ Pieza creada')
     await renderContenido()
+    // FIX: Si se guardó como publicado, sincronizar con Calendario
+    if (payload.estado === 'publicado') {
+      await loadPublishedPieces()
+      updateDrawerBadge()
+    }
   }
 
 
@@ -4817,7 +4840,12 @@
       .update({ aprobacion_token: token, estado: 'aprobacion' })
       .eq('id', pieceId)
     if (!error) {
-      showToast('✓ Link generado')
+      // FIX: Actualizar el array local inmediatamente para que el kanban refleje el cambio
+      if (piece) {
+        piece.aprobacion_token = token
+        piece.estado = 'aprobacion'
+      }
+      showToast('✓ Link generado — pieza movida a Aprobación')
       // Notify owner and admins
       const targets = teamMembers.filter(m => (m.role === 'OWNER' || m.role === 'ADMIN') && m.user_id !== currentUserId)
       for (const m of targets) {
@@ -4827,7 +4855,9 @@
           mensaje: piece?.titulo || 'Una pieza', link_modulo: 'contenido', link_id: pieceId
         })
       }
-      await loadPieces()
+      // FIX: Re-renderizar kanban para mostrar la tarjeta en la columna Aprobación
+      renderKanban()
+      renderContenidoPanel()
       openPieceDetail(pieceId)
     }
   }
@@ -6617,7 +6647,7 @@ if (id) {
       { data: piezasPublicadas },
       { data: proximasPublicaciones }
     ] = await Promise.all([
-      supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).in('estado',['revision_interna','aprobacion']).limit(10),
+      supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).in('estado',['revision','aprobacion']).limit(10),
       supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(10),
       supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(10),
       supabase.from('content_pieces').select('id').eq('agency_id',agencyId).eq('estado','publicado').gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
@@ -6715,8 +6745,8 @@ if (id) {
         title:'Piezas que necesitan atención', sub:'esperando revisión', count: piezasUrgentes.length, mod:'contenido',
         rawItems: piezasUrgentes.map(p => ({
           titulo: p.titulo, sub: p.clients?.nombre||'—',
-          date: p.estado==='revision_interna' ? 'Revisión' : 'Aprobación',
-          dateColor: p.estado==='revision_interna' ? '#F59E0B' : '#EF4444',
+          date: p.estado==='revision' ? 'Revisión' : 'Aprobación',
+          dateColor: p.estado==='revision' ? '#F59E0B' : '#EF4444',
           onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)`
         }))
       })
