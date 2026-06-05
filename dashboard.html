@@ -6935,6 +6935,71 @@ if (id) {
   }
 
   // ── Gastos fijos/variables ────────────────────────────
+
+  // ══════════════════════════════════════
+  // TOOLTIPS DE PRIMER USO
+  // ══════════════════════════════════════
+
+  const TOOLTIPS = {
+    crm:          { icon:'ti-address-book', title:'CRM — Seguimiento de clientes',       desc:'Gestioná tus contactos y deals. Arrastrá las tarjetas entre columnas para avanzar en el pipeline y registrá cada interacción.' },
+    reportes:     { icon:'ti-chart-bar',    title:'Reportes — Rendimiento por cliente',  desc:'Seleccioná un cliente y un mes para ver sus métricas. Cargá las estadísticas de cada pieza y descargá el reporte.' },
+    herramientas: { icon:'ti-tools',        title:'Herramientas — Productividad',        desc:'El Timer mide el tiempo por pieza, el Pomodoro te ayuda a mantener el foco con bloques de 25 minutos.' },
+    calendario:   { icon:'ti-calendar',     title:'Calendario — Publicaciones y eventos', desc:'Organizá tus publicaciones y reuniones. Hacé click en cualquier día para agregar un evento.' },
+    contenido:    { icon:'ti-photo',        title:'Contenido — Flujo de piezas',         desc:'Gestioná tus piezas en el kanban arrastrándolas entre columnas. Usá el tab Tareas para asignar tareas.' },
+  }
+
+  let tooltipsSeen = {}
+  let tooltipPopup = null
+
+  async function loadTooltipsSeen() {
+    try {
+      const { data } = await supabase.from('onboarding_progress').select('completed_steps').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+      const steps = data?.completed_steps || []
+      steps.forEach(s => { if (s.startsWith('tooltip_')) tooltipsSeen[s.replace('tooltip_','')] = true })
+    } catch(e) {}
+  }
+
+  async function markTooltipSeen(mod) {
+    tooltipsSeen[mod] = true
+    try {
+      const { data } = await supabase.from('onboarding_progress').select('completed_steps').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+      const steps = [...new Set([...(data?.completed_steps||[]), 'tooltip_'+mod])]
+      await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: steps }, { onConflict: 'user_id,agency_id' })
+    } catch(e) {}
+  }
+
+  function showTooltipBanner(mod) {
+    if (tooltipsSeen[mod]) return
+    const t = TOOLTIPS[mod]; if (!t) return
+    if (tooltipPopup) { tooltipPopup.remove(); tooltipPopup = null }
+    const railBtn = document.querySelector('.rail-btn[data-module="'+mod+'"]')
+    if (!railBtn) return
+    const rect = railBtn.getBoundingClientRect()
+    const popup = document.createElement('div')
+    popup.id = 'tooltip-popup'
+    popup.style.cssText = 'position:fixed;left:70px;top:'+(rect.top+rect.height/2-80)+'px;z-index:9999;width:280px'
+    popup.innerHTML = '<div style="background:#0A2540;border:1.5px solid rgba(142,219,255,.2);border-radius:16px;padding:18px 20px;font-family:\'Plus Jakarta Sans\',sans-serif">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">'
+      + '<div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:9px;background:rgba(142,219,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti '+t.icon+'" style="font-size:16px;color:#8EDBFF"></i></div>'
+      + '<div style="font-size:13px;font-weight:800;color:#fff;line-height:1.3">'+t.title+'</div></div>'
+      + '<div onclick="dismissTooltip(\''+mod+'\')" style="font-size:18px;color:rgba(142,219,255,.4);cursor:pointer;flex-shrink:0">×</div></div>'
+      + '<div style="font-size:12px;color:rgba(142,219,255,.7);line-height:1.6;margin-bottom:14px">'+t.desc+'</div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between">'
+      + '<div style="font-size:11px;color:rgba(142,219,255,.4)">'+(Object.keys(TOOLTIPS).indexOf(mod)+1)+' de '+Object.keys(TOOLTIPS).length+' módulos</div>'
+      + '<button onclick="dismissTooltip(\''+mod+'\')" style="font-size:12px;font-weight:800;color:#0A2540;background:#8EDBFF;border:none;border-radius:9px;padding:8px 16px;cursor:pointer;font-family:inherit">Entendido →</button>'
+      + '</div></div>'
+    document.body.appendChild(popup)
+    tooltipPopup = popup
+    setTimeout(() => {
+      document.addEventListener('click', function h(e) { if (!popup.contains(e.target)) { dismissTooltip(mod); document.removeEventListener('click',h) } })
+    }, 300)
+  }
+
+  window.dismissTooltip = function(mod) {
+    if (tooltipPopup) { tooltipPopup.style.opacity='0'; setTimeout(()=>{ if(tooltipPopup){tooltipPopup.remove();tooltipPopup=null} },150) }
+    markTooltipSeen(mod)
+  }
+
   window.openGestionarCuenta = function() {
     // Reset todos los pasos
     ;['gestionar-p0','gestionar-p1','gestionar-p2','gestionar-p3','gestionar-p4'].forEach((id,i) => {
