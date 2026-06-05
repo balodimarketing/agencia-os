@@ -2921,7 +2921,7 @@
       </div>` : ''}
 
       <!-- Acceso a reportes -->
-      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px">
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
             <div style="font-size:13px;font-weight:800;color:var(--ink)">Reportes</div>
@@ -2931,10 +2931,165 @@
             <i class="ti ti-chart-bar" style="font-size:13px"></i> Ver reportes
           </button>
         </div>
+      </div>
+
+      <!-- Portal del cliente -->
+      <div id="client-portal-section-${c.id}" style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--ink)">Portal del cliente</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Acceso del cliente a sus piezas y calendario</div>
+          </div>
+          <button onclick="inviteClient('${c.id}')" class="tbtn" style="gap:6px;font-size:12px" id="btn-invite-${c.id}">
+            <i class="ti ti-user-plus" style="font-size:13px"></i> Invitar cliente
+          </button>
+        </div>
+        <div id="portal-invite-status-${c.id}"></div>
+        <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Qué puede ver el cliente</div>
+          <div id="portal-config-${c.id}" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
       </div>`
 
     document.getElementById('cuentas-list-view').style.display = 'none'
     document.getElementById('cuentas-detail-view').style.display = 'block'
+    loadPortalSection(c.id)
+  }
+
+  // ── Portal del cliente ────────────────────────────────
+
+  async function loadPortalSection(clientId) {
+    const statusEl = document.getElementById(`portal-invite-status-${clientId}`)
+    const configEl = document.getElementById(`portal-config-${clientId}`)
+    if (!statusEl || !configEl) return
+
+    // Cargar invitación existente
+    const { data: inv } = await supabase
+      .from('client_invitations')
+      .select('*')
+      .eq('client_id', clientId)
+      .eq('agency_id', agencyId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    // Cargar usuario cliente si existe
+    const { data: cu } = await supabase
+      .from('client_users')
+      .select('nombre, apellido, created_at')
+      .eq('client_id', clientId)
+      .maybeSingle()
+
+    if (cu) {
+      // Ya tiene usuario
+      statusEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F0FDF4;border-radius:10px;border:1px solid #BBF7D0;margin-bottom:16px">
+          <i class="ti ti-circle-check" style="font-size:16px;color:var(--success);flex-shrink:0"></i>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#166534">Cliente con acceso activo</div>
+            <div style="font-size:11px;color:#15803D;margin-top:1px">${cu.nombre} ${cu.apellido} · desde ${new Date(cu.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})}</div>
+          </div>
+        </div>`
+      document.getElementById(`btn-invite-${clientId}`).style.display = 'none'
+    } else if (inv && inv.status === 'pending') {
+      // Invitación pendiente
+      const link = `${window.location.origin}${window.location.pathname.replace('dashboard.html','client-register.html')}?token=${inv.token}`
+      statusEl.innerHTML = `
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:16px">
+          <div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:8px"><i class="ti ti-clock" style="font-size:11px"></i> Invitación pendiente</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:11px;color:#78350F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${link}</div>
+            <button onclick="copyInviteLink('${link}')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid #FDE68A;background:#FFFBEB;color:#92400E;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">Copiar</button>
+          </div>
+        </div>`
+      document.getElementById(`btn-invite-${clientId}`).innerHTML = '<i class="ti ti-refresh" style="font-size:13px"></i> Reenviar'
+    } else {
+      statusEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg);border-radius:9px;margin-bottom:16px">
+          <i class="ti ti-user-off" style="font-size:14px;color:var(--ink3)"></i>
+          <div style="font-size:12px;color:var(--ink3)">El cliente todavía no tiene acceso al portal.</div>
+        </div>`
+    }
+
+    // Cargar config
+    const { data: config } = await supabase
+      .from('client_portal_config')
+      .select('*')
+      .eq('client_id', clientId)
+      .maybeSingle()
+
+    const cfg = config || {
+      mostrar_calendario: true,
+      mostrar_en_produccion: true,
+      mostrar_metricas: false,
+      mostrar_historial: true
+    }
+
+    const toggles = [
+      { key: 'mostrar_en_produccion', label: 'Piezas en producción',   sub: 'Ve el estado de todas las piezas desde Idea' },
+      { key: 'mostrar_calendario',    label: 'Calendario',              sub: 'Ve las publicaciones programadas del mes' },
+      { key: 'mostrar_historial',     label: 'Historial',               sub: 'Ve todas las piezas ya publicadas' },
+      { key: 'mostrar_metricas',      label: 'Estadísticas',            sub: 'Ve las métricas de cada pieza' },
+    ]
+
+    configEl.innerHTML = toggles.map(t => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">${t.label}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${t.sub}</div>
+        </div>
+        <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0">
+          <input type="checkbox" ${cfg[t.key] ? 'checked' : ''} onchange="savePortalConfig('${clientId}','${t.key}',this.checked)"
+            style="position:absolute;opacity:0;width:0;height:0">
+          <div id="toggle-${clientId}-${t.key}" style="width:40px;height:22px;border-radius:11px;background:${cfg[t.key] ? 'var(--azul)' : 'var(--border)'};transition:background var(--t);position:relative">
+            <div style="position:absolute;top:3px;left:${cfg[t.key] ? '21px' : '3px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left var(--t);box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+          </div>
+        </label>
+      </div>`).join('')
+  }
+
+  window.savePortalConfig = async function(clientId, key, value) {
+    // Actualizar visualmente el toggle de inmediato
+    const track = document.getElementById(`toggle-${clientId}-${key}`)
+    if (track) {
+      track.style.background = value ? 'var(--azul)' : 'var(--border)'
+      const thumb = track.querySelector('div')
+      if (thumb) thumb.style.left = value ? '21px' : '3px'
+    }
+
+    await supabase
+      .from('client_portal_config')
+      .upsert({ client_id: clientId, agency_id: agencyId, [key]: value }, { onConflict: 'client_id' })
+
+    showToast(value ? 'Sección activada' : 'Sección desactivada')
+  }
+
+  window.inviteClient = async function(clientId) {
+    const token = Math.random().toString(36).substring(2) + Date.now().toString(36)
+
+    // Cancelar invitaciones anteriores pendientes
+    await supabase
+      .from('client_invitations')
+      .update({ status: 'expired' })
+      .eq('client_id', clientId)
+      .eq('status', 'pending')
+
+    // Crear nueva invitación
+    const { error } = await supabase
+      .from('client_invitations')
+      .insert({ agency_id: agencyId, client_id: clientId, token, status: 'pending' })
+
+    if (!error) {
+      showToast('Invitación generada')
+      loadPortalSection(clientId)
+    } else {
+      showToast('Error al generar la invitación')
+    }
+  }
+
+  window.copyInviteLink = function(link) {
+    navigator.clipboard.writeText(link)
+    showToast('Link copiado')
   }
 
   window.goToClientReport = function(clientId) {
@@ -4625,15 +4780,17 @@
         </div>`
       : ''
 
-    const approvalLink = p.aprobacion_token
-      ? `<div style="background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;margin-top:12px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Link de aprobación</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="font-size:11px;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${window.location.origin}${window.location.pathname.replace('dashboard.html','aprobar.html')}?token=${p.aprobacion_token}</div>
-            <button onclick="copyApprovalLink('${p.aprobacion_token}')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid rgba(142,219,255,.4);background:rgba(142,219,255,.1);color:var(--azul);cursor:pointer;font-family:inherit;white-space:nowrap" id="copy-link-btn">Copiar</button>
+    const approvalBlock = p.estado === 'produccion'
+      ? `<button onclick="sendToApproval('${p.id}')" style="width:100%;margin-top:12px;padding:11px;border-radius:var(--r);font-size:12px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-send" style="font-size:13px"></i> Enviar a aprobación del cliente</button>`
+      : p.estado === 'aprobacion'
+      ? `<div style="background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;margin-top:12px;display:flex;align-items:center;gap:10px">
+          <i class="ti ti-clock" style="font-size:16px;color:var(--azul);flex-shrink:0"></i>
+          <div>
+            <div style="font-size:11px;font-weight:800;color:var(--azul);margin-bottom:2px">Esperando aprobación del cliente</div>
+            <div style="font-size:11px;color:var(--ink3)">El cliente puede aprobar o pedir cambios desde su portal.</div>
           </div>
         </div>`
-      : `<button onclick="generateApprovalLink('${p.id}')" style="width:100%;margin-top:12px;padding:10px;border-radius:var(--r);font-size:12px;font-weight:700;border:1.5px dashed var(--border);background:transparent;color:var(--ink3);cursor:pointer;font-family:inherit;transition:all .16s" onmouseover="this.style.borderColor='var(--celeste)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">+ Generar link de aprobación</button>`
+      : ''
 
     const cambiosAlert = p.aprobacion_comentario
       ? `<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
@@ -4674,7 +4831,7 @@
         </div>
       </div>
       ${p.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:12px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap">${p.descripcion}</div></div>` : ''}
-      ${approvalLink}
+      ${approvalBlock}
     `
     document.getElementById('modal-piece-detail').classList.add('show')
   }
@@ -4979,21 +5136,19 @@
     }
   }
 
-  window.generateApprovalLink = async function(pieceId) {
-    const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
+  window.sendToApproval = async function(pieceId) {
     const piece = pieces.find(p => p.id === pieceId)
+    if (!piece) return
+
     const { error } = await supabase
       .from('content_pieces')
-      .update({ aprobacion_token: token, estado: 'aprobacion' })
+      .update({ estado: 'aprobacion' })
       .eq('id', pieceId)
+
     if (!error) {
-      // FIX: Actualizar el array local inmediatamente para que el kanban refleje el cambio
-      if (piece) {
-        piece.aprobacion_token = token
-        piece.estado = 'aprobacion'
-      }
-      showToast('✓ Link generado — pieza movida a Aprobación')
-      // Notify owner and admins
+      piece.estado = 'aprobacion'
+      showToast('Pieza enviada a aprobación del cliente')
+      // Notificar owners y admins
       const targets = teamMembers.filter(m => (m.role === 'OWNER' || m.role === 'ADMIN') && m.user_id !== currentUserId)
       for (const m of targets) {
         await supabase.from('notifications').insert({
@@ -5002,7 +5157,6 @@
           mensaje: piece?.titulo || 'Una pieza', link_modulo: 'contenido', link_id: pieceId
         })
       }
-      // FIX: Re-renderizar kanban para mostrar la tarjeta en la columna Aprobación
       renderKanban()
       renderContenidoPanel()
       openPieceDetail(pieceId)
