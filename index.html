@@ -222,7 +222,7 @@
 
   /* PARA QUIEN */
   .para-quien { background: var(--bg); }
-  .para-quien-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
+  .para-quien-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
   .pq-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 24px; display: flex; gap: 16px; align-items: flex-start; transition: box-shadow .15s, border-color .15s; }
   .pq-card:hover { box-shadow: var(--shadow); border-color: #D0DCE8; }
   .pq-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--azul); display: flex; align-items: center; justify-content: center; color: var(--celeste); font-size: 20px; flex-shrink: 0; }
@@ -262,7 +262,7 @@
   .test-role { font-size: 11px; color: var(--ink3); margin-top: 1px; }
 
   /* PRECIOS */
-  .precios-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 760px; margin: 48px auto 0; }
+  .precios-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; max-width: 1000px; margin: 48px auto 0; }
   .precio-card { border: 1.5px solid var(--border); border-radius: 20px; padding: 32px; background: var(--white); }
   .precio-card.popular { border-color: var(--azul); border-width: 2px; position: relative; }
   .popular-badge {
@@ -516,13 +516,7 @@
           <div class="pq-desc">Reels, stories, feeds, campañas. Tu negocio vive de entregar contenido de calidad a tiempo, todos los meses.</div>
         </div>
       </div>
-      <div class="pq-card pq-no">
-        <div class="pq-icon"><i class="ti ti-x"></i></div>
-        <div>
-          <div class="pq-title">No es para vos si...</div>
-          <div class="pq-desc">Sos freelancer solo, tenés un único cliente, o buscás una herramienta para gestionar campañas de paid media solamente.</div>
-        </div>
-      </div>
+
     </div>
   </div>
 </section>
@@ -613,29 +607,33 @@
       <p class="section-desc" style="margin:0 auto">Sin costos ocultos. Cancelá cuando quieras. Sin permanencia.</p>
     </div>
     <div class="precios-grid reveal">
+
+      <!-- FREE -->
       <div class="precio-card">
-        <div class="precio-name">Starter</div>
+        <div class="precio-name">Free</div>
         <div class="precio-amount">
           <span class="precio-currency">USD</span>
-          <span class="precio-num">29</span>
+          <span class="precio-num">0</span>
           <span class="precio-period">/mes</span>
         </div>
-        <div class="precio-desc">Para agencias que arrancan</div>
+        <div class="precio-desc">Para empezar sin riesgo</div>
         <ul class="precio-features">
-          <li><i class="ti ti-check"></i> Hasta 5 clientes</li>
-          <li><i class="ti ti-check"></i> Hasta 3 usuarios del equipo</li>
+          <li><i class="ti ti-check"></i> Hasta 3 clientes</li>
+          <li><i class="ti ti-check"></i> Hasta 2 miembros del equipo</li>
           <li><i class="ti ti-check"></i> Módulos: cuentas, tareas, contenido</li>
           <li><i class="ti ti-check"></i> Calendario editorial</li>
-          <li><i class="ti ti-check"></i> 5 reportes exportables por mes</li>
+          <li><i class="ti ti-check"></i> Sin vencimiento</li>
         </ul>
-        <a href="register.html" class="btn-precio outline">Empezar con Starter</a>
+        <a href="register.html" class="btn-precio outline">Empezar gratis</a>
       </div>
+
+      <!-- PRO -->
       <div class="precio-card popular">
         <div class="popular-badge">MÁS POPULAR</div>
         <div class="precio-name">Pro</div>
         <div class="precio-amount">
           <span class="precio-currency">USD</span>
-          <span class="precio-num">79</span>
+          <span class="precio-num">29</span>
           <span class="precio-period">/mes</span>
         </div>
         <div class="precio-desc">Para agencias en crecimiento</div>
@@ -649,6 +647,27 @@
         </ul>
         <a href="register.html" class="btn-precio solid">Empezar con Pro</a>
       </div>
+
+      <!-- AGENCY -->
+      <div class="precio-card">
+        <div class="precio-name">Agency</div>
+        <div class="precio-amount">
+          <span class="precio-currency">USD</span>
+          <span class="precio-num">79</span>
+          <span class="precio-period">/mes</span>
+        </div>
+        <div class="precio-desc">Para agencias que escalan</div>
+        <ul class="precio-features">
+          <li><i class="ti ti-check"></i> Todo lo de Pro</li>
+          <li><i class="ti ti-check"></i> Múltiples agencias en una cuenta</li>
+          <li><i class="ti ti-check"></i> Permisos avanzados por miembro</li>
+          <li><i class="ti ti-check"></i> Métricas de agencia</li>
+          <li><i class="ti ti-check"></i> Onboarding personalizado</li>
+          <li><i class="ti ti-check"></i> Soporte prioritario</li>
+        </ul>
+        <a href="mailto:hola@agenciaos.com" class="btn-precio outline">Hablar con el equipo</a>
+      </div>
+
     </div>
   </div>
 </section>
