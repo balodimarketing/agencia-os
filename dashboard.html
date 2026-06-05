@@ -371,23 +371,38 @@
       flex-shrink: 0;
     }
     .contenido-tabs {
-      display: flex; gap: 2px;
+      display: flex; gap: 0;
       background: var(--bg); border: 1.5px solid var(--border);
       border-radius: 10px; padding: 3px;
+      position: relative;
     }
     .contenido-tab {
       display: flex; align-items: center; gap: 6px;
       padding: 7px 16px; border-radius: 8px;
       font-size: 13px; font-weight: 700;
       cursor: pointer; color: var(--ink3);
-      transition: all var(--t); user-select: none;
+      transition: color var(--t); user-select: none;
+      position: relative; z-index: 1;
     }
-    .contenido-tab.active {
-      background: var(--azul); color: var(--celeste);
+    .contenido-tab.active { color: var(--celeste); }
+    .contenido-tab:not(.active):hover { color: var(--ink); }
+
+    /* ── Sliding pill — shared by all pill-tab groups ── */
+    .pill-slider {
+      position: absolute;
+      background: var(--azul);
+      border-radius: 8px;
       box-shadow: 0 1px 6px rgba(10,37,64,.18);
+      transition: left .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+      top: 3px; bottom: 3px;
+      z-index: 0;
     }
-    .contenido-tab:not(.active):hover {
-      background: var(--white); color: var(--ink);
+    /* cal-view-btn pill variant (white bg) */
+    .pill-slider.light {
+      background: var(--white);
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      border-radius: 6px;
     }
     .contenido-cta-btn {
       display: flex; align-items: center; gap: 7px;
@@ -1017,7 +1032,8 @@
     <div class="view" id="v-contenido" style="padding:0;overflow:hidden;flex-direction:column;height:calc(100vh - 52px)">
       <!-- Barra de acciones contenido -->
       <div class="contenido-toolbar">
-        <div class="contenido-tabs">
+        <div class="contenido-tabs" id="contenido-tabs">
+          <div class="pill-slider" id="contenido-pill"></div>
           <div class="contenido-tab active" id="tab-piezas" onclick="switchContentTab('piezas')">
             <i class="ti ti-layout-kanban" style="font-size:14px"></i>
             Piezas
@@ -1078,21 +1094,25 @@
     <div class="view" id="v-reportes" style="padding:0;overflow-y:auto">
 
       <!-- Tabs de reportes -->
-      <div style="display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:var(--white);padding:0 32px;position:sticky;top:0;z-index:10">
-        <button id="rep-tab-clientes" onclick="switchRepTab('clientes')" style="padding:14px 20px;border:none;background:transparent;font-size:13px;font-weight:800;color:var(--azul);border-bottom:2px solid var(--azul);cursor:pointer;font-family:inherit;transition:all .15s">Reportes por cliente</button>
-        <button id="rep-tab-agencia" onclick="switchRepTab('agencia')" style="padding:14px 20px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;transition:all .15s" id="rep-tab-agencia-btn">Métricas de agencia</button>
+      <div style="display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:var(--white);padding:8px 32px;position:sticky;top:0;z-index:10">
+        <div style="display:flex;gap:2px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:3px;position:relative" id="rep-main-tabs">
+          <div class="pill-slider" id="rep-main-pill"></div>
+          <button id="rep-tab-clientes" onclick="switchRepTab('clientes')" style="padding:7px 16px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--celeste);cursor:pointer;font-family:inherit;border-radius:8px;position:relative;z-index:1;transition:color var(--t)">Reportes por cliente</button>
+          <button id="rep-tab-agencia" onclick="switchRepTab('agencia')" style="padding:7px 16px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:8px;position:relative;z-index:1;transition:color var(--t)">Métricas de agencia</button>
+        </div>
       </div>
 
       <!-- Vista: métricas de agencia -->
       <div id="rep-agencia" style="display:none">
 
         <!-- Tabs internos + período -->
-        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--white);padding:0 32px;position:sticky;top:52px;z-index:9;margin-top:-1px">
-          <div style="display:flex;gap:0">
-            <button class="rep-inner-tab active" data-t="resumen" onclick="switchRepInnerTab(this,'resumen')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:800;color:var(--azul);border-bottom:2px solid var(--azul);cursor:pointer;font-family:inherit">Resumen</button>
-            <button class="rep-inner-tab" data-t="rentabilidad" onclick="switchRepInnerTab(this,'rentabilidad')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Rentabilidad</button>
-            <button class="rep-inner-tab" data-t="equipo" onclick="switchRepInnerTab(this,'equipo')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Equipo</button>
-            <button class="rep-inner-tab" data-t="gastos" onclick="switchRepInnerTab(this,'gastos')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Gastos</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--white);padding:8px 32px;position:sticky;top:52px;z-index:9;margin-top:-1px">
+          <div style="display:flex;gap:2px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:3px;position:relative" id="rep-inner-tabs">
+            <div class="pill-slider" id="rep-inner-pill"></div>
+            <button class="rep-inner-tab active" data-t="resumen" onclick="switchRepInnerTab(this,'resumen')" style="padding:7px 16px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--celeste);cursor:pointer;font-family:inherit;border-radius:8px;position:relative;z-index:1;transition:color var(--t)">Resumen</button>
+            <button class="rep-inner-tab" data-t="rentabilidad" onclick="switchRepInnerTab(this,'rentabilidad')" style="padding:7px 16px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:8px;position:relative;z-index:1;transition:color var(--t)">Rentabilidad</button>
+            <button class="rep-inner-tab" data-t="equipo" onclick="switchRepInnerTab(this,'equipo')" style="padding:7px 16px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:8px;position:relative;z-index:1;transition:color var(--t)">Equipo</button>
+            <button class="rep-inner-tab" data-t="gastos" onclick="switchRepInnerTab(this,'gastos')" style="padding:7px 16px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:8px;position:relative;z-index:1;transition:color var(--t)">Gastos</button>
           </div>
           <div style="display:flex;align-items:center;gap:6px;padding:8px 0">
             <button onclick="setRepPeriodo('mes')" class="rep-periodo-btn active" data-p="mes" style="padding:5px 12px;border:1.5px solid var(--azul);border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;background:var(--azul);color:#fff">Mes</button>
@@ -1384,7 +1404,8 @@
       <div id="crm-pipeline-view" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
         <!-- Toolbar -->
         <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
-          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
+          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="crm-tabs">
+            <div class="pill-slider light" id="crm-pill"></div>
             <div class="cal-view-btn active" id="crm-btn-pipeline" onclick="switchCrmView('pipeline')">Pipeline</div>
             <div class="cal-view-btn" id="crm-btn-contactos" onclick="switchCrmView('contactos')">Contactos</div>
           </div>
@@ -1404,7 +1425,8 @@
       <!-- CRM: Vista Lista Contactos -->
       <div id="crm-contactos-view" style="display:none;flex-direction:column;height:100%;overflow:hidden">
         <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
-          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
+          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="crm-tabs2">
+            <div class="pill-slider light" id="crm-pill2"></div>
             <div class="cal-view-btn" id="crm-btn-pipeline2" onclick="switchCrmView('pipeline')">Pipeline</div>
             <div class="cal-view-btn active" id="crm-btn-contactos2" onclick="switchCrmView('contactos')">Contactos</div>
           </div>
@@ -1568,7 +1590,8 @@
     <div class="view flex-view" id="v-calendario" style="padding:0;flex-direction:column;overflow:hidden;height:calc(100vh - 52px)">
       <!-- Cal toolbar -->
       <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
-        <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
+        <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="cal-tabs">
+          <div class="pill-slider light" id="cal-pill"></div>
           <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
           <div class="cal-view-btn" id="cal-btn-mes" onclick="switchCalView('mes')">Mes</div>
         </div>
@@ -2647,11 +2670,11 @@
     if (mod === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
     else if (mod === 'inicio') { renderInicio() }
     else if (mod === 'equipo') { renderEquipo() }
-    else if (mod === 'contenido') { renderContenido(); setTimeout(()=>showTooltipBanner('contenido'),300) }
-    else if (mod === 'calendario') { renderCalendario(); setTimeout(()=>showTooltipBanner('calendario'),300) }
+    else if (mod === 'contenido') { renderContenido(); setTimeout(()=>{showTooltipBanner('contenido');initPills()},300) }
+    else if (mod === 'calendario') { renderCalendario(); setTimeout(()=>{showTooltipBanner('calendario');initPills()},300) }
     else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); renderToolsGrid(); setTimeout(()=>showTooltipBanner('herramientas'),300) }
-    else if (mod === 'crm') { renderCrm(); setTimeout(()=>showTooltipBanner('crm'),300) }
-    else if (mod === 'reportes') { renderReportes(); setTimeout(()=>showTooltipBanner('reportes'),300)
+    else if (mod === 'crm') { renderCrm(); setTimeout(()=>{showTooltipBanner('crm');initPills()},300) }
+    else if (mod === 'reportes') { renderReportes(); setTimeout(()=>{showTooltipBanner('reportes');initPills()},300)
       const tabAgencia = document.getElementById('rep-tab-agencia')
       if (tabAgencia) tabAgencia.style.display = userRole === 'MEMBER' ? 'none' : 'block'
     }
@@ -3136,6 +3159,8 @@
     await loadPublishedPieces()
     updateDrawerBadge()
     renderInicio()
+    // Inicializar sliding pills
+    setTimeout(initPills, 100)
   }
 
 
@@ -3312,6 +3337,7 @@
       calView = view
       document.querySelectorAll('.cal-view-btn').forEach(b => b.classList.remove('active'))
       document.getElementById('cal-btn-' + view)?.classList.add('active')
+      movePill('cal-tabs', 'cal-pill', 'cal-btn-' + view)
       renderCalGrid()
     })
   }
@@ -4889,6 +4915,39 @@
     }
   })
 
+  // ── Sliding pill helper ──────────────────────────────
+  // Moves the pill slider to the active tab element.
+  // containerId: id of the wrapper div
+  // pillId: id of the .pill-slider div
+  // activeId: id of the active button/tab (optional if activeEl provided)
+  // activeEl: direct element reference (optional)
+  function movePill(containerId, pillId, activeId, activeEl) {
+    const container = document.getElementById(containerId)
+    const pill = document.getElementById(pillId)
+    const active = activeEl || (activeId ? document.getElementById(activeId) : null)
+    if (!container || !pill || !active) return
+    const cRect = container.getBoundingClientRect()
+    const aRect = active.getBoundingClientRect()
+    pill.style.left = (aRect.left - cRect.left) + 'px'
+    pill.style.width = aRect.width + 'px'
+    pill.style.top = (aRect.top - cRect.top) + 'px'
+    pill.style.bottom = 'auto'
+    pill.style.height = aRect.height + 'px'
+  }
+
+  // Initialize all pills after DOM is ready
+  function initPills() {
+    requestAnimationFrame(() => {
+      movePill('contenido-tabs', 'contenido-pill', 'tab-piezas')
+      movePill('cal-tabs', 'cal-pill', 'cal-btn-semana')
+      movePill('crm-tabs', 'crm-pill', 'crm-btn-pipeline')
+      movePill('crm-tabs2', 'crm-pill2', 'crm-btn-contactos2')
+      movePill('rep-main-tabs', 'rep-main-pill', 'rep-tab-clientes')
+      const firstInner = document.querySelector('.rep-inner-tab.active')
+      if (firstInner) movePill('rep-inner-tabs', 'rep-inner-pill', null, firstInner)
+    })
+  }
+
   // ── Approval link ──────────────────────────────────────
 
   window.switchFileTab = function(tab) {
@@ -5147,6 +5206,7 @@
     const label = tab === 'piezas' ? 'Nueva pieza' : 'Nueva tarea'
     document.getElementById('contenido-cta-label').textContent = label
     document.getElementById('ws-cta-label').textContent = label
+    movePill('contenido-tabs', 'contenido-pill', 'tab-' + tab)
   }
 
   window.handleContenidoCta = function() {
@@ -6043,6 +6103,8 @@
     document.getElementById('crm-pipeline-view').style.display = view === 'pipeline' ? 'flex' : 'none'
     document.getElementById('crm-contactos-view').style.display = view === 'contactos' ? 'flex' : 'none'
     document.getElementById('crm-detail-view').style.display = 'none'
+    movePill('crm-tabs', 'crm-pill', 'crm-btn-' + view)
+    movePill('crm-tabs2', 'crm-pill2', 'crm-btn-' + view + '2')
     if (view === 'pipeline') renderCrmPipeline()
     else renderCrmList()
   }
@@ -6984,20 +7046,22 @@ if (id) {
     document.getElementById('rep-agencia').style.display = isAgencia ? 'block' : 'none'
     const tabC = document.getElementById('rep-tab-clientes')
     const tabA = document.getElementById('rep-tab-agencia')
-    if (tabC) { tabC.style.color = isAgencia ? 'var(--ink3)' : 'var(--azul)'; tabC.style.borderBottomColor = isAgencia ? 'transparent' : 'var(--azul)'; tabC.style.fontWeight = isAgencia ? '700' : '800' }
-    if (tabA) { tabA.style.color = isAgencia ? 'var(--azul)' : 'var(--ink3)'; tabA.style.borderBottomColor = isAgencia ? 'var(--azul)' : 'transparent'; tabA.style.fontWeight = isAgencia ? '800' : '700' }
+    if (tabC) { tabC.style.color = isAgencia ? 'var(--ink3)' : 'var(--celeste)'; tabC.style.fontWeight = isAgencia ? '700' : '800' }
+    if (tabA) { tabA.style.color = isAgencia ? 'var(--celeste)' : 'var(--ink3)'; tabA.style.fontWeight = isAgencia ? '800' : '700' }
+    movePill('rep-main-tabs', 'rep-main-pill', isAgencia ? 'rep-tab-agencia' : 'rep-tab-clientes')
     if (isAgencia) renderAgenciaMetricas()
   }
 
   window.switchRepInnerTab = function(btn, tab) {
     document.querySelectorAll('.rep-inner-tab').forEach(b => {
-      b.style.color = 'var(--ink3)'; b.style.fontWeight = '700'; b.style.borderBottomColor = 'transparent'
+      b.style.color = 'var(--ink3)'; b.style.fontWeight = '700'
     })
-    btn.style.color = 'var(--azul)'; btn.style.fontWeight = '800'; btn.style.borderBottomColor = 'var(--azul)'
+    btn.style.color = 'var(--celeste)'; btn.style.fontWeight = '800'
     ;['resumen','rentabilidad','equipo','gastos'].forEach(t => {
       const el = document.getElementById('rep-tab-' + t)
       if (el) el.style.display = t === tab ? 'block' : 'none'
     })
+    movePill('rep-inner-tabs', 'rep-inner-pill', btn.id || null, btn)
     if (tab === 'gastos') renderGastos()
   }
 
@@ -7733,13 +7797,14 @@ if (id) {
 
   window.switchRepInnerTab = function(btn, tab) {
     document.querySelectorAll('.rep-inner-tab').forEach(b => {
-      b.style.color = 'var(--ink3)'; b.style.fontWeight = '700'; b.style.borderBottomColor = 'transparent'
+      b.style.color = 'var(--ink3)'; b.style.fontWeight = '700'
     })
-    btn.style.color = 'var(--azul)'; btn.style.fontWeight = '800'; btn.style.borderBottomColor = 'var(--azul)'
+    btn.style.color = 'var(--celeste)'; btn.style.fontWeight = '800'
     ;['resumen','rentabilidad','equipo','graficos','gastos'].forEach(t => {
       const el = document.getElementById('rep-tab-' + t)
       if (el) el.style.display = t === tab ? 'block' : 'none'
     })
+    movePill('rep-inner-tabs', 'rep-inner-pill', null, btn)
     if (tab === 'gastos') renderGastos()
     if (tab === 'graficos' && agenciaMetricas.piezasArr) renderCharts(agenciaMetricas.piezasArr, agenciaMetricas.tareasArr)
   }
