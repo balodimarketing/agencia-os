@@ -1254,14 +1254,21 @@
         </div>
 
         <!-- Tab: Equipo -->
-        <div id="rep-tab-equipo" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
-            <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
-              <div style="font-size:14px;font-weight:800;color:var(--ink)">Rendimiento del equipo</div>
-              <div style="font-size:12px;color:var(--ink3);margin-top:2px">Cargá el sueldo desde Equipo → Editar para ver métricas de costo</div>
-            </div>
-            <div id="rep-equipo-render" style="padding:4px 0"></div>
+        <div id="rep-tab-equipo" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
+
+          <!-- 4 números arriba -->
+          <div id="rep-equipo-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+
+          <!-- Buscador -->
+          <div style="position:relative">
+            <i class="ti ti-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--ink3)"></i>
+            <input type="text" id="equipo-search" placeholder="Buscar miembro..." oninput="filterEquipoMetricas(this.value)"
+              style="width:100%;padding:10px 14px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;color:var(--ink);background:var(--white);box-sizing:border-box">
           </div>
+
+          <!-- Cards de miembros -->
+          <div id="rep-equipo-render" style="display:flex;flex-direction:column;gap:10px"></div>
+
         </div>
 
         <!-- Tab: Gastos -->
@@ -7140,46 +7147,114 @@ if (id) {
       <div style="text-align:right">${margenBadge(totalMar)}</div>`
   }
   function renderEquipoMetricas() {
-    const el = document.getElementById('rep-equipo-render')
-    if (!el || !agenciaMetricas.miembrosArr) return
     const { tareasArr, timeArr, piezasArr, miembrosArr } = agenciaMetricas
+    if (!miembrosArr) return
 
-    el.innerHTML = miembrosArr.map(m => {
-      const nombre = ((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).trim()
-      const ini = initials(nombre); const col = getAvColor(nombre)
+    // KPIs arriba
+    const kpisEl = document.getElementById('rep-equipo-kpis')
+    const horasTotales = (timeArr||[]).reduce((a,t)=>a+(t.duracion_segundos||0),0)/3600
+    const tareasComp = (tareasArr||[]).filter(t=>t.estado==='completada').length
+    const totalSueldos = miembrosArr.reduce((a,m)=>a+(m.sueldo_mensual||0),0)
+    if (kpisEl) kpisEl.innerHTML = [
+      { l:'Miembros activos', v: miembrosArr.length, s:'en el equipo', dark:false },
+      { l:'Horas registradas', v: horasTotales.toFixed(1)+'h', s:'este mes', dark:false },
+      { l:'Tareas completadas', v: tareasComp, s:'este mes', dark:false },
+      { l:'Total sueldos', v: '$'+totalSueldos.toLocaleString('es-AR'), s:'mensual', dark:true },
+    ].map(k=>`<div style="background:${k.dark?'var(--azul)':'var(--white)'};border:${k.dark?'none':'1.5px solid var(--border)'};border-radius:14px;padding:16px 18px">
+      <div style="font-size:10px;font-weight:700;color:${k.dark?'rgba(142,219,255,.6)':'var(--ink3)'};text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">${k.l}</div>
+      <div style="font-size:24px;font-weight:900;color:${k.dark?'var(--celeste)':'var(--ink)'};letter-spacing:-.5px">${k.v}</div>
+      <div style="font-size:11px;color:${k.dark?'rgba(142,219,255,.4)':'var(--ink3)'};margin-top:4px">${k.s}</div>
+    </div>`).join('')
+
+    // Guardar miembros para filtro
+    window._equipoMiembros = miembrosArr
+    window._equipoTareas = tareasArr
+    window._equipoTime = timeArr
+    window._equipoPiezas = piezasArr
+
+    renderEquipoCards(miembrosArr)
+  }
+
+  function renderEquipoCards(miembros) {
+    const el = document.getElementById('rep-equipo-render')
+    if (!el) return
+    const tareasArr = window._equipoTareas || []
+    const timeArr = window._equipoTime || []
+    const piezasArr = window._equipoPiezas || []
+
+    if (!miembros.length) {
+      el.innerHTML = '<div style="padding:24px;text-align:center;font-size:13px;color:var(--ink3)">Sin resultados</div>'
+      return
+    }
+
+    el.innerHTML = miembros.map(m => {
+      const nombre = ((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).trim() || m.role
+      const ini = initials(nombre)
       const avatarUrl = m.profiles?.avatar_url
-      const mTareas = tareasArr.filter(t => t.asignado_a === m.id)
-      const completadas = mTareas.filter(t => t.estado === 'completada').length
-      const vencidas = mTareas.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
-      const horas = (timeArr||[]).filter(t => t.user_id === m.user_id).reduce((a, t) => a + (t.duracion_segundos||0), 0) / 3600
-      const piezasTrabajadas = (piezasArr||[]).filter(p => (timeArr||[]).some(t => t.user_id === m.user_id && t.piece_id === p.id)).length
-      const actividad7d = (timeArr||[]).filter(t => t.user_id === m.user_id && new Date(t.created_at) > new Date(Date.now()-7*24*60*60*1000)).length
-      const actividadLabel = actividad7d > 5 ? 'Alta' : actividad7d > 1 ? 'Media' : 'Baja'
-      const actColor = actividad7d > 5 ? '#10B981' : actividad7d > 1 ? '#F59E0B' : 'var(--danger)'
-      const carga = mTareas.filter(t => t.estado !== 'completada').length
-      const cargaLabel = carga > 8 ? 'Alta' : carga > 3 ? 'Normal' : 'Baja'
-      const cargaColor = carga > 8 ? 'var(--danger)' : carga > 3 ? '#F59E0B' : '#10B981'
+      const completadas = tareasArr.filter(t=>t.asignado_a===m.id&&t.estado==='completada').length
+      const vencidas = tareasArr.filter(t=>t.asignado_a===m.id&&t.estado!=='completada'&&t.fecha_entrega&&new Date(t.fecha_entrega)<new Date()).length
+      const horas = timeArr.filter(t=>t.user_id===m.user_id).reduce((a,t)=>a+(t.duracion_segundos||0),0)/3600
+      const piezas = piezasArr.filter(p=>timeArr.some(t=>t.user_id===m.user_id&&t.piece_id===p.id)).length
+      const activas = tareasArr.filter(t=>t.asignado_a===m.id&&t.estado!=='completada').length
+      const maxT = Math.max(...(window._equipoMiembros||[]).map(mx=>tareasArr.filter(t=>t.asignado_a===mx.id&&t.estado!=='completada').length),1)
+      const pct = Math.round((activas/maxT)*100)
+      const actLabel = activas > 5 ? 'Alta' : activas > 2 ? 'Media' : 'Baja'
       const sueldo = m.sueldo_mensual || 0
 
-      return '<div style="display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap">'
-        + '<div style="display:flex;align-items:center;gap:10px;min-width:180px">'
-        + (avatarUrl ? '<img src="'+avatarUrl+'" style="width:40px;height:40px;border-radius:11px;object-fit:cover;flex-shrink:0">' : '<div style="width:40px;height:40px;border-radius:11px;background:'+col.bg+';color:'+col.color+';font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ini+'</div>')
-        + '<div><div style="font-size:13px;font-weight:700;color:var(--ink)">'+nombre+'</div>'
-        + '<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+(m.puesto||m.role)+'</div></div></div>'
-        + '<div style="display:flex;gap:20px;flex:1;flex-wrap:wrap;align-items:center">'
-        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#10B981">'+completadas+'</div><div style="font-size:10px;color:var(--ink3)">Completadas</div></div>'
-        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--danger)">'+vencidas+'</div><div style="font-size:10px;color:var(--ink3)">Vencidas</div></div>'
-        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--azul)">'+horas.toFixed(1)+'h</div><div style="font-size:10px;color:var(--ink3)">Horas</div></div>'
-        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#3730A3">'+piezasTrabajadas+'</div><div style="font-size:10px;color:var(--ink3)">Piezas</div></div>'
-        + (sueldo > 0 ? '<div style="text-align:center"><div style="font-size:14px;font-weight:900;color:var(--danger)">$'+sueldo.toLocaleString("es-AR")+'</div><div style="font-size:10px;color:var(--ink3)">Sueldo/mes</div></div>' : '<div style="font-size:11px;color:var(--ink3);font-style:italic">Sin sueldo cargado</div>')
-        + '</div>'
-        + '<div style="display:flex;gap:12px;flex-shrink:0">'
-        + '<div style="text-align:center"><div style="font-size:11px;font-weight:800;color:'+actColor+'">'+actividadLabel+'</div><div style="font-size:10px;color:var(--ink3)">Actividad</div></div>'
-        + '<div style="text-align:center"><div style="font-size:11px;font-weight:800;color:'+cargaColor+'">'+cargaLabel+'</div><div style="font-size:10px;color:var(--ink3)">Carga</div></div>'
-        + '</div></div>'
+      return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px">
+          ${avatarUrl
+            ? `<img src="${avatarUrl}" style="width:42px;height:42px;border-radius:11px;object-fit:cover;flex-shrink:0">`
+            : `<div style="width:42px;height:42px;border-radius:11px;background:var(--azul);color:var(--celeste);font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--ink)">${nombre}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${m.puesto||m.role}</div>
+          </div>
+          <div style="text-align:right;margin-right:12px">
+            <div style="font-size:10px;color:var(--ink3);margin-bottom:2px">Sueldo mensual</div>
+            <div style="font-size:15px;font-weight:800;color:var(--ink)">${sueldo > 0 ? '$'+sueldo.toLocaleString('es-AR') : '—'}</div>
+          </div>
+          <button onclick="openMemberModal('${m.id}')"
+            style="padding:8px 16px;background:var(--azul);color:var(--celeste);border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">
+            Editar
+          </button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);padding:14px 20px;border-bottom:1px solid var(--border)">
+          ${[['Completadas',completadas,'#10B981'],['Vencidas',vencidas,'var(--danger)'],['Horas',horas.toFixed(1)+'h','var(--ink)'],['Piezas',piezas,'var(--ink)']].map(([l,v,c])=>`
+          <div style="text-align:center">
+            <div style="font-size:20px;font-weight:900;color:${c};letter-spacing:-.3px">${v}</div>
+            <div style="font-size:10px;color:var(--ink3);margin-top:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:700">${l}</div>
+          </div>`).join('')}
+        </div>
+        <div style="padding:12px 20px;display:flex;align-items:center;gap:14px">
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:11px;color:var(--ink3)">Carga laboral</span>
+              <span style="font-size:11px;font-weight:700;color:var(--ink)">${actLabel} · ${activas} tareas activas</span>
+            </div>
+            <div style="height:5px;background:var(--bg);border-radius:3px">
+              <div style="height:5px;width:${pct}%;background:var(--azul);border-radius:3px;opacity:${pct>50?'.9':'.3'};transition:width .4s"></div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;background:${actLabel==='Alta'?'rgba(10,37,64,.08)':'var(--bg)'};color:${actLabel==='Alta'?'var(--azul)':'var(--ink3)'}">
+            ${actLabel} actividad
+          </div>
+        </div>
+      </div>`
     }).join('')
   }
 
+  window.filterEquipoMetricas = function(query) {
+    const miembros = window._equipoMiembros || []
+    const q = query.toLowerCase().trim()
+    const filtrados = q
+      ? miembros.filter(m => {
+          const n = ((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).toLowerCase()
+          return n.includes(q) || (m.puesto||'').toLowerCase().includes(q)
+        })
+      : miembros
+    renderEquipoCards(filtrados)
+  }
   function renderCharts(piezasArr, tareasArr) {
     const byCliente = {}
     piezasArr.filter(p => p.estado === 'publicado').forEach(p => {
