@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faro — Mi portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --azul:       #0A2540;
+      --celeste:    #8EDBFF;
+      --cel-dim:    rgba(142,219,255,.12);
+      --white:      #FFFFFF;
+      --bg:         #F5F7FA;
+      --ink:        #111111;
+      --ink2:       #4A5568;
+      --ink3:       #9AA5B4;
+      --border:     #E8ECF0;
+      --success:    #34C759;
+      --danger:     #FF6B6B;
+      --warn:       #FFB800;
+      --r:          12px;
+      --r-lg:       20px;
+      --shadow:     0 4px 24px rgba(0,0,0,.07);
+      --shadow-lg:  0 12px 48px rgba(0,0,0,.12);
+      --t:          .18s cubic-bezier(.4,0,.2,1);
+    }
+
+    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    /* ── Shell ── */
+    .shell { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--azul);
+      display: flex; flex-direction: column;
+      padding: 0;
+      border-right: 1px solid rgba(255,255,255,.06);
+    }
+
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .sidebar-logo-mark {
+      width: 32px; height: 32px; background: rgba(142,219,255,.15);
+      border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    }
+    .sidebar-logo-mark svg { width: 16px; height: 16px; fill: none; stroke: var(--celeste); stroke-width: 2.5; }
+    .sidebar-logo-name { font-size: 15px; font-weight: 900; color: #fff; letter-spacing: -.3px; }
+
+    .sidebar-client {
+      padding: 14px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .sidebar-client-label { font-size: 9px; font-weight: 800; color: rgba(142,219,255,.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .sidebar-client-name { font-size: 13px; font-weight: 800; color: #fff; }
+    .sidebar-agency-name { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+    .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 10px;
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,.5);
+      cursor: pointer; transition: all var(--t); user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.8); }
+    .nav-item.active { background: rgba(142,219,255,.12); color: var(--celeste); }
+    .nav-item i { font-size: 16px; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; background: var(--danger); color: #fff;
+      font-size: 9px; font-weight: 900; padding: 2px 6px;
+      border-radius: 10px; min-width: 16px; text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 14px 10px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .sidebar-user {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: 10px; cursor: pointer;
+      transition: background var(--t);
+    }
+    .sidebar-user:hover { background: rgba(255,255,255,.06); }
+    .sidebar-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(142,219,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900; color: var(--celeste);
+      flex-shrink: 0;
+    }
+    .sidebar-user-name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.7); }
+    .sidebar-user-role { font-size: 10px; color: rgba(255,255,255,.35); }
+
+    /* ── Main ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+      height: 52px; flex-shrink: 0;
+      background: var(--white); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px;
+    }
+    .topbar-title { font-size: 17px; font-weight: 900; color: var(--ink); letter-spacing: -.3px; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+    .content { flex: 1; overflow-y: auto; padding: 28px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 22px 24px;
+    }
+
+    /* ── Stat row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px 18px;
+    }
+    .stat-label { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+    .stat-value { font-size: 26px; font-weight: 900; color: var(--ink); letter-spacing: -.5px; line-height: 1; }
+    .stat-sub { font-size: 11px; color: var(--ink3); margin-top: 4px; }
+
+    /* ── Section header ── */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-title { font-size: 15px; font-weight: 900; color: var(--ink); letter-spacing: -.2px; }
+    .section-sub { font-size: 12px; color: var(--ink3); margin-top: 2px; }
+
+    /* ── Piece cards ── */
+    .pieces-grid { display: flex; flex-direction: column; gap: 10px; }
+    .piece-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px 18px;
+      display: flex; align-items: center; gap: 16px;
+      cursor: pointer; transition: box-shadow var(--t), border-color var(--t);
+    }
+    .piece-card:hover { box-shadow: var(--shadow); border-color: #D0DCE8; }
+    .piece-card.needs-approval { border-left: 3px solid var(--warn); }
+
+    .piece-thumb {
+      width: 48px; height: 48px; border-radius: 10px;
+      background: var(--bg); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .piece-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .piece-thumb-icon { font-size: 20px; color: var(--ink3); }
+
+    .piece-info { flex: 1; min-width: 0; }
+    .piece-name { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .piece-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .estado-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px;
+    }
+    .estado-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    .piece-date { font-size: 11px; color: var(--ink3); }
+    .piece-type { font-size: 11px; color: var(--ink3); background: var(--bg); padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+
+    .piece-action { flex-shrink: 0; }
+
+    /* ── Approval panel ── */
+    .approval-banner {
+      background: linear-gradient(135deg, #FFF8E6 0%, #FFFBF0 100%);
+      border: 1.5px solid #FDE68A; border-radius: var(--r-lg);
+      padding: 20px 24px; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .approval-banner-icon {
+      width: 44px; height: 44px; background: #FFB800;
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 20px; flex-shrink: 0;
+    }
+    .approval-banner-title { font-size: 15px; font-weight: 900; color: #92400E; margin-bottom: 3px; }
+    .approval-banner-sub { font-size: 12px; color: #B45309; }
+    .approval-banner-btn {
+      margin-left: auto; padding: 9px 20px;
+      background: #92400E; color: #fff;
+      border: none; border-radius: var(--r); font-size: 12px; font-weight: 800;
+      cursor: pointer; font-family: inherit; transition: opacity var(--t); white-space: nowrap;
+    }
+    .approval-banner-btn:hover { opacity: .85; }
+
+    /* ── Calendar ── */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .cal-day-name { font-size: 10px; font-weight: 800; color: var(--ink3); text-align: center; padding: 4px 0; text-transform: uppercase; letter-spacing: .5px; }
+    .cal-cell {
+      min-height: 80px; background: var(--bg); border-radius: 10px;
+      padding: 8px; border: 1px solid transparent;
+      transition: border-color var(--t);
+    }
+    .cal-cell.has-event { border-color: var(--border); background: var(--white); }
+    .cal-cell.today { border-color: var(--celeste); background: var(--cel-dim); }
+    .cal-cell-num { font-size: 11px; font-weight: 800; color: var(--ink3); margin-bottom: 4px; }
+    .cal-cell.today .cal-cell-num { color: var(--azul); }
+    .cal-event {
+      font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 5px;
+      background: var(--azul); color: var(--celeste);
+      margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .cal-event.programado { background: #8B5CF6; color: #EDE9FE; }
+
+    /* ── Detail modal ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: opacity var(--t);
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+    .detail-modal {
+      background: var(--white); border-radius: var(--r-lg);
+      width: 100%; max-width: 520px; max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(16px) scale(.98);
+      transition: transform var(--t);
+      box-shadow: var(--shadow-lg);
+    }
+    .overlay.show .detail-modal { transform: translateY(0) scale(1); }
+    .detail-head {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between;
+      position: sticky; top: 0; background: var(--white); z-index: 1;
+    }
+    .detail-title { font-size: 17px; font-weight: 900; color: var(--ink); letter-spacing: -.3px; }
+    .detail-close {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--bg); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink3); font-size: 14px; flex-shrink: 0;
+      transition: background var(--t);
+    }
+    .detail-close:hover { background: var(--border); color: var(--ink); }
+    .detail-body { padding: 20px 24px; }
+
+    /* ── Approval actions ── */
+    .approval-actions {
+      display: flex; gap: 10px; margin-top: 20px;
+    }
+    .btn-approve {
+      flex: 1; padding: 13px; background: var(--success);
+      color: #fff; border: none; border-radius: var(--r);
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      font-family: inherit; transition: opacity var(--t);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-approve:hover { opacity: .88; }
+    .btn-changes {
+      flex: 1; padding: 13px; background: var(--white);
+      color: var(--danger); border: 1.5px solid var(--danger);
+      border-radius: var(--r); font-size: 14px; font-weight: 800;
+      cursor: pointer; font-family: inherit; transition: background var(--t);
+    }
+    .btn-changes:hover { background: #FFF5F5; }
+    .btn-approve:disabled, .btn-changes:disabled { opacity: .45; cursor: not-allowed; }
+
+    .changes-textarea {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid var(--border); border-radius: var(--r);
+      font-size: 13px; font-family: inherit; color: var(--ink);
+      resize: vertical; min-height: 90px; outline: none;
+      transition: border var(--t);
+      display: none; margin-top: 12px;
+    }
+    .changes-textarea.show { display: block; }
+    .changes-textarea:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(255,107,107,.15); }
+
+    /* ── File preview ── */
+    .file-preview-wrap { border-radius: var(--r); overflow: hidden; background: #000; margin-bottom: 16px; }
+    .file-preview-wrap img { width: 100%; max-height: 300px; object-fit: contain; display: block; }
+    .file-preview-wrap video { width: 100%; max-height: 300px; }
+    .file-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r); font-size: 12px; font-weight: 700;
+      color: var(--ink2); text-decoration: none; margin-bottom: 16px;
+      transition: background var(--t);
+    }
+    .file-link:hover { background: var(--border); }
+
+    /* ── Empty ── */
+    .empty {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 48px 24px; color: var(--ink3);
+      text-align: center;
+    }
+    .empty i { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+    .empty-title { font-size: 14px; font-weight: 700; color: var(--ink2); margin-bottom: 4px; }
+    .empty-sub { font-size: 13px; line-height: 1.5; }
+
+    /* ── Tabs ── */
+    .tabs-wrap {
+      display: flex; gap: 2px; background: var(--bg);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 3px; position: relative;
+    }
+    .pill-slider {
+      position: absolute; background: var(--azul); border-radius: 8px;
+      box-shadow: 0 1px 6px rgba(10,37,64,.18);
+      transition: left .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1);
+      pointer-events: none; top: 3px; bottom: 3px; z-index: 0;
+    }
+    .tab-btn {
+      padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      cursor: pointer; color: var(--ink3); border: none; background: transparent;
+      font-family: inherit; position: relative; z-index: 1;
+      transition: color var(--t); user-select: none;
+    }
+    .tab-btn.active { color: var(--celeste); font-weight: 800; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--azul); color: #fff; padding: 10px 20px;
+      border-radius: 20px; font-size: 13px; font-weight: 700;
+      transition: transform .3s cubic-bezier(.4,0,.2,1); z-index: 200;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Loading ── */
+    .page-loader {
+      position: fixed; inset: 0; background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300; transition: opacity .3s;
+    }
+    .page-loader.hide { opacity: 0; pointer-events: none; }
+    .loader-dots { display: flex; gap: 6px; }
+    .loader-dots span {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--ink3);
+      animation: dot .8s ease-in-out infinite;
+    }
+    .loader-dots span:nth-child(2) { animation-delay: .15s; }
+    .loader-dots span:nth-child(3) { animation-delay: .3s; }
+    @keyframes dot { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+
+    /* ── Historial ── */
+    .historial-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .historial-item:last-child { border-bottom: none; }
+    .historial-date {
+      width: 48px; text-align: center; flex-shrink: 0;
+    }
+    .historial-date-day { font-size: 20px; font-weight: 900; color: var(--ink); line-height: 1; }
+    .historial-date-month { font-size: 10px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation: fadeUp .3s both; }
+  </style>
+</head>
+<body>
+
+<!-- Loader -->
+<div class="page-loader" id="page-loader">
+  <div class="loader-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- Shell -->
+<div class="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">
+        <svg viewBox="0 0 22 22"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>
+      </div>
+      <span class="sidebar-logo-name">Faro</span>
+    </div>
+
+    <div class="sidebar-client">
+      <div class="sidebar-client-label">Mi cuenta</div>
+      <div class="sidebar-client-name" id="sb-client-name">—</div>
+      <div class="sidebar-agency-name" id="sb-agency-name">—</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" id="nav-contenido" onclick="switchTab('contenido')">
+        <i class="ti ti-layout-kanban"></i> Contenido
+        <span class="nav-badge" id="nav-badge-approval" style="display:none"></span>
+      </div>
+      <div class="nav-item" id="nav-calendario" onclick="switchTab('calendario')">
+        <i class="ti ti-calendar"></i> Calendario
+      </div>
+      <div class="nav-item" id="nav-historial" onclick="switchTab('historial')" id="nav-historial-btn" style="display:none">
+        <i class="ti ti-history"></i> Historial
+      </div>
+      <div class="nav-item" id="nav-metricas" onclick="switchTab('metricas')" style="display:none">
+        <i class="ti ti-chart-bar"></i> Estadísticas
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="handleSignOut()">
+        <div class="sidebar-avatar" id="sb-avatar">?</div>
+        <div>
+          <div class="sidebar-user-name" id="sb-user-name">—</div>
+          <div class="sidebar-user-role">Salir</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Contenido</div>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </div>
+
+    <div class="content" id="main-content">
+      <!-- renderizado por JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Detail overlay -->
+<div class="overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-modal" id="detail-modal">
+    <div class="detail-head">
+      <div class="detail-title" id="detail-title">—</div>
+      <button class="detail-close" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+  const SUPABASE_URL = 'https://trsbjjagrpvlzvcveiph.supabase.co'
+  const SUPABASE_KEY = 'sb_publishable_unJoCAXBOTCiLpLkFCG2oA_SdRcKHit'
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+  const MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+
+  const ESTADOS = {
+    idea:       { name: 'Idea',                  color: '#94A3B8', bg: '#F1F5F9' },
+    produccion: { name: 'En producción',          color: '#60A5FA', bg: '#EFF6FF' },
+    revision:   { name: 'Revisión interna',       color: '#FBBF24', bg: '#FFFBEB' },
+    aprobacion: { name: 'Esperando tu aprobación',color: '#F97316', bg: '#FFF7ED' },
+    publicado:  { name: 'Lista para programar',   color: '#34C759', bg: '#F0FDF4' },
+    programado: { name: 'Programado',             color: '#8B5CF6', bg: '#F5F3FF' },
+  }
+
+  let currentUser = null
+  let clientData  = null
+  let agencyData  = null
+  let portalConfig = null
+  let pieces      = []
+  let calDate     = new Date()
+  let currentTab  = 'contenido'
+  let currentPiece = null
+
+  // ── Init ──────────────────────────────────────────────
+  async function init() {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { window.location.href = 'client-login.html'; return }
+
+    currentUser = session.user
+
+    // Cargar client_user
+    const { data: cu } = await supabase
+      .from('client_users')
+      .select('*, clients(nombre, industria), agencies(nombre)')
+      .eq('user_id', currentUser.id)
+      .maybeSingle()
+
+    if (!cu) { window.location.href = 'client-login.html'; return }
+
+    clientData = cu.clients
+    agencyData = cu.agencies
+
+    // Cargar config del portal
+    const { data: config } = await supabase
+      .from('client_portal_config')
+      .select('*')
+      .eq('client_id', cu.client_id)
+      .maybeSingle()
+
+    portalConfig = config || {
+      mostrar_calendario: true,
+      mostrar_en_produccion: true,
+      mostrar_metricas: false,
+      mostrar_historial: true
+    }
+
+    // UI sidebar
+    document.getElementById('sb-client-name').textContent = clientData?.nombre || '—'
+    document.getElementById('sb-agency-name').textContent = agencyData?.nombre || '—'
+    const nombre = cu.nombre || currentUser.email?.split('@')[0] || '?'
+    const apellido = cu.apellido || ''
+    const ini = ((nombre[0] || '') + (apellido[0] || '')).toUpperCase()
+    document.getElementById('sb-avatar').textContent = ini
+    document.getElementById('sb-user-name').textContent = `${nombre} ${apellido}`.trim()
+
+    // Mostrar/ocultar tabs según config
+    if (!portalConfig.mostrar_historial) document.getElementById('nav-historial').style.display = 'none'
+    else document.getElementById('nav-historial').style.display = 'flex'
+    if (portalConfig.mostrar_metricas) document.getElementById('nav-metricas').style.display = 'flex'
+
+    // Cargar piezas
+    await loadPieces(cu.client_id)
+
+    // Ocultar loader
+    const loader = document.getElementById('page-loader')
+    loader.classList.add('hide')
+    setTimeout(() => loader.remove(), 400)
+
+    renderContenido()
+  }
+
+  // ── Load pieces ───────────────────────────────────────
+  async function loadPieces(clientId) {
+    const query = supabase
+      .from('content_pieces')
+      .select('id, titulo, tipo, estado, fecha_publicacion, fecha_entrega, archivo_url, archivo_nombre, aprobacion_token, aprobacion_comentario, created_at')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+
+    if (!portalConfig.mostrar_en_produccion) {
+      // Solo mostrar desde aprobacion en adelante
+      query.in('estado', ['aprobacion','publicado','programado'])
+    }
+
+    const { data } = await query
+    pieces = data || []
+  }
+
+  // ── Tab switcher ──────────────────────────────────────
+  window.switchTab = function(tab) {
+    currentTab = tab
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+    document.getElementById('nav-' + tab)?.classList.add('active')
+
+    const titles = {
+      contenido: 'Contenido',
+      calendario: 'Calendario',
+      historial: 'Historial',
+      metricas: 'Estadísticas'
+    }
+    document.getElementById('topbar-title').textContent = titles[tab] || tab
+
+    if (tab === 'contenido') renderContenido()
+    else if (tab === 'calendario') renderCalendario()
+    else if (tab === 'historial') renderHistorial()
+    else if (tab === 'metricas') renderMetricas()
+  }
+
+  // ── Render: Contenido ─────────────────────────────────
+  function renderContenido() {
+    const content = document.getElementById('main-content')
+    const pending = pieces.filter(p => p.estado === 'aprobacion')
+    const rest    = pieces.filter(p => p.estado !== 'aprobacion')
+
+    // Badge en sidebar
+    const badge = document.getElementById('nav-badge-approval')
+    if (pending.length > 0) {
+      badge.style.display = 'inline-block'
+      badge.textContent = pending.length
+    } else {
+      badge.style.display = 'none'
+    }
+
+    let html = '<div class="fade-up">'
+
+    // Banner de aprobaciones pendientes
+    if (pending.length > 0) {
+      html += `
+        <div class="approval-banner">
+          <div class="approval-banner-icon"><i class="ti ti-clock"></i></div>
+          <div>
+            <div class="approval-banner-title">${pending.length} pieza${pending.length > 1 ? 's' : ''} esperando tu aprobación</div>
+            <div class="approval-banner-sub">Revisalas y danos tu feedback para poder publicarlas.</div>
+          </div>
+        </div>`
+    }
+
+    // Stats
+    const programadas = pieces.filter(p => p.estado === 'programado').length
+    const enProduccion = pieces.filter(p => ['idea','produccion','revision'].includes(p.estado)).length
+    html += `
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total de piezas</div>
+          <div class="stat-value">${pieces.length}</div>
+          <div class="stat-sub">este ciclo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Esperando aprobación</div>
+          <div class="stat-value" style="color:${pending.length > 0 ? '#F97316' : 'var(--ink)'}">${pending.length}</div>
+          <div class="stat-sub">requieren tu OK</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">En producción</div>
+          <div class="stat-value">${enProduccion}</div>
+          <div class="stat-sub">siendo trabajadas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Programadas</div>
+          <div class="stat-value" style="color:#8B5CF6">${programadas}</div>
+          <div class="stat-sub">listas para publicar</div>
+        </div>
+      </div>`
+
+    // Piezas que necesitan aprobación primero
+    if (pending.length > 0) {
+      html += `
+        <div class="section-header" style="margin-top:8px">
+          <div>
+            <div class="section-title">Esperando tu aprobación</div>
+            <div class="section-sub">Revisá cada pieza y aprobala o pedí cambios</div>
+          </div>
+        </div>
+        <div class="pieces-grid" style="margin-bottom:28px">
+          ${pending.map(p => pieceCardHTML(p)).join('')}
+        </div>`
+    }
+
+    // Resto de piezas
+    if (rest.length > 0) {
+      html += `
+        <div class="section-header">
+          <div>
+            <div class="section-title">Todas las piezas</div>
+            <div class="section-sub">${rest.length} pieza${rest.length !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="pieces-grid">
+          ${rest.map(p => pieceCardHTML(p)).join('')}
+        </div>`
+    }
+
+    if (pieces.length === 0) {
+      html += `<div class="card"><div class="empty">
+        <i class="ti ti-photo"></i>
+        <div class="empty-title">Sin piezas todavía</div>
+        <div class="empty-sub">Tu agencia todavía no cargó piezas para vos.</div>
+      </div></div>`
+    }
+
+    html += '</div>'
+    content.innerHTML = html
+  }
+
+  function pieceCardHTML(p) {
+    const estado = ESTADOS[p.estado] || { name: p.estado, color: '#94A3B8', bg: '#F1F5F9' }
+    const isImage = p.archivo_url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(p.archivo_url)
+    const thumb = isImage
+      ? `<img src="${p.archivo_url}" onerror="this.parentElement.innerHTML='<i class=\\'ti ti-photo piece-thumb-icon\\'></i>'">`
+      : `<i class="ti ti-${p.tipo === 'Video' || p.tipo === 'Reel' ? 'video' : 'photo'}" style="font-size:20px;color:var(--ink3)"></i>`
+
+    const needsApproval = p.estado === 'aprobacion'
+
+    return `<div class="piece-card ${needsApproval ? 'needs-approval' : ''}" onclick="openPiece('${p.id}')">
+      <div class="piece-thumb">${thumb}</div>
+      <div class="piece-info">
+        <div class="piece-name">${p.titulo}</div>
+        <div class="piece-meta">
+          <span class="estado-badge" style="background:${estado.bg};color:${estado.color}">
+            <span class="estado-dot" style="background:${estado.color}"></span>
+            ${estado.name}
+          </span>
+          ${p.tipo ? `<span class="piece-type">${p.tipo}</span>` : ''}
+          ${p.fecha_publicacion ? `<span class="piece-date"><i class="ti ti-calendar" style="font-size:10px;vertical-align:-1px"></i> ${new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>` : ''}
+        </div>
+      </div>
+      ${needsApproval ? `<div class="piece-action"><div style="padding:7px 14px;background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:8px;font-size:11px;font-weight:800;color:#C2410C">Revisar</div></div>` : ''}
+    </div>`
+  }
+
+  // ── Render: Calendario ────────────────────────────────
+  function renderCalendario() {
+    if (!portalConfig.mostrar_calendario) {
+      document.getElementById('main-content').innerHTML = `<div class="card"><div class="empty"><i class="ti ti-lock"></i><div class="empty-title">No disponible</div><div class="empty-sub">Tu agencia no habilitó esta sección.</div></div></div>`
+      return
+    }
+
+    const content = document.getElementById('main-content')
+    const year = calDate.getFullYear()
+    const month = calDate.getMonth()
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const today = new Date()
+
+    const scheduled = pieces.filter(p => p.fecha_publicacion)
+
+    // Topbar actions
+    document.getElementById('topbar-actions').innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="calNav(-1)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-family:inherit;transition:background var(--t)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'"><i class="ti ti-chevron-left" style="font-size:13px"></i></button>
+        <div style="font-size:14px;font-weight:800;color:var(--ink);min-width:140px;text-align:center">${MESES_FULL[month]} ${year}</div>
+        <button onclick="calNav(1)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-family:inherit;transition:background var(--t)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'"><i class="ti ti-chevron-right" style="font-size:13px"></i></button>
+      </div>`
+
+    let calHTML = '<div class="fade-up">'
+
+    // Stats del mes
+    const monthPieces = scheduled.filter(p => {
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === year && d.getMonth() === month
+    })
+
+    calHTML += `
+      <div class="stats-row" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-label">Publicaciones este mes</div>
+          <div class="stat-value">${monthPieces.length}</div>
+          <div class="stat-sub">programadas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Publicadas</div>
+          <div class="stat-value" style="color:var(--success)">${monthPieces.filter(p=>new Date(p.fecha_publicacion)<=today).length}</div>
+          <div class="stat-sub">hasta hoy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Próximas</div>
+          <div class="stat-value" style="color:#8B5CF6">${monthPieces.filter(p=>new Date(p.fecha_publicacion)>today).length}</div>
+          <div class="stat-sub">por publicar</div>
+        </div>
+      </div>`
+
+    calHTML += '<div class="card"><div class="cal-grid">'
+
+    // Nombres de días
+    DAYS.forEach(d => {
+      calHTML += `<div class="cal-day-name">${d}</div>`
+    })
+
+    // Celdas vacías antes del primer día
+    const startDay = firstDay === 0 ? 6 : firstDay - 1
+    for (let i = 0; i < startDay; i++) {
+      calHTML += '<div class="cal-cell"></div>'
+    }
+
+    // Días del mes
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year
+      const dayPieces = scheduled.filter(p => {
+        const d = new Date(p.fecha_publicacion)
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day
+      })
+
+      const hasEvent = dayPieces.length > 0
+      calHTML += `<div class="cal-cell ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}">
+        <div class="cal-cell-num">${day}</div>
+        ${dayPieces.slice(0,2).map(p => `<div class="cal-event ${p.estado}" onclick="event.stopPropagation();openPiece('${p.id}')" title="${p.titulo}">${p.titulo}</div>`).join('')}
+        ${dayPieces.length > 2 ? `<div style="font-size:9px;color:var(--ink3);font-weight:700">+${dayPieces.length - 2} más</div>` : ''}
+      </div>`
+    }
+
+    calHTML += '</div></div></div>'
+    content.innerHTML = calHTML
+  }
+
+  window.calNav = function(dir) {
+    calDate.setMonth(calDate.getMonth() + dir)
+    renderCalendario()
+  }
+
+  // ── Render: Historial ─────────────────────────────────
+  function renderHistorial() {
+    document.getElementById('topbar-actions').innerHTML = ''
+    const published = pieces
+      .filter(p => p.estado === 'programado' && p.fecha_publicacion)
+      .sort((a, b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion))
+
+    let html = '<div class="fade-up"><div class="card">'
+    if (published.length === 0) {
+      html += `<div class="empty"><i class="ti ti-history"></i><div class="empty-title">Sin publicaciones todavía</div><div class="empty-sub">Acá vas a ver el historial de todo lo publicado.</div></div>`
+    } else {
+      published.forEach(p => {
+        const d = new Date(p.fecha_publicacion)
+        const estado = ESTADOS[p.estado] || {}
+        html += `<div class="historial-item" onclick="openPiece('${p.id}')" style="cursor:pointer">
+          <div class="historial-date">
+            <div class="historial-date-day">${d.getDate()}</div>
+            <div class="historial-date-month">${MESES[d.getMonth()]}</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              ${p.tipo ? `<span style="font-size:11px;color:var(--ink3);font-weight:700;background:var(--bg);padding:2px 8px;border-radius:6px">${p.tipo}</span>` : ''}
+              <span style="font-size:11px;color:var(--ink3)">${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span>
+            </div>
+          </div>
+          <i class="ti ti-chevron-right" style="font-size:14px;color:var(--ink3)"></i>
+        </div>`
+      })
+    }
+    html += '</div></div>'
+    document.getElementById('main-content').innerHTML = html
+  }
+
+  // ── Render: Métricas ──────────────────────────────────
+  function renderMetricas() {
+    document.getElementById('topbar-actions').innerHTML = ''
+    document.getElementById('main-content').innerHTML = `<div class="card"><div class="empty"><i class="ti ti-chart-bar"></i><div class="empty-title">Estadísticas</div><div class="empty-sub">Tu agencia cargará las métricas de cada pieza publicada.</div></div></div>`
+  }
+
+  // ── Piece detail ──────────────────────────────────────
+  window.openPiece = function(id) {
+    currentPiece = pieces.find(p => p.id === id)
+    if (!currentPiece) return
+    const p = currentPiece
+    const estado = ESTADOS[p.estado] || { name: p.estado, color: '#94A3B8', bg: '#F1F5F9' }
+
+    const isImage = p.archivo_url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(p.archivo_url)
+    const isVideo = p.archivo_url && /\.(mp4|mov|webm|avi)$/i.test(p.archivo_url)
+
+    const fileBlock = p.archivo_url
+      ? `<div class="file-preview-wrap" style="margin-bottom:16px">
+          ${isImage ? `<img src="${p.archivo_url}" alt="${p.titulo}">` : ''}
+          ${isVideo ? `<video controls src="${p.archivo_url}"></video>` : ''}
+        </div>
+        ${!isImage && !isVideo ? `<a href="${p.archivo_url}" target="_blank" class="file-link"><i class="ti ti-external-link" style="font-size:13px"></i> Ver archivo</a>` : ''}`
+      : ''
+
+    const approvalBlock = p.estado === 'aprobacion'
+      ? `<div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+          <div style="font-size:11px;font-weight:800;color:#C2410C;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"><i class="ti ti-clock" style="font-size:11px"></i> Esperando tu aprobación</div>
+          <div style="font-size:13px;color:#7C2D12;line-height:1.6">Revisá el archivo y decinos si está todo bien o si necesitás cambios.</div>
+        </div>
+        <div class="approval-actions">
+          <button class="btn-approve" onclick="approvepiece('${p.id}')"><i class="ti ti-check" style="font-size:15px"></i> Aprobar</button>
+          <button class="btn-changes" onclick="showChangesInput()"><i class="ti ti-refresh" style="font-size:15px"></i> Pedir cambios</button>
+        </div>
+        <textarea class="changes-textarea" id="changes-input" placeholder="Describí qué cambios necesitás..."></textarea>
+        <button id="btn-send-changes" onclick="sendChanges('${p.id}')" style="display:none;width:100%;margin-top:10px;padding:12px;background:var(--danger);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">Enviar cambios</button>`
+      : ''
+
+    const cambiosAlert = p.aprobacion_comentario
+      ? `<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+          <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px"><i class="ti ti-refresh" style="font-size:10px"></i> Cambios solicitados anteriormente</div>
+          <div style="font-size:13px;color:#DC2626;line-height:1.6">${p.aprobacion_comentario}</div>
+        </div>`
+      : ''
+
+    document.getElementById('detail-title').textContent = p.titulo
+    document.getElementById('detail-body').innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+        <span class="estado-badge" style="background:${estado.bg};color:${estado.color}">
+          <span class="estado-dot" style="background:${estado.color}"></span>
+          ${estado.name}
+        </span>
+        ${p.tipo ? `<span class="piece-type">${p.tipo}</span>` : ''}
+        ${p.fecha_publicacion ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--bg);color:var(--ink2)"><i class="ti ti-calendar" style="font-size:10px;vertical-align:-1px"></i> ${new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</span>` : ''}
+      </div>
+      ${cambiosAlert}
+      ${fileBlock}
+      ${approvalBlock}
+    `
+
+    document.getElementById('detail-overlay').classList.add('show')
+  }
+
+  window.closeDetail = function() {
+    document.getElementById('detail-overlay').classList.remove('show')
+    currentPiece = null
+  }
+
+  window.showChangesInput = function() {
+    const textarea = document.getElementById('changes-input')
+    const btn = document.getElementById('btn-send-changes')
+    textarea.classList.add('show')
+    btn.style.display = 'block'
+    textarea.focus()
+  }
+
+  window.approvepiece = async function(pieceId) {
+    const btn = document.querySelector('.btn-approve')
+    const btnC = document.querySelector('.btn-changes')
+    if (btn) btn.disabled = true
+    if (btnC) btnC.disabled = true
+
+    const { error } = await supabase
+      .from('content_pieces')
+      .update({ estado: 'publicado', aprobacion_comentario: null })
+      .eq('id', pieceId)
+
+    if (!error) {
+      const piece = pieces.find(p => p.id === pieceId)
+      if (piece) { piece.estado = 'publicado'; piece.aprobacion_comentario = null }
+      showToast('Pieza aprobada')
+      closeDetail()
+      renderContenido()
+    } else {
+      if (btn) btn.disabled = false
+      if (btnC) btnC.disabled = false
+      showToast('Error al aprobar. Intentá de nuevo.')
+    }
+  }
+
+  window.sendChanges = async function(pieceId) {
+    const comentario = document.getElementById('changes-input')?.value.trim()
+    if (!comentario) { document.getElementById('changes-input')?.focus(); return }
+
+    const btn = document.getElementById('btn-send-changes')
+    if (btn) { btn.disabled = true; btn.textContent = 'Enviando...' }
+
+    const { error } = await supabase
+      .from('content_pieces')
+      .update({ estado: 'revision', aprobacion_comentario: comentario })
+      .eq('id', pieceId)
+
+    if (!error) {
+      const piece = pieces.find(p => p.id === pieceId)
+      if (piece) { piece.estado = 'revision'; piece.aprobacion_comentario = comentario }
+      showToast('Cambios enviados a la agencia')
+      closeDetail()
+      renderContenido()
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = 'Enviar cambios' }
+      showToast('Error al enviar. Intentá de nuevo.')
+    }
+  }
+
+  // ── Toast ─────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.classList.add('show')
+    setTimeout(() => t.classList.remove('show'), 2800)
+  }
+
+  // ── Sign out ──────────────────────────────────────────
+  window.handleSignOut = async function() {
+    await supabase.auth.signOut()
+    window.location.href = 'client-login.html'
+  }
+
+  init()
+</script>
+</body>
+</html>
