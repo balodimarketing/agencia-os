@@ -2093,6 +2093,10 @@
           <div class="spinner" id="profile-spinner"></div>
         </button>
       </div>
+      <button class="tbtn" style="width:100%;color:var(--ink3);gap:8px" onclick="window.open('index.html','_self')">
+        <i class="ti ti-world" style="font-size:14px"></i>
+        Ir al sitio web
+      </button>
       <button class="tbtn" style="width:100%;color:var(--danger);border-color:rgba(255,107,107,.3)" onclick="handleSignOut()">
         <i class="ti ti-logout" style="font-size:14px"></i>
         Cerrar sesión
@@ -6274,7 +6278,7 @@ if (id) {
           <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Próximas publicaciones</div>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          ${pubs.length ? pubCards + verTodoCard : '<div style="font-size:13px;color:var(--ink3);padding:12px 0">Sin eventos próximos en el calendario.</div>'}
+          ${pubs.length ? pubCards + verTodoCard : `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="flex:1;min-width:160px;background:var(--white);border:1.5px dashed var(--border);border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:72px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--azul)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:13px;color:var(--ink3);font-weight:600">Sin publicaciones próximas</div><div style="font-size:11px;color:var(--ink3);opacity:.7">Agregá eventos al calendario →</div></div>`}
         </div>`
     }
 
