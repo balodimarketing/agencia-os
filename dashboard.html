@@ -1256,18 +1256,34 @@
         <!-- Tab: Equipo -->
         <div id="rep-tab-equipo" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
 
-          <!-- 4 números arriba -->
+          <!-- 4 KPIs -->
           <div id="rep-equipo-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
 
-          <!-- Buscador -->
-          <div style="position:relative">
-            <i class="ti ti-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--ink3)"></i>
-            <input type="text" id="equipo-search" placeholder="Buscar miembro..." oninput="filterEquipoMetricas(this.value)"
-              style="width:100%;padding:10px 14px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;color:var(--ink);background:var(--white);box-sizing:border-box">
-          </div>
+          <!-- Tabla con buscador integrado -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden">
 
-          <!-- Cards de miembros -->
-          <div id="rep-equipo-render" style="display:flex;flex-direction:column;gap:10px"></div>
+            <!-- Buscador en header -->
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+              <i class="ti ti-search" style="font-size:15px;color:var(--ink3);flex-shrink:0"></i>
+              <input type="text" id="equipo-search" placeholder="Buscar por nombre o puesto..." oninput="filterEquipoMetricas(this.value)"
+                style="flex:1;border:none;outline:none;font-size:13px;font-family:inherit;color:var(--ink);background:transparent">
+            </div>
+
+            <!-- Header tabla -->
+            <div style="display:grid;grid-template-columns:1fr 80px 80px 80px 80px 120px 80px;padding:8px 20px;background:var(--bg);border-bottom:1px solid var(--border)">
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px">Miembro</div>
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;text-align:center">Complet.</div>
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;text-align:center">Vencidas</div>
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;text-align:center">Horas</div>
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;text-align:center">Piezas</div>
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;text-align:center">Sueldo</div>
+              <div></div>
+            </div>
+
+            <!-- Filas -->
+            <div id="rep-equipo-render"></div>
+
+          </div>
 
         </div>
 
@@ -7187,7 +7203,7 @@ if (id) {
       return
     }
 
-    el.innerHTML = miembros.map(m => {
+    el.innerHTML = miembros.map((m, idx) => {
       const nombre = ((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).trim() || m.role
       const ini = initials(nombre)
       const avatarUrl = m.profiles?.avatar_url
@@ -7195,50 +7211,31 @@ if (id) {
       const vencidas = tareasArr.filter(t=>t.asignado_a===m.id&&t.estado!=='completada'&&t.fecha_entrega&&new Date(t.fecha_entrega)<new Date()).length
       const horas = timeArr.filter(t=>t.user_id===m.user_id).reduce((a,t)=>a+(t.duracion_segundos||0),0)/3600
       const piezas = piezasArr.filter(p=>timeArr.some(t=>t.user_id===m.user_id&&t.piece_id===p.id)).length
-      const activas = tareasArr.filter(t=>t.asignado_a===m.id&&t.estado!=='completada').length
-      const maxT = Math.max(...(window._equipoMiembros||[]).map(mx=>tareasArr.filter(t=>t.asignado_a===mx.id&&t.estado!=='completada').length),1)
-      const pct = Math.round((activas/maxT)*100)
-      const actLabel = activas > 5 ? 'Alta' : activas > 2 ? 'Media' : 'Baja'
       const sueldo = m.sueldo_mensual || 0
+      const activas = tareasArr.filter(t=>t.asignado_a===m.id&&t.estado!=='completada').length
+      const actLabel = activas > 5 ? 'Alta' : activas > 2 ? 'Media' : 'Baja'
+      const isLast = idx === miembros.length - 1
 
-      return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px">
+      return `<div style="display:grid;grid-template-columns:1fr 80px 80px 80px 80px 120px 80px;padding:14px 20px;border-bottom:${isLast?'none':'1px solid var(--border)'};align-items:center">
+        <div style="display:flex;align-items:center;gap:10px">
           ${avatarUrl
-            ? `<img src="${avatarUrl}" style="width:42px;height:42px;border-radius:11px;object-fit:cover;flex-shrink:0">`
-            : `<div style="width:42px;height:42px;border-radius:11px;background:var(--azul);color:var(--celeste);font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`}
-          <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:800;color:var(--ink)">${nombre}</div>
-            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${m.puesto||m.role}</div>
+            ? `<img src="${avatarUrl}" style="width:34px;height:34px;border-radius:9px;object-fit:cover;flex-shrink:0">`
+            : `<div style="width:34px;height:34px;border-radius:9px;background:var(--azul);color:var(--celeste);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`}
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink)">${nombre}</div>
+            <div style="font-size:10px;color:var(--ink3);margin-top:1px">${m.puesto||m.role} · <span style="color:${actLabel==='Alta'?'var(--azul)':actLabel==='Media'?'var(--warn)':'var(--ink3)'}">${actLabel} actividad</span></div>
           </div>
-          <div style="text-align:right;margin-right:12px">
-            <div style="font-size:10px;color:var(--ink3);margin-bottom:2px">Sueldo mensual</div>
-            <div style="font-size:15px;font-weight:800;color:var(--ink)">${sueldo > 0 ? '$'+sueldo.toLocaleString('es-AR') : '—'}</div>
-          </div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#10B981;text-align:center">${completadas}</div>
+        <div style="font-size:14px;font-weight:700;color:${vencidas>0?'var(--danger)':'var(--ink3)'};text-align:center">${vencidas}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);text-align:center">${horas.toFixed(1)}h</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ink);text-align:center">${piezas}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink);text-align:center">${sueldo > 0 ? '$'+sueldo.toLocaleString('es-AR') : '—'}</div>
+        <div style="text-align:center">
           <button onclick="openMemberModal('${m.id}')"
-            style="padding:8px 16px;background:var(--azul);color:var(--celeste);border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">
+            style="padding:7px 14px;background:var(--azul);color:var(--celeste);border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">
             Editar
           </button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);padding:14px 20px;border-bottom:1px solid var(--border)">
-          ${[['Completadas',completadas,'#10B981'],['Vencidas',vencidas,'var(--danger)'],['Horas',horas.toFixed(1)+'h','var(--ink)'],['Piezas',piezas,'var(--ink)']].map(([l,v,c])=>`
-          <div style="text-align:center">
-            <div style="font-size:20px;font-weight:900;color:${c};letter-spacing:-.3px">${v}</div>
-            <div style="font-size:10px;color:var(--ink3);margin-top:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:700">${l}</div>
-          </div>`).join('')}
-        </div>
-        <div style="padding:12px 20px;display:flex;align-items:center;gap:14px">
-          <div style="flex:1">
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-              <span style="font-size:11px;color:var(--ink3)">Carga laboral</span>
-              <span style="font-size:11px;font-weight:700;color:var(--ink)">${actLabel} · ${activas} tareas activas</span>
-            </div>
-            <div style="height:5px;background:var(--bg);border-radius:3px">
-              <div style="height:5px;width:${pct}%;background:var(--azul);border-radius:3px;opacity:${pct>50?'.9':'.3'};transition:width .4s"></div>
-            </div>
-          </div>
-          <div style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;background:${actLabel==='Alta'?'rgba(10,37,64,.08)':'var(--bg)'};color:${actLabel==='Alta'?'var(--azul)':'var(--ink3)'}">
-            ${actLabel} actividad
-          </div>
         </div>
       </div>`
     }).join('')
