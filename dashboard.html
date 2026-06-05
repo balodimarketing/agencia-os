@@ -2143,6 +2143,7 @@
 
   // ── State ─────────────────────────────────────────────
   let agencyId = null
+  let agencyPlan = 'free'
   let userRole = null
   let clients = []
   let currentModule = 'inicio'
@@ -2479,6 +2480,7 @@
   // ── Modal abrir ───────────────────────────────────────
   window.openClientModal = function(id) {
     const c = id ? clients.find(x => x.id === id) : null
+    if (!c && !checkLimit('clientes')) return
     document.getElementById('modal-client-title').textContent = c ? 'Editar cliente' : 'Nuevo cliente'
     document.getElementById('client-id').value = c?.id || ''
     document.getElementById('client-nombre').value = c?.nombre || ''
@@ -2626,7 +2628,7 @@
 
     const { data: membership } = await supabase
       .from('agency_members')
-      .select('role, status, agencies(id, nombre)')
+      .select('role, status, agencies(id, nombre, plan)')
       .eq('user_id', currentUserId)
       .maybeSingle()
 
@@ -2634,6 +2636,7 @@
     if (membership.status === 'pending') { window.location.href = 'waiting.html'; return }
 
     agencyId = membership.agencies?.id
+    agencyPlan = membership.agencies?.plan || 'free'
     userRole = membership.role
 
     const { data: profile } = await supabase
@@ -2695,6 +2698,7 @@
   }
 
   window.openInviteModal = function() {
+    if (!checkLimit('miembros')) return
     document.getElementById('invite-modal-code').textContent = inviteCode || '——————'
     document.getElementById('modal-invite').classList.add('show')
   }
@@ -6276,7 +6280,7 @@ if (id) {
 
     // ── Banner Agencia OS Pro ──
     const bannerEl = document.getElementById('inicio-banner')
-    if (bannerEl && userRole === 'OWNER') bannerEl.innerHTML = `
+    if (bannerEl && userRole === 'OWNER' && !isPro()) bannerEl.innerHTML = `
       <div style="background:var(--azul);border-radius:18px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(142,219,255,.07)"></div>
         <div style="position:absolute;bottom:-50px;right:140px;width:120px;height:120px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
@@ -6581,6 +6585,52 @@ if (id) {
       const steps = [...new Set([...(data?.completed_steps || []), NOVEDAD_ACTUAL.id])]
       await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: steps }, { onConflict: 'user_id,agency_id' })
     } catch(e) {}
+  }
+
+  // ══════════════════════════════════════
+  // PLANES Y LÍMITES
+  // ══════════════════════════════════════
+
+  const PLAN_LIMITS = {
+    free: { clientes: 3, miembros: 2, reportes: false, ia: false },
+    pro:  { clientes: Infinity, miembros: Infinity, reportes: true, ia: true },
+  }
+
+  function isPro() { return agencyPlan === 'pro' }
+
+  function checkLimit(tipo) {
+    const limits = PLAN_LIMITS[agencyPlan] || PLAN_LIMITS.free
+    if (tipo === 'clientes' && clients.length >= limits.clientes) {
+      showUpgradeModal('Llegaste al límite de clientes del plan Free.', 'Pasate a Pro para agregar clientes ilimitados.')
+      return false
+    }
+    if (tipo === 'miembros' && teamMembers.length >= limits.miembros) {
+      showUpgradeModal('Llegaste al límite de miembros del plan Free.', 'Pasate a Pro para invitar miembros ilimitados.')
+      return false
+    }
+    return true
+  }
+
+  function showUpgradeModal(titulo, desc) {
+    const existing = document.getElementById('modal-upgrade')
+    if (existing) existing.remove()
+    const m = document.createElement('div')
+    m.id = 'modal-upgrade'
+    m.className = 'modal-overlay show'
+    m.onclick = e => { if (e.target === m) m.remove() }
+    m.innerHTML = `
+      <div class="modal" style="max-width:400px;text-align:center">
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--azul)">
+          <i class="ti ti-rocket" style="font-size:28px"></i>
+        </div>
+        <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:8px">${titulo}</div>
+        <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:24px">${desc}</div>
+        <div style="display:flex;gap:8px">
+          <button class="tbtn" style="flex:1" onclick="document.getElementById('modal-upgrade').remove()">Ahora no</button>
+          <button class="tbtn primary" style="flex:2" onclick="document.getElementById('modal-upgrade').remove();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))">Ver planes →</button>
+        </div>
+      </div>`
+    document.body.appendChild(m)
   }
 
   // ══════════════════════════════════════
