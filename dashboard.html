@@ -10,15 +10,15 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --azul:        #0B1220;
-      --celeste:     #2563FF;
-      --celeste-dim: #EAF1FF;
+      --azul:        #0A2540;
+      --celeste:     #8EDBFF;
+      --celeste-dim: rgba(142,219,255,.1);
       --white:       #FFFFFF;
-      --bg:          #F3F4F6;
-      --ink:         #1F2937;
-      --ink2:        #374151;
-      --ink3:        #6B7280;
-      --border:      #E5E7EB;
+      --bg:          #F5F7FA;
+      --ink:         #111111;
+      --ink2:        #4A5568;
+      --ink3:        #9AA5B4;
+      --border:      #E8ECF0;
       --success:     #34C759;
       --danger:      #FF6B6B;
       --warn:        #FFB800;
@@ -42,13 +42,13 @@
     .rail { width: var(--rail-w); background: var(--azul); display: flex; flex-direction: column; align-items: center; padding: 14px 0; flex-shrink: 0; z-index: 30; gap: 2px; border-radius: 0 16px 16px 0; }
     .rail-logo { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; cursor: pointer; flex-shrink: 0; }
     .rail-logo svg { width: 28px; height: 28px; }
-    .rail-btn { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background var(--t), color var(--t); color: rgba(255,255,255,.35); position: relative; }
+    .rail-btn { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background var(--t), color var(--t); color: rgba(142,219,255,.35); position: relative; }
     .rail-btn i { font-size: 19px; }
-    .rail-btn:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.75); }
-    .rail-btn.active { background: var(--celeste-dim); color: white; }
+    .rail-btn:hover { background: rgba(142,219,255,.08); color: rgba(142,219,255,.75); }
+    .rail-btn.active { background: var(--celeste-dim); color: var(--celeste); }
     .rail-btn::after { content: attr(data-tip); position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%); background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 7px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity var(--t); z-index: 100; }
     .rail-btn:hover::after { opacity: 1; }
-    .rail-divider { width: 28px; height: 1px; background: rgba(255,255,255,.08); margin: 6px 0; }
+    .rail-divider { width: 28px; height: 1px; background: rgba(142,219,255,.08); margin: 6px 0; }
     .rail-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .rail-av { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; cursor: pointer; letter-spacing: -.3px; }
 
@@ -60,7 +60,7 @@
     .panel-search { margin: 10px 12px 2px; position: relative; }
     .panel-search i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--ink3); pointer-events: none; }
     .panel-search input { width: 100%; padding: 7px 10px 7px 32px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12px; font-family: inherit; color: var(--ink); background: var(--bg); outline: none; transition: border var(--t); }
-    .panel-search input:focus { border-color: white; }
+    .panel-search input:focus { border-color: var(--celeste); }
     .panel-search input::placeholder { color: var(--ink3); }
     .panel-body { flex: 1; overflow-y: auto; padding: 8px; }
     .panel-body::-webkit-scrollbar { width: 4px; }
@@ -74,7 +74,7 @@
     .pi-badge { font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
     .pi-meta { font-size: 10px; color: var(--ink3); margin-top: 3px; padding-left: 37px; font-weight: 500; }
     .panel-add { margin: 4px 2px; padding: 9px 12px; border: 1.5px dashed var(--border); border-radius: 9px; cursor: pointer; text-align: center; font-size: 11px; font-weight: 700; color: var(--ink3); transition: all var(--t); display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .panel-add:hover { border-color: white; color: var(--azul); background: var(--celeste-dim); }
+    .panel-add:hover { border-color: var(--celeste); color: var(--azul); background: var(--celeste-dim); }
 
     /* ── Workspace ── */
     .workspace { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
@@ -176,7 +176,7 @@
 
     /* ── Modal ── */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(11,18,32,.45);
+      position: fixed; inset: 0; background: rgba(10,37,64,.45);
       display: flex; align-items: center; justify-content: center;
       z-index: 100; padding: 20px;
       opacity: 0; pointer-events: none; transition: opacity var(--t);
@@ -227,7 +227,7 @@
       font-size: 13px; font-family: inherit; color: var(--ink); background: var(--white);
       outline: none; transition: border var(--t), box-shadow var(--t);
     }
-    .form-input:focus { border-color: white; box-shadow: 0 0 0 3px rgba(255,255,255,.2); }
+    .form-input:focus { border-color: var(--celeste); box-shadow: 0 0 0 3px rgba(142,219,255,.2); }
     .form-input::placeholder { color: var(--ink3); }
     .form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
     .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239AA5B4' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
@@ -277,7 +277,7 @@
     .toast.show { transform: translateX(-50%) translateY(0); }
 
     /* ── Spinner ── */
-    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(142,219,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ══════════════════════════
@@ -290,7 +290,7 @@
       background: transparent; color: var(--ink3); font-size: 12px; font-weight: 700;
       cursor: pointer; font-family: inherit; transition: all var(--t);
     }
-    .equipo-filter-btn.active { background: var(--azul); color: white; border-color: var(--azul); }
+    .equipo-filter-btn.active { background: var(--azul); color: var(--celeste); border-color: var(--azul); }
     .equipo-filter-btn:not(.active):hover { background: var(--bg); color: var(--ink); }
 
     .member-card {
@@ -316,7 +316,7 @@
       font-size: 9px; font-weight: 800; padding: 3px 9px; border-radius: 20px;
       text-transform: uppercase; letter-spacing: .4px;
     }
-    .role-owner  { background: var(--azul); color: white; }
+    .role-owner  { background: var(--azul); color: var(--celeste); }
     .role-admin  { background: #EEF2FF; color: #3730A3; }
     .role-member { background: var(--bg); color: var(--ink3); border: 1px solid var(--border); }
 
@@ -353,8 +353,8 @@
     .btn-reject  { padding: 7px 14px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--ink3); font-family: inherit; transition: all var(--t); }
     .btn-reject:hover  { border-color: var(--danger); color: var(--danger); }
 
-    .btn-copy-invite { padding: 8px 16px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: white; font-family: inherit; transition: all var(--t); white-space: nowrap; }
-    .btn-copy-invite:hover { background: rgba(255,255,255,.2); }
+    .btn-copy-invite { padding: 8px 16px; border-radius: var(--r-sm); font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid rgba(142,219,255,.3); background: rgba(142,219,255,.1); color: var(--celeste); font-family: inherit; transition: all var(--t); white-space: nowrap; }
+    .btn-copy-invite:hover { background: rgba(142,219,255,.2); }
     .btn-copy-invite.copied { background: rgba(52,199,89,.2); border-color: rgba(52,199,89,.4); color: #34C759; }
 
     /* ══════════════════════════
@@ -382,8 +382,8 @@
       transition: all var(--t); user-select: none;
     }
     .contenido-tab.active {
-      background: var(--azul); color: white;
-      box-shadow: 0 1px 6px rgba(11,18,32,.18);
+      background: var(--azul); color: var(--celeste);
+      box-shadow: 0 1px 6px rgba(10,37,64,.18);
     }
     .contenido-tab:not(.active):hover {
       background: var(--white); color: var(--ink);
@@ -430,7 +430,7 @@
       border-left: 3px solid transparent;
       animation: fadeUp .18s both;
     }
-    .k-card:hover { background: #EBF5FF; border-color: white; box-shadow: var(--shadow); }
+    .k-card:hover { background: #EBF5FF; border-color: var(--celeste); box-shadow: var(--shadow); }
     .k-card-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.4; }
     .k-card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .k-client-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
@@ -444,7 +444,7 @@
       font-size: 11px; font-weight: 700; color: var(--ink3); transition: all var(--t);
       display: flex; align-items: center; justify-content: center; gap: 5px;
     }
-    .k-add:hover { border-color: white; color: var(--azul); background: var(--celeste-dim); }
+    .k-add:hover { border-color: var(--celeste); color: var(--azul); background: var(--celeste-dim); }
 
 
     /* ── Drag & drop ── */
@@ -452,7 +452,7 @@
     .k-card[draggable]:active { cursor: grabbing; }
     .k-card.dragging { opacity: .4; transform: scale(.97); }
     .k-col.drag-over .k-cards { background: var(--celeste-dim); border-radius: var(--r-sm); }
-    .k-col.drag-over { border-color: white; }
+    .k-col.drag-over { border-color: var(--celeste); }
 
     /* Tasks */
     .tasks-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -691,8 +691,8 @@
     }
 
     .ms-trigger:focus, .ms-trigger.open {
-      border-color: white;
-      box-shadow: 0 0 0 3px rgba(255,255,255,.2);
+      border-color: var(--celeste);
+      box-shadow: 0 0 0 3px rgba(142,219,255,.2);
     }
 
     .ms-trigger-text { color: var(--ink3); }
@@ -802,7 +802,7 @@
       margin-bottom: 6px; cursor: pointer; overflow: hidden; transition: all var(--t);
       position: relative; z-index: 1;
     }
-    .cal-piece-card:hover { border-color: white; background: var(--celeste-dim); }
+    .cal-piece-card:hover { border-color: var(--celeste); background: var(--celeste-dim); }
     .cal-piece-head {
       display: flex; align-items: center; gap: 8px; padding: 9px 10px;
     }
@@ -913,7 +913,7 @@
   <div class="rail">
     <div class="rail-logo" onclick="window.open('index.html','_self')">
       <svg viewBox="0 0 2160 2700" xmlns="http://www.w3.org/2000/svg" style="width:22px;height:28px">
-  <g fill="white">
+  <g fill="#8EDBFF">
     <path d="M0 1350 l0 -1350 1080 0 1080 0 0 1350 0 1350 -1080 0 -1080 0 0 -1350z m894.5 560.6 c28.5 -5.6 51.2 -23.6 63.9 -50.6 9.4 -20.2 10.2 -43 2.4 -63 -7.2 -18.1 -19.8 -33.2 -36.9 -44.3 -22.2 -14.3 -45 -16.8 -70.6 -7.8 -29.9 10.6 -53.5 40.7 -57.3 73.1 -1.3 10.7 -0.5 19.2 2.7 30 6.1 20.8 16.6 36 32.8 47.7 11.5 8.3 21 12.2 38 15.7 4.6 0.9 18.5 0.5 25 -0.8z m37.3 -227.1 c16.3 -5 27.3 -16.2 31.9 -32.5 1.7 -6.1 1.8 -12.4 1.8 -102.5 l0 -96 2.3 -6.5 c6.2 -17.4 15.1 -28.8 30 -38.7 11.6 -7.8 23.6 -12.3 41.7 -15.7 4.4 -0.8 13.4 -2.7 20 -4.1 6.6 -1.5 17.6 -3.7 24.6 -5 6.9 -1.3 14.7 -2.9 17.5 -3.5 4.6 -1.1 24.8 -5 35.9 -7 2.8 -0.5 9.3 -1.9 14.5 -3 5.2 -1.1 14.9 -3.1 21.5 -4.5 25.2 -5.1 36.3 -10.5 51.4 -24.9 7.7 -7.4 17 -20.5 22.1 -31 6.1 -12.8 12.6 -36.4 15.5 -56.5 1.7 -11.6 2.2 -65.6 0.6 -66.5 -0.5 -0.3 -6.9 0.7 -14.2 2.4 -7.4 1.6 -18.1 3.8 -23.9 5 -5.8 1.1 -14.5 2.9 -19.5 4 -4.9 1.1 -19.8 4.3 -33 7 -29.1 6.1 -64.5 13.7 -70 15 -3.8 0.9 -18.7 4.1 -28.5 6.1 -2.5 0.5 -7.4 1.5 -11 2.3 -58.1 12.5 -80.5 16.8 -87.9 16.9 -7.9 0.2 -7.9 0.2 -9.8 -5.8 -0.5 -1.7 -1.5 -2.9 -2.3 -2.7 -0.7 0.2 -3.4 0.7 -5.9 1.2 -8.1 1.6 -32.2 6.8 -46.6 10 -7.7 1.7 -17.8 3.8 -22.5 4.6 -43.9 7.6 -74.6 32 -87.3 69.4 -5.1 14.9 -5 9.7 -5.1 187.6 -0.1 165.9 -0.1 167.2 1.9 169.4 3 3.4 7.4 6.2 10.9 7.1 1.7 0.5 29 0.7 60.6 0.4 49.3 -0.3 58.3 -0.6 62.8 -2z m-85.9 -480.5 c4.5 -1.1 10.5 -2.5 13.4 -3.1 2.8 -0.6 6.8 -1.5 8.7 -1.9 5.3 -1.2 28.9 -6 34 -6.9 2.5 -0.5 7.9 -1.6 12 -2.6 4.1 -1 9.8 -2.1 12.5 -2.6 9.3 -1.5 15 -2.6 19.5 -3.7 2.5 -0.6 7.2 -1.6 10.5 -2.3 3.3 -0.7 6.5 -1.6 7.1 -2.1 0.7 -0.5 1.5 -6 1.9 -13 0.4 -6.7 1.1 -13.1 1.5 -14.2 0.5 -1.2 1.1 -3.3 1.4 -4.8 1.1 -4.8 8.1 -8.1 23.1 -10.8 2.8 -0.5 8.2 -1.6 12 -2.5 3.9 -0.9 8.8 -2 11 -2.5 2.2 -0.4 7.6 -1.5 12 -2.5 4.4 -0.9 9.9 -2.1 12.3 -2.6 2.3 -0.5 6.1 -1.3 8.5 -1.8 2.3 -0.5 7.8 -1.7 12.2 -2.6 7.6 -1.7 11.2 -2.4 20.8 -4.4 2.3 -0.5 7.6 -1.6 11.7 -2.6 4.1 -1 9.5 -2.1 12 -2.6 2.5 -0.4 6.5 -1.2 9 -1.8 8.7 -1.8 20.5 -4.3 24.5 -5.2 12.4 -2.7 28.6 -6.2 32.5 -6.9 2.5 -0.4 7.7 -1.6 11.5 -2.5 6.7 -1.6 10.2 -2.4 19.8 -4.4 2.3 -0.5 7.6 -1.6 11.7 -2.6 4.1 -1 9.4 -2.1 11.8 -2.6 4.5 -1 8.6 -1.8 20.2 -4.4 4.1 -1 9.5 -2.1 12 -2.5 6.4 -1.2 9.4 -1.9 19 -4.2 4.7 -1.2 10.3 -2.4 12.5 -2.9 2.2 -0.4 7.2 -1.5 11 -2.4 11.8 -2.8 14.8 -3.5 20.5 -4.5 8.9 -1.6 14 -2.7 21.5 -4.5 9 -2.1 13.8 -3.2 20.2 -4.4 2.9 -0.5 5.7 -1.3 6.3 -1.6 0.6 -0.3 3.4 -1.1 6.3 -1.6 2.8 -0.6 7.2 -1.4 9.7 -1.9 8.3 -1.5 17.4 -4.1 18.7 -5.2 1.1 -0.8 1.3 -15.5 1.3 -76.9 0 -43.1 -0.4 -76 -0.9 -76.3 -1.1 -0.7 -7.2 0.5 -35.1 6.9 -4.1 0.9 -9.1 2.1 -11 2.5 -5.5 1.2 -29.1 6.2 -33.5 7 -7.4 1.4 -14.2 2.9 -22.6 4.9 -4.6 1.1 -9.5 2.2 -10.9 2.4 -1.4 0.3 -8.3 1.7 -15.5 3.2 -7.1 1.5 -14.1 2.9 -15.5 3.2 -8.5 1.6 -17.4 3.5 -23.5 4.9 -3.8 0.8 -8.8 1.9 -11 2.4 -2.2 0.5 -9.4 2 -16 3.4 -6.6 1.5 -14.2 3.1 -17 3.6 -2.7 0.5 -8.1 1.7 -12 2.6 -8.2 1.9 -14.1 3.1 -21 4.4 -2.7 0.5 -7.9 1.7 -11.5 2.5 -6.5 1.6 -11.2 2.7 -19.2 4.4 -2.4 0.5 -7.7 1.7 -11.8 2.6 -4.1 0.9 -9.5 2 -12 2.5 -7.2 1.4 -13 2.7 -20.5 4.4 -3.8 0.9 -9.2 2.1 -12 2.7 -10.5 2.1 -13.2 2.7 -18 3.9 -2.7 0.7 -6 1.6 -7.3 2.1 -1.3 0.5 -3.3 0.9 -4.4 0.9 -1.2 0 -3.5 0.4 -5.2 0.9 -3.4 1.1 -12.9 3.3 -21.6 5.1 -6.5 1.4 -10.7 2.4 -17.5 4 -2.7 0.7 -7 1.7 -9.5 2.1 -10.6 2 -14.9 2.9 -21 4.4 -6.4 1.6 -10.7 2.6 -19.2 4.4 -3.9 0.8 -12.3 2.7 -23.3 5.1 -2.2 0.5 -6.2 1.4 -9 1.9 -2.7 0.6 -7.9 1.8 -11.5 2.6 -8.4 2.1 -14.4 3.4 -20 4.4 -7 1.3 -14.4 3.3 -15.5 4.2 -0.5 0.5 -1.6 0.9 -2.3 0.9 -1.9 0 -15.4 6.5 -20.7 9.9 -19.7 12.6 -36.6 34.5 -43.6 56.4 -5.8 18.2 -5.8 18.5 -5.9 60.3 l-0.1 38.9 3 6.2 c5.1 10.5 12.5 17.2 24 21.8 7.1 2.9 12.7 3 23 0.5z"/>
   </g>
 </svg>
@@ -1102,8 +1102,8 @@
         <div id="rep-tab-resumen" style="padding:24px 32px;max-width:1000px;margin:0 auto">
           <!-- KPIs financieros -->
           <div style="background:var(--azul);border-radius:18px;padding:24px;margin-bottom:20px">
-            <div style="font-size:11px;font-weight:800;color:white;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Resumen financiero</div>
-            <div id="rep-kpis-financieros" style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden"></div>
+            <div style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Resumen financiero</div>
+            <div id="rep-kpis-financieros" style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(142,219,255,.1);border-radius:10px;overflow:hidden"></div>
           </div>
           <!-- KPIs operativos -->
           <div style="margin-bottom:20px">
@@ -1539,7 +1539,7 @@
     <div class="modal-body">
       <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:20px">Compartí este código con las personas que querés sumar a tu agencia. Ingresan con este código al registrarse.</p>
       <div style="background:var(--azul);border-radius:var(--r);padding:20px 24px">
-        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Código de invitación</div>
+        <div style="font-size:10px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Código de invitación</div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
           <div id="invite-modal-code" style="font-size:26px;font-weight:900;color:var(--white);letter-spacing:5px">——————</div>
           <button class="btn-copy-invite" id="btn-copy-invite" onclick="copyInviteCode()">Copiar</button>
@@ -2105,7 +2105,7 @@
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Color</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="event-colors">
-            <div style="width:22px;height:22px;border-radius:50%;background:#0B1220;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#0B1220',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#0A2540;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#0A2540',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#3B82F6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#3B82F6',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#8B5CF6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#8B5CF6',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#EC4899;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EC4899',this)"></div>
@@ -2113,7 +2113,7 @@
             <div style="width:22px;height:22px;border-radius:50%;background:#10B981;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#10B981',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#EF4444;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EF4444',this)"></div>
           </div>
-          <input type="hidden" id="event-color" value="#0B1220">
+          <input type="hidden" id="event-color" value="#0A2540">
         </div>
       </div>
 
@@ -2194,7 +2194,7 @@
 
 <!-- MODAL PERFIL -->
 <div class="modal-overlay" id="modal-profile" onclick="if(event.target===this)closeProfileModal()">
-  <div style="background:#fff;border-radius:24px;overflow:hidden;width:540px;max-width:95vw;max-height:90vh;display:flex;box-shadow:0 24px 80px rgba(11,18,32,.16);border:1px solid var(--border)">
+  <div style="background:#fff;border-radius:24px;overflow:hidden;width:540px;max-width:95vw;max-height:90vh;display:flex;box-shadow:0 24px 80px rgba(10,37,64,.16);border:1px solid var(--border)">
 
     <!-- Columna izquierda -->
     <div style="width:170px;padding:28px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;border-right:1px solid var(--border);flex-shrink:0">
@@ -2207,7 +2207,7 @@
           <div class="profile-av-overlay" style="border-radius:22px"><i class="ti ti-camera"></i></div>
         </div>
         <div style="position:absolute;bottom:-4px;right:-4px;width:24px;height:24px;background:var(--azul);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff" onclick="document.getElementById('profile-avatar-input').click()">
-          <i class="ti ti-camera" style="font-size:10px;color:white"></i>
+          <i class="ti ti-camera" style="font-size:10px;color:var(--celeste)"></i>
         </div>
       </div>
 
@@ -2227,7 +2227,7 @@
           <div id="profile-plan-name" style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Free</div>
           <div id="profile-plan-desc" style="font-size:10px;color:var(--ink3);margin-top:3px">3 clientes · 2 miembros</div>
         </div>
-        <button id="btn-upgrade-plan" onclick="closeProfileModal();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))" style="width:100%;padding:9px;background:var(--azul);color:white;border:none;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;display:none">Mejorar plan →</button>
+        <button id="btn-upgrade-plan" onclick="closeProfileModal();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))" style="width:100%;padding:9px;background:var(--azul);color:var(--celeste);border:none;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;display:none">Mejorar plan →</button>
       </div>
 
       <div style="width:100%;height:1px;background:var(--border);margin-top:auto"></div>
@@ -2620,19 +2620,19 @@
       <div style="background:var(--azul);border-radius:16px;padding:28px;margin-bottom:20px">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
           <div style="display:flex;align-items:center;gap:16px">
-            <div style="width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.2);color:white;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+            <div style="width:56px;height:56px;border-radius:16px;background:rgba(142,219,255,.2);color:var(--celeste);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
             <div>
               <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.4px;margin-bottom:4px">${c.nombre}</div>
-              <div style="font-size:13px;color:white;opacity:.8">${c.industria || 'Sin industria'}</div>
+              <div style="font-size:13px;color:var(--celeste);opacity:.8">${c.industria || 'Sin industria'}</div>
               <span style="display:inline-block;margin-top:8px;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:${estadoBg};color:${estadoColor}">${c.estado}</span>
             </div>
           </div>
           <div style="display:flex;gap:8px;flex-shrink:0">
-            <button class="tbtn" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;gap:6px" onclick="openClientModal('${c.id}')"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
+            <button class="tbtn" style="background:rgba(142,219,255,.1);border-color:rgba(142,219,255,.2);color:#fff;gap:6px" onclick="openClientModal('${c.id}')"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
             <button class="tbtn" style="background:rgba(255,107,107,.15);border-color:rgba(255,107,107,.3);color:#ff9999;padding:8px 12px" onclick="openDeleteModal('${c.id}','${c.nombre.replace(/'/g,"\'")}')"><i class="ti ti-trash" style="font-size:13px"></i></button>
           </div>
         </div>
-        ${c.redes?.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.2)">${c.redes.map(r=>`<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.12);color:white">${r}</span>`).join('')}</div>` : ''}
+        ${c.redes?.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(142,219,255,.2)">${c.redes.map(r=>`<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(142,219,255,.15);color:var(--celeste)">${r}</span>`).join('')}</div>` : ''}
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
@@ -2949,7 +2949,7 @@
   let calPublishedPieces = []
   const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-  const EVENT_COLORS = ['#0B1220','#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444']
+  const EVENT_COLORS = ['#0A2540','#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444']
 
   async function loadCalendarEvents() {
     const { data } = await supabase
@@ -3361,7 +3361,7 @@
         <div style="font-size:12px;color:var(--ink3);margin-top:2px">${start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}${end?' – '+end.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):''}</div>
       </div>
       ${ev.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:10px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.6">${ev.descripcion}</div></div>` : ''}
-      ${ev.link ? `<a href="${ev.link}" target="_blank" style="display:flex;align-items:center;gap:8px;background:var(--celeste-dim);border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--azul);font-size:13px;font-weight:700"><i class="ti ti-link" style="font-size:16px"></i>${ev.link}</a>` : ''}`
+      ${ev.link ? `<a href="${ev.link}" target="_blank" style="display:flex;align-items:center;gap:8px;background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--azul);font-size:13px;font-weight:700"><i class="ti ti-link" style="font-size:16px"></i>${ev.link}</a>` : ''}`
     document.getElementById('event-detail-edit').style.display = 'flex'
     document.getElementById('event-detail-delete').style.display = 'flex'
 
@@ -3387,7 +3387,7 @@
 
 
   // ── Event modal ───────────────────────────────────────────
-  let calSelectedColor = '#0B1220'
+  let calSelectedColor = '#0A2540'
   let selectedParticipantes = [] // [{id, nombre}]
 
   async function loadPartDrop() {
@@ -3404,7 +3404,7 @@
       const sel = selectedParticipantes.find(p => p.id === m.id)
       return `<div onclick="toggleParticipante('${m.id}','${nombre}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink);transition:background .12s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" id="part-opt-${m.id}">
         <div style="width:16px;height:16px;border-radius:4px;border:2px solid ${sel?'var(--azul)':'var(--border)'};background:${sel?'var(--azul)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s">
-          ${sel?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+          ${sel?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#8EDBFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
         </div>
         ${nombre}
       </div>`
@@ -3465,10 +3465,10 @@
     document.getElementById('event-link').value = ''
     document.getElementById('event-descripcion').value = ''
     document.getElementById('event-error').classList.remove('show')
-    calSelectedColor = '#0B1220'
-    document.getElementById('event-color').value = '#0B1220'
+    calSelectedColor = '#0A2540'
+    document.getElementById('event-color').value = '#0A2540'
     document.querySelectorAll('#event-colors div').forEach(d => { d.style.borderColor='transparent'; d.style.boxShadow='none' })
-    document.querySelectorAll('#event-colors div')[0].style.boxShadow = '0 0 0 2px #0B1220'
+    document.querySelectorAll('#event-colors div')[0].style.boxShadow = '0 0 0 2px #0A2540'
     selectedParticipantes = []
     renderPartTags()
     loadPartDrop()
@@ -3559,7 +3559,7 @@
     const payload = {
       titulo,
       tipo: document.getElementById('event-tipo').value,
-      color: document.getElementById('event-color').value || '#0B1220',
+      color: document.getElementById('event-color').value || '#0A2540',
       fecha_inicio: startDate.toISOString(),
       fecha_fin: endDate > startDate ? endDate.toISOString() : null,
       link: document.getElementById('event-link').value.trim() || null,
@@ -4349,11 +4349,11 @@
       : ''
 
     const approvalLink = p.aprobacion_token
-      ? `<div style="background:var(--celeste-dim);border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:12px 14px;margin-top:12px">
+      ? `<div style="background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;margin-top:12px">
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Link de aprobación</div>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="font-size:11px;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${window.location.origin}${window.location.pathname.replace('dashboard.html','aprobar.html')}?token=${p.aprobacion_token}</div>
-            <button onclick="copyApprovalLink('${p.aprobacion_token}')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);color:var(--azul);cursor:pointer;font-family:inherit;white-space:nowrap" id="copy-link-btn">Copiar</button>
+            <button onclick="copyApprovalLink('${p.aprobacion_token}')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid rgba(142,219,255,.4);background:rgba(142,219,255,.1);color:var(--azul);cursor:pointer;font-family:inherit;white-space:nowrap" id="copy-link-btn">Copiar</button>
           </div>
         </div>`
       : `<button onclick="generateApprovalLink('${p.id}')" style="width:100%;margin-top:12px;padding:10px;border-radius:var(--r);font-size:12px;font-weight:700;border:1.5px dashed var(--border);background:transparent;color:var(--ink3);cursor:pointer;font-family:inherit;transition:all .16s" onmouseover="this.style.borderColor='var(--celeste)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">+ Generar link de aprobación</button>`
@@ -4925,7 +4925,7 @@
   }
 
   const ROL_COLORS = {
-    'OWNER':  { bar: '#0B1220', badge: 'var(--azul)', text: 'var(--celeste)' },
+    'OWNER':  { bar: '#0A2540', badge: 'var(--azul)', text: 'var(--celeste)' },
     'ADMIN':  { bar: '#3730A3', badge: '#EEF2FF',     text: '#3730A3'         },
     'MEMBER': { bar: '#E8ECF0', badge: 'var(--bg)',   text: 'var(--ink3)'    },
   }
@@ -5641,7 +5641,7 @@
         e.preventDefault()
         e.dataTransfer.dropEffect = 'move'
         document.querySelectorAll('.crm-col').forEach(c => c.style.background = '')
-        col.style.background = 'rgba(255,255,255,.08)'
+        col.style.background = 'rgba(142,219,255,.08)'
       })
       col.addEventListener('dragleave', e => {
         if (!col.contains(e.relatedTarget)) col.style.background = ''
@@ -6186,7 +6186,7 @@ if (id) {
 
     // ── Barras horizontales por tipo ──
     const TIPO_COLORS = {
-      'Reel': '#0B1220', 'Story': '#3B82F6', 'Feed': '#8EDBFF',
+      'Reel': '#0A2540', 'Story': '#3B82F6', 'Feed': '#8EDBFF',
       'Video': '#F59E0B', 'Carousel': '#10B981', 'TikTok': '#EF4444',
       'Otro': '#9AA5B4'
     }
@@ -6337,7 +6337,7 @@ if (id) {
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
 
     const agencyName = document.getElementById('greeting-agency')?.textContent || ''
-    const logoSVG = '<svg viewBox="0 0 100 120" width="16" height="20" fill="none" style="display:block"><path d="M28 18 Q28 10 36 10 L78 10 Q86 10 86 18 L86 30 Q86 38 78 38 L50 38 L50 50 L72 50 Q80 50 80 58 L80 68 Q80 76 72 76 L50 76 L50 102 L36 102 Q28 102 28 94 Z" fill="white"/><circle cx="36" cy="112" r="8" fill="#2563FF"/></svg>'
+    const logoSVG = '<svg viewBox="0 0 100 120" width="16" height="20" fill="none" style="display:block"><path d="M28 18 Q28 10 36 10 L78 10 Q86 10 86 18 L86 30 Q86 38 78 38 L50 38 L50 50 L72 50 Q80 50 80 58 L80 68 Q80 76 72 76 L50 76 L50 102 L36 102 Q28 102 28 94 Z" fill="#8EDBFF"/><circle cx="36" cy="112" r="8" fill="#2563FF"/></svg>'
 
     const TIPO_BG = { 'Reel':'#E8F4FF', 'Story':'#EEF2FF', 'Feed':'#F0FDF4', 'Video':'#FFF7ED', 'Carousel':'#F0FDF4', 'TikTok':'#FEF2F2' }
     const TIPO_TX = { 'Reel':'#0C447C', 'Story':'#3730A3', 'Feed':'#166534', 'Video':'#9A3412', 'Carousel':'#166534', 'TikTok':'#991B1B' }
@@ -6352,11 +6352,11 @@ if (id) {
       const statsHTML = hasStats ? `<div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E8ECF0;margin-top:12px">${
         [['visitas','Visitas'],['likes','Likes'],['comentarios','Comentarios'],['compartidos','Compartidos'],['reposteos','Reposteos']]
           .filter(([k]) => stats[k])
-          .map(([k,l]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0B1220">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${l}</div></div>`)
+          .map(([k,l]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${l}</div></div>`)
           .join('')
       }</div>` : ''
 
-      return `<div style="border:1.5px solid #0B1220;border-radius:12px;padding:18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-size:14px;font-weight:600;color:#0B1220;margin-bottom:5px">${p.titulo}</div><span style="font-size:10px;font-weight:600;padding:2px 9px;background:${bg};color:${tx};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span></div><div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div></div>${statsHTML}</div>`
+      return `<div style="border:1.5px solid #0A2540;border-radius:12px;padding:18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:5px">${p.titulo}</div><span style="font-size:10px;font-weight:600;padding:2px 9px;background:${bg};color:${tx};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span></div><div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div></div>${statsHTML}</div>`
     }).join('')
 
     const agencyLine = agencyName ? agencyName + ' &middot; ' : ''
@@ -6370,20 +6370,20 @@ if (id) {
 <style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: -apple-system,'Segoe UI',sans-serif; background: #F5F7FA; padding: 40px; } @media print { body { background: #fff; padding: 0; } @page { margin: 15mm; } }</style>
 </head>
 <body>
-<div style="background:#fff;max-width:680px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #0B1220">
-  <div style="padding:36px 40px 28px;border-bottom:2px solid #0B1220">
+<div style="background:#fff;max-width:680px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #0A2540">
+  <div style="padding:36px 40px 28px;border-bottom:2px solid #0A2540">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
-      <div style="width:26px;height:26px;background:#0B1220;border-radius:6px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+      <div style="width:26px;height:26px;background:#0A2540;border-radius:6px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
       <span style="font-size:11px;font-weight:600;color:#9AA5B4;letter-spacing:.6px;text-transform:uppercase">Faro &middot; Reporte de contenido</span>
     </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between">
       <div>
-        <div style="font-size:11px;font-weight:600;color:#0B1220;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Cliente</div>
-        <div style="font-size:32px;font-weight:700;color:#0B1220;letter-spacing:-.5px;line-height:1.1">${repCurrentClient.nombre}</div>
+        <div style="font-size:11px;font-weight:600;color:#0A2540;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Cliente</div>
+        <div style="font-size:32px;font-weight:700;color:#0A2540;letter-spacing:-.5px;line-height:1.1">${repCurrentClient.nombre}</div>
         <div style="font-size:13px;color:#9AA5B4;margin-top:5px">${agencyLine}${repCurrentMonth.label}</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:44px;font-weight:700;color:#0B1220;line-height:1">${clientPieces.length}</div>
+        <div style="font-size:44px;font-weight:700;color:#0A2540;line-height:1">${clientPieces.length}</div>
         <div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">piezas publicadas</div>
       </div>
     </div>
@@ -6393,8 +6393,8 @@ if (id) {
     ${piezasHTML}
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid #E8ECF0;display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:6px">
-        <div style="width:18px;height:18px;background:#0B1220;border-radius:4px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
-        <span style="font-size:11px;font-weight:600;color:#0B1220">Generado con Faro</span>
+        <div style="width:18px;height:18px;background:#0A2540;border-radius:4px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+        <span style="font-size:11px;font-weight:600;color:#0A2540">Generado con Faro</span>
       </div>
       <span style="font-size:11px;color:#9AA5B4">${fechaGen}</span>
     </div>
@@ -6445,7 +6445,7 @@ if (id) {
 
     // ── Métricas ──
     const metrics = [
-      { value: (piezasUrgentes||[]).length, label:'Piezas en revisión', sub:'esperando atención', numColor:'#0B1220', numBg:'#0B1220', dark:true, mod:'contenido' },
+      { value: (piezasUrgentes||[]).length, label:'Piezas en revisión', sub:'esperando atención', numColor:'#0A2540', numBg:'#0A2540', dark:true, mod:'contenido' },
       { value: (tareasVencidas||[]).length,  label:'Tareas vencidas',    sub:'requieren acción',   numColor:'#EF4444', dark:false, mod:'contenido' },
       { value: (crmVencidos||[]).length,     label:'Seguimientos CRM',   sub:'sin contactar',      numColor:'#F59E0B', dark:false, mod:'crm'       },
       { value: (piezasPublicadas||[]).length, label:'Publicadas este mes', sub:'contenido entregado', numColor:'#10B981', dark:false, mod:'contenido' },
@@ -6459,10 +6459,10 @@ if (id) {
       metricsEl.style.padding = '4px'
       metricsEl.innerHTML = metrics.map((m,i) => {
         const isDark = i === 0
-        const bg = isDark ? '#0B1220' : 'transparent'
+        const bg = isDark ? '#0A2540' : 'transparent'
         const border = isDark ? 'none' : 'none'
         const labelColor = isDark ? '#fff' : 'var(--ink)'
-        const subColor = isDark ? 'rgba(255,255,255,.65)' : 'var(--ink3)'
+        const subColor = isDark ? 'rgba(142,219,255,.65)' : 'var(--ink3)'
         const numColor = isDark ? '#8EDBFF' : m.numColor
         const sep = i < metrics.length-1 && !isDark ? 'border-right:1px solid var(--border)' : ''
         return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=${m.mod}]'))" style="background:${bg};border-radius:14px;padding:18px 20px;cursor:pointer;transition:opacity .15s;${sep}" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
@@ -6485,7 +6485,7 @@ if (id) {
         return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="flex:1;min-width:160px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
           <div style="background:${e.color};border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0">
             <div style="font-size:18px;font-weight:900;color:#fff;line-height:1">${dia}</div>
-            <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.5px;margin-top:2px">${mes}</div>
+            <div style="font-size:9px;font-weight:800;color:#8EDBFF;letter-spacing:.5px;margin-top:2px">${mes}</div>
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
@@ -6512,12 +6512,12 @@ if (id) {
     const bannerEl = document.getElementById('inicio-banner')
     if (bannerEl && userRole === 'OWNER' && !isPro()) bannerEl.innerHTML = `
       <div style="background:var(--azul);border-radius:18px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
-        <div style="position:absolute;bottom:-50px;right:140px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
+        <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(142,219,255,.07)"></div>
+        <div style="position:absolute;bottom:-50px;right:140px;width:120px;height:120px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
         <div style="position:relative">
-          <div style="font-size:10px;font-weight:800;color:white;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Faro Pro</div>
+          <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Faro Pro</div>
           <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:5px">Llevá tu agencia al siguiente nivel</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.5">Métricas avanzadas, más clientes, reportes ilimitados y soporte prioritario.</div>
+          <div style="font-size:13px;color:rgba(142,219,255,.75);line-height:1.5">Métricas avanzadas, más clientes, reportes ilimitados y soporte prioritario.</div>
         </div>
         <button style="flex-shrink:0;padding:11px 22px;background:var(--celeste);color:var(--azul);border:none;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Conocer Pro →</button>
       </div>`
@@ -6584,13 +6584,13 @@ if (id) {
       const bg = dark ? 'var(--azul)' : 'var(--white)'
       const numColor = dark ? 'var(--celeste)' : s.iconColor
       const titleColor = dark ? '#fff' : 'var(--ink)'
-      const subColor = dark ? 'rgba(255,255,255,.6)' : 'var(--ink3)'
-      const borderColor = dark ? 'rgba(255,255,255,.15)' : 'var(--border)'
+      const subColor = dark ? 'rgba(142,219,255,.6)' : 'var(--ink3)'
+      const borderColor = dark ? 'rgba(142,219,255,.15)' : 'var(--border)'
       const itemsHTML = s.rawItems.map(item => {
         const dotColor = dark ? item.dateColor : item.dateColor
         const nameColor = dark ? '#fff' : 'var(--ink)'
-        const subNameColor = dark ? 'rgba(255,255,255,.5)' : 'var(--ink3)'
-        const chevColor = dark ? 'rgba(255,255,255,.3)' : 'var(--border)'
+        const subNameColor = dark ? 'rgba(142,219,255,.5)' : 'var(--ink3)'
+        const chevColor = dark ? 'rgba(142,219,255,.3)' : 'var(--border)'
         return `<div onclick="${item.onclick}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
           <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
           <div style="flex:1;min-width:0">
@@ -6740,8 +6740,8 @@ if (id) {
       { label: 'Ganancia neta', val: '$' + gananciaNeta.toLocaleString('es-AR'), sub: margenNeto + '% de margen', color: gananciaNeta >= 0 ? '#6EE7B7' : '#FCA5A5' },
     ].map(k => `<div style="padding:16px;text-align:center">
       <div style="font-size:20px;font-weight:900;color:${k.color};letter-spacing:-.5px;line-height:1">${k.val}</div>
-      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.9);margin-top:6px">${k.label}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">${k.sub}</div>
+      <div style="font-size:11px;font-weight:800;color:rgba(142,219,255,.9);margin-top:6px">${k.label}</div>
+      <div style="font-size:10px;color:rgba(142,219,255,.6);margin-top:2px">${k.sub}</div>
     </div>`).join('')
 
     // KPIs operativos
@@ -6775,19 +6775,19 @@ if (id) {
       const totalGastos = (gastosSueldos||0) + (gastosFijosTotal||0) + (gastosVariablesTotal||0)
       resEl.innerHTML = `
         <div style="background:var(--azul);padding:24px;border-radius:16px 16px 0 0">
-          <div style="font-size:11px;font-weight:800;color:white;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Rentabilidad de la agencia</div>
+          <div style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Rentabilidad de la agencia</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
             <div>
-              <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,.8);letter-spacing:-.5px">${'$'+(ingresoTotal||0).toLocaleString('es-AR')}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px">Ingresos totales</div>
+              <div style="font-size:28px;font-weight:900;color:#8EDBFF;letter-spacing:-.5px">${'$'+(ingresoTotal||0).toLocaleString('es-AR')}</div>
+              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Ingresos totales</div>
             </div>
             <div>
               <div style="font-size:28px;font-weight:900;color:#FCA5A5;letter-spacing:-.5px">-$${totalGastos.toLocaleString('es-AR')}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px">Gastos totales</div>
+              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Gastos totales</div>
             </div>
             <div>
               <div style="font-size:28px;font-weight:900;color:${(gananciaNeta||0)>=0?'#6EE7B7':'#FCA5A5'};letter-spacing:-.5px">${'$'+(gananciaNeta||0).toLocaleString('es-AR')}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px">Ganancia neta · ${margenNeto||0}% margen</div>
+              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Ganancia neta · ${margenNeto||0}% margen</div>
             </div>
           </div>
         </div>
@@ -7027,20 +7027,20 @@ if (id) {
       const isCompleted = onboardingCompleted.includes(s.id)
       const isActive = s.id === activeStep.id
       const isLast = i === ONBOARDING_STEPS.length - 1
-      const connector = !isLast ? `<div style="flex:1;height:2px;background:${isCompleted?'#0B1220':'#E8ECF0'};margin-bottom:18px"></div>` : ''
+      const connector = !isLast ? `<div style="flex:1;height:2px;background:${isCompleted?'#0A2540':'#E8ECF0'};margin-bottom:18px"></div>` : ''
       const circle = isCompleted
         ? `<div style="width:32px;height:32px;border-radius:50%;background:#34C759;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:14px;color:#fff"></i></div>`
         : isActive
-          ? `<div style="width:32px;height:32px;border-radius:50%;background:#0B1220;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:900;color:rgba(255,255,255,.8)">${i+1}</div>`
+          ? `<div style="width:32px;height:32px;border-radius:50%;background:#0A2540;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:900;color:#8EDBFF">${i+1}</div>`
           : `<div style="width:32px;height:32px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:var(--ink3)">${i+1}</div>`
-      const label = `<div style="font-size:10px;font-weight:${isActive?'800':'600'};color:${isCompleted?'#34C759':isActive?'#0B1220':'var(--ink3)'};text-align:center;margin-top:5px">${s.label.split(' ').slice(0,2).join(' ')}</div>`
+      const label = `<div style="font-size:10px;font-weight:${isActive?'800':'600'};color:${isCompleted?'#34C759':isActive?'#0A2540':'var(--ink3)'};text-align:center;margin-top:5px">${s.label.split(' ').slice(0,2).join(' ')}</div>`
       return `<div style="display:flex;flex-direction:column;align-items:center;flex:${isLast?'0':'1'}">${circle}${label}</div>${connector}`
     }).join('')
 
     const activeCard = `<div style="background:var(--bg);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-top:20px">
-      <div style="width:40px;height:40px;border-radius:12px;background:#0B1220;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${activeStep.icon}" style="font-size:20px;color:rgba(255,255,255,.8)"></i></div>
+      <div style="width:40px;height:40px;border-radius:12px;background:#0A2540;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${activeStep.icon}" style="font-size:20px;color:#8EDBFF"></i></div>
       <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:3px">${activeStep.label}</div><div style="font-size:12px;color:var(--ink3)">${activeStep.desc}</div></div>
-      ${activeStep.action ? `<button onclick="completeStep('${activeStep.id}')" style="flex-shrink:0;font-size:12px;font-weight:800;color:#fff;background:#0B1220;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Hacerlo →</button>` : ''}
+      ${activeStep.action ? `<button onclick="completeStep('${activeStep.id}')" style="flex-shrink:0;font-size:12px;font-weight:800;color:#fff;background:#0A2540;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Hacerlo →</button>` : ''}
     </div>`
 
     el.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:20px 24px">
@@ -7166,15 +7166,15 @@ if (id) {
     const popup = document.createElement('div')
     popup.id = 'tooltip-popup'
     popup.style.cssText = 'position:fixed;left:70px;top:'+(rect.top+rect.height/2-80)+'px;z-index:9999;width:280px'
-    popup.innerHTML = '<div style="background:#0B1220;border:1.5px solid rgba(255,255,255,.2);border-radius:16px;padding:18px 20px;font-family:\'Plus Jakarta Sans\',sans-serif">'
+    popup.innerHTML = '<div style="background:#0A2540;border:1.5px solid rgba(142,219,255,.2);border-radius:16px;padding:18px 20px;font-family:\'Plus Jakarta Sans\',sans-serif">'
       + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">'
-      + '<div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti '+t.icon+'" style="font-size:16px;color:rgba(255,255,255,.8)"></i></div>'
+      + '<div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:9px;background:rgba(142,219,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti '+t.icon+'" style="font-size:16px;color:#8EDBFF"></i></div>'
       + '<div style="font-size:13px;font-weight:800;color:#fff;line-height:1.3">'+t.title+'</div></div>'
-      + '<div onclick="dismissTooltip(\''+mod+'\')" style="font-size:18px;color:rgba(255,255,255,.4);cursor:pointer;flex-shrink:0">×</div></div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:14px">'+t.desc+'</div>'
+      + '<div onclick="dismissTooltip(\''+mod+'\')" style="font-size:18px;color:rgba(142,219,255,.4);cursor:pointer;flex-shrink:0">×</div></div>'
+      + '<div style="font-size:12px;color:rgba(142,219,255,.7);line-height:1.6;margin-bottom:14px">'+t.desc+'</div>'
       + '<div style="display:flex;align-items:center;justify-content:space-between">'
-      + '<div style="font-size:11px;color:rgba(255,255,255,.4)">'+(Object.keys(TOOLTIPS).indexOf(mod)+1)+' de '+Object.keys(TOOLTIPS).length+' módulos</div>'
-      + '<button onclick="dismissTooltip(\''+mod+'\')" style="font-size:12px;font-weight:800;color:#0B1220;background:#8EDBFF;border:none;border-radius:9px;padding:8px 16px;cursor:pointer;font-family:inherit">Entendido →</button>'
+      + '<div style="font-size:11px;color:rgba(142,219,255,.4)">'+(Object.keys(TOOLTIPS).indexOf(mod)+1)+' de '+Object.keys(TOOLTIPS).length+' módulos</div>'
+      + '<button onclick="dismissTooltip(\''+mod+'\')" style="font-size:12px;font-weight:800;color:#0A2540;background:#8EDBFF;border:none;border-radius:9px;padding:8px 16px;cursor:pointer;font-family:inherit">Entendido →</button>'
       + '</div></div>'
     document.body.appendChild(popup)
     tooltipPopup = popup
@@ -7350,7 +7350,7 @@ if (id) {
   <div style="font-size:11px;font-weight:700;opacity:.8;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px" id="timer-title">—</div>
   <div style="font-size:32px;font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums;margin-bottom:12px" id="timer-display">00:00:00</div>
   <div style="display:flex;gap:8px">
-    <button id="timer-play-btn" onclick="toggleTimer()" style="flex:1;padding:8px;border:none;border-radius:10px;background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+    <button id="timer-play-btn" onclick="toggleTimer()" style="flex:1;padding:8px;border:none;border-radius:10px;background:rgba(142,219,255,.15);color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s" onmouseover="this.style.background='rgba(142,219,255,.25)'" onmouseout="this.style.background='rgba(142,219,255,.15)'">
       <i class="ti ti-player-pause" id="timer-play-icon" style="font-size:14px"></i> Pausar
     </button>
     <button onclick="stopTimer()" style="padding:8px 14px;border:none;border-radius:10px;background:rgba(255,107,107,.25);color:#ff9999;font-size:12px;font-weight:800;cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(255,107,107,.4)'" onmouseout="this.style.background='rgba(255,107,107,.25)'">
