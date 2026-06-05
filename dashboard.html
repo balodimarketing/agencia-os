@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agencia OS</title>
+  <title>Faro</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --azul:        #0A2540;
-      --celeste:     #8EDBFF;
-      --celeste-dim: rgba(142,219,255,.1);
+      --azul:        #0B1220;
+      --celeste:     #2563FF;
+      --celeste-dim: #EAF1FF;
       --white:       #FFFFFF;
-      --bg:          #F5F7FA;
-      --ink:         #111111;
-      --ink2:        #4A5568;
-      --ink3:        #9AA5B4;
-      --border:      #E8ECF0;
+      --bg:          #F3F4F6;
+      --ink:         #1F2937;
+      --ink2:        #374151;
+      --ink3:        #6B7280;
+      --border:      #E5E7EB;
       --success:     #34C759;
       --danger:      #FF6B6B;
       --warn:        #FFB800;
@@ -40,8 +40,8 @@
 
     /* ── Rail ── */
     .rail { width: var(--rail-w); background: var(--azul); display: flex; flex-direction: column; align-items: center; padding: 14px 0; flex-shrink: 0; z-index: 30; gap: 2px; }
-    .rail-logo { width: 36px; height: 36px; background: var(--celeste); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; cursor: pointer; flex-shrink: 0; }
-    .rail-logo svg { width: 18px; height: 18px; fill: none; stroke: var(--azul); stroke-width: 2.8; stroke-linecap: round; }
+    .rail-logo { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; cursor: pointer; flex-shrink: 0; }
+    .rail-logo svg { width: 28px; height: 28px; }
     .rail-btn { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background var(--t), color var(--t); color: rgba(255,255,255,.35); position: relative; }
     .rail-btn i { font-size: 19px; }
     .rail-btn:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.75); }
@@ -176,7 +176,7 @@
 
     /* ── Modal ── */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(10,37,64,.45);
+      position: fixed; inset: 0; background: rgba(11,18,32,.45);
       display: flex; align-items: center; justify-content: center;
       z-index: 100; padding: 20px;
       opacity: 0; pointer-events: none; transition: opacity var(--t);
@@ -383,7 +383,7 @@
     }
     .contenido-tab.active {
       background: var(--azul); color: var(--celeste);
-      box-shadow: 0 1px 6px rgba(10,37,64,.18);
+      box-shadow: 0 1px 6px rgba(11,18,32,.18);
     }
     .contenido-tab:not(.active):hover {
       background: var(--white); color: var(--ink);
@@ -911,8 +911,15 @@
 
   <!-- RAIL -->
   <div class="rail">
-    <div class="rail-logo">
-      <svg viewBox="0 0 22 22"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>
+    <div class="rail-logo" onclick="window.open('index.html','_self')">
+      <svg viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Barra superior azul -->
+        <path d="M28 18 Q28 10 36 10 L78 10 Q86 10 86 18 L86 30 Q86 38 78 38 L50 38 L50 50 L72 50 Q80 50 80 58 L80 68 Q80 76 72 76 L50 76 L50 102 L36 102 Q28 102 28 94 Z" fill="white"/>
+        <!-- Punto azul -->
+        <circle cx="36" cy="112" r="8" fill="#2563FF"/>
+        <!-- Línea separadora visual -->
+        <rect x="48" y="37" width="4" height="4" fill="#0B1220"/>
+      </svg>
     </div>
     <div class="rail-btn active" data-module="inicio" data-tip="Inicio" onclick="switchModule(this)"><i class="ti ti-layout-dashboard"></i></div>
     <div class="rail-btn" data-module="contenido" data-tip="Contenido" onclick="switchModule(this)"><i class="ti ti-photo"></i></div>
@@ -972,7 +979,7 @@
       <!-- Próximas publicaciones -->
       <div id="inicio-publicaciones" style="margin-bottom:28px"></div>
 
-      <!-- Banner Agencia OS -->
+      <!-- Banner Faro -->
       <div id="inicio-banner" style="margin-bottom:28px"></div>
 
       <!-- Cards de alertas -->
@@ -1943,7 +1950,7 @@
           </div>
           <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:background .15s" onclick="window.open('mailto:hola@agenciaos.com')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
             <div style="width:36px;height:36px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--ink3);flex-shrink:0"><i class="ti ti-mail" style="font-size:18px"></i></div>
-            <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Soporte</div><div style="font-size:11px;color:var(--ink3)">Contactar al equipo de Agencia OS</div></div>
+            <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Soporte</div><div style="font-size:11px;color:var(--ink3)">Contactar al equipo de Faro</div></div>
           </div>
         </div>
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
@@ -2101,7 +2108,7 @@
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Color</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="event-colors">
-            <div style="width:22px;height:22px;border-radius:50%;background:#0A2540;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#0A2540',this)"></div>
+            <div style="width:22px;height:22px;border-radius:50%;background:#0B1220;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#0B1220',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#3B82F6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#3B82F6',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#8B5CF6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#8B5CF6',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#EC4899;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EC4899',this)"></div>
@@ -2109,7 +2116,7 @@
             <div style="width:22px;height:22px;border-radius:50%;background:#10B981;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#10B981',this)"></div>
             <div style="width:22px;height:22px;border-radius:50%;background:#EF4444;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EF4444',this)"></div>
           </div>
-          <input type="hidden" id="event-color" value="#0A2540">
+          <input type="hidden" id="event-color" value="#0B1220">
         </div>
       </div>
 
@@ -2190,7 +2197,7 @@
 
 <!-- MODAL PERFIL -->
 <div class="modal-overlay" id="modal-profile" onclick="if(event.target===this)closeProfileModal()">
-  <div style="background:#fff;border-radius:24px;overflow:hidden;width:540px;max-width:95vw;max-height:90vh;display:flex;box-shadow:0 24px 80px rgba(10,37,64,.16);border:1px solid var(--border)">
+  <div style="background:#fff;border-radius:24px;overflow:hidden;width:540px;max-width:95vw;max-height:90vh;display:flex;box-shadow:0 24px 80px rgba(11,18,32,.16);border:1px solid var(--border)">
 
     <!-- Columna izquierda -->
     <div style="width:170px;padding:28px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;border-right:1px solid var(--border);flex-shrink:0">
@@ -2945,7 +2952,7 @@
   let calPublishedPieces = []
   const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-  const EVENT_COLORS = ['#0A2540','#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444']
+  const EVENT_COLORS = ['#0B1220','#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444']
 
   async function loadCalendarEvents() {
     const { data } = await supabase
@@ -3383,7 +3390,7 @@
 
 
   // ── Event modal ───────────────────────────────────────────
-  let calSelectedColor = '#0A2540'
+  let calSelectedColor = '#0B1220'
   let selectedParticipantes = [] // [{id, nombre}]
 
   async function loadPartDrop() {
@@ -3461,10 +3468,10 @@
     document.getElementById('event-link').value = ''
     document.getElementById('event-descripcion').value = ''
     document.getElementById('event-error').classList.remove('show')
-    calSelectedColor = '#0A2540'
-    document.getElementById('event-color').value = '#0A2540'
+    calSelectedColor = '#0B1220'
+    document.getElementById('event-color').value = '#0B1220'
     document.querySelectorAll('#event-colors div').forEach(d => { d.style.borderColor='transparent'; d.style.boxShadow='none' })
-    document.querySelectorAll('#event-colors div')[0].style.boxShadow = '0 0 0 2px #0A2540'
+    document.querySelectorAll('#event-colors div')[0].style.boxShadow = '0 0 0 2px #0B1220'
     selectedParticipantes = []
     renderPartTags()
     loadPartDrop()
@@ -3555,7 +3562,7 @@
     const payload = {
       titulo,
       tipo: document.getElementById('event-tipo').value,
-      color: document.getElementById('event-color').value || '#0A2540',
+      color: document.getElementById('event-color').value || '#0B1220',
       fecha_inicio: startDate.toISOString(),
       fecha_fin: endDate > startDate ? endDate.toISOString() : null,
       link: document.getElementById('event-link').value.trim() || null,
@@ -4921,7 +4928,7 @@
   }
 
   const ROL_COLORS = {
-    'OWNER':  { bar: '#0A2540', badge: 'var(--azul)', text: 'var(--celeste)' },
+    'OWNER':  { bar: '#0B1220', badge: 'var(--azul)', text: 'var(--celeste)' },
     'ADMIN':  { bar: '#3730A3', badge: '#EEF2FF',     text: '#3730A3'         },
     'MEMBER': { bar: '#E8ECF0', badge: 'var(--bg)',   text: 'var(--ink3)'    },
   }
@@ -6182,7 +6189,7 @@ if (id) {
 
     // ── Barras horizontales por tipo ──
     const TIPO_COLORS = {
-      'Reel': '#0A2540', 'Story': '#3B82F6', 'Feed': '#8EDBFF',
+      'Reel': '#0B1220', 'Story': '#3B82F6', 'Feed': '#8EDBFF',
       'Video': '#F59E0B', 'Carousel': '#10B981', 'TikTok': '#EF4444',
       'Otro': '#9AA5B4'
     }
@@ -6333,7 +6340,7 @@ if (id) {
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
 
     const agencyName = document.getElementById('greeting-agency')?.textContent || ''
-    const logoSVG = '<svg viewBox="0 0 22 22" width="13" height="13" fill="none" stroke="#8EDBFF" stroke-width="2.5" style="display:block"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>'
+    const logoSVG = '<svg viewBox="0 0 100 120" width="16" height="20" fill="none" style="display:block"><path d="M28 18 Q28 10 36 10 L78 10 Q86 10 86 18 L86 30 Q86 38 78 38 L50 38 L50 50 L72 50 Q80 50 80 58 L80 68 Q80 76 72 76 L50 76 L50 102 L36 102 Q28 102 28 94 Z" fill="white"/><circle cx="36" cy="112" r="8" fill="#2563FF"/></svg>'
 
     const TIPO_BG = { 'Reel':'#E8F4FF', 'Story':'#EEF2FF', 'Feed':'#F0FDF4', 'Video':'#FFF7ED', 'Carousel':'#F0FDF4', 'TikTok':'#FEF2F2' }
     const TIPO_TX = { 'Reel':'#0C447C', 'Story':'#3730A3', 'Feed':'#166534', 'Video':'#9A3412', 'Carousel':'#166534', 'TikTok':'#991B1B' }
@@ -6348,11 +6355,11 @@ if (id) {
       const statsHTML = hasStats ? `<div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E8ECF0;margin-top:12px">${
         [['visitas','Visitas'],['likes','Likes'],['comentarios','Comentarios'],['compartidos','Compartidos'],['reposteos','Reposteos']]
           .filter(([k]) => stats[k])
-          .map(([k,l]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${l}</div></div>`)
+          .map(([k,l]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0B1220">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${l}</div></div>`)
           .join('')
       }</div>` : ''
 
-      return `<div style="border:1.5px solid #0A2540;border-radius:12px;padding:18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:5px">${p.titulo}</div><span style="font-size:10px;font-weight:600;padding:2px 9px;background:${bg};color:${tx};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span></div><div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div></div>${statsHTML}</div>`
+      return `<div style="border:1.5px solid #0B1220;border-radius:12px;padding:18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-size:14px;font-weight:600;color:#0B1220;margin-bottom:5px">${p.titulo}</div><span style="font-size:10px;font-weight:600;padding:2px 9px;background:${bg};color:${tx};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${p.tipo}</span></div><div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div></div>${statsHTML}</div>`
     }).join('')
 
     const agencyLine = agencyName ? agencyName + ' &middot; ' : ''
@@ -6366,20 +6373,20 @@ if (id) {
 <style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: -apple-system,'Segoe UI',sans-serif; background: #F5F7FA; padding: 40px; } @media print { body { background: #fff; padding: 0; } @page { margin: 15mm; } }</style>
 </head>
 <body>
-<div style="background:#fff;max-width:680px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #0A2540">
-  <div style="padding:36px 40px 28px;border-bottom:2px solid #0A2540">
+<div style="background:#fff;max-width:680px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #0B1220">
+  <div style="padding:36px 40px 28px;border-bottom:2px solid #0B1220">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
-      <div style="width:26px;height:26px;background:#0A2540;border-radius:6px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
-      <span style="font-size:11px;font-weight:600;color:#9AA5B4;letter-spacing:.6px;text-transform:uppercase">Agencia OS &middot; Reporte de contenido</span>
+      <div style="width:26px;height:26px;background:#0B1220;border-radius:6px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+      <span style="font-size:11px;font-weight:600;color:#9AA5B4;letter-spacing:.6px;text-transform:uppercase">Faro &middot; Reporte de contenido</span>
     </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between">
       <div>
-        <div style="font-size:11px;font-weight:600;color:#0A2540;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Cliente</div>
-        <div style="font-size:32px;font-weight:700;color:#0A2540;letter-spacing:-.5px;line-height:1.1">${repCurrentClient.nombre}</div>
+        <div style="font-size:11px;font-weight:600;color:#0B1220;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Cliente</div>
+        <div style="font-size:32px;font-weight:700;color:#0B1220;letter-spacing:-.5px;line-height:1.1">${repCurrentClient.nombre}</div>
         <div style="font-size:13px;color:#9AA5B4;margin-top:5px">${agencyLine}${repCurrentMonth.label}</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:44px;font-weight:700;color:#0A2540;line-height:1">${clientPieces.length}</div>
+        <div style="font-size:44px;font-weight:700;color:#0B1220;line-height:1">${clientPieces.length}</div>
         <div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">piezas publicadas</div>
       </div>
     </div>
@@ -6389,8 +6396,8 @@ if (id) {
     ${piezasHTML}
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid #E8ECF0;display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:6px">
-        <div style="width:18px;height:18px;background:#0A2540;border-radius:4px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
-        <span style="font-size:11px;font-weight:600;color:#0A2540">Generado con Agencia OS</span>
+        <div style="width:18px;height:18px;background:#0B1220;border-radius:4px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+        <span style="font-size:11px;font-weight:600;color:#0B1220">Generado con Faro</span>
       </div>
       <span style="font-size:11px;color:#9AA5B4">${fechaGen}</span>
     </div>
@@ -6441,7 +6448,7 @@ if (id) {
 
     // ── Métricas ──
     const metrics = [
-      { value: (piezasUrgentes||[]).length, label:'Piezas en revisión', sub:'esperando atención', numColor:'#0A2540', numBg:'#0A2540', dark:true, mod:'contenido' },
+      { value: (piezasUrgentes||[]).length, label:'Piezas en revisión', sub:'esperando atención', numColor:'#0B1220', numBg:'#0B1220', dark:true, mod:'contenido' },
       { value: (tareasVencidas||[]).length,  label:'Tareas vencidas',    sub:'requieren acción',   numColor:'#EF4444', dark:false, mod:'contenido' },
       { value: (crmVencidos||[]).length,     label:'Seguimientos CRM',   sub:'sin contactar',      numColor:'#F59E0B', dark:false, mod:'crm'       },
       { value: (piezasPublicadas||[]).length, label:'Publicadas este mes', sub:'contenido entregado', numColor:'#10B981', dark:false, mod:'contenido' },
@@ -6455,7 +6462,7 @@ if (id) {
       metricsEl.style.padding = '4px'
       metricsEl.innerHTML = metrics.map((m,i) => {
         const isDark = i === 0
-        const bg = isDark ? '#0A2540' : 'transparent'
+        const bg = isDark ? '#0B1220' : 'transparent'
         const border = isDark ? 'none' : 'none'
         const labelColor = isDark ? '#fff' : 'var(--ink)'
         const subColor = isDark ? 'rgba(142,219,255,.65)' : 'var(--ink3)'
@@ -6504,14 +6511,14 @@ if (id) {
         </div>`
     }
 
-    // ── Banner Agencia OS Pro ──
+    // ── Banner Faro Pro ──
     const bannerEl = document.getElementById('inicio-banner')
     if (bannerEl && userRole === 'OWNER' && !isPro()) bannerEl.innerHTML = `
       <div style="background:var(--azul);border-radius:18px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden">
         <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(142,219,255,.07)"></div>
         <div style="position:absolute;bottom:-50px;right:140px;width:120px;height:120px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
         <div style="position:relative">
-          <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Agencia OS Pro</div>
+          <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Faro Pro</div>
           <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:5px">Llevá tu agencia al siguiente nivel</div>
           <div style="font-size:13px;color:rgba(142,219,255,.75);line-height:1.5">Métricas avanzadas, más clientes, reportes ilimitados y soporte prioritario.</div>
         </div>
@@ -7023,25 +7030,25 @@ if (id) {
       const isCompleted = onboardingCompleted.includes(s.id)
       const isActive = s.id === activeStep.id
       const isLast = i === ONBOARDING_STEPS.length - 1
-      const connector = !isLast ? `<div style="flex:1;height:2px;background:${isCompleted?'#0A2540':'#E8ECF0'};margin-bottom:18px"></div>` : ''
+      const connector = !isLast ? `<div style="flex:1;height:2px;background:${isCompleted?'#0B1220':'#E8ECF0'};margin-bottom:18px"></div>` : ''
       const circle = isCompleted
         ? `<div style="width:32px;height:32px;border-radius:50%;background:#34C759;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:14px;color:#fff"></i></div>`
         : isActive
-          ? `<div style="width:32px;height:32px;border-radius:50%;background:#0A2540;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:900;color:#8EDBFF">${i+1}</div>`
+          ? `<div style="width:32px;height:32px;border-radius:50%;background:#0B1220;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:900;color:#8EDBFF">${i+1}</div>`
           : `<div style="width:32px;height:32px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:var(--ink3)">${i+1}</div>`
-      const label = `<div style="font-size:10px;font-weight:${isActive?'800':'600'};color:${isCompleted?'#34C759':isActive?'#0A2540':'var(--ink3)'};text-align:center;margin-top:5px">${s.label.split(' ').slice(0,2).join(' ')}</div>`
+      const label = `<div style="font-size:10px;font-weight:${isActive?'800':'600'};color:${isCompleted?'#34C759':isActive?'#0B1220':'var(--ink3)'};text-align:center;margin-top:5px">${s.label.split(' ').slice(0,2).join(' ')}</div>`
       return `<div style="display:flex;flex-direction:column;align-items:center;flex:${isLast?'0':'1'}">${circle}${label}</div>${connector}`
     }).join('')
 
     const activeCard = `<div style="background:var(--bg);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-top:20px">
-      <div style="width:40px;height:40px;border-radius:12px;background:#0A2540;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${activeStep.icon}" style="font-size:20px;color:#8EDBFF"></i></div>
+      <div style="width:40px;height:40px;border-radius:12px;background:#0B1220;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${activeStep.icon}" style="font-size:20px;color:#8EDBFF"></i></div>
       <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:3px">${activeStep.label}</div><div style="font-size:12px;color:var(--ink3)">${activeStep.desc}</div></div>
-      ${activeStep.action ? `<button onclick="completeStep('${activeStep.id}')" style="flex-shrink:0;font-size:12px;font-weight:800;color:#fff;background:#0A2540;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Hacerlo →</button>` : ''}
+      ${activeStep.action ? `<button onclick="completeStep('${activeStep.id}')" style="flex-shrink:0;font-size:12px;font-weight:800;color:#fff;background:#0B1220;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Hacerlo →</button>` : ''}
     </div>`
 
     el.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:20px 24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-        <div><div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Empezá con Agencia OS</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${done} de ${total} completados · ${pct}%</div></div>
+        <div><div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Empezá con Faro</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${done} de ${total} completados · ${pct}%</div></div>
         <button onclick="dismissChecklist()" style="font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">Ocultar</button>
       </div>
       <div style="display:flex;align-items:center;gap:0">${stepperHTML}</div>
@@ -7057,7 +7064,7 @@ if (id) {
     await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: onboardingCompleted, completed: allDone }, { onConflict: 'user_id,agency_id' })
     if (allDone) {
       onboardingDone = true
-      showToast('🎉 ¡Completaste el setup de Agencia OS!')
+      showToast('🎉 ¡Completaste el setup de Faro!')
       const el = document.getElementById('inicio-checklist')
       if (el) { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>{el.innerHTML=''},300) }
     } else {
@@ -7162,7 +7169,7 @@ if (id) {
     const popup = document.createElement('div')
     popup.id = 'tooltip-popup'
     popup.style.cssText = 'position:fixed;left:70px;top:'+(rect.top+rect.height/2-80)+'px;z-index:9999;width:280px'
-    popup.innerHTML = '<div style="background:#0A2540;border:1.5px solid rgba(142,219,255,.2);border-radius:16px;padding:18px 20px;font-family:\'Plus Jakarta Sans\',sans-serif">'
+    popup.innerHTML = '<div style="background:#0B1220;border:1.5px solid rgba(142,219,255,.2);border-radius:16px;padding:18px 20px;font-family:\'Plus Jakarta Sans\',sans-serif">'
       + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">'
       + '<div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:9px;background:rgba(142,219,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti '+t.icon+'" style="font-size:16px;color:#8EDBFF"></i></div>'
       + '<div style="font-size:13px;font-weight:800;color:#fff;line-height:1.3">'+t.title+'</div></div>'
@@ -7170,7 +7177,7 @@ if (id) {
       + '<div style="font-size:12px;color:rgba(142,219,255,.7);line-height:1.6;margin-bottom:14px">'+t.desc+'</div>'
       + '<div style="display:flex;align-items:center;justify-content:space-between">'
       + '<div style="font-size:11px;color:rgba(142,219,255,.4)">'+(Object.keys(TOOLTIPS).indexOf(mod)+1)+' de '+Object.keys(TOOLTIPS).length+' módulos</div>'
-      + '<button onclick="dismissTooltip(\''+mod+'\')" style="font-size:12px;font-weight:800;color:#0A2540;background:#8EDBFF;border:none;border-radius:9px;padding:8px 16px;cursor:pointer;font-family:inherit">Entendido →</button>'
+      + '<button onclick="dismissTooltip(\''+mod+'\')" style="font-size:12px;font-weight:800;color:#0B1220;background:#8EDBFF;border:none;border-radius:9px;padding:8px 16px;cursor:pointer;font-family:inherit">Entendido →</button>'
       + '</div></div>'
     document.body.appendChild(popup)
     tooltipPopup = popup
