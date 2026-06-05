@@ -1070,20 +1070,91 @@
     <!-- REPORTES -->
     <div class="view" id="v-reportes" style="padding:0;overflow-y:auto">
 
+      <!-- Tabs de reportes -->
+      <div style="display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:var(--white);padding:0 32px;position:sticky;top:0;z-index:10">
+        <button id="rep-tab-clientes" onclick="switchRepTab('clientes')" style="padding:14px 20px;border:none;background:transparent;font-size:13px;font-weight:800;color:var(--azul);border-bottom:2px solid var(--azul);cursor:pointer;font-family:inherit;transition:all .15s">Reportes por cliente</button>
+        <button id="rep-tab-agencia" onclick="switchRepTab('agencia')" style="padding:14px 20px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;transition:all .15s" id="rep-tab-agencia-btn">Métricas de agencia</button>
+      </div>
+
+      <!-- Vista: métricas de agencia -->
+      <div id="rep-agencia" style="display:none;padding:28px 32px;max-width:1000px;margin:0 auto">
+
+        <!-- KPIs -->
+        <div id="rep-kpis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px"></div>
+
+        <!-- Valor hora -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px">Valor hora de la agencia</div>
+              <div style="font-size:12px;color:var(--ink3)">Se usa para calcular rentabilidad por cliente</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="display:flex;gap:6px">
+                <button onclick="setValorHora(10)" class="vh-btn" data-vh="10" style="padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s">USD 10</button>
+                <button onclick="setValorHora(15)" class="vh-btn" data-vh="15" style="padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s">USD 15</button>
+                <button onclick="setValorHora(20)" class="vh-btn" data-vh="20" style="padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s">USD 20</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;border:1.5px solid var(--border);border-radius:8px;padding:4px 10px">
+                <span style="font-size:12px;color:var(--ink3)">USD</span>
+                <input type="number" id="vh-custom" min="1" placeholder="Custom" style="width:60px;border:none;outline:none;font-size:12px;font-weight:700;font-family:inherit;color:var(--ink)" onchange="setValorHora(parseInt(this.value)||10)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtros de período -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+          <span style="font-size:12px;font-weight:700;color:var(--ink3)">Período:</span>
+          <button onclick="setRepPeriodo('mes')" class="rep-periodo-btn active" data-p="mes" style="padding:6px 14px;border:1.5px solid var(--azul);border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;background:var(--azul);color:#fff">Este mes</button>
+          <button onclick="setRepPeriodo('trimestre')" class="rep-periodo-btn" data-p="trimestre" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--ink3)">Trimestre</button>
+          <button onclick="setRepPeriodo('año')" class="rep-periodo-btn" data-p="año" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--ink3)">Este año</button>
+        </div>
+
+        <!-- Rentabilidad por cliente -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
+          <div style="padding:18px 22px;border-bottom:1px solid var(--border)">
+            <div style="font-size:14px;font-weight:800;color:var(--ink)">Rentabilidad por cliente</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Basado en horas registradas y valor hora configurado</div>
+          </div>
+          <div id="rep-rentabilidad" style="padding:8px 0"></div>
+        </div>
+
+        <!-- Rendimiento del equipo -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
+          <div style="padding:18px 22px;border-bottom:1px solid var(--border)">
+            <div style="font-size:14px;font-weight:800;color:var(--ink)">Rendimiento del equipo</div>
+          </div>
+          <div id="rep-equipo-render" style="padding:8px 0"></div>
+        </div>
+
+        <!-- Gráficos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción mensual</div>
+            <div id="chart-produccion"></div>
+          </div>
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Estado de tareas</div>
+            <div id="chart-tareas"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción por cliente</div>
+            <div id="chart-clientes"></div>
+          </div>
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Aprobaciones</div>
+            <div id="chart-aprobaciones"></div>
+          </div>
+        </div>
+
+      </div>
+
       <!-- Vista: lista de clientes -->
       <div id="rep-home" style="padding:28px 32px;max-width:800px;margin:0 auto">
-
-        <!-- Métricas de agencia (placeholder) -->
-        <div style="background:var(--azul);border-radius:16px;padding:24px 28px;margin-bottom:28px;position:relative;overflow:hidden">
-          <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(142,219,255,.08)"></div>
-          <div style="position:absolute;bottom:-30px;right:60px;width:80px;height:80px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-            <i class="ti ti-chart-line" style="font-size:16px;color:var(--celeste)"></i>
-            <span style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px">Métricas de agencia</span>
-          </div>
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px">Próximamente</div>
-          <div style="font-size:12px;color:rgba(142,219,255,.7);line-height:1.5">Rendimiento global, tasas de cierre, productividad del equipo y más.</div>
-        </div>
 
         <!-- Clientes -->
         <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Reportes por cliente</div>
@@ -2322,7 +2393,10 @@
     else if (mod === 'calendario') { renderCalendario(); setTimeout(()=>showTooltipBanner('calendario'),300) }
     else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); renderToolsGrid(); setTimeout(()=>showTooltipBanner('herramientas'),300) }
     else if (mod === 'crm') { renderCrm(); setTimeout(()=>showTooltipBanner('crm'),300) }
-    else if (mod === 'reportes') { renderReportes(); setTimeout(()=>showTooltipBanner('reportes'),300) }
+    else if (mod === 'reportes') { renderReportes(); setTimeout(()=>showTooltipBanner('reportes'),300)
+      const tabAgencia = document.getElementById('rep-tab-agencia')
+      if (tabAgencia) tabAgencia.style.display = userRole === 'MEMBER' ? 'none' : 'block'
+    }
     else { document.getElementById('panel-body').innerHTML = '' }
   }
 
@@ -6518,6 +6592,346 @@ if (id) {
     }
   }
 
+
+  // ══════════════════════════════════════
+  // MÉTRICAS DE AGENCIA
+  // ══════════════════════════════════════
+
+  let repPeriodo = 'mes'
+  let valorHora = 10
+  let agenciaMetricas = {}
+
+  window.switchRepTab = function(tab) {
+    const isAgencia = tab === 'agencia'
+    document.getElementById('rep-home').style.display = isAgencia ? 'none' : 'block'
+    document.getElementById('rep-months').style.display = 'none'
+    document.getElementById('rep-detail').style.display = 'none'
+    document.getElementById('rep-agencia').style.display = isAgencia ? 'block' : 'none'
+
+    const tabClientes = document.getElementById('rep-tab-clientes')
+    const tabAgencia = document.getElementById('rep-tab-agencia')
+    if (tabClientes) { tabClientes.style.color = isAgencia ? 'var(--ink3)' : 'var(--azul)'; tabClientes.style.borderBottomColor = isAgencia ? 'transparent' : 'var(--azul)'; tabClientes.style.fontWeight = isAgencia ? '700' : '800' }
+    if (tabAgencia) { tabAgencia.style.color = isAgencia ? 'var(--azul)' : 'var(--ink3)'; tabAgencia.style.borderBottomColor = isAgencia ? 'var(--azul)' : 'transparent'; tabAgencia.style.fontWeight = isAgencia ? '800' : '700' }
+
+    if (isAgencia) renderAgenciaMetricas()
+  }
+
+  window.setRepPeriodo = function(p) {
+    repPeriodo = p
+    document.querySelectorAll('.rep-periodo-btn').forEach(b => {
+      const active = b.dataset.p === p
+      b.style.background = active ? 'var(--azul)' : 'transparent'
+      b.style.color = active ? '#fff' : 'var(--ink3)'
+      b.style.borderColor = active ? 'var(--azul)' : 'var(--border)'
+      b.style.fontWeight = active ? '800' : '700'
+    })
+    renderAgenciaMetricas()
+  }
+
+  window.setValorHora = function(val) {
+    valorHora = val
+    document.querySelectorAll('.vh-btn').forEach(b => {
+      const active = parseInt(b.dataset.vh) === val
+      b.style.background = active ? 'var(--azul)' : 'transparent'
+      b.style.color = active ? '#fff' : 'var(--ink3)'
+      b.style.borderColor = active ? 'var(--azul)' : 'var(--border)'
+    })
+    const customInput = document.getElementById('vh-custom')
+    if (customInput && ![10,15,20].includes(val)) customInput.value = val
+    supabase.from('agencies').update({ valor_hora: val }).eq('id', agencyId)
+    renderRentabilidad()
+  }
+
+  function getPeriodoRange() {
+    const now = new Date()
+    let start, end
+    if (repPeriodo === 'mes') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1)
+      end = new Date(now.getFullYear(), now.getMonth()+1, 0)
+    } else if (repPeriodo === 'trimestre') {
+      const q = Math.floor(now.getMonth()/3)
+      start = new Date(now.getFullYear(), q*3, 1)
+      end = new Date(now.getFullYear(), q*3+3, 0)
+    } else {
+      start = new Date(now.getFullYear(), 0, 1)
+      end = new Date(now.getFullYear(), 11, 31)
+    }
+    return { start: start.toISOString(), end: end.toISOString() }
+  }
+
+  async function renderAgenciaMetricas() {
+    if (!agencyId) return
+    const { start, end } = getPeriodoRange()
+
+    // Cargar valor hora guardado
+    const { data: agData } = await supabase.from('agencies').select('valor_hora').eq('id', agencyId).single()
+    if (agData?.valor_hora) {
+      valorHora = agData.valor_hora
+      document.querySelectorAll('.vh-btn').forEach(b => {
+        const active = parseInt(b.dataset.vh) === valorHora
+        b.style.background = active ? 'var(--azul)' : 'transparent'
+        b.style.color = active ? '#fff' : 'var(--ink3)'
+        b.style.borderColor = active ? 'var(--azul)' : 'var(--border)'
+      })
+      if (![10,15,20].includes(valorHora)) {
+        const ci = document.getElementById('vh-custom')
+        if (ci) ci.value = valorHora
+      }
+    }
+
+    const [
+      { data: piezas },
+      { data: tareas },
+      { data: timeLogs },
+      { data: crmContacts },
+      { data: crmDeals },
+      { data: miembros }
+    ] = await Promise.all([
+      supabase.from('content_pieces').select('id,estado,client_id,fecha_publicacion,clients(nombre)').eq('agency_id', agencyId).gte('fecha_publicacion', start).lte('fecha_publicacion', end),
+      supabase.from('content_tasks').select('id,estado,fecha_entrega,assigned_to').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
+      supabase.from('time_logs').select('duracion_segundos,user_id,piece_id,created_at').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
+      supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId),
+      supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId).neq('pipeline_stage', 'cerrado_perdido'),
+      supabase.from('agency_members').select('id,role,user_id,puesto,profiles(nombre,apellido,avatar_url)').eq('agency_id', agencyId).eq('status', 'active')
+    ])
+
+    const piezasArr = piezas || []
+    const tareasArr = tareas || []
+    const timeArr = timeLogs || []
+    const contactsArr = crmContacts || []
+    const miembrosArr = miembros || []
+
+    const piezasPublicadas = piezasArr.filter(p => p.estado === 'publicado').length
+    const horasTotales = timeArr.reduce((a, t) => a + (t.duracion_segundos || 0), 0) / 3600
+    const tareasCompletadas = tareasArr.filter(t => t.estado === 'completada').length
+    const tareasVencidas = tareasArr.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
+    const pipelineTotal = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).reduce((a, c) => a + (c.valor_deal || 0), 0)
+    const dealsActivos = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).length
+    const cerrados = contactsArr.filter(c => c.pipeline_stage === 'cerrado_ganado').length
+    const totalDeals = contactsArr.length
+    const tasaCierre = totalDeals > 0 ? Math.round((cerrados / totalDeals) * 100) : 0
+
+    // KPIs
+    const kpisEl = document.getElementById('rep-kpis')
+    if (kpisEl) kpisEl.innerHTML = [
+      { label: 'Clientes activos', val: clients.filter(c => c.estado === 'activo').length, color: 'var(--azul)', icon: 'ti-building' },
+      { label: 'Miembros activos', val: miembrosArr.length, color: '#3730A3', icon: 'ti-users' },
+      { label: 'Piezas publicadas', val: piezasPublicadas, color: '#10B981', icon: 'ti-photo' },
+      { label: 'Horas registradas', val: horasTotales.toFixed(1) + 'h', color: 'var(--azul)', icon: 'ti-clock' },
+      { label: 'Tareas completadas', val: tareasCompletadas, color: '#10B981', icon: 'ti-check' },
+      { label: 'Tareas vencidas', val: tareasVencidas, color: 'var(--danger)', icon: 'ti-alert-circle' },
+      { label: 'Pipeline CRM', val: '$' + pipelineTotal.toLocaleString('es-AR'), color: '#F59E0B', icon: 'ti-currency-dollar' },
+      { label: 'Deals activos', val: dealsActivos, color: '#3730A3', icon: 'ti-briefcase' },
+      { label: 'Tasa de cierre', val: tasaCierre + '%', color: '#10B981', icon: 'ti-target' },
+    ].map(k => `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px">
+      <div style="width:38px;height:38px;border-radius:10px;background:${k.color}18;display:flex;align-items:center;justify-content:center;color:${k.color};flex-shrink:0"><i class="ti ${k.icon}" style="font-size:18px"></i></div>
+      <div><div style="font-size:20px;font-weight:900;color:${k.color};letter-spacing:-.5px;line-height:1">${k.val}</div><div style="font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600">${k.label}</div></div>
+    </div>`).join('')
+
+    // Guardar para rentabilidad
+    agenciaMetricas = { piezasArr, tareasArr, timeArr, miembrosArr, contactsArr }
+    renderRentabilidad()
+    renderEquipoMetricas()
+    renderCharts(piezasArr, tareasArr)
+  }
+
+  function renderRentabilidad() {
+    const el = document.getElementById('rep-rentabilidad')
+    if (!el || !agenciaMetricas.piezasArr) return
+    const { timeArr } = agenciaMetricas
+
+    const clientesActivos = clients.filter(c => c.estado === 'activo')
+    if (!clientesActivos.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--ink3)">Sin clientes activos</div>'; return }
+
+    const data = clientesActivos.map(c => {
+      const horas = timeArr.filter(t => {
+        // Aproximar horas por cliente via piezas
+        const pieza = (agenciaMetricas.piezasArr || []).find(p => p.id === t.piece_id)
+        return pieza?.client_id === c.id
+      }).reduce((a, t) => a + (t.duracion_segundos || 0), 0) / 3600
+      const ingreso = c.ingreso_mensual || 0
+      const costo = horas * valorHora
+      const ganancia = ingreso - costo
+      const margen = ingreso > 0 ? Math.round((ganancia / ingreso) * 100) : null
+      return { ...c, horas, ingreso, costo, ganancia, margen }
+    }).sort((a, b) => (b.margen || 0) - (a.margen || 0))
+
+    el.innerHTML = data.map(c => {
+      const margenColor = c.margen === null ? 'var(--ink3)' : c.margen >= 50 ? '#10B981' : c.margen >= 20 ? '#F59E0B' : 'var(--danger)'
+      const margenIcon = c.margen === null ? '—' : c.margen >= 50 ? '🟢' : c.margen >= 20 ? '🟡' : '🔴'
+      const ini = initials(c.nombre)
+      const col = getAvColor(c.nombre)
+      return `<div style="display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:9px;background:${col.bg};color:${col.color};font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">${c.nombre}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${c.horas.toFixed(1)}h registradas</div>
+        </div>
+        <div style="text-align:center;min-width:80px">
+          <div style="font-size:12px;color:var(--ink3)">Ingreso</div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink)">$${c.ingreso.toLocaleString('es-AR')}</div>
+        </div>
+        <div style="text-align:center;min-width:80px">
+          <div style="font-size:12px;color:var(--ink3)">Costo op.</div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink)">$${c.costo.toFixed(0)}</div>
+        </div>
+        <div style="text-align:center;min-width:80px">
+          <div style="font-size:12px;color:var(--ink3)">Ganancia</div>
+          <div style="font-size:13px;font-weight:800;color:${c.ganancia >= 0 ? '#10B981' : 'var(--danger)'}">$${c.ganancia.toFixed(0)}</div>
+        </div>
+        <div style="text-align:center;min-width:70px">
+          <div style="font-size:18px">${margenIcon}</div>
+          <div style="font-size:12px;font-weight:800;color:${margenColor}">${c.margen !== null ? c.margen + '%' : 'Sin datos'}</div>
+        </div>
+        <button onclick="openClientIngresoModal('${c.id}','${c.nombre.replace(/'/g,"\\'")}',${c.ingreso})" style="font-size:11px;font-weight:700;color:var(--azul);background:none;border:1.5px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer;font-family:inherit;white-space:nowrap">Editar ingreso</button>
+      </div>`
+    }).join('')
+  }
+
+  function renderEquipoMetricas() {
+    const el = document.getElementById('rep-equipo-render')
+    if (!el || !agenciaMetricas.miembrosArr) return
+    const { tareasArr, timeArr, piezasArr } = agenciaMetricas
+
+    el.innerHTML = agenciaMetricas.miembrosArr.map(m => {
+      const nombre = `${m.profiles?.nombre||''} ${m.profiles?.apellido||''}`.trim()
+      const ini = initials(nombre)
+      const col = getAvColor(nombre)
+      const avatarUrl = m.profiles?.avatar_url
+
+      const mTareas = tareasArr.filter(t => t.assigned_to === m.user_id)
+      const completadas = mTareas.filter(t => t.estado === 'completada').length
+      const vencidas = mTareas.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
+      const horas = timeArr.filter(t => t.user_id === m.user_id).reduce((a, t) => a + (t.duracion_segundos || 0), 0) / 3600
+      const piezasTrabajadas = piezasArr.filter(p => p.client_id && agenciaMetricas.timeArr?.some(t => t.user_id === m.user_id && t.piece_id === p.id)).length
+
+      const actividad7d = timeArr.filter(t => t.user_id === m.user_id && new Date(t.created_at) > new Date(Date.now() - 7*24*60*60*1000)).length
+      const actividadLabel = actividad7d > 5 ? 'Alta' : actividad7d > 1 ? 'Media' : 'Baja'
+      const actividadColor = actividad7d > 5 ? '#10B981' : actividad7d > 1 ? '#F59E0B' : 'var(--danger)'
+
+      const carga = mTareas.filter(t => t.estado !== 'completada').length
+      const cargaLabel = carga > 8 ? 'Alta' : carga > 3 ? 'Normal' : 'Baja'
+      const cargaColor = carga > 8 ? 'var(--danger)' : carga > 3 ? '#F59E0B' : '#10B981'
+
+      return `<div style="display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px;min-width:180px">
+          ${avatarUrl ? `<img src="${avatarUrl}" style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0">` : `<div style="width:36px;height:36px;border-radius:10px;background:${col.bg};color:${col.color};font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`}
+          <div><div style="font-size:13px;font-weight:700;color:var(--ink)">${nombre}</div><div style="font-size:11px;color:var(--ink3)">${m.puesto||m.role}</div></div>
+        </div>
+        <div style="display:flex;gap:20px;flex:1;flex-wrap:wrap">
+          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#10B981">${completadas}</div><div style="font-size:10px;color:var(--ink3)">Completadas</div></div>
+          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--danger)">${vencidas}</div><div style="font-size:10px;color:var(--ink3)">Vencidas</div></div>
+          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--azul)">${horas.toFixed(1)}h</div><div style="font-size:10px;color:var(--ink3)">Registradas</div></div>
+          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#3730A3">${piezasTrabajadas}</div><div style="font-size:10px;color:var(--ink3)">Piezas</div></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div style="text-align:center"><div style="font-size:11px;font-weight:800;color:${actividadColor}">${actividadLabel}</div><div style="font-size:10px;color:var(--ink3)">Actividad</div></div>
+          <div style="text-align:center"><div style="font-size:11px;font-weight:800;color:${cargaColor}">${cargaLabel}</div><div style="font-size:10px;color:var(--ink3)">Carga</div></div>
+        </div>
+      </div>`
+    }).join('')
+  }
+
+  function renderCharts(piezasArr, tareasArr) {
+    // Producción por cliente
+    const byCliente = {}
+    piezasArr.filter(p => p.estado === 'publicado').forEach(p => {
+      const n = p.clients?.nombre || 'Sin cliente'
+      byCliente[n] = (byCliente[n] || 0) + 1
+    })
+    const maxC = Math.max(...Object.values(byCliente), 1)
+    const chartC = document.getElementById('chart-clientes')
+    if (chartC) chartC.innerHTML = Object.entries(byCliente).sort((a,b) => b[1]-a[1]).slice(0,6).map(([n,v]) => `
+      <div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">${n}</span><span style="font-weight:800;color:var(--ink)">${v}</span></div>
+        <div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:${Math.round((v/maxC)*100)}%;background:var(--azul);border-radius:4px"></div></div>
+      </div>`).join('') || '<div style="font-size:13px;color:var(--ink3)">Sin datos</div>'
+
+    // Estado de tareas
+    const comp = tareasArr.filter(t => t.estado === 'completada').length
+    const pend = tareasArr.filter(t => t.estado !== 'completada' && (!t.fecha_entrega || new Date(t.fecha_entrega) >= new Date())).length
+    const venc = tareasArr.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
+    const totalT = comp + pend + venc || 1
+    const chartT = document.getElementById('chart-tareas')
+    if (chartT) chartT.innerHTML = [
+      { label: 'Completadas', val: comp, color: '#10B981' },
+      { label: 'Pendientes', val: pend, color: '#F59E0B' },
+      { label: 'Vencidas', val: venc, color: 'var(--danger)' },
+    ].map(s => `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600">${s.label}</span><span style="font-weight:800;color:var(--ink)">${s.val}</span></div>
+      <div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:${Math.round((s.val/totalT)*100)}%;background:${s.color};border-radius:4px"></div></div>
+    </div>`).join('')
+
+    // Aprobaciones
+    const directas = piezasArr.filter(p => p.estado === 'publicado').length
+    const conCambios = piezasArr.filter(p => p.estado !== 'publicado').length
+    const totalA = directas + conCambios || 1
+    const chartA = document.getElementById('chart-aprobaciones')
+    if (chartA) chartA.innerHTML = [
+      { label: 'Aprobadas directamente', val: directas, color: '#10B981' },
+      { label: 'Con revisiones', val: conCambios, color: '#F59E0B' },
+    ].map(s => `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600">${s.label}</span><span style="font-weight:800;color:var(--ink)">${s.val} (${Math.round((s.val/totalA)*100)}%)</span></div>
+      <div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:${Math.round((s.val/totalA)*100)}%;background:${s.color};border-radius:4px"></div></div>
+    </div>`).join('')
+
+    // Producción mensual (últimos 6 meses)
+    const ultimos6 = []
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(); d.setMonth(d.getMonth() - i)
+      const mes = d.toLocaleDateString('es-AR', { month: 'short' })
+      const count = piezasArr.filter(p => {
+        if (!p.fecha_publicacion) return false
+        const pd = new Date(p.fecha_publicacion)
+        return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth()
+      }).length
+      ultimos6.push({ mes, count })
+    }
+    const maxP = Math.max(...ultimos6.map(u => u.count), 1)
+    const chartP = document.getElementById('chart-produccion')
+    if (chartP) chartP.innerHTML = `<div style="display:flex;align-items:flex-end;gap:8px;height:80px">
+      ${ultimos6.map(u => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--ink)">${u.count}</div>
+        <div style="width:100%;background:var(--azul);border-radius:4px 4px 0 0;height:${Math.round((u.count/maxP)*60)+4}px"></div>
+        <div style="font-size:10px;color:var(--ink3)">${u.mes}</div>
+      </div>`).join('')}
+    </div>`
+  }
+
+  // Modal para editar ingreso mensual por cliente
+  window.openClientIngresoModal = function(clientId, nombre, ingresoActual) {
+    const existing = document.getElementById('modal-ingreso')
+    if (existing) existing.remove()
+    const m = document.createElement('div')
+    m.id = 'modal-ingreso'
+    m.className = 'modal-overlay show'
+    m.onclick = e => { if (e.target === m) m.remove() }
+    m.innerHTML = `<div class="modal" style="max-width:380px">
+      <div class="modal-head"><div class="modal-title">Ingreso mensual — ${nombre}</div><button class="modal-close" onclick="document.getElementById('modal-ingreso').remove()"><i class="ti ti-x"></i></button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:16px">Ingresá el monto mensual que facturás a este cliente (en USD).</p>
+        <div class="form-field">
+          <label class="form-label">Ingreso mensual (USD)</label>
+          <input type="number" class="form-input" id="ingreso-input" value="${ingresoActual}" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="tbtn" onclick="document.getElementById('modal-ingreso').remove()">Cancelar</button>
+        <button class="tbtn primary" onclick="saveClientIngreso('${clientId}')">Guardar</button>
+      </div>
+    </div>`
+    document.body.appendChild(m)
+  }
+
+  window.saveClientIngreso = async function(clientId) {
+    const val = parseFloat(document.getElementById('ingreso-input').value) || 0
+    await supabase.from('clients').update({ ingreso_mensual: val }).eq('id', clientId)
+    const c = clients.find(x => x.id === clientId)
+    if (c) c.ingreso_mensual = val
+    document.getElementById('modal-ingreso').remove()
+    showToast('✓ Ingreso actualizado')
+    renderRentabilidad()
+  }
 
   // ══════════════════════════════════════
   // CHECKLIST DE BIENVENIDA
