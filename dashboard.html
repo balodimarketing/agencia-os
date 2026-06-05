@@ -1863,6 +1863,7 @@
             <option value="revision">Revisión interna</option>
             <option value="aprobacion">Esperando aprobación</option>
             <option value="publicado">Lista para programar</option>
+            <option value="programado">Programado</option>
           </select>
         </div>
         <div class="form-field" style="margin-bottom:0">
@@ -3149,9 +3150,7 @@
       .from('content_pieces')
       .select('id, titulo, clients(nombre), fecha_publicacion, estado, archivo_url')
       .eq('agency_id', agencyId)
-      .eq('estado', 'publicado')
-      // FIX: Eliminar el filtro .not('fecha_publicacion', 'is', null)
-      // Las piezas SIN fecha deben aparecer en el drawer "Por programar"
+      .in('estado', ['publicado', 'programado'])
       .order('created_at', { ascending: false })
     calPublishedPieces = data || []
   }
@@ -3206,11 +3205,10 @@
     const m = mInput?.value || '0'
     const d = new Date(dateVal + 'T00:00:00')
     d.setHours(parseInt(h), parseInt(m), 0, 0)
-    // FIX: Guardar fecha_publicacion y garantizar estado publicado para que aparezca en Reportes
-    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString(), estado: 'publicado' }).eq('id', id)
-    // FIX: Actualizar el array local de piezas también
+    // Al programar: estado pasa a 'programado' para salir de "Lista para programar"
+    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString(), estado: 'programado' }).eq('id', id)
     const localPiece = pieces.find(p => p.id === id)
-    if (localPiece) { localPiece.fecha_publicacion = d.toISOString(); localPiece.estado = 'publicado' }
+    if (localPiece) { localPiece.fecha_publicacion = d.toISOString(); localPiece.estado = 'programado' }
     showToast('✓ Publicación programada — disponible en Reportes')
     await loadPublishedPieces()
     await loadCalendarEvents()
@@ -3229,11 +3227,10 @@
     const m = mInput?.value || '0'
     const d = new Date(dateVal + 'T00:00:00')
     d.setHours(parseInt(h), parseInt(m), 0, 0)
-    // FIX: Guardar fecha_publicacion y garantizar estado publicado para que aparezca en Reportes
-    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString(), estado: 'publicado' }).eq('id', id)
-    // FIX: Actualizar el array local de piezas también
+    // Al programar: estado pasa a 'programado' para salir de "Lista para programar"
+    await supabase.from('content_pieces').update({ fecha_publicacion: d.toISOString(), estado: 'programado' }).eq('id', id)
     const localPiece = pieces.find(p => p.id === id)
-    if (localPiece) { localPiece.fecha_publicacion = d.toISOString(); localPiece.estado = 'publicado' }
+    if (localPiece) { localPiece.fecha_publicacion = d.toISOString(); localPiece.estado = 'programado' }
     showToast('✓ Publicación programada — disponible en Reportes')
     await loadPublishedPieces()
     await loadCalendarEvents()
@@ -4333,11 +4330,12 @@
   let detailPieceId = null
 
   const KANBAN_COLS = [
-    { id: 'idea',       name: 'Idea',                    color: '#94A3B8' },
-    { id: 'produccion', name: 'Producción',               color: '#60A5FA' },
-    { id: 'revision',   name: 'Revisión interna',         color: '#FBBF24' },
-    { id: 'aprobacion', name: 'Esperando aprobación',     color: '#F87171' },
-    { id: 'publicado',  name: 'Lista para programar',     color: '#34C759' },
+    { id: 'idea',        name: 'Idea',                    color: '#94A3B8' },
+    { id: 'produccion',  name: 'Producción',               color: '#60A5FA' },
+    { id: 'revision',    name: 'Revisión interna',         color: '#FBBF24' },
+    { id: 'aprobacion',  name: 'Esperando aprobación',     color: '#F87171' },
+    { id: 'publicado',   name: 'Lista para programar',     color: '#34C759' },
+    { id: 'programado',  name: 'Programado',               color: '#8B5CF6' },
   ]
 
   const CLIENT_COLORS = ['#E1F5EE','#EEEDFE','#FAECE7','#E6F1FB','#FFF3E0','#FCE4EC']
@@ -4420,7 +4418,7 @@
   // ── Panel ─────────────────────────────────────────────
   function renderContenidoPanel() {
     const body = document.getElementById('panel-body')
-    const statusColors = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759' }
+    const statusColors = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759', programado:'#8B5CF6' }
     body.innerHTML = KANBAN_COLS.map(c => `
       <div class="panel-item" onclick="switchContentTab('piezas');scrollToKanbanCol('${c.id}')">
         <div class="pi-row">
@@ -4518,8 +4516,8 @@
         await supabase.from('content_pieces').update({ estado: newEstado }).eq('id', dragId)
         dragId = null
         showToast('✓ Estado actualizado')
-        // FIX: Si la pieza llegó a publicado, sincronizar con Calendario
-        if (newEstado === 'publicado') {
+        // Si la pieza llegó a publicado o programado, sincronizar con Calendario
+        if (newEstado === 'publicado' || newEstado === 'programado') {
           await loadPublishedPieces()
           updateDrawerBadge()
         }
@@ -4740,8 +4738,8 @@
     closePieceModal()
     showToast(id ? '✓ Pieza actualizada' : '✓ Pieza creada')
     await renderContenido()
-    // FIX: Si se guardó como publicado, sincronizar con Calendario
-    if (payload.estado === 'publicado') {
+    // Si se guardó como publicado o programado, sincronizar con Calendario
+    if (payload.estado === 'publicado' || payload.estado === 'programado') {
       await loadPublishedPieces()
       updateDrawerBadge()
     }
@@ -6292,12 +6290,12 @@ if (id) {
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
   async function renderReportes() {
-    // Cargar piezas publicadas con fecha
+    // Cargar piezas publicadas y programadas con fecha
     const { data: piezas } = await supabase
       .from('content_pieces')
       .select('*, clients(nombre, industria)')
       .eq('agency_id', agencyId)
-      .eq('estado', 'publicado')
+      .in('estado', ['publicado', 'programado'])
       .not('fecha_publicacion', 'is', null)
       .order('fecha_publicacion', { ascending: false })
 
@@ -6703,7 +6701,7 @@ if (id) {
       supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).in('estado',['revision','aprobacion']).limit(10),
       supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(10),
       supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(10),
-      supabase.from('content_pieces').select('id').eq('agency_id',agencyId).eq('estado','publicado').gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
+      supabase.from('content_pieces').select('id').eq('agency_id',agencyId).in('estado',['publicado','programado']).gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
       supabase.from('calendar_events').select('id,titulo,fecha_inicio,color,tipo').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(4)
     ])
 
@@ -6986,7 +6984,7 @@ if (id) {
     const margenNeto = ingresoTotal > 0 ? Math.round((gananciaNeta / ingresoTotal) * 100) : 0
 
     // Cálculos operativos
-    const piezasPublicadas = piezasArr.filter(p => p.estado === 'publicado').length
+    const piezasPublicadas = piezasArr.filter(p => p.estado === 'publicado' || p.estado === 'programado').length
     const tareasCompletadas = tareasArr.filter(t => t.estado === 'completada').length
     const tareasVencidas = tareasArr.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
     const pipelineTotal = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).reduce((a, c) => a + (c.valor_deal || 0), 0)
@@ -7031,7 +7029,7 @@ if (id) {
     </div>`).join('')
 
     // KPIs productividad
-    const tasaAprobacion = piezasArr.length > 0 ? Math.round((piezasArr.filter(p=>p.estado==='publicado').length / piezasArr.length)*100) : 0
+    const tasaAprobacion = piezasArr.length > 0 ? Math.round((piezasArr.filter(p=>p.estado==='publicado'||p.estado==='programado').length / piezasArr.length)*100) : 0
     const piezasPorMiembro = miembrosArr.length > 0 ? (piezasPublicadas / miembrosArr.length).toFixed(1) : 0
 
     const kpisEl = document.getElementById('rep-kpis')
@@ -7340,7 +7338,7 @@ if (id) {
   }
   function renderCharts(piezasArr, tareasArr) {
     const byCliente = {}
-    piezasArr.filter(p => p.estado === 'publicado').forEach(p => {
+    piezasArr.filter(p => p.estado === 'publicado' || p.estado === 'programado').forEach(p => {
       const n = p.clients?.nombre || 'Sin cliente'
       byCliente[n] = (byCliente[n]||0) + 1
     })
