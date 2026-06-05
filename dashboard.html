@@ -1265,18 +1265,51 @@
         </div>
 
         <!-- Tab: Gastos -->
-        <div id="rep-tab-gastos" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px">
-            <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-              <div>
-                <div style="font-size:14px;font-weight:800;color:var(--ink)">Gastos de la agencia</div>
-                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Costos operativos que no se le cargan a ningún cliente</div>
-              </div>
-              <button onclick="openGastoModal()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--azul);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit"><i class="ti ti-plus" style="font-size:13px"></i>Agregar gasto</button>
+        <div id="rep-tab-gastos" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
+
+          <!-- 3 números -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px 20px">
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Gastos fijos</div>
+              <div id="gas-total-fijos" style="font-size:26px;font-weight:900;color:var(--ink);letter-spacing:-.5px">$0</div>
+              <div id="gas-count-fijos" style="font-size:11px;color:var(--ink3);margin-top:4px">0 ítems</div>
             </div>
-            <div id="rep-gastos-list" style="padding:4px 0"></div>
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px 20px">
+              <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Gastos variables</div>
+              <div id="gas-total-variables" style="font-size:26px;font-weight:900;color:var(--ink);letter-spacing:-.5px">$0</div>
+              <div id="gas-count-variables" style="font-size:11px;color:var(--ink3);margin-top:4px">0 ítems</div>
+            </div>
+            <div style="background:var(--azul);border-radius:14px;padding:18px 20px">
+              <div style="font-size:10px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Total gastos</div>
+              <div id="gas-total-all" style="font-size:26px;font-weight:900;color:var(--celeste);letter-spacing:-.5px">$0</div>
+              <div style="font-size:11px;color:rgba(142,219,255,.5);margin-top:4px">este mes</div>
+            </div>
           </div>
-          <div id="rep-gastos-resumen" style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px"></div>
+
+          <!-- Sueldos del equipo -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden">
+            <div style="padding:14px 20px;border-bottom:1px solid var(--border)">
+              <div style="font-size:13px;font-weight:800;color:var(--ink)">Sueldos del equipo</div>
+              <div style="font-size:11px;color:var(--ink3);margin-top:2px">Se refleja automáticamente en la card de cada miembro</div>
+            </div>
+            <div id="gas-sueldos-list"></div>
+          </div>
+
+          <!-- Registro de gastos -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden">
+            <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:13px;font-weight:800;color:var(--ink)">Registro de gastos</div>
+                <div style="font-size:11px;color:var(--ink3);margin-top:2px">Todos los gastos operativos de la agencia</div>
+              </div>
+              <button onclick="openGastoModal()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--azul);color:var(--celeste);border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit"><i class="ti ti-plus" style="font-size:13px"></i>Agregar gasto</button>
+            </div>
+            <div id="rep-gastos-list"></div>
+          </div>
+
+          <!-- Resultado final -->
+          <div id="rep-gastos-resumen" style="background:var(--azul);border-radius:14px;padding:20px 24px"></div>
+
         </div>
 
       </div>
@@ -7472,7 +7505,217 @@ if (id) {
   }
 
   // ── Gastos fijos ──────────────────────────────────────
+  async function loadGastos() {
+    const { data } = await supabase.from('agency_gastos').select('*').eq('agency_id', agencyId).order('created_at', { ascending: false })
+    gastosData = data || []
+  }
+
+  async function renderGastos() {
+    await loadGastos()
+
+    const fijos = gastosData.filter(g => g.tipo === 'fijo')
+    const variables = gastosData.filter(g => g.tipo === 'variable')
+    const totalFijos = fijos.reduce((a,g) => a+(g.monto||0), 0)
+    const totalVariables = variables.reduce((a,g) => a+(g.monto||0), 0)
+    const totalSueldos = (agenciaMetricas.miembrosArr||teamMembers).reduce((a,m) => a+(m.sueldo_mensual||0), 0)
+    const totalAll = totalFijos + totalVariables
+
+    const setEl = (id, v) => { const e = document.getElementById(id); if(e) e.innerHTML = v }
+    setEl('gas-total-fijos', '$' + totalFijos.toLocaleString('es-AR'))
+    setEl('gas-count-fijos', fijos.length + ' ítems')
+    setEl('gas-total-variables', '$' + totalVariables.toLocaleString('es-AR'))
+    setEl('gas-count-variables', variables.length + ' ítems')
+    setEl('gas-total-all', '$' + totalAll.toLocaleString('es-AR'))
+
+    // Sueldos del equipo
+    const sueldosEl = document.getElementById('gas-sueldos-list')
+    const miembros = agenciaMetricas.miembrosArr || teamMembers
+    if (sueldosEl) {
+      if (!miembros?.length) {
+        sueldosEl.innerHTML = '<div style="padding:16px 20px;font-size:13px;color:var(--ink3)">Sin miembros en el equipo</div>'
+      } else {
+        sueldosEl.innerHTML = miembros.map(m => {
+          const nombre = ((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).trim() || m.role
+          const ini = initials(nombre)
+          const sueldo = m.sueldo_mensual || 0
+          const avatarUrl = m.profiles?.avatar_url
+          return `<div style="display:grid;grid-template-columns:1fr 200px 90px;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px">
+              ${avatarUrl
+                ? `<img src="${avatarUrl}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0">`
+                : `<div style="width:32px;height:32px;border-radius:8px;background:var(--azul);color:var(--celeste);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`}
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--ink)">${nombre}</div>
+                <div style="font-size:11px;color:var(--ink3)">${m.puesto||m.role}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:9px;overflow:hidden">
+              <span style="padding:0 10px;font-size:12px;color:var(--ink3);background:var(--bg);border-right:1px solid var(--border);height:36px;display:flex;align-items:center">USD</span>
+              <input type="number" id="sueldo-input-${m.id}" value="${sueldo}" min="0" placeholder="0"
+                style="flex:1;padding:8px 10px;border:none;outline:none;font-size:13px;font-family:inherit;color:var(--ink);width:100%"
+                onkeydown="if(event.key==='Enter') saveSueldoInline('${m.id}')">
+            </div>
+            <button onclick="saveSueldoInline('${m.id}')"
+              style="padding:8px 14px;background:var(--azul);color:var(--celeste);border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">
+              Guardar
+            </button>
+          </div>`
+        }).join('')
+        + `<div style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;background:var(--bg)">
+            <span style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px">Total sueldos</span>
+            <span style="font-size:14px;font-weight:900;color:var(--ink)">$${totalSueldos.toLocaleString('es-AR')}</span>
+          </div>`
+      }
+    }
+
+    // Registro de gastos
+    const el = document.getElementById('rep-gastos-list')
+    if (el) {
+      if (!gastosData.length) {
+        el.innerHTML = '<div style="padding:24px;text-align:center;font-size:13px;color:var(--ink3)">Sin gastos cargados. Usá el botón "Agregar gasto" para empezar.</div>'
+      } else {
+        const renderGrupo = (lista, titulo, dotColor) => {
+          if (!lista.length) return ''
+          const subtotal = lista.reduce((a,g)=>a+(g.monto||0),0)
+          return `<div style="padding:8px 20px;background:var(--bg);border-bottom:1px solid var(--border)">
+              <span style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px">${titulo}</span>
+            </div>`
+            + lista.map(g => `
+            <div style="display:grid;grid-template-columns:1fr 100px 100px 36px;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:5px;height:5px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:13px;color:var(--ink)">${g.nombre}</div>
+                  <div style="font-size:11px;color:var(--ink3)">${g.categoria}</div>
+                </div>
+              </div>
+              <div style="text-align:center">
+                <span style="font-size:11px;background:var(--bg);color:var(--ink3);padding:3px 9px;border-radius:6px">${g.tipo==='fijo'?'Mensual':'Puntual'}</span>
+              </div>
+              <div style="font-size:13px;font-weight:600;color:var(--ink);text-align:right">$${Number(g.monto).toLocaleString('es-AR')}</div>
+              <button onclick="deleteGasto('${g.id}')"
+                style="width:32px;height:32px;border:1.5px solid var(--border);border-radius:8px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink3)"
+                onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'"
+                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">
+                <i class="ti ti-trash" style="font-size:14px"></i>
+              </button>
+            </div>`).join('')
+            + `<div style="display:grid;grid-template-columns:1fr 100px 100px 36px;padding:10px 20px;border-bottom:1px solid var(--border)">
+                <div></div><div></div>
+                <div style="font-size:12px;font-weight:700;color:var(--ink3);text-align:right">$${subtotal.toLocaleString('es-AR')}</div>
+                <div></div>
+              </div>`
+        }
+        el.innerHTML = renderGrupo(fijos, 'Fijos · recurrentes', 'var(--azul)')
+          + renderGrupo(variables, 'Variables · esporádicos', 'rgba(10,37,64,.3)')
+      }
+    }
+
+    // Resultado final
+    const resEl = document.getElementById('rep-gastos-resumen')
+    const ingresoTotal = clients.filter(c=>c.estado==='activo').reduce((a,c)=>a+(c.ingreso_mensual||0),0)
+    const totalGastos = totalFijos + totalVariables + totalSueldos
+    const ganancia = ingresoTotal - totalGastos
+    if (resEl) resEl.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div style="display:flex;gap:28px">
+          <div>
+            <div style="font-size:10px;color:rgba(142,219,255,.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Ingresos</div>
+            <div style="font-size:20px;font-weight:900;color:#fff">$${ingresoTotal.toLocaleString('es-AR')}</div>
+          </div>
+          <div style="width:1px;background:rgba(142,219,255,.1)"></div>
+          <div>
+            <div style="font-size:10px;color:rgba(142,219,255,.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Sueldos + Gastos</div>
+            <div style="font-size:20px;font-weight:900;color:#fff">−$${totalGastos.toLocaleString('es-AR')}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:rgba(142,219,255,.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Ganancia real</div>
+          <div style="font-size:28px;font-weight:900;color:var(--celeste);letter-spacing:-.5px">$${ganancia.toLocaleString('es-AR')}</div>
+        </div>
+      </div>`
+  }
+
+  window.saveSueldoInline = async function(memberId) {
+    const input = document.getElementById('sueldo-input-' + memberId)
+    if (!input) return
+    const sueldo = parseFloat(input.value) || 0
+    await supabase.from('agency_members').update({ sueldo_mensual: sueldo }).eq('id', memberId)
+    // Actualizar en memoria
+    const m = teamMembers.find(x => x.id === memberId)
+    if (m) m.sueldo_mensual = sueldo
+    if (agenciaMetricas.miembrosArr) {
+      const am = agenciaMetricas.miembrosArr.find(x => x.id === memberId)
+      if (am) am.sueldo_mensual = sueldo
+    }
+    showToast('✓ Sueldo actualizado')
+    renderGastos()
+  }
+
   window.openGastoModal = function() {
+    const existing = document.getElementById('modal-gasto')
+    if (existing) existing.remove()
+    const m = document.createElement('div')
+    m.id = 'modal-gasto'
+    m.className = 'modal-overlay show'
+    m.onclick = e => { if (e.target === m) m.remove() }
+    m.innerHTML = `<div class="modal" style="max-width:400px">
+      <div class="modal-head"><div class="modal-title">Agregar gasto</div><button class="modal-close" onclick="document.getElementById('modal-gasto').remove()"><i class="ti ti-x"></i></button></div>
+      <div class="modal-body">
+        <div class="form-field"><label class="form-label">Nombre</label><input type="text" class="form-input" id="gasto-nombre" placeholder="Ej: Supabase, Adobe, Contador..."></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="form-field" style="margin-bottom:0"><label class="form-label">Monto (USD)</label><input type="number" class="form-input" id="gasto-monto" placeholder="0" min="0"></div>
+          <div class="form-field" style="margin-bottom:0"><label class="form-label">Categoría</label>
+            <select class="form-input form-select" id="gasto-cat">
+              <option value="operativo">Operativo</option>
+              <option value="herramientas">Herramientas</option>
+              <option value="infraestructura">Infraestructura</option>
+              <option value="marketing">Marketing</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:0"><label class="form-label">Tipo de gasto</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--azul);border-radius:10px;cursor:pointer" id="tipo-fijo-label">
+              <input type="radio" name="gasto-tipo" value="fijo" checked style="accent-color:var(--azul)"
+                onchange="document.getElementById('tipo-fijo-label').style.borderColor='var(--azul)';document.getElementById('tipo-var-label').style.borderColor='var(--border)'">
+              <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Fijo</div><div style="font-size:10px;color:var(--ink3)">Mensual recurrente</div></div>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer" id="tipo-var-label">
+              <input type="radio" name="gasto-tipo" value="variable" style="accent-color:var(--azul)"
+                onchange="document.getElementById('tipo-var-label').style.borderColor='var(--azul)';document.getElementById('tipo-fijo-label').style.borderColor='var(--border)'">
+              <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Variable</div><div style="font-size:10px;color:var(--ink3)">Puntual / esporádico</div></div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="tbtn" onclick="document.getElementById('modal-gasto').remove()">Cancelar</button>
+        <button class="tbtn primary" onclick="saveGasto()">Guardar gasto</button>
+      </div>
+    </div>`
+    document.body.appendChild(m)
+    setTimeout(() => document.getElementById('gasto-nombre')?.focus(), 100)
+  }
+
+  window.saveGasto = async function() {
+    const nombre = document.getElementById('gasto-nombre').value.trim()
+    const monto = parseFloat(document.getElementById('gasto-monto').value) || 0
+    const categoria = document.getElementById('gasto-cat').value
+    const tipo = document.querySelector('input[name="gasto-tipo"]:checked')?.value || 'fijo'
+    if (!nombre || !monto) { showToast('Completá nombre y monto'); return }
+    await supabase.from('agency_gastos').insert({ agency_id: agencyId, nombre, monto, categoria, tipo })
+    document.getElementById('modal-gasto').remove()
+    showToast('✓ Gasto guardado')
+    renderGastos()
+  }
+
+  window.deleteGasto = async function(id) {
+    await supabase.from('agency_gastos').delete().eq('id', id)
+    showToast('Gasto eliminado')
+    renderGastos()
+  }
     const existing = document.getElementById('modal-gasto')
     if (existing) existing.remove()
     const m = document.createElement('div')
