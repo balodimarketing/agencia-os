@@ -1084,7 +1084,7 @@
       <div id="rep-agencia" style="display:none">
 
         <!-- Tabs internos + período -->
-        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--white);padding:0 32px;position:sticky;top:53px;z-index:9">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--white);padding:0 32px;position:sticky;top:52px;z-index:9;margin-top:-1px">
           <div style="display:flex;gap:0">
             <button class="rep-inner-tab active" data-t="resumen" onclick="switchRepInnerTab(this,'resumen')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:800;color:var(--azul);border-bottom:2px solid var(--azul);cursor:pointer;font-family:inherit">Resumen</button>
             <button class="rep-inner-tab" data-t="rentabilidad" onclick="switchRepInnerTab(this,'rentabilidad')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Rentabilidad</button>
@@ -1119,16 +1119,72 @@
 
         <!-- Tab: Rentabilidad -->
         <div id="rep-tab-rentabilidad" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
-          <!-- Resumen financiero real -->
-          <div id="rep-rentabilidad-resumen" style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px"></div>
-          <!-- Por cliente -->
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
-            <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
-              <div style="font-size:14px;font-weight:800;color:var(--ink)">Detalle por cliente</div>
-              <div style="font-size:12px;color:var(--ink3);margin-top:2px">Ingreso − sueldos distribuidos por horas − gastos del cliente</div>
+
+          <!-- 3 números grandes -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+              <div style="font-size:12px;color:var(--ink3);margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-trending-up" style="font-size:14px;color:#10B981"></i>Ingresos totales</div>
+              <div id="rent-ingreso-total" style="font-size:28px;font-weight:900;color:var(--ink);letter-spacing:-.5px">$0</div>
+              <div id="rent-clientes-count" style="font-size:12px;color:var(--ink3);margin-top:4px">— clientes activos</div>
             </div>
-            <div id="rep-rentabilidad" style="padding:4px 0"></div>
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+              <div style="font-size:12px;color:var(--ink3);margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-trending-down" style="font-size:14px;color:var(--danger)"></i>Gastos totales</div>
+              <div id="rent-gastos-total" style="font-size:28px;font-weight:900;color:var(--ink);letter-spacing:-.5px">$0</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:4px">Sueldos + fijos + variables</div>
+            </div>
+            <div id="rent-ganancia-card" style="background:var(--white);border:2px solid #10B981;border-radius:16px;padding:20px">
+              <div style="font-size:12px;color:var(--ink3);margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="ti ti-coin" style="font-size:14px;color:#10B981"></i>Ganancia neta</div>
+              <div id="rent-ganancia-total" style="font-size:28px;font-weight:900;color:#10B981;letter-spacing:-.5px">$0</div>
+              <div id="rent-margen-label" style="font-size:12px;color:#10B981;margin-top:4px">0% de margen</div>
+            </div>
           </div>
+
+          <!-- Desglose de gastos -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
+            <div style="background:var(--bg);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:#FEF2F2;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-users" style="font-size:16px;color:var(--danger)"></i></div>
+              <div><div style="font-size:11px;color:var(--ink3);margin-bottom:2px">Sueldos</div><div id="rent-sueldos" style="font-size:16px;font-weight:800;color:var(--danger)">$0</div><div id="rent-sueldos-sub" style="font-size:11px;color:var(--ink3)">— miembros</div></div>
+            </div>
+            <div style="background:var(--bg);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:#FFFBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-receipt" style="font-size:16px;color:var(--warn)"></i></div>
+              <div><div style="font-size:11px;color:var(--ink3);margin-bottom:2px">Gastos fijos</div><div id="rent-fijos" style="font-size:16px;font-weight:800;color:var(--warn)">$0</div><div id="rent-fijos-sub" style="font-size:11px;color:var(--ink3)">0 ítems</div></div>
+            </div>
+            <div style="background:var(--bg);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:#FFFBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-trending-down" style="font-size:16px;color:var(--warn)"></i></div>
+              <div><div style="font-size:11px;color:var(--ink3);margin-bottom:2px">Gastos variables</div><div id="rent-variables" style="font-size:16px;font-weight:800;color:var(--warn)">$0</div><div id="rent-variables-sub" style="font-size:11px;color:var(--ink3)">0 ítems</div></div>
+            </div>
+          </div>
+
+          <!-- Barra distribución -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:14px">
+            <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:14px">Distribución de costos</div>
+            <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-bottom:10px;background:var(--bg)">
+              <div id="rent-barra-ganancia" style="background:#10B981;transition:width .4s ease;width:0%"></div>
+              <div id="rent-barra-costos" style="background:var(--danger);opacity:.7;transition:width .4s ease;width:0%"></div>
+            </div>
+            <div style="display:flex;gap:20px">
+              <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:50%;background:#10B981"></div><span id="rent-barra-label-g" style="font-size:12px;color:var(--ink3)">Ganancia 0%</span></div>
+              <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:50%;background:var(--danger);opacity:.7"></div><span id="rent-barra-label-c" style="font-size:12px;color:var(--ink3)">Costos 0%</span></div>
+            </div>
+          </div>
+
+          <!-- Tabla por cliente -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
+            <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:14px;font-weight:800;color:var(--ink)">Detalle por cliente</div>
+              <div style="font-size:11px;color:var(--ink3)">Ordenado por margen ↓</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 110px 110px 110px 80px;padding:10px 22px;border-bottom:1px solid var(--border);background:var(--bg)">
+              <div style="font-size:11px;font-weight:700;color:var(--ink3)">Cliente</div>
+              <div style="font-size:11px;font-weight:700;color:var(--ink3);text-align:right">Ingreso</div>
+              <div style="font-size:11px;font-weight:700;color:var(--ink3);text-align:right">Costo</div>
+              <div style="font-size:11px;font-weight:700;color:var(--ink3);text-align:right">Ganancia</div>
+              <div style="font-size:11px;font-weight:700;color:var(--ink3);text-align:right">Margen</div>
+            </div>
+            <div id="rep-rentabilidad"></div>
+            <div id="rep-rentabilidad-total" style="display:grid;grid-template-columns:1fr 110px 110px 110px 80px;padding:14px 22px;background:var(--bg);border-top:1.5px solid var(--border)"></div>
+          </div>
+
         </div>
 
         <!-- Tab: Equipo -->
@@ -6768,98 +6824,116 @@ if (id) {
   }
 
   function renderRentabilidad() {
-    // Resumen financiero
-    const resEl = document.getElementById('rep-rentabilidad-resumen')
-    if (resEl) {
-      const { ingresoTotal, gastosSueldos, gastosFijosTotal, gastosVariablesTotal, gananciaNeta, margenNeto, miembrosArr } = agenciaMetricas
-      const totalGastos = (gastosSueldos||0) + (gastosFijosTotal||0) + (gastosVariablesTotal||0)
-      resEl.innerHTML = `
-        <div style="background:var(--azul);padding:24px;border-radius:16px 16px 0 0">
-          <div style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Rentabilidad de la agencia</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
-            <div>
-              <div style="font-size:28px;font-weight:900;color:#8EDBFF;letter-spacing:-.5px">${'$'+(ingresoTotal||0).toLocaleString('es-AR')}</div>
-              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Ingresos totales</div>
-            </div>
-            <div>
-              <div style="font-size:28px;font-weight:900;color:#FCA5A5;letter-spacing:-.5px">-$${totalGastos.toLocaleString('es-AR')}</div>
-              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Gastos totales</div>
-            </div>
-            <div>
-              <div style="font-size:28px;font-weight:900;color:${(gananciaNeta||0)>=0?'#6EE7B7':'#FCA5A5'};letter-spacing:-.5px">${'$'+(gananciaNeta||0).toLocaleString('es-AR')}</div>
-              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Ganancia neta · ${margenNeto||0}% margen</div>
-            </div>
-          </div>
-        </div>
-        <div style="padding:16px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-          <div style="background:var(--bg);border-radius:10px;padding:12px">
-            <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Sueldos</div>
-            <div style="font-size:16px;font-weight:800;color:var(--danger)">-$${(gastosSueldos||0).toLocaleString('es-AR')}</div>
-            <div style="font-size:10px;color:var(--ink3);margin-top:2px">${(miembrosArr||[]).length} miembros</div>
-          </div>
-          <div style="background:var(--bg);border-radius:10px;padding:12px">
-            <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Gastos fijos</div>
-            <div style="font-size:16px;font-weight:800;color:var(--warn)">-$${(gastosFijosTotal||0).toLocaleString('es-AR')}</div>
-            <div style="font-size:10px;color:var(--ink3);margin-top:2px">${gastosData.filter(g=>g.tipo==='fijo').length} ítems</div>
-          </div>
-          <div style="background:var(--bg);border-radius:10px;padding:12px">
-            <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Gastos variables</div>
-            <div style="font-size:16px;font-weight:800;color:var(--warn)">-$${(gastosVariablesTotal||0).toLocaleString('es-AR')}</div>
-            <div style="font-size:10px;color:var(--ink3);margin-top:2px">${gastosData.filter(g=>g.tipo==='variable').length} ítems</div>
-          </div>
-        </div>`
-    }
+    const { ingresoTotal, gastosSueldos, gastosFijosTotal, gastosVariablesTotal,
+            gananciaNeta, margenNeto, miembrosArr, clientesActivos, timeArr, piezasArr } = agenciaMetricas
+    if (!clientesActivos) return
 
-    // Detalle por cliente
+    const totalGastos = (gastosSueldos||0) + (gastosFijosTotal||0) + (gastosVariablesTotal||0)
+    const margen = margenNeto || 0
+    const ganancia = gananciaNeta || 0
+    const ingreso = ingresoTotal || 0
+
+    // Cards superiores
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val }
+    setEl('rent-ingreso-total', '$' + ingreso.toLocaleString('es-AR'))
+    setEl('rent-clientes-count', clientesActivos.length + ' clientes activos')
+    setEl('rent-gastos-total', '-$' + totalGastos.toLocaleString('es-AR'))
+    setEl('rent-ganancia-total', '$' + ganancia.toLocaleString('es-AR'))
+    setEl('rent-margen-label', margen + '% de margen')
+
+    // Color ganancia card según margen
+    const gc = document.getElementById('rent-ganancia-card')
+    const color = ganancia >= 0 ? '#10B981' : 'var(--danger)'
+    if (gc) gc.style.borderColor = color
+    const gt = document.getElementById('rent-ganancia-total')
+    if (gt) gt.style.color = color
+    const ml = document.getElementById('rent-margen-label')
+    if (ml) ml.style.color = color
+
+    // Desglose
+    setEl('rent-sueldos', '-$' + (gastosSueldos||0).toLocaleString('es-AR'))
+    setEl('rent-sueldos-sub', (miembrosArr||[]).length + ' miembros')
+    setEl('rent-fijos', '-$' + (gastosFijosTotal||0).toLocaleString('es-AR'))
+    setEl('rent-fijos-sub', gastosData.filter(g=>g.tipo==='fijo').length + ' ítems')
+    setEl('rent-variables', '-$' + (gastosVariablesTotal||0).toLocaleString('es-AR'))
+    setEl('rent-variables-sub', gastosData.filter(g=>g.tipo==='variable').length + ' ítems')
+
+    // Barra distribución
+    const pctGanancia = ingreso > 0 ? Math.round((ganancia/ingreso)*100) : 0
+    const pctCostos = 100 - pctGanancia
+    const bg = document.getElementById('rent-barra-ganancia')
+    const bc = document.getElementById('rent-barra-costos')
+    if (bg) bg.style.width = Math.max(0,pctGanancia) + '%'
+    if (bc) bc.style.width = Math.max(0,pctCostos) + '%'
+    setEl('rent-barra-label-g', 'Ganancia ' + pctGanancia + '%')
+    setEl('rent-barra-label-c', 'Costos ' + pctCostos + '%')
+
+    // Tabla por cliente
     const el = document.getElementById('rep-rentabilidad')
-    if (!el || !agenciaMetricas.piezasArr) return
-    const { timeArr, miembrosArr, clientesActivos } = agenciaMetricas
-    if (!clientesActivos?.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--ink3)">Sin clientes activos</div>'; return }
+    const totalEl = document.getElementById('rep-rentabilidad-total')
+    if (!el) return
 
     const horasPorEmpleado = {}
     ;(miembrosArr||[]).forEach(m => {
-      horasPorEmpleado[m.user_id] = (timeArr||[]).filter(t => t.user_id === m.user_id).reduce((a, t) => a + (t.duracion_segundos||0), 0) / 3600
+      horasPorEmpleado[m.user_id] = (timeArr||[]).filter(t=>t.user_id===m.user_id).reduce((a,t)=>a+(t.duracion_segundos||0),0)/3600
     })
     const hEmpCliente = {}
     ;(timeArr||[]).forEach(t => {
-      const pieza = (agenciaMetricas.piezasArr||[]).find(p => p.id === t.piece_id)
+      const pieza = (piezasArr||[]).find(p=>p.id===t.piece_id)
       if (!pieza?.client_id) return
-      const key = t.user_id + '__' + pieza.client_id
-      hEmpCliente[key] = (hEmpCliente[key]||0) + (t.duracion_segundos||0)/3600
+      const key = t.user_id+'__'+pieza.client_id
+      hEmpCliente[key] = (hEmpCliente[key]||0)+(t.duracion_segundos||0)/3600
     })
 
     const data = clientesActivos.map(c => {
-      const horasCliente = Object.entries(hEmpCliente).filter(([k]) => k.endsWith('__'+c.id)).reduce((a,[,v]) => a+v, 0)
+      const horasCliente = Object.entries(hEmpCliente).filter(([k])=>k.endsWith('__'+c.id)).reduce((a,[,v])=>a+v,0)
       let costoSueldos = 0
       ;(miembrosArr||[]).forEach(m => {
-        const hEc = hEmpCliente[(m.user_id+'__'+c.id)] || 0
-        const hEt = horasPorEmpleado[m.user_id] || 0
-        if (hEt > 0 && (m.sueldo_mensual||0) > 0) costoSueldos += (hEc/hEt)*(m.sueldo_mensual||0)
+        const hEc = hEmpCliente[(m.user_id+'__'+c.id)]||0
+        const hEt = horasPorEmpleado[m.user_id]||0
+        if (hEt>0&&(m.sueldo_mensual||0)>0) costoSueldos += (hEc/hEt)*(m.sueldo_mensual||0)
       })
-      const ingreso = c.ingreso_mensual || 0
-      const gastos = c.gastos_mensuales || 0
-      const costoTotal = costoSueldos + gastos
-      const ganancia = ingreso - costoTotal
-      const margen = ingreso > 0 ? Math.round((ganancia/ingreso)*100) : null
-      return { ...c, horasCliente, ingreso, gastos, costoSueldos, costoTotal, ganancia, margen }
-    }).sort((a,b) => (b.margen??-999)-(a.margen??-999))
+      const ing = c.ingreso_mensual||0
+      const gas = c.gastos_mensuales||0
+      const costo = costoSueldos+gas
+      const gan = ing-costo
+      const mar = ing>0?Math.round((gan/ing)*100):null
+      return { ...c, horasCliente, ing, gas, costoSueldos, costo, gan, mar }
+    }).sort((a,b)=>(b.mar??-999)-(a.mar??-999))
+
+    const margenBadge = (mar) => {
+      if (mar===null) return '<span style="font-size:11px;color:var(--ink3)">—</span>'
+      const bg = mar>=50?'#DCFCE7':mar>=20?'#FEF9C3':'#FEF2F2'
+      const col = mar>=50?'#15803D':mar>=20?'#92400E':'var(--danger)'
+      return `<span style="font-size:11px;font-weight:800;color:${col};background:${bg};padding:3px 8px;border-radius:6px">${mar}%</span>`
+    }
 
     el.innerHTML = data.map(c => {
-      const mc = c.margen===null ? 'var(--ink3)' : c.margen>=50 ? '#10B981' : c.margen>=20 ? '#F59E0B' : 'var(--danger)'
-      const mi = c.margen===null ? '—' : c.margen>=50 ? '🟢' : c.margen>=20 ? '🟡' : '🔴'
       const ini = initials(c.nombre); const col = getAvColor(c.nombre)
-      return '<div style="display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap">'
-        + '<div style="width:34px;height:34px;border-radius:9px;background:'+col.bg+';color:'+col.color+';font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ini+'</div>'
-        + '<div style="flex:1;min-width:120px"><div style="font-size:13px;font-weight:700;color:var(--ink)">'+c.nombre+'</div>'
-        + '<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+c.horasCliente.toFixed(1)+'h · $'+c.costoSueldos.toFixed(0)+' sueldos · $'+c.gastos+' extras</div></div>'
-        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Ingreso</div><div style="font-size:13px;font-weight:800;color:var(--ink)">$'+c.ingreso.toLocaleString('es-AR')+'</div></div>'
-        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Costo</div><div style="font-size:13px;font-weight:800;color:var(--ink)">$'+c.costoTotal.toFixed(0)+'</div></div>'
-        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Ganancia</div><div style="font-size:13px;font-weight:800;color:'+(c.ganancia>=0?'#10B981':'var(--danger)')+'">$'+c.ganancia.toFixed(0)+'</div></div>'
-        + '<div style="text-align:center;min-width:60px"><div style="font-size:20px">'+mi+'</div><div style="font-size:12px;font-weight:800;color:'+mc+'">'+(c.margen!==null?c.margen+'%':'—')+'</div></div>'
-        + '</div>'
+      return `<div style="display:grid;grid-template-columns:1fr 110px 110px 110px 80px;padding:13px 22px;border-bottom:1px solid var(--border);align-items:center">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;border-radius:8px;background:${col.bg};color:${col.color};font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--ink)">${c.nombre}</div><div style="font-size:10px;color:var(--ink3)">${c.horasCliente.toFixed(1)}h registradas</div></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink);text-align:right">$${c.ing.toLocaleString('es-AR')}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--danger);text-align:right">${c.costo>0?'-$'+c.costo.toFixed(0):'$0'}</div>
+        <div style="font-size:13px;font-weight:600;color:${c.gan>=0?'#10B981':'var(--danger)'};text-align:right">$${c.gan.toFixed(0)}</div>
+        <div style="text-align:right">${margenBadge(c.mar)}</div>
+      </div>`
     }).join('')
-  }
 
+    // Fila total
+    const totalIng = data.reduce((a,c)=>a+c.ing,0)
+    const totalCosto = data.reduce((a,c)=>a+c.costo,0)
+    const totalGan = data.reduce((a,c)=>a+c.gan,0)
+    const totalMar = totalIng>0?Math.round((totalGan/totalIng)*100):null
+    if (totalEl) totalEl.innerHTML = `
+      <div style="font-size:12px;font-weight:800;color:var(--ink3)">Total</div>
+      <div style="font-size:13px;font-weight:800;color:var(--ink);text-align:right">$${totalIng.toLocaleString('es-AR')}</div>
+      <div style="font-size:13px;font-weight:800;color:var(--danger);text-align:right">${totalCosto>0?'-$'+totalCosto.toFixed(0):'$0'}</div>
+      <div style="font-size:13px;font-weight:800;color:${totalGan>=0?'#10B981':'var(--danger)'};text-align:right">$${totalGan.toFixed(0)}</div>
+      <div style="text-align:right">${margenBadge(totalMar)}</div>`
+  }
   function renderEquipoMetricas() {
     const el = document.getElementById('rep-equipo-render')
     if (!el || !agenciaMetricas.miembrosArr) return
