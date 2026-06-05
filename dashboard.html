@@ -6937,6 +6937,145 @@ if (id) {
   // ── Gastos fijos/variables ────────────────────────────
 
   // ══════════════════════════════════════
+  // CHECKLIST DE BIENVENIDA
+  // ══════════════════════════════════════
+
+  const ONBOARDING_STEPS = [
+    { id: 'cuenta',   icon: 'ti-user-check', label: 'Creá tu cuenta',              desc: 'Ya estás dentro.',                        action: null },
+    { id: 'perfil',   icon: 'ti-id-badge',   label: 'Completá tu perfil',           desc: 'Agregá tu foto y bio.',                   action: () => handleOpenProfile() },
+    { id: 'cliente',  icon: 'ti-building',   label: 'Agregá tu primer cliente',     desc: 'Empezá a gestionar tus cuentas.',         action: () => switchModule(document.querySelector('.rail-btn[data-module=cuentas]')) },
+    { id: 'miembro',  icon: 'ti-users',      label: 'Invitá a tu equipo',           desc: 'Sumá miembros a tu agencia.',             action: () => switchModule(document.querySelector('.rail-btn[data-module=equipo]')) },
+    { id: 'pieza',    icon: 'ti-photo',      label: 'Creá tu primera pieza',        desc: 'Empezá tu flujo de contenido.',           action: () => switchModule(document.querySelector('.rail-btn[data-module=contenido]')) },
+    { id: 'evento',   icon: 'ti-calendar',   label: 'Programá algo en el calendario', desc: 'Organizá tus publicaciones.',           action: () => switchModule(document.querySelector('.rail-btn[data-module=calendario]')) },
+  ]
+
+  let onboardingCompleted = []
+  let onboardingDone = false
+
+  async function loadOnboarding() {
+    const { data } = await supabase.from('onboarding_progress').select('completed_steps,completed').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+    if (data) {
+      onboardingCompleted = data.completed_steps || []
+      onboardingDone = data.completed
+    } else {
+      onboardingCompleted = ['cuenta']
+      await supabase.from('onboarding_progress').insert({ user_id: currentUserId, agency_id: agencyId, completed_steps: ['cuenta'] })
+    }
+  }
+
+  async function renderChecklist() {
+    const el = document.getElementById('inicio-checklist')
+    if (!el) return
+    await loadOnboarding()
+    if (onboardingDone) { el.innerHTML = ''; return }
+
+    const total = ONBOARDING_STEPS.length
+    const done = onboardingCompleted.length
+    const pct = Math.round((done / total) * 100)
+    const activeStep = ONBOARDING_STEPS.find(s => !onboardingCompleted.includes(s.id)) || ONBOARDING_STEPS[ONBOARDING_STEPS.length-1]
+
+    const stepperHTML = ONBOARDING_STEPS.map((s, i) => {
+      const isCompleted = onboardingCompleted.includes(s.id)
+      const isActive = s.id === activeStep.id
+      const isLast = i === ONBOARDING_STEPS.length - 1
+      const connector = !isLast ? `<div style="flex:1;height:2px;background:${isCompleted?'#0A2540':'#E8ECF0'};margin-bottom:18px"></div>` : ''
+      const circle = isCompleted
+        ? `<div style="width:32px;height:32px;border-radius:50%;background:#34C759;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:14px;color:#fff"></i></div>`
+        : isActive
+          ? `<div style="width:32px;height:32px;border-radius:50%;background:#0A2540;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:900;color:#8EDBFF">${i+1}</div>`
+          : `<div style="width:32px;height:32px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:var(--ink3)">${i+1}</div>`
+      const label = `<div style="font-size:10px;font-weight:${isActive?'800':'600'};color:${isCompleted?'#34C759':isActive?'#0A2540':'var(--ink3)'};text-align:center;margin-top:5px">${s.label.split(' ').slice(0,2).join(' ')}</div>`
+      return `<div style="display:flex;flex-direction:column;align-items:center;flex:${isLast?'0':'1'}">${circle}${label}</div>${connector}`
+    }).join('')
+
+    const activeCard = `<div style="background:var(--bg);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-top:20px">
+      <div style="width:40px;height:40px;border-radius:12px;background:#0A2540;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${activeStep.icon}" style="font-size:20px;color:#8EDBFF"></i></div>
+      <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:3px">${activeStep.label}</div><div style="font-size:12px;color:var(--ink3)">${activeStep.desc}</div></div>
+      ${activeStep.action ? `<button onclick="completeStep('${activeStep.id}')" style="flex-shrink:0;font-size:12px;font-weight:800;color:#fff;background:#0A2540;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Hacerlo →</button>` : ''}
+    </div>`
+
+    el.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:20px 24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div><div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Empezá con Agencia OS</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">${done} de ${total} completados · ${pct}%</div></div>
+        <button onclick="dismissChecklist()" style="font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">Ocultar</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:0">${stepperHTML}</div>
+      ${activeCard}
+    </div>`
+  }
+
+  window.completeStep = async function(stepId) {
+    const step = ONBOARDING_STEPS.find(s => s.id === stepId)
+    if (!step) return
+    if (!onboardingCompleted.includes(stepId)) onboardingCompleted.push(stepId)
+    const allDone = ONBOARDING_STEPS.every(s => onboardingCompleted.includes(s.id))
+    await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: onboardingCompleted, completed: allDone }, { onConflict: 'user_id,agency_id' })
+    if (allDone) {
+      onboardingDone = true
+      showToast('🎉 ¡Completaste el setup de Agencia OS!')
+      const el = document.getElementById('inicio-checklist')
+      if (el) { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>{el.innerHTML=''},300) }
+    } else {
+      await renderChecklist()
+      if (step.action) setTimeout(step.action, 200)
+    }
+  }
+
+  window.dismissChecklist = async function() {
+    await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: onboardingCompleted, completed: true }, { onConflict: 'user_id,agency_id' })
+    onboardingDone = true
+    const el = document.getElementById('inicio-checklist')
+    if (el) { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>{el.innerHTML=''},300) }
+  }
+
+  // ══════════════════════════════════════
+  // BANNER DE NOVEDADES
+  // ══════════════════════════════════════
+
+  const NOVEDAD_ACTUAL = {
+    id: 'novedad_reportes_v1',
+    titulo: 'Reportes por cliente con estadísticas',
+    desc: 'Ahora podés cargar métricas por pieza y descargar el reporte en PDF para compartir con tu cliente.',
+    fecha: 'Nuevo',
+    mod: 'reportes'
+  }
+
+  async function renderNovedad() {
+    const el = document.getElementById('inicio-novedad')
+    if (!el) return
+    try {
+      const { data } = await supabase.from('onboarding_progress').select('completed_steps').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+      const steps = data?.completed_steps || []
+      if (steps.includes(NOVEDAD_ACTUAL.id)) { el.innerHTML = ''; return }
+    } catch(e) {}
+
+    el.innerHTML = `
+      <div onclick="switchModule(document.querySelector('.rail-btn[data-module=${NOVEDAD_ACTUAL.mod}]'));dismissNovedad()" style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="width:40px;height:40px;border-radius:12px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-sparkles" style="font-size:20px;color:#3730A3"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:10px;font-weight:800;color:#3730A3;background:#EEF2FF;padding:2px 9px;border-radius:20px">${NOVEDAD_ACTUAL.fecha}</span>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">${NOVEDAD_ACTUAL.titulo}</div>
+          <div style="font-size:12px;color:var(--ink3);line-height:1.5">${NOVEDAD_ACTUAL.desc}</div>
+        </div>
+        <button onclick="event.stopPropagation();dismissNovedad()" style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:var(--bg);border:none;cursor:pointer;color:var(--ink3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg)'">×</button>
+      </div>`
+  }
+
+  window.dismissNovedad = async function() {
+    const el = document.getElementById('inicio-novedad')
+    if (el) { el.style.transition='opacity .2s'; el.style.opacity='0'; setTimeout(()=>{el.innerHTML='';el.style.opacity='1'},200) }
+    try {
+      const { data } = await supabase.from('onboarding_progress').select('completed_steps').eq('user_id', currentUserId).eq('agency_id', agencyId).maybeSingle()
+      const steps = [...new Set([...(data?.completed_steps||[]), NOVEDAD_ACTUAL.id])]
+      await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: steps }, { onConflict: 'user_id,agency_id' })
+    } catch(e) {}
+  }
+
+  // ══════════════════════════════════════
   // TOOLTIPS DE PRIMER USO
   // ══════════════════════════════════════
 
