@@ -6712,7 +6712,7 @@ if (id) {
       { data: miembros }
     ] = await Promise.all([
       supabase.from('content_pieces').select('id,estado,client_id,fecha_publicacion,clients(nombre)').eq('agency_id', agencyId).gte('fecha_publicacion', start).lte('fecha_publicacion', end),
-      supabase.from('content_tasks').select('id,estado,fecha_entrega,assigned_to').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
+      supabase.from('content_tasks').select('id,estado,fecha_entrega,asignado_a').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
       supabase.from('time_logs').select('duracion_segundos,user_id,piece_id,created_at').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
       supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId),
       supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId).neq('pipeline_stage', 'cerrado_perdido'),
@@ -6833,7 +6833,7 @@ if (id) {
       const col = getAvColor(nombre)
       const avatarUrl = m.profiles?.avatar_url
 
-      const mTareas = tareasArr.filter(t => t.assigned_to === m.user_id)
+      const mTareas = tareasArr.filter(t => t.asignado_a === m.id)
       const completadas = mTareas.filter(t => t.estado === 'completada').length
       const vencidas = mTareas.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
       const horas = timeArr.filter(t => t.user_id === m.user_id).reduce((a, t) => a + (t.duracion_segundos || 0), 0) / 3600
