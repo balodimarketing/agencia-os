@@ -1080,12 +1080,11 @@
       <div id="rep-agencia" style="display:none">
 
         <!-- Tabs internos + período -->
-        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg);padding:0 32px;position:sticky;top:53px;z-index:9">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--white);padding:0 32px;position:sticky;top:53px;z-index:9">
           <div style="display:flex;gap:0">
             <button class="rep-inner-tab active" data-t="resumen" onclick="switchRepInnerTab(this,'resumen')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:800;color:var(--azul);border-bottom:2px solid var(--azul);cursor:pointer;font-family:inherit">Resumen</button>
             <button class="rep-inner-tab" data-t="rentabilidad" onclick="switchRepInnerTab(this,'rentabilidad')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Rentabilidad</button>
             <button class="rep-inner-tab" data-t="equipo" onclick="switchRepInnerTab(this,'equipo')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Equipo</button>
-            <button class="rep-inner-tab" data-t="graficos" onclick="switchRepInnerTab(this,'graficos')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Gráficos</button>
             <button class="rep-inner-tab" data-t="gastos" onclick="switchRepInnerTab(this,'gastos')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Gastos</button>
           </div>
           <div style="display:flex;align-items:center;gap:6px;padding:8px 0">
@@ -1097,17 +1096,32 @@
 
         <!-- Tab: Resumen -->
         <div id="rep-tab-resumen" style="padding:24px 32px;max-width:1000px;margin:0 auto">
-          <div id="rep-kpis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+          <!-- KPIs financieros -->
+          <div style="background:var(--azul);border-radius:18px;padding:24px;margin-bottom:20px">
+            <div style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Resumen financiero</div>
+            <div id="rep-kpis-financieros" style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(142,219,255,.1);border-radius:10px;overflow:hidden"></div>
+          </div>
+          <!-- KPIs operativos -->
+          <div style="margin-bottom:20px">
+            <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Operaciones</div>
+            <div id="rep-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px"></div>
+          </div>
+          <!-- Gráfico producción -->
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción mensual</div>
+            <div id="chart-produccion"></div>
+          </div>
         </div>
 
         <!-- Tab: Rentabilidad -->
         <div id="rep-tab-rentabilidad" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
+          <!-- Resumen financiero real -->
+          <div id="rep-rentabilidad-resumen" style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px"></div>
+          <!-- Por cliente -->
           <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
-            <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-              <div>
-                <div style="font-size:14px;font-weight:800;color:var(--ink)">Rentabilidad por cliente</div>
-                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Ingreso − sueldos distribuidos por horas − gastos del cliente</div>
-              </div>
+            <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
+              <div style="font-size:14px;font-weight:800;color:var(--ink)">Detalle por cliente</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:2px">Ingreso − sueldos distribuidos por horas − gastos del cliente</div>
             </div>
             <div id="rep-rentabilidad" style="padding:4px 0"></div>
           </div>
@@ -1118,33 +1132,9 @@
           <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
             <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
               <div style="font-size:14px;font-weight:800;color:var(--ink)">Rendimiento del equipo</div>
-              <div style="font-size:12px;color:var(--ink3);margin-top:2px">Cargá el sueldo de cada miembro desde Equipo → Editar</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:2px">Cargá el sueldo desde Equipo → Editar para ver métricas de costo</div>
             </div>
             <div id="rep-equipo-render" style="padding:4px 0"></div>
-          </div>
-        </div>
-
-        <!-- Tab: Gráficos -->
-        <div id="rep-tab-graficos" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción mensual</div>
-              <div id="chart-produccion"></div>
-            </div>
-            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Estado de tareas</div>
-              <div id="chart-tareas"></div>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción por cliente</div>
-              <div id="chart-clientes"></div>
-            </div>
-            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Aprobaciones</div>
-              <div id="chart-aprobaciones"></div>
-            </div>
           </div>
         </div>
 
@@ -1153,8 +1143,8 @@
           <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px">
             <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
               <div>
-                <div style="font-size:14px;font-weight:800;color:var(--ink)">Gastos fijos de la agencia</div>
-                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Costos operativos que no se le cargan a ningún cliente específico</div>
+                <div style="font-size:14px;font-weight:800;color:var(--ink)">Gastos de la agencia</div>
+                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Costos operativos que no se le cargan a ningún cliente</div>
               </div>
               <button onclick="openGastoModal()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--azul);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit"><i class="ti ti-plus" style="font-size:13px"></i>Agregar gasto</button>
             </div>
@@ -1164,7 +1154,6 @@
         </div>
 
       </div>
-
       <!-- Vista: lista de clientes -->
       <div id="rep-home" style="padding:28px 32px;max-width:800px;margin:0 auto">
 
@@ -6634,8 +6623,8 @@ if (id) {
   // ══════════════════════════════════════
 
   let repPeriodo = 'mes'
-  let valorHora = 10
   let agenciaMetricas = {}
+  let gastosData = []
 
   window.switchRepTab = function(tab) {
     const isAgencia = tab === 'agencia'
@@ -6643,13 +6632,23 @@ if (id) {
     document.getElementById('rep-months').style.display = 'none'
     document.getElementById('rep-detail').style.display = 'none'
     document.getElementById('rep-agencia').style.display = isAgencia ? 'block' : 'none'
-
-    const tabClientes = document.getElementById('rep-tab-clientes')
-    const tabAgencia = document.getElementById('rep-tab-agencia')
-    if (tabClientes) { tabClientes.style.color = isAgencia ? 'var(--ink3)' : 'var(--azul)'; tabClientes.style.borderBottomColor = isAgencia ? 'transparent' : 'var(--azul)'; tabClientes.style.fontWeight = isAgencia ? '700' : '800' }
-    if (tabAgencia) { tabAgencia.style.color = isAgencia ? 'var(--azul)' : 'var(--ink3)'; tabAgencia.style.borderBottomColor = isAgencia ? 'var(--azul)' : 'transparent'; tabAgencia.style.fontWeight = isAgencia ? '800' : '700' }
-
+    const tabC = document.getElementById('rep-tab-clientes')
+    const tabA = document.getElementById('rep-tab-agencia')
+    if (tabC) { tabC.style.color = isAgencia ? 'var(--ink3)' : 'var(--azul)'; tabC.style.borderBottomColor = isAgencia ? 'transparent' : 'var(--azul)'; tabC.style.fontWeight = isAgencia ? '700' : '800' }
+    if (tabA) { tabA.style.color = isAgencia ? 'var(--azul)' : 'var(--ink3)'; tabA.style.borderBottomColor = isAgencia ? 'var(--azul)' : 'transparent'; tabA.style.fontWeight = isAgencia ? '800' : '700' }
     if (isAgencia) renderAgenciaMetricas()
+  }
+
+  window.switchRepInnerTab = function(btn, tab) {
+    document.querySelectorAll('.rep-inner-tab').forEach(b => {
+      b.style.color = 'var(--ink3)'; b.style.fontWeight = '700'; b.style.borderBottomColor = 'transparent'
+    })
+    btn.style.color = 'var(--azul)'; btn.style.fontWeight = '800'; btn.style.borderBottomColor = 'var(--azul)'
+    ;['resumen','rentabilidad','equipo','gastos'].forEach(t => {
+      const el = document.getElementById('rep-tab-' + t)
+      if (el) el.style.display = t === tab ? 'block' : 'none'
+    })
+    if (tab === 'gastos') renderGastos()
   }
 
   window.setRepPeriodo = function(p) {
@@ -6662,20 +6661,6 @@ if (id) {
       b.style.fontWeight = active ? '800' : '700'
     })
     renderAgenciaMetricas()
-  }
-
-  window.setValorHora = function(val) {
-    valorHora = val
-    document.querySelectorAll('.vh-btn').forEach(b => {
-      const active = parseInt(b.dataset.vh) === val
-      b.style.background = active ? 'var(--azul)' : 'transparent'
-      b.style.color = active ? '#fff' : 'var(--ink3)'
-      b.style.borderColor = active ? 'var(--azul)' : 'var(--border)'
-    })
-    const customInput = document.getElementById('vh-custom')
-    if (customInput && ![10,15,20].includes(val)) customInput.value = val
-    supabase.from('agencies').update({ valor_hora: val }).eq('id', agencyId)
-    renderRentabilidad()
   }
 
   function getPeriodoRange() {
@@ -6699,36 +6684,20 @@ if (id) {
     if (!agencyId) return
     const { start, end } = getPeriodoRange()
 
-    // Cargar valor hora guardado
-    const { data: agData } = await supabase.from('agencies').select('valor_hora').eq('id', agencyId).single()
-    if (agData?.valor_hora) {
-      valorHora = agData.valor_hora
-      document.querySelectorAll('.vh-btn').forEach(b => {
-        const active = parseInt(b.dataset.vh) === valorHora
-        b.style.background = active ? 'var(--azul)' : 'transparent'
-        b.style.color = active ? '#fff' : 'var(--ink3)'
-        b.style.borderColor = active ? 'var(--azul)' : 'var(--border)'
-      })
-      if (![10,15,20].includes(valorHora)) {
-        const ci = document.getElementById('vh-custom')
-        if (ci) ci.value = valorHora
-      }
-    }
-
     const [
       { data: piezas },
       { data: tareas },
       { data: timeLogs },
       { data: crmContacts },
-      { data: crmDeals },
-      { data: miembros }
+      { data: miembros },
+      { data: gastosFijos }
     ] = await Promise.all([
       supabase.from('content_pieces').select('id,estado,client_id,fecha_publicacion,clients(nombre)').eq('agency_id', agencyId).gte('fecha_publicacion', start).lte('fecha_publicacion', end),
       supabase.from('content_tasks').select('id,estado,fecha_entrega,asignado_a').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
       supabase.from('time_logs').select('duracion_segundos,user_id,piece_id,created_at').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
       supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId),
-      supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId).neq('pipeline_stage', 'cerrado_perdido'),
-      supabase.from('agency_members').select('id,role,user_id,puesto,sueldo_mensual,profiles(nombre,apellido,avatar_url)').eq('agency_id', agencyId).eq('status', 'active')
+      supabase.from('agency_members').select('id,role,user_id,puesto,sueldo_mensual,profiles(nombre,apellido,avatar_url)').eq('agency_id', agencyId).eq('status', 'active'),
+      supabase.from('agency_gastos').select('*').eq('agency_id', agencyId)
     ])
 
     const piezasArr = piezas || []
@@ -6736,59 +6705,117 @@ if (id) {
     const timeArr = timeLogs || []
     const contactsArr = crmContacts || []
     const miembrosArr = miembros || []
+    gastosData = gastosFijos || []
 
+    const clientesActivos = clients.filter(c => c.estado === 'activo')
+
+    // Cálculos financieros
+    const ingresoTotal = clientesActivos.reduce((a, c) => a + (c.ingreso_mensual || 0), 0)
+    const gastosSueldos = miembrosArr.reduce((a, m) => a + (m.sueldo_mensual || 0), 0)
+    const gastosFijosTotal = gastosData.filter(g => g.tipo === 'fijo').reduce((a, g) => a + (g.monto || 0), 0)
+    const gastosVariablesTotal = gastosData.filter(g => g.tipo === 'variable').reduce((a, g) => a + (g.monto || 0), 0)
+    const gananciaNeta = ingresoTotal - gastosSueldos - gastosFijosTotal - gastosVariablesTotal
+    const margenNeto = ingresoTotal > 0 ? Math.round((gananciaNeta / ingresoTotal) * 100) : 0
+
+    // Cálculos operativos
     const piezasPublicadas = piezasArr.filter(p => p.estado === 'publicado').length
-    const horasTotales = timeArr.reduce((a, t) => a + (t.duracion_segundos || 0), 0) / 3600
     const tareasCompletadas = tareasArr.filter(t => t.estado === 'completada').length
     const tareasVencidas = tareasArr.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
     const pipelineTotal = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).reduce((a, c) => a + (c.valor_deal || 0), 0)
-    const dealsActivos = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).length
     const cerrados = contactsArr.filter(c => c.pipeline_stage === 'cerrado_ganado').length
-    const totalDeals = contactsArr.length
-    const tasaCierre = totalDeals > 0 ? Math.round((cerrados / totalDeals) * 100) : 0
+    const tasaCierre = contactsArr.length > 0 ? Math.round((cerrados / contactsArr.length) * 100) : 0
+    const dealsActivos = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).length
 
-    // KPIs — asegurar que clients esté disponible
-    const clientesActivos = clients.filter(c => c.estado === 'activo')
-    const kpisEl = document.getElementById('rep-kpis')
-    if (kpisEl) kpisEl.innerHTML = [
-      { label: 'Clientes activos',   val: clientesActivos.length,                    color: 'var(--azul)',    icon: 'ti-building'        },
-      { label: 'Miembros activos',   val: miembrosArr.length,                        color: '#3730A3',        icon: 'ti-users'           },
-      { label: 'Piezas publicadas',  val: piezasPublicadas,                          color: '#10B981',        icon: 'ti-photo'           },
-      { label: 'Horas registradas',  val: horasTotales.toFixed(1) + 'h',            color: 'var(--azul)',    icon: 'ti-clock'           },
-      { label: 'Tareas completadas', val: tareasCompletadas,                         color: '#10B981',        icon: 'ti-check'           },
-      { label: 'Tareas vencidas',    val: tareasVencidas,                            color: 'var(--danger)',  icon: 'ti-alert-circle'    },
-      { label: 'Pipeline CRM',       val: '$' + pipelineTotal.toLocaleString('es-AR'), color: '#F59E0B',     icon: 'ti-currency-dollar' },
-      { label: 'Deals activos',      val: dealsActivos,                              color: '#3730A3',        icon: 'ti-briefcase'       },
-      { label: 'Tasa de cierre',     val: tasaCierre + '%',                          color: '#10B981',        icon: 'ti-target'          },
-    ].map(k => `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px">
-      <div style="width:38px;height:38px;border-radius:10px;background:${k.color}18;display:flex;align-items:center;justify-content:center;color:${k.color};flex-shrink:0"><i class="ti ${k.icon}" style="font-size:18px"></i></div>
-      <div><div style="font-size:20px;font-weight:900;color:${k.color};letter-spacing:-.5px;line-height:1">${k.val}</div><div style="font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600">${k.label}</div></div>
+    // KPIs financieros — fila azul
+    const kpisFinEl = document.getElementById('rep-kpis-financieros')
+    if (kpisFinEl) kpisFinEl.innerHTML = [
+      { label: 'Ingresos totales', val: '$' + ingresoTotal.toLocaleString('es-AR'), sub: 'de clientes activos', color: '#8EDBFF' },
+      { label: 'Gastos de empleados', val: '$' + gastosSueldos.toLocaleString('es-AR'), sub: miembrosArr.length + ' miembros', color: '#FCA5A5' },
+      { label: 'Gastos fijos', val: '$' + gastosFijosTotal.toLocaleString('es-AR'), sub: gastosData.filter(g=>g.tipo==='fijo').length + ' ítems', color: '#FCD34D' },
+      { label: 'Gastos variables', val: '$' + gastosVariablesTotal.toLocaleString('es-AR'), sub: gastosData.filter(g=>g.tipo==='variable').length + ' ítems', color: '#FCD34D' },
+      { label: 'Ganancia neta', val: '$' + gananciaNeta.toLocaleString('es-AR'), sub: margenNeto + '% de margen', color: gananciaNeta >= 0 ? '#6EE7B7' : '#FCA5A5' },
+    ].map(k => `<div style="padding:16px;text-align:center">
+      <div style="font-size:20px;font-weight:900;color:${k.color};letter-spacing:-.5px;line-height:1">${k.val}</div>
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.9);margin-top:6px">${k.label}</div>
+      <div style="font-size:10px;color:rgba(142,219,255,.6);margin-top:2px">${k.sub}</div>
     </div>`).join('')
 
-    // Guardar para rentabilidad
-    agenciaMetricas = { piezasArr, tareasArr, timeArr, miembrosArr, contactsArr, clientesActivos }
+    // KPIs operativos
+    const kpisEl = document.getElementById('rep-kpis')
+    if (kpisEl) kpisEl.innerHTML = [
+      { label: 'Clientes activos', val: clientesActivos.length, color: 'var(--azul)', icon: 'ti-building' },
+      { label: 'Piezas publicadas', val: piezasPublicadas, color: '#10B981', icon: 'ti-photo' },
+      { label: 'Tareas vencidas', val: tareasVencidas, color: 'var(--danger)', icon: 'ti-alert-circle' },
+      { label: 'Pipeline CRM', val: '$' + pipelineTotal.toLocaleString('es-AR'), color: '#F59E0B', icon: 'ti-currency-dollar' },
+    ].map(k => `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;border-radius:10px;background:${k.color}18;display:flex;align-items:center;justify-content:center;color:${k.color};flex-shrink:0"><i class="ti ${k.icon}" style="font-size:18px"></i></div>
+      <div><div style="font-size:22px;font-weight:900;color:${k.color};letter-spacing:-.5px;line-height:1">${k.val}</div><div style="font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600">${k.label}</div></div>
+    </div>`).join('')
+
+    // Guardar para otras tabs
+    agenciaMetricas = { piezasArr, tareasArr, timeArr, miembrosArr, contactsArr, clientesActivos,
+      ingresoTotal, gastosSueldos, gastosFijosTotal, gastosVariablesTotal, gananciaNeta, margenNeto,
+      tareasCompletadas, tareasVencidas, piezasPublicadas, dealsActivos, tasaCierre }
+
+    // Gráfico producción en resumen
+    renderCharts(piezasArr, tareasArr)
     renderRentabilidad()
     renderEquipoMetricas()
-    renderCharts(piezasArr, tareasArr)
   }
 
   function renderRentabilidad() {
+    // Resumen financiero
+    const resEl = document.getElementById('rep-rentabilidad-resumen')
+    if (resEl) {
+      const { ingresoTotal, gastosSueldos, gastosFijosTotal, gastosVariablesTotal, gananciaNeta, margenNeto, miembrosArr } = agenciaMetricas
+      const totalGastos = (gastosSueldos||0) + (gastosFijosTotal||0) + (gastosVariablesTotal||0)
+      resEl.innerHTML = `
+        <div style="background:var(--azul);padding:24px;border-radius:16px 16px 0 0">
+          <div style="font-size:11px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Rentabilidad de la agencia</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+            <div>
+              <div style="font-size:28px;font-weight:900;color:#8EDBFF;letter-spacing:-.5px">${'$'+(ingresoTotal||0).toLocaleString('es-AR')}</div>
+              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Ingresos totales</div>
+            </div>
+            <div>
+              <div style="font-size:28px;font-weight:900;color:#FCA5A5;letter-spacing:-.5px">-$${totalGastos.toLocaleString('es-AR')}</div>
+              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Gastos totales</div>
+            </div>
+            <div>
+              <div style="font-size:28px;font-weight:900;color:${(gananciaNeta||0)>=0?'#6EE7B7':'#FCA5A5'};letter-spacing:-.5px">${'$'+(gananciaNeta||0).toLocaleString('es-AR')}</div>
+              <div style="font-size:11px;color:rgba(142,219,255,.7);margin-top:4px">Ganancia neta · ${margenNeto||0}% margen</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div style="background:var(--bg);border-radius:10px;padding:12px">
+            <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Sueldos</div>
+            <div style="font-size:16px;font-weight:800;color:var(--danger)">-$${(gastosSueldos||0).toLocaleString('es-AR')}</div>
+            <div style="font-size:10px;color:var(--ink3);margin-top:2px">${(miembrosArr||[]).length} miembros</div>
+          </div>
+          <div style="background:var(--bg);border-radius:10px;padding:12px">
+            <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Gastos fijos</div>
+            <div style="font-size:16px;font-weight:800;color:var(--warn)">-$${(gastosFijosTotal||0).toLocaleString('es-AR')}</div>
+            <div style="font-size:10px;color:var(--ink3);margin-top:2px">${gastosData.filter(g=>g.tipo==='fijo').length} ítems</div>
+          </div>
+          <div style="background:var(--bg);border-radius:10px;padding:12px">
+            <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Gastos variables</div>
+            <div style="font-size:16px;font-weight:800;color:var(--warn)">-$${(gastosVariablesTotal||0).toLocaleString('es-AR')}</div>
+            <div style="font-size:10px;color:var(--ink3);margin-top:2px">${gastosData.filter(g=>g.tipo==='variable').length} ítems</div>
+          </div>
+        </div>`
+    }
+
+    // Detalle por cliente
     const el = document.getElementById('rep-rentabilidad')
     if (!el || !agenciaMetricas.piezasArr) return
-    const { timeArr, miembrosArr } = agenciaMetricas
+    const { timeArr, miembrosArr, clientesActivos } = agenciaMetricas
+    if (!clientesActivos?.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--ink3)">Sin clientes activos</div>'; return }
 
-    const clientesActivos = agenciaMetricas.clientesActivos || clients.filter(c => c.estado === 'activo')
-    if (!clientesActivos.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--ink3)">Sin clientes activos</div>'; return }
-
-    // Horas totales por empleado
     const horasPorEmpleado = {}
     ;(miembrosArr||[]).forEach(m => {
-      horasPorEmpleado[m.user_id] = (timeArr||[])
-        .filter(t => t.user_id === m.user_id)
-        .reduce((a, t) => a + (t.duracion_segundos||0), 0) / 3600
+      horasPorEmpleado[m.user_id] = (timeArr||[]).filter(t => t.user_id === m.user_id).reduce((a, t) => a + (t.duracion_segundos||0), 0) / 3600
     })
-
-    // Horas por empleado por cliente
     const hEmpCliente = {}
     ;(timeArr||[]).forEach(t => {
       const pieza = (agenciaMetricas.piezasArr||[]).find(p => p.id === t.piece_id)
@@ -6798,18 +6825,13 @@ if (id) {
     })
 
     const data = clientesActivos.map(c => {
-      const horasCliente = Object.entries(hEmpCliente)
-        .filter(([k]) => k.endsWith('__'+c.id))
-        .reduce((a,[,v]) => a+v, 0)
-
+      const horasCliente = Object.entries(hEmpCliente).filter(([k]) => k.endsWith('__'+c.id)).reduce((a,[,v]) => a+v, 0)
       let costoSueldos = 0
       ;(miembrosArr||[]).forEach(m => {
         const hEc = hEmpCliente[(m.user_id+'__'+c.id)] || 0
         const hEt = horasPorEmpleado[m.user_id] || 0
-        const sueldo = m.sueldo_mensual || 0
-        if (hEt > 0 && sueldo > 0) costoSueldos += (hEc/hEt)*sueldo
+        if (hEt > 0 && (m.sueldo_mensual||0) > 0) costoSueldos += (hEc/hEt)*(m.sueldo_mensual||0)
       })
-
       const ingreso = c.ingreso_mensual || 0
       const gastos = c.gastos_mensuales || 0
       const costoTotal = costoSueldos + gastos
@@ -6821,164 +6843,206 @@ if (id) {
     el.innerHTML = data.map(c => {
       const mc = c.margen===null ? 'var(--ink3)' : c.margen>=50 ? '#10B981' : c.margen>=20 ? '#F59E0B' : 'var(--danger)'
       const mi = c.margen===null ? '—' : c.margen>=50 ? '🟢' : c.margen>=20 ? '🟡' : '🔴'
-      const ini = initials(c.nombre)
-      const col = getAvColor(c.nombre)
+      const ini = initials(c.nombre); const col = getAvColor(c.nombre)
       return '<div style="display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap">'
         + '<div style="width:34px;height:34px;border-radius:9px;background:'+col.bg+';color:'+col.color+';font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ini+'</div>'
         + '<div style="flex:1;min-width:120px"><div style="font-size:13px;font-weight:700;color:var(--ink)">'+c.nombre+'</div>'
-        + '<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+c.horasCliente.toFixed(1)+'h · Sueldos: $'+c.costoSueldos.toFixed(0)+' · Gastos extra: $'+c.gastos+'</div></div>'
+        + '<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+c.horasCliente.toFixed(1)+'h · $'+c.costoSueldos.toFixed(0)+' sueldos · $'+c.gastos+' extras</div></div>'
         + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Ingreso</div><div style="font-size:13px;font-weight:800;color:var(--ink)">$'+c.ingreso.toLocaleString('es-AR')+'</div></div>'
-        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Costo total</div><div style="font-size:13px;font-weight:800;color:var(--ink)">$'+c.costoTotal.toFixed(0)+'</div></div>'
+        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Costo</div><div style="font-size:13px;font-weight:800;color:var(--ink)">$'+c.costoTotal.toFixed(0)+'</div></div>'
         + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Ganancia</div><div style="font-size:13px;font-weight:800;color:'+(c.ganancia>=0?'#10B981':'var(--danger)')+'">$'+c.ganancia.toFixed(0)+'</div></div>'
         + '<div style="text-align:center;min-width:60px"><div style="font-size:20px">'+mi+'</div><div style="font-size:12px;font-weight:800;color:'+mc+'">'+(c.margen!==null?c.margen+'%':'—')+'</div></div>'
         + '</div>'
     }).join('')
   }
+
   function renderEquipoMetricas() {
     const el = document.getElementById('rep-equipo-render')
     if (!el || !agenciaMetricas.miembrosArr) return
-    const { tareasArr, timeArr, piezasArr } = agenciaMetricas
+    const { tareasArr, timeArr, piezasArr, miembrosArr } = agenciaMetricas
 
-    el.innerHTML = agenciaMetricas.miembrosArr.map(m => {
-      const nombre = `${m.profiles?.nombre||''} ${m.profiles?.apellido||''}`.trim()
-      const ini = initials(nombre)
-      const col = getAvColor(nombre)
+    el.innerHTML = miembrosArr.map(m => {
+      const nombre = ((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).trim()
+      const ini = initials(nombre); const col = getAvColor(nombre)
       const avatarUrl = m.profiles?.avatar_url
-
       const mTareas = tareasArr.filter(t => t.asignado_a === m.id)
       const completadas = mTareas.filter(t => t.estado === 'completada').length
       const vencidas = mTareas.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
-      const horas = timeArr.filter(t => t.user_id === m.user_id).reduce((a, t) => a + (t.duracion_segundos || 0), 0) / 3600
-      const piezasTrabajadas = piezasArr.filter(p => p.client_id && agenciaMetricas.timeArr?.some(t => t.user_id === m.user_id && t.piece_id === p.id)).length
-
-      const actividad7d = timeArr.filter(t => t.user_id === m.user_id && new Date(t.created_at) > new Date(Date.now() - 7*24*60*60*1000)).length
+      const horas = (timeArr||[]).filter(t => t.user_id === m.user_id).reduce((a, t) => a + (t.duracion_segundos||0), 0) / 3600
+      const piezasTrabajadas = (piezasArr||[]).filter(p => (timeArr||[]).some(t => t.user_id === m.user_id && t.piece_id === p.id)).length
+      const actividad7d = (timeArr||[]).filter(t => t.user_id === m.user_id && new Date(t.created_at) > new Date(Date.now()-7*24*60*60*1000)).length
       const actividadLabel = actividad7d > 5 ? 'Alta' : actividad7d > 1 ? 'Media' : 'Baja'
-      const actividadColor = actividad7d > 5 ? '#10B981' : actividad7d > 1 ? '#F59E0B' : 'var(--danger)'
-
+      const actColor = actividad7d > 5 ? '#10B981' : actividad7d > 1 ? '#F59E0B' : 'var(--danger)'
       const carga = mTareas.filter(t => t.estado !== 'completada').length
       const cargaLabel = carga > 8 ? 'Alta' : carga > 3 ? 'Normal' : 'Baja'
       const cargaColor = carga > 8 ? 'var(--danger)' : carga > 3 ? '#F59E0B' : '#10B981'
+      const sueldo = m.sueldo_mensual || 0
 
-      return `<div style="display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:10px;min-width:180px">
-          ${avatarUrl ? `<img src="${avatarUrl}" style="width:36px;height:36px;border-radius:10px;object-fit:cover;flex-shrink:0">` : `<div style="width:36px;height:36px;border-radius:10px;background:${col.bg};color:${col.color};font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`}
-          <div><div style="font-size:13px;font-weight:700;color:var(--ink)">${nombre}</div><div style="font-size:11px;color:var(--ink3)">${m.puesto||m.role}</div></div>
-        </div>
-        <div style="display:flex;gap:20px;flex:1;flex-wrap:wrap">
-          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#10B981">${completadas}</div><div style="font-size:10px;color:var(--ink3)">Completadas</div></div>
-          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--danger)">${vencidas}</div><div style="font-size:10px;color:var(--ink3)">Vencidas</div></div>
-          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--azul)">${horas.toFixed(1)}h</div><div style="font-size:10px;color:var(--ink3)">Registradas</div></div>
-          <div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#3730A3">${piezasTrabajadas}</div><div style="font-size:10px;color:var(--ink3)">Piezas</div></div>
-        </div>
-        <div style="display:flex;gap:10px">
-          <div style="text-align:center"><div style="font-size:11px;font-weight:800;color:${actividadColor}">${actividadLabel}</div><div style="font-size:10px;color:var(--ink3)">Actividad</div></div>
-          <div style="text-align:center"><div style="font-size:11px;font-weight:800;color:${cargaColor}">${cargaLabel}</div><div style="font-size:10px;color:var(--ink3)">Carga</div></div>
-        </div>
-      </div>`
+      return '<div style="display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap">'
+        + '<div style="display:flex;align-items:center;gap:10px;min-width:180px">'
+        + (avatarUrl ? '<img src="'+avatarUrl+'" style="width:40px;height:40px;border-radius:11px;object-fit:cover;flex-shrink:0">' : '<div style="width:40px;height:40px;border-radius:11px;background:'+col.bg+';color:'+col.color+';font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ini+'</div>')
+        + '<div><div style="font-size:13px;font-weight:700;color:var(--ink)">'+nombre+'</div>'
+        + '<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+(m.puesto||m.role)+'</div></div></div>'
+        + '<div style="display:flex;gap:20px;flex:1;flex-wrap:wrap;align-items:center">'
+        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#10B981">'+completadas+'</div><div style="font-size:10px;color:var(--ink3)">Completadas</div></div>'
+        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--danger)">'+vencidas+'</div><div style="font-size:10px;color:var(--ink3)">Vencidas</div></div>'
+        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:var(--azul)">'+horas.toFixed(1)+'h</div><div style="font-size:10px;color:var(--ink3)">Horas</div></div>'
+        + '<div style="text-align:center"><div style="font-size:16px;font-weight:900;color:#3730A3">'+piezasTrabajadas+'</div><div style="font-size:10px;color:var(--ink3)">Piezas</div></div>'
+        + (sueldo > 0 ? '<div style="text-align:center"><div style="font-size:14px;font-weight:900;color:var(--danger)">$'+sueldo.toLocaleString("es-AR")+'</div><div style="font-size:10px;color:var(--ink3)">Sueldo/mes</div></div>' : '<div style="font-size:11px;color:var(--ink3);font-style:italic">Sin sueldo cargado</div>')
+        + '</div>'
+        + '<div style="display:flex;gap:12px;flex-shrink:0">'
+        + '<div style="text-align:center"><div style="font-size:11px;font-weight:800;color:'+actColor+'">'+actividadLabel+'</div><div style="font-size:10px;color:var(--ink3)">Actividad</div></div>'
+        + '<div style="text-align:center"><div style="font-size:11px;font-weight:800;color:'+cargaColor+'">'+cargaLabel+'</div><div style="font-size:10px;color:var(--ink3)">Carga</div></div>'
+        + '</div></div>'
     }).join('')
   }
 
   function renderCharts(piezasArr, tareasArr) {
-    // Producción por cliente
     const byCliente = {}
     piezasArr.filter(p => p.estado === 'publicado').forEach(p => {
       const n = p.clients?.nombre || 'Sin cliente'
-      byCliente[n] = (byCliente[n] || 0) + 1
+      byCliente[n] = (byCliente[n]||0) + 1
     })
     const maxC = Math.max(...Object.values(byCliente), 1)
     const chartC = document.getElementById('chart-clientes')
-    if (chartC) chartC.innerHTML = Object.entries(byCliente).sort((a,b) => b[1]-a[1]).slice(0,6).map(([n,v]) => `
-      <div style="margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">${n}</span><span style="font-weight:800;color:var(--ink)">${v}</span></div>
-        <div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:${Math.round((v/maxC)*100)}%;background:var(--azul);border-radius:4px"></div></div>
-      </div>`).join('') || '<div style="font-size:13px;color:var(--ink3)">Sin datos</div>'
+    if (chartC) chartC.innerHTML = Object.entries(byCliente).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,v]) =>
+      '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px">'+n+'</span><span style="font-weight:800;color:var(--ink)">'+v+'</span></div>'
+      + '<div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:'+Math.round((v/maxC)*100)+'%;background:var(--azul);border-radius:4px"></div></div></div>'
+    ).join('') || '<div style="font-size:13px;color:var(--ink3)">Sin datos</div>'
 
-    // Estado de tareas
-    const comp = tareasArr.filter(t => t.estado === 'completada').length
-    const pend = tareasArr.filter(t => t.estado !== 'completada' && (!t.fecha_entrega || new Date(t.fecha_entrega) >= new Date())).length
-    const venc = tareasArr.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
-    const totalT = comp + pend + venc || 1
+    const comp = tareasArr.filter(t=>t.estado==='completada').length
+    const pend = tareasArr.filter(t=>t.estado!=='completada'&&(!t.fecha_entrega||new Date(t.fecha_entrega)>=new Date())).length
+    const venc = tareasArr.filter(t=>t.estado!=='completada'&&t.fecha_entrega&&new Date(t.fecha_entrega)<new Date()).length
+    const totalT = comp+pend+venc||1
     const chartT = document.getElementById('chart-tareas')
-    if (chartT) chartT.innerHTML = [
-      { label: 'Completadas', val: comp, color: '#10B981' },
-      { label: 'Pendientes', val: pend, color: '#F59E0B' },
-      { label: 'Vencidas', val: venc, color: 'var(--danger)' },
-    ].map(s => `<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600">${s.label}</span><span style="font-weight:800;color:var(--ink)">${s.val}</span></div>
-      <div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:${Math.round((s.val/totalT)*100)}%;background:${s.color};border-radius:4px"></div></div>
-    </div>`).join('')
+    if (chartT) chartT.innerHTML = [['Completadas',comp,'#10B981'],['Pendientes',pend,'#F59E0B'],['Vencidas',venc,'var(--danger)']].map(([l,v,c]) =>
+      '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600">'+l+'</span><span style="font-weight:800;color:var(--ink)">'+v+'</span></div>'
+      + '<div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:'+Math.round((v/totalT)*100)+'%;background:'+c+';border-radius:4px"></div></div></div>'
+    ).join('')
 
-    // Aprobaciones
-    const directas = piezasArr.filter(p => p.estado === 'publicado').length
-    const conCambios = piezasArr.filter(p => p.estado !== 'publicado').length
-    const totalA = directas + conCambios || 1
-    const chartA = document.getElementById('chart-aprobaciones')
-    if (chartA) chartA.innerHTML = [
-      { label: 'Aprobadas directamente', val: directas, color: '#10B981' },
-      { label: 'Con revisiones', val: conCambios, color: '#F59E0B' },
-    ].map(s => `<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--ink2);font-weight:600">${s.label}</span><span style="font-weight:800;color:var(--ink)">${s.val} (${Math.round((s.val/totalA)*100)}%)</span></div>
-      <div style="height:7px;background:var(--bg);border-radius:4px"><div style="height:7px;width:${Math.round((s.val/totalA)*100)}%;background:${s.color};border-radius:4px"></div></div>
-    </div>`).join('')
-
-    // Producción mensual (últimos 6 meses)
     const ultimos6 = []
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(); d.setMonth(d.getMonth() - i)
-      const mes = d.toLocaleDateString('es-AR', { month: 'short' })
-      const count = piezasArr.filter(p => {
-        if (!p.fecha_publicacion) return false
-        const pd = new Date(p.fecha_publicacion)
-        return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth()
-      }).length
-      ultimos6.push({ mes, count })
+    for (let i=5; i>=0; i--) {
+      const d = new Date(); d.setMonth(d.getMonth()-i)
+      const mes = d.toLocaleDateString('es-AR',{month:'short'})
+      const count = piezasArr.filter(p => { if(!p.fecha_publicacion) return false; const pd=new Date(p.fecha_publicacion); return pd.getFullYear()===d.getFullYear()&&pd.getMonth()===d.getMonth() }).length
+      ultimos6.push({mes,count})
     }
-    const maxP = Math.max(...ultimos6.map(u => u.count), 1)
+    const maxP = Math.max(...ultimos6.map(u=>u.count),1)
     const chartP = document.getElementById('chart-produccion')
-    if (chartP) chartP.innerHTML = `<div style="display:flex;align-items:flex-end;gap:8px;height:80px">
-      ${ultimos6.map(u => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-        <div style="font-size:10px;font-weight:700;color:var(--ink)">${u.count}</div>
-        <div style="width:100%;background:var(--azul);border-radius:4px 4px 0 0;height:${Math.round((u.count/maxP)*60)+4}px"></div>
-        <div style="font-size:10px;color:var(--ink3)">${u.mes}</div>
-      </div>`).join('')}
-    </div>`
+    if (chartP) chartP.innerHTML = '<div style="display:flex;align-items:flex-end;gap:8px;height:80px">'
+      + ultimos6.map(u=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="font-size:10px;font-weight:700;color:var(--ink)">'+u.count+'</div><div style="width:100%;background:var(--azul);border-radius:4px 4px 0 0;height:'+(Math.round((u.count/maxP)*60)+4)+'px"></div><div style="font-size:10px;color:var(--ink3)">'+u.mes+'</div></div>').join('')
+      + '</div>'
   }
 
-  // Modal para editar ingreso mensual por cliente
-  window.openClientIngresoModal = function(clientId, nombre, ingresoActual) {
-    const existing = document.getElementById('modal-ingreso')
+  // ── Gastos fijos/variables ────────────────────────────
+  async function loadGastos() {
+    const { data } = await supabase.from('agency_gastos').select('*').eq('agency_id', agencyId).order('created_at', { ascending: false })
+    gastosData = data || []
+  }
+
+  async function renderGastos() {
+    await loadGastos()
+    const el = document.getElementById('rep-gastos-list')
+    const resEl = document.getElementById('rep-gastos-resumen')
+    if (!el) return
+
+    const fijos = gastosData.filter(g => g.tipo === 'fijo')
+    const variables = gastosData.filter(g => g.tipo === 'variable')
+
+    if (!gastosData.length) {
+      el.innerHTML = '<div style="padding:24px;text-align:center;font-size:13px;color:var(--ink3)">Sin gastos cargados todavía.</div>'
+    } else {
+      const renderGrupo = (lista, titulo, color) => lista.length ? `
+        <div style="padding:12px 22px 4px;background:var(--bg);border-bottom:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.5px">${titulo}</div>
+        </div>` + lista.map(g => `
+        <div style="display:flex;align-items:center;gap:14px;padding:12px 22px;border-bottom:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--ink)">${g.nombre}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:1px">${g.categoria}</div>
+          </div>
+          <div style="font-size:14px;font-weight:900;color:var(--danger)">−$${Number(g.monto).toLocaleString('es-AR')}</div>
+          <button onclick="deleteGasto('${g.id}')" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;background:transparent;cursor:pointer;color:var(--ink3);font-size:13px" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'"><i class="ti ti-trash"></i></button>
+        </div>`).join('') : ''
+
+      el.innerHTML = renderGrupo(fijos, 'Gastos fijos', '#3730A3') + renderGrupo(variables, 'Gastos variables', '#F59E0B')
+    }
+
+    const totalFijos = fijos.reduce((a,g)=>a+(g.monto||0),0)
+    const totalVariables = variables.reduce((a,g)=>a+(g.monto||0),0)
+    const ingresoTotal = clients.filter(c=>c.estado==='activo').reduce((a,c)=>a+(c.ingreso_mensual||0),0)
+    const total = totalFijos + totalVariables
+    if (resEl) resEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--ink)">$${ingresoTotal.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--ink3);margin-top:4px">Ingresos</div></div>
+        <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:#3730A3">−$${totalFijos.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--ink3);margin-top:4px">Gastos fijos</div></div>
+        <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:#F59E0B">−$${totalVariables.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--ink3);margin-top:4px">Gastos variables</div></div>
+        <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:${(ingresoTotal-total)>=0?'#10B981':'var(--danger)'}">$${(ingresoTotal-total).toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--ink3);margin-top:4px">Tras gastos</div></div>
+      </div>`
+  }
+
+  window.openGastoModal = function() {
+    const existing = document.getElementById('modal-gasto')
     if (existing) existing.remove()
     const m = document.createElement('div')
-    m.id = 'modal-ingreso'
+    m.id = 'modal-gasto'
     m.className = 'modal-overlay show'
     m.onclick = e => { if (e.target === m) m.remove() }
-    m.innerHTML = `<div class="modal" style="max-width:380px">
-      <div class="modal-head"><div class="modal-title">Ingreso mensual — ${nombre}</div><button class="modal-close" onclick="document.getElementById('modal-ingreso').remove()"><i class="ti ti-x"></i></button></div>
+    m.innerHTML = `<div class="modal" style="max-width:400px">
+      <div class="modal-head"><div class="modal-title">Agregar gasto</div><button class="modal-close" onclick="document.getElementById('modal-gasto').remove()"><i class="ti ti-x"></i></button></div>
       <div class="modal-body">
-        <p style="font-size:13px;color:var(--ink3);margin-bottom:16px">Ingresá el monto mensual que facturás a este cliente (en USD).</p>
-        <div class="form-field">
-          <label class="form-label">Ingreso mensual (USD)</label>
-          <input type="number" class="form-input" id="ingreso-input" value="${ingresoActual}" min="0" placeholder="0">
+        <div class="form-field"><label class="form-label">Nombre</label><input type="text" class="form-input" id="gasto-nombre" placeholder="Ej: Supabase, Adobe, Contador..."></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="form-field" style="margin-bottom:0"><label class="form-label">Monto (USD)</label><input type="number" class="form-input" id="gasto-monto" placeholder="0" min="0"></div>
+          <div class="form-field" style="margin-bottom:0"><label class="form-label">Categoría</label>
+            <select class="form-input form-select" id="gasto-cat">
+              <option value="operativo">Operativo</option>
+              <option value="herramientas">Herramientas</option>
+              <option value="infraestructura">Infraestructura</option>
+              <option value="marketing">Marketing</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:0"><label class="form-label">Tipo de gasto</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s" id="tipo-fijo-label">
+              <input type="radio" name="gasto-tipo" value="fijo" id="gasto-tipo-fijo" checked style="accent-color:var(--azul)" onchange="document.getElementById('tipo-fijo-label').style.borderColor='var(--azul)';document.getElementById('tipo-var-label').style.borderColor='var(--border)'">
+              <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Fijo</div><div style="font-size:10px;color:var(--ink3)">Mensual recurrente</div></div>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s" id="tipo-var-label">
+              <input type="radio" name="gasto-tipo" value="variable" id="gasto-tipo-var" style="accent-color:var(--azul)" onchange="document.getElementById('tipo-var-label').style.borderColor='var(--azul)';document.getElementById('tipo-fijo-label').style.borderColor='var(--border)'">
+              <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Variable</div><div style="font-size:10px;color:var(--ink3)">Puntual / esporádico</div></div>
+            </label>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="tbtn" onclick="document.getElementById('modal-ingreso').remove()">Cancelar</button>
-        <button class="tbtn primary" onclick="saveClientIngreso('${clientId}')">Guardar</button>
+        <button class="tbtn" onclick="document.getElementById('modal-gasto').remove()">Cancelar</button>
+        <button class="tbtn primary" onclick="saveGasto()">Guardar gasto</button>
       </div>
     </div>`
     document.body.appendChild(m)
+    setTimeout(() => document.getElementById('gasto-nombre').focus(), 100)
   }
 
-  window.saveClientIngreso = async function(clientId) {
-    const val = parseFloat(document.getElementById('ingreso-input').value) || 0
-    await supabase.from('clients').update({ ingreso_mensual: val }).eq('id', clientId)
-    const c = clients.find(x => x.id === clientId)
-    if (c) c.ingreso_mensual = val
-    document.getElementById('modal-ingreso').remove()
-    showToast('✓ Ingreso actualizado')
-    renderRentabilidad()
+  window.saveGasto = async function() {
+    const nombre = document.getElementById('gasto-nombre').value.trim()
+    const monto = parseFloat(document.getElementById('gasto-monto').value) || 0
+    const categoria = document.getElementById('gasto-cat').value
+    const tipo = document.querySelector('input[name="gasto-tipo"]:checked')?.value || 'fijo'
+    if (!nombre || !monto) { showToast('Completá nombre y monto'); return }
+    await supabase.from('agency_gastos').insert({ agency_id: agencyId, nombre, monto, categoria, tipo })
+    document.getElementById('modal-gasto').remove()
+    showToast('✓ Gasto guardado')
+    renderGastos()
   }
 
+  window.deleteGasto = async function(id) {
+    await supabase.from('agency_gastos').delete().eq('id', id)
+    showToast('Gasto eliminado')
+    renderGastos()
+  }
   // ══════════════════════════════════════
   // CHECKLIST DE BIENVENIDA
   // ══════════════════════════════════════
