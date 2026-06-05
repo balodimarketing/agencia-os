@@ -7416,8 +7416,6 @@ if (id) {
   }
 
   // ── Gastos fijos ──────────────────────────────────────
-  let gastosData = []
-
   async function loadGastos() {
     const { data } = await supabase.from('agency_gastos').select('*').eq('agency_id', agencyId).order('created_at', { ascending: false })
     gastosData = data || []
