@@ -46,6 +46,17 @@ export async function getUserAgency(userId) {
   return data
 }
 
+// ── Detectar si el usuario es cliente del portal ──────────
+
+export async function isClientUser(userId) {
+  const { data } = await supabase
+    .from('client_users')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+  return !!data
+}
+
 // ── Route guard ───────────────────────────────────────────
 
 export async function requireAuth() {
@@ -54,18 +65,34 @@ export async function requireAuth() {
     window.location.href = 'index.html'
     return null
   }
+
+  // Si es un usuario cliente del portal, mandarlo ahí — no al dashboard
+  const isClient = await isClientUser(session.user.id)
+  if (isClient) {
+    window.location.href = 'client-portal.html'
+    return null
+  }
+
   return session
 }
 
 export async function redirectIfAuth() {
   const session = await getSession()
-  if (session) {
-    const agency = await getUserAgency(session.user.id)
-    if (agency) {
-      window.location.href = 'dashboard.html'
-    } else {
-      window.location.href = 'onboarding.html'
-    }
+  if (!session) return
+
+  // Si es cliente del portal, mandarlo ahí directamente
+  const isClient = await isClientUser(session.user.id)
+  if (isClient) {
+    window.location.href = 'client-portal.html'
+    return
+  }
+
+  // Usuario de agencia normal
+  const agency = await getUserAgency(session.user.id)
+  if (agency) {
+    window.location.href = 'dashboard.html'
+  } else {
+    window.location.href = 'onboarding.html'
   }
 }
 
