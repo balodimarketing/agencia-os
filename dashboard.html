@@ -6716,7 +6716,7 @@ if (id) {
       supabase.from('time_logs').select('duracion_segundos,user_id,piece_id,created_at').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
       supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId),
       supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId).neq('pipeline_stage', 'cerrado_perdido'),
-      supabase.from('agency_members').select('id,role,user_id,puesto,profiles(nombre,apellido,avatar_url)').eq('agency_id', agencyId).eq('status', 'active')
+      supabase.from('agency_members').select('id,role,user_id,puesto,sueldo_mensual,profiles(nombre,apellido,avatar_url)').eq('agency_id', agencyId).eq('status', 'active')
     ])
 
     const piezasArr = piezas || []
@@ -6735,25 +6735,26 @@ if (id) {
     const totalDeals = contactsArr.length
     const tasaCierre = totalDeals > 0 ? Math.round((cerrados / totalDeals) * 100) : 0
 
-    // KPIs
+    // KPIs — asegurar que clients esté disponible
+    const clientesActivos = clients.filter(c => c.estado === 'activo')
     const kpisEl = document.getElementById('rep-kpis')
     if (kpisEl) kpisEl.innerHTML = [
-      { label: 'Clientes activos', val: clients.filter(c => c.estado === 'activo').length, color: 'var(--azul)', icon: 'ti-building' },
-      { label: 'Miembros activos', val: miembrosArr.length, color: '#3730A3', icon: 'ti-users' },
-      { label: 'Piezas publicadas', val: piezasPublicadas, color: '#10B981', icon: 'ti-photo' },
-      { label: 'Horas registradas', val: horasTotales.toFixed(1) + 'h', color: 'var(--azul)', icon: 'ti-clock' },
-      { label: 'Tareas completadas', val: tareasCompletadas, color: '#10B981', icon: 'ti-check' },
-      { label: 'Tareas vencidas', val: tareasVencidas, color: 'var(--danger)', icon: 'ti-alert-circle' },
-      { label: 'Pipeline CRM', val: '$' + pipelineTotal.toLocaleString('es-AR'), color: '#F59E0B', icon: 'ti-currency-dollar' },
-      { label: 'Deals activos', val: dealsActivos, color: '#3730A3', icon: 'ti-briefcase' },
-      { label: 'Tasa de cierre', val: tasaCierre + '%', color: '#10B981', icon: 'ti-target' },
+      { label: 'Clientes activos',   val: clientesActivos.length,                    color: 'var(--azul)',    icon: 'ti-building'        },
+      { label: 'Miembros activos',   val: miembrosArr.length,                        color: '#3730A3',        icon: 'ti-users'           },
+      { label: 'Piezas publicadas',  val: piezasPublicadas,                          color: '#10B981',        icon: 'ti-photo'           },
+      { label: 'Horas registradas',  val: horasTotales.toFixed(1) + 'h',            color: 'var(--azul)',    icon: 'ti-clock'           },
+      { label: 'Tareas completadas', val: tareasCompletadas,                         color: '#10B981',        icon: 'ti-check'           },
+      { label: 'Tareas vencidas',    val: tareasVencidas,                            color: 'var(--danger)',  icon: 'ti-alert-circle'    },
+      { label: 'Pipeline CRM',       val: '$' + pipelineTotal.toLocaleString('es-AR'), color: '#F59E0B',     icon: 'ti-currency-dollar' },
+      { label: 'Deals activos',      val: dealsActivos,                              color: '#3730A3',        icon: 'ti-briefcase'       },
+      { label: 'Tasa de cierre',     val: tasaCierre + '%',                          color: '#10B981',        icon: 'ti-target'          },
     ].map(k => `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px">
       <div style="width:38px;height:38px;border-radius:10px;background:${k.color}18;display:flex;align-items:center;justify-content:center;color:${k.color};flex-shrink:0"><i class="ti ${k.icon}" style="font-size:18px"></i></div>
       <div><div style="font-size:20px;font-weight:900;color:${k.color};letter-spacing:-.5px;line-height:1">${k.val}</div><div style="font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600">${k.label}</div></div>
     </div>`).join('')
 
     // Guardar para rentabilidad
-    agenciaMetricas = { piezasArr, tareasArr, timeArr, miembrosArr, contactsArr }
+    agenciaMetricas = { piezasArr, tareasArr, timeArr, miembrosArr, contactsArr, clientesActivos }
     renderRentabilidad()
     renderEquipoMetricas()
     renderCharts(piezasArr, tareasArr)
@@ -6764,7 +6765,7 @@ if (id) {
     if (!el || !agenciaMetricas.piezasArr) return
     const { timeArr, miembrosArr } = agenciaMetricas
 
-    const clientesActivos = clients.filter(c => c.estado === 'activo')
+    const clientesActivos = agenciaMetricas.clientesActivos || clients.filter(c => c.estado === 'activo')
     if (!clientesActivos.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--ink3)">Sin clientes activos</div>'; return }
 
     // Horas totales por empleado
