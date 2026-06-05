@@ -2006,102 +2006,121 @@
 
 <!-- MODAL PERFIL -->
 <div class="modal-overlay" id="modal-profile" onclick="if(event.target===this)closeProfileModal()">
-  <div class="modal" style="max-width:460px;overflow:hidden;max-height:90vh;display:flex;flex-direction:column">
+  <div style="background:#fff;border-radius:24px;overflow:hidden;width:540px;max-width:95vw;max-height:90vh;display:flex;box-shadow:0 24px 80px rgba(10,37,64,.16);border:1px solid var(--border)">
 
-    <!-- Header con fondo azul y avatar centrado -->
-    <div style="background:var(--azul);padding:32px 24px 48px;text-align:center;position:relative">
-      <button class="modal-close" onclick="closeProfileModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.12);color:#fff"><i class="ti ti-x"></i></button>
+    <!-- Columna izquierda -->
+    <div style="width:170px;padding:28px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;border-right:1px solid var(--border);flex-shrink:0">
 
-      <div style="position:relative;display:inline-block;margin-bottom:12px">
-        <div class="profile-av-lg" id="profile-av-lg" onclick="document.getElementById('profile-avatar-input').click()" style="width:88px;height:88px;border-radius:50%;border:3px solid rgba(255,255,255,.2);margin:0 auto;font-size:28px">
-          <span id="profile-av-initials" style="color:var(--celeste)"></span>
+      <!-- Avatar -->
+      <div style="position:relative">
+        <div class="profile-av-lg" id="profile-av-lg" onclick="document.getElementById('profile-avatar-input').click()" style="width:76px;height:76px;border-radius:22px;border:2px solid var(--border);background:var(--celeste-dim);font-size:26px;margin:0 auto">
+          <span id="profile-av-initials" style="color:var(--azul)"></span>
           <img id="profile-av-img" style="display:none">
-          <div class="profile-av-overlay" style="border-radius:50%"><i class="ti ti-camera"></i></div>
+          <div class="profile-av-overlay" style="border-radius:22px"><i class="ti ti-camera"></i></div>
         </div>
-        <div style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--celeste);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--azul)" onclick="document.getElementById('profile-avatar-input').click()">
-          <i class="ti ti-camera" style="font-size:11px;color:var(--azul)"></i>
+        <div style="position:absolute;bottom:-4px;right:-4px;width:24px;height:24px;background:var(--azul);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff" onclick="document.getElementById('profile-avatar-input').click()">
+          <i class="ti ti-camera" style="font-size:10px;color:var(--celeste)"></i>
         </div>
       </div>
-
-      <div id="profile-header-name" style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px"></div>
-      <div id="profile-header-puesto" style="font-size:12px;color:rgba(142,219,255,.7);margin-top:3px;font-weight:500"></div>
 
       <input type="file" id="profile-avatar-input" accept="image/*" style="display:none" onchange="previewAvatar(this)">
+
+      <div style="text-align:center">
+        <div id="profile-header-name" style="font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.2px;line-height:1.3"></div>
+        <div id="profile-header-puesto" style="font-size:11px;color:var(--ink3);margin-top:3px"></div>
+      </div>
+
+      <div style="width:100%;height:1px;background:var(--border)"></div>
+
+      <!-- Plan -->
+      <div style="width:100%;text-align:center" id="profile-plan-section">
+        <div style="font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Plan actual</div>
+        <div style="border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
+          <div id="profile-plan-name" style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Free</div>
+          <div id="profile-plan-desc" style="font-size:10px;color:var(--ink3);margin-top:3px">3 clientes · 2 miembros</div>
+        </div>
+        <button id="btn-upgrade-plan" onclick="closeProfileModal();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))" style="width:100%;padding:9px;background:var(--azul);color:var(--celeste);border:none;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;display:none">Mejorar plan →</button>
+      </div>
+
+      <div style="width:100%;height:1px;background:var(--border);margin-top:auto"></div>
+
+      <!-- Acciones -->
+      <div style="width:100%;display:flex;flex-direction:column;gap:5px">
+        <button onclick="window.open('index.html','_self')" style="width:100%;padding:8px;border-radius:9px;border:none;background:transparent;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='transparent'">
+          <i class="ti ti-world" style="font-size:12px"></i>Ir al sitio web
+        </button>
+        <button onclick="handleSignOut()" style="width:100%;padding:8px;border-radius:9px;border:none;background:transparent;font-size:11px;font-weight:600;color:var(--danger);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:background .15s" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
+          <i class="ti ti-logout" style="font-size:12px"></i>Cerrar sesión
+        </button>
+      </div>
     </div>
 
-    <!-- Puesto badge centrado solapado -->
-    <div style="display:flex;justify-content:center;margin-top:-18px;margin-bottom:4px">
-      <div id="profile-puesto-badge" style="background:var(--white);border:1px solid var(--border);border-radius:20px;padding:5px 16px;font-size:11px;font-weight:800;color:var(--azul);box-shadow:var(--shadow);letter-spacing:.2px"></div>
-    </div>
-
-    <div class="modal-body" style="padding-top:16px;overflow-y:auto;flex:1">
-      <div class="error-msg" id="profile-error"></div>
-
-      <!-- Email -->
-      <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:16px">
-        <i class="ti ti-mail" style="font-size:15px;color:var(--ink3);flex-shrink:0"></i>
-        <div>
-          <div style="font-size:9px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Email</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink)" id="profile-email-display">—</div>
-        </div>
+    <!-- Columna derecha -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)">
+        <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Editar perfil</div>
+        <button onclick="closeProfileModal()" style="width:30px;height:30px;border-radius:8px;background:var(--bg);border:none;cursor:pointer;color:var(--ink3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg)'">×</button>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Nombre</label>
-          <input type="text" class="form-input" id="profile-nombre" placeholder="Tu nombre">
-        </div>
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Apellido</label>
-          <input type="text" class="form-input" id="profile-apellido" placeholder="Tu apellido">
-        </div>
-      </div>
+      <div style="flex:1;overflow-y:auto;padding:20px 24px">
+        <div class="error-msg" id="profile-error"></div>
 
-      <div class="form-field">
-        <label class="form-label">Bio</label>
-        <textarea class="form-input form-textarea" id="profile-bio" style="min-height:90px" placeholder="Contá algo sobre vos, tu especialidad, cómo trabajás..."></textarea>
-      </div>
-
-      <!-- Cambio de contraseña -->
-      <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="font-size:13px;font-weight:800;color:var(--ink)">Cambiar contraseña</div>
-          <button onclick="togglePasswordSection()" id="btn-toggle-password" style="font-size:12px;font-weight:700;color:var(--azul);background:none;border:none;cursor:pointer;padding:0">Cambiar</button>
+        <!-- Email -->
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:11px 14px;margin-bottom:16px">
+          <i class="ti ti-mail" style="font-size:14px;color:var(--ink3)"></i>
+          <div>
+            <div style="font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Email</div>
+            <div style="font-size:13px;font-weight:600;color:var(--ink)" id="profile-email-display">—</div>
+          </div>
         </div>
-        <div id="password-section" style="display:none;flex-direction:column;gap:10px">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div class="form-field" style="margin-bottom:0">
-            <label class="form-label">Nueva contraseña</label>
-            <input type="password" class="form-input" id="new-password" placeholder="Mínimo 8 caracteres">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-input" id="profile-nombre" placeholder="Tu nombre">
           </div>
           <div class="form-field" style="margin-bottom:0">
-            <label class="form-label">Confirmar contraseña</label>
-            <input type="password" class="form-input" id="confirm-password" placeholder="Repetí la nueva contraseña">
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-input" id="profile-apellido" placeholder="Tu apellido">
           </div>
-          <div id="password-error" style="font-size:12px;color:var(--danger);display:none"></div>
         </div>
+
+        <div class="form-field">
+          <label class="form-label">Bio</label>
+          <textarea class="form-input form-textarea" id="profile-bio" style="min-height:80px" placeholder="Contá algo sobre vos..."></textarea>
+        </div>
+
+        <!-- Cambio de contraseña -->
+        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:800;color:var(--ink)">Contraseña</div>
+            <button onclick="togglePasswordSection()" id="btn-toggle-password" style="font-size:12px;font-weight:700;color:var(--azul);background:none;border:none;cursor:pointer;padding:0">Cambiar</button>
+          </div>
+          <div id="password-section" style="display:none;flex-direction:column;gap:10px">
+            <div class="form-field" style="margin-bottom:0">
+              <label class="form-label">Nueva contraseña</label>
+              <input type="password" class="form-input" id="new-password" placeholder="Mínimo 8 caracteres">
+            </div>
+            <div class="form-field" style="margin-bottom:0">
+              <label class="form-label">Confirmar contraseña</label>
+              <input type="password" class="form-input" id="confirm-password" placeholder="Repetí la nueva contraseña">
+            </div>
+            <div id="password-error" style="font-size:12px;color:var(--danger);display:none"></div>
+          </div>
+        </div>
+
+        <div id="profile-puesto-display" style="display:none"></div>
       </div>
 
-      <!-- Hidden puesto display for JS -->
-      <div id="profile-puesto-display" style="display:none"></div>
-    </div>
-
-    <div class="modal-footer" style="flex-direction:column;gap:10px">
-      <div style="display:flex;gap:8px;width:100%">
+      <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px">
         <button class="tbtn" style="flex:1" onclick="closeProfileModal()">Cancelar</button>
         <button class="tbtn primary" style="flex:2" id="btn-save-profile" onclick="saveProfile()">
           <span id="btn-save-profile-text">Guardar cambios</span>
           <div class="spinner" id="profile-spinner"></div>
         </button>
       </div>
-      <button class="tbtn" style="width:100%;color:var(--ink3);gap:8px" onclick="window.open('index.html','_self')">
-        <i class="ti ti-world" style="font-size:14px"></i>
-        Ir al sitio web
-      </button>
-      <button class="tbtn" style="width:100%;color:var(--danger);border-color:rgba(255,107,107,.3)" onclick="handleSignOut()">
-        <i class="ti ti-logout" style="font-size:14px"></i>
-        Cerrar sesión
-      </button>
     </div>
+
   </div>
 </div>
 
@@ -3575,7 +3594,16 @@
     const fullName = ((profileData?.nombre||'') + ' ' + (profileData?.apellido||'')).trim()
     document.getElementById('profile-header-name').textContent = fullName || 'Tu nombre'
     document.getElementById('profile-header-puesto').textContent = profileData?.puesto || ''
-    document.getElementById('profile-puesto-badge').textContent = profileData?.puesto || 'Sin puesto asignado'
+
+    // Plan info
+    const planNombre = agencyPlan === 'pro' ? 'Pro' : agencyPlan === 'agency' ? 'Agency' : 'Free'
+    const planDesc = agencyPlan === 'pro' ? 'Ilimitado' : agencyPlan === 'agency' ? 'Múltiples agencias' : '3 clientes · 2 miembros'
+    const planEl = document.getElementById('profile-plan-name')
+    const planDescEl = document.getElementById('profile-plan-desc')
+    const upgradeBtn = document.getElementById('btn-upgrade-plan')
+    if (planEl) planEl.textContent = planNombre
+    if (planDescEl) planDescEl.textContent = planDesc
+    if (upgradeBtn) upgradeBtn.style.display = !isPro() && userRole === 'OWNER' ? 'block' : 'none'
 
     // Avatar display
     const ini = ((profileData?.nombre?.[0]||'') + (profileData?.apellido?.[0]||'')).toUpperCase()
