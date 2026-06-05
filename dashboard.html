@@ -1077,57 +1077,90 @@
       </div>
 
       <!-- Vista: métricas de agencia -->
-      <div id="rep-agencia" style="display:none;padding:28px 32px;max-width:1000px;margin:0 auto">
+      <div id="rep-agencia" style="display:none">
 
-        <!-- KPIs -->
-        <div id="rep-kpis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px"></div>
-
-        <!-- Filtros de período -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
-          <span style="font-size:12px;font-weight:700;color:var(--ink3)">Período:</span>
-          <button onclick="setRepPeriodo('mes')" class="rep-periodo-btn active" data-p="mes" style="padding:6px 14px;border:1.5px solid var(--azul);border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;background:var(--azul);color:#fff">Este mes</button>
-          <button onclick="setRepPeriodo('trimestre')" class="rep-periodo-btn" data-p="trimestre" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--ink3)">Trimestre</button>
-          <button onclick="setRepPeriodo('año')" class="rep-periodo-btn" data-p="año" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--ink3)">Este año</button>
-        </div>
-
-        <!-- Rentabilidad por cliente -->
-        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
-          <div style="padding:18px 22px;border-bottom:1px solid var(--border)">
-            <div style="font-size:14px;font-weight:800;color:var(--ink)">Rentabilidad por cliente</div>
-            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Basado en horas registradas y valor hora configurado</div>
+        <!-- Tabs internos + período -->
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg);padding:0 32px;position:sticky;top:53px;z-index:9">
+          <div style="display:flex;gap:0">
+            <button class="rep-inner-tab active" data-t="resumen" onclick="switchRepInnerTab(this,'resumen')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:800;color:var(--azul);border-bottom:2px solid var(--azul);cursor:pointer;font-family:inherit">Resumen</button>
+            <button class="rep-inner-tab" data-t="rentabilidad" onclick="switchRepInnerTab(this,'rentabilidad')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Rentabilidad</button>
+            <button class="rep-inner-tab" data-t="equipo" onclick="switchRepInnerTab(this,'equipo')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Equipo</button>
+            <button class="rep-inner-tab" data-t="graficos" onclick="switchRepInnerTab(this,'graficos')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Gráficos</button>
+            <button class="rep-inner-tab" data-t="gastos" onclick="switchRepInnerTab(this,'gastos')" style="padding:13px 18px;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;cursor:pointer;font-family:inherit">Gastos</button>
           </div>
-          <div id="rep-rentabilidad" style="padding:8px 0"></div>
-        </div>
-
-        <!-- Rendimiento del equipo -->
-        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
-          <div style="padding:18px 22px;border-bottom:1px solid var(--border)">
-            <div style="font-size:14px;font-weight:800;color:var(--ink)">Rendimiento del equipo</div>
-          </div>
-          <div id="rep-equipo-render" style="padding:8px 0"></div>
-        </div>
-
-        <!-- Gráficos -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción mensual</div>
-            <div id="chart-produccion"></div>
-          </div>
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Estado de tareas</div>
-            <div id="chart-tareas"></div>
+          <div style="display:flex;align-items:center;gap:6px;padding:8px 0">
+            <button onclick="setRepPeriodo('mes')" class="rep-periodo-btn active" data-p="mes" style="padding:5px 12px;border:1.5px solid var(--azul);border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;background:var(--azul);color:#fff">Mes</button>
+            <button onclick="setRepPeriodo('trimestre')" class="rep-periodo-btn" data-p="trimestre" style="padding:5px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--ink3)">Trimestre</button>
+            <button onclick="setRepPeriodo('año')" class="rep-periodo-btn" data-p="año" style="padding:5px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:var(--ink3)">Año</button>
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción por cliente</div>
-            <div id="chart-clientes"></div>
+        <!-- Tab: Resumen -->
+        <div id="rep-tab-resumen" style="padding:24px 32px;max-width:1000px;margin:0 auto">
+          <div id="rep-kpis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+        </div>
+
+        <!-- Tab: Rentabilidad -->
+        <div id="rep-tab-rentabilidad" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
+            <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:14px;font-weight:800;color:var(--ink)">Rentabilidad por cliente</div>
+                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Ingreso − sueldos distribuidos por horas − gastos del cliente</div>
+              </div>
+            </div>
+            <div id="rep-rentabilidad" style="padding:4px 0"></div>
           </div>
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
-            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Aprobaciones</div>
-            <div id="chart-aprobaciones"></div>
+        </div>
+
+        <!-- Tab: Equipo -->
+        <div id="rep-tab-equipo" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
+            <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
+              <div style="font-size:14px;font-weight:800;color:var(--ink)">Rendimiento del equipo</div>
+              <div style="font-size:12px;color:var(--ink3);margin-top:2px">Cargá el sueldo de cada miembro desde Equipo → Editar</div>
+            </div>
+            <div id="rep-equipo-render" style="padding:4px 0"></div>
           </div>
+        </div>
+
+        <!-- Tab: Gráficos -->
+        <div id="rep-tab-graficos" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción mensual</div>
+              <div id="chart-produccion"></div>
+            </div>
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Estado de tareas</div>
+              <div id="chart-tareas"></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Producción por cliente</div>
+              <div id="chart-clientes"></div>
+            </div>
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px">
+              <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:16px">Aprobaciones</div>
+              <div id="chart-aprobaciones"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Gastos -->
+        <div id="rep-tab-gastos" style="display:none;padding:24px 32px;max-width:1000px;margin:0 auto">
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px">
+            <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:14px;font-weight:800;color:var(--ink)">Gastos fijos de la agencia</div>
+                <div style="font-size:12px;color:var(--ink3);margin-top:2px">Costos operativos que no se le cargan a ningún cliente específico</div>
+              </div>
+              <button onclick="openGastoModal()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--azul);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit"><i class="ti ti-plus" style="font-size:13px"></i>Agregar gasto</button>
+            </div>
+            <div id="rep-gastos-list" style="padding:4px 0"></div>
+          </div>
+          <div id="rep-gastos-resumen" style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px"></div>
         </div>
 
       </div>
@@ -7303,6 +7336,120 @@ if (id) {
   window.acceptDiscount = function() {
     closeGestionar()
     showToast('🎉 ¡Descuento aplicado! Te contactaremos en breve.')
+  }
+
+  window.switchRepInnerTab = function(btn, tab) {
+    document.querySelectorAll('.rep-inner-tab').forEach(b => {
+      b.style.color = 'var(--ink3)'; b.style.fontWeight = '700'; b.style.borderBottomColor = 'transparent'
+    })
+    btn.style.color = 'var(--azul)'; btn.style.fontWeight = '800'; btn.style.borderBottomColor = 'var(--azul)'
+    ;['resumen','rentabilidad','equipo','graficos','gastos'].forEach(t => {
+      const el = document.getElementById('rep-tab-' + t)
+      if (el) el.style.display = t === tab ? 'block' : 'none'
+    })
+    if (tab === 'gastos') renderGastos()
+    if (tab === 'graficos' && agenciaMetricas.piezasArr) renderCharts(agenciaMetricas.piezasArr, agenciaMetricas.tareasArr)
+  }
+
+  // ── Gastos fijos ──────────────────────────────────────
+  let gastosData = []
+
+  async function loadGastos() {
+    const { data } = await supabase.from('agency_gastos').select('*').eq('agency_id', agencyId).order('created_at', { ascending: false })
+    gastosData = data || []
+  }
+
+  async function renderGastos() {
+    await loadGastos()
+    const el = document.getElementById('rep-gastos-list')
+    const resEl = document.getElementById('rep-gastos-resumen')
+    if (!el) return
+
+    if (!gastosData.length) {
+      el.innerHTML = '<div style="padding:24px;text-align:center;font-size:13px;color:var(--ink3)">Sin gastos cargados todavía. Agregá tus gastos fijos para ver la rentabilidad real de la agencia.</div>'
+    } else {
+      el.innerHTML = gastosData.map(g => `
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--ink)">${g.nombre}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${g.categoria} · ${g.mes ? MESES[g.mes-1] + ' ' + g.año : 'Recurrente'}</div>
+          </div>
+          <div style="font-size:14px;font-weight:900;color:var(--danger)">−$${Number(g.monto).toLocaleString('es-AR')}</div>
+          <button onclick="deleteGasto('${g.id}')" style="padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;cursor:pointer;color:var(--ink3);font-size:13px" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'"><i class="ti ti-trash"></i></button>
+        </div>`).join('')
+    }
+
+    const total = gastosData.reduce((a, g) => a + (g.monto || 0), 0)
+    const ingresoTotal = clients.filter(c => c.estado === 'activo').reduce((a, c) => a + (c.ingreso_mensual || 0), 0)
+    const gananciaPost = ingresoTotal - total
+    if (resEl) resEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div style="text-align:center"><div style="font-size:24px;font-weight:900;color:var(--ink)">$${ingresoTotal.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--ink3);margin-top:4px">Ingresos totales</div></div>
+        <div style="text-align:center"><div style="font-size:24px;font-weight:900;color:var(--danger)">−$${total.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--ink3);margin-top:4px">Gastos fijos</div></div>
+        <div style="text-align:center"><div style="font-size:24px;font-weight:900;color:${gananciaPost >= 0 ? '#10B981' : 'var(--danger)'}">$${gananciaPost.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--ink3);margin-top:4px">Ganancia tras gastos</div></div>
+      </div>`
+  }
+
+  window.openGastoModal = function() {
+    const existing = document.getElementById('modal-gasto')
+    if (existing) existing.remove()
+    const m = document.createElement('div')
+    m.id = 'modal-gasto'
+    m.className = 'modal-overlay show'
+    m.onclick = e => { if (e.target === m) m.remove() }
+    const now = new Date()
+    m.innerHTML = `<div class="modal" style="max-width:400px">
+      <div class="modal-head"><div class="modal-title">Agregar gasto fijo</div><button class="modal-close" onclick="document.getElementById('modal-gasto').remove()"><i class="ti ti-x"></i></button></div>
+      <div class="modal-body">
+        <div class="form-field"><label class="form-label">Nombre del gasto</label><input type="text" class="form-input" id="gasto-nombre" placeholder="Ej: Supabase, Adobe, Alquiler..."></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-field" style="margin-bottom:0"><label class="form-label">Monto (USD)</label><input type="number" class="form-input" id="gasto-monto" placeholder="0" min="0"></div>
+          <div class="form-field" style="margin-bottom:0"><label class="form-label">Categoría</label>
+            <select class="form-input form-select" id="gasto-cat">
+              <option value="operativo">Operativo</option>
+              <option value="herramientas">Herramientas</option>
+              <option value="infraestructura">Infraestructura</option>
+              <option value="marketing">Marketing</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="gasto-recurrente" checked style="accent-color:var(--azul)">
+          <label for="gasto-recurrente" style="font-size:13px;color:var(--ink);cursor:pointer">Gasto recurrente mensual</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="tbtn" onclick="document.getElementById('modal-gasto').remove()">Cancelar</button>
+        <button class="tbtn primary" onclick="saveGasto()">Guardar gasto</button>
+      </div>
+    </div>`
+    document.body.appendChild(m)
+    setTimeout(() => document.getElementById('gasto-nombre').focus(), 100)
+  }
+
+  window.saveGasto = async function() {
+    const nombre = document.getElementById('gasto-nombre').value.trim()
+    const monto = parseFloat(document.getElementById('gasto-monto').value) || 0
+    const categoria = document.getElementById('gasto-cat').value
+    const recurrente = document.getElementById('gasto-recurrente').checked
+    if (!nombre || !monto) { showToast('Completá nombre y monto'); return }
+    const now = new Date()
+    const payload = {
+      agency_id: agencyId, nombre, monto, categoria,
+      mes: recurrente ? null : now.getMonth() + 1,
+      año: recurrente ? null : now.getFullYear()
+    }
+    await supabase.from('agency_gastos').insert(payload)
+    document.getElementById('modal-gasto').remove()
+    showToast('✓ Gasto guardado')
+    renderGastos()
+  }
+
+  window.deleteGasto = async function(id) {
+    await supabase.from('agency_gastos').delete().eq('id', id)
+    showToast('Gasto eliminado')
+    renderGastos()
   }
 
   // ── Escape para cerrar modales
