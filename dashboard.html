@@ -1480,6 +1480,18 @@
           </div>
         </div>
       </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Ingreso mensual (USD)</label>
+          <input type="number" class="form-input" id="client-ingreso" placeholder="0" min="0">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Gastos mensuales (USD)</label>
+          <input type="number" class="form-input" id="client-gastos" placeholder="0" min="0">
+          <div style="font-size:10px;color:var(--ink3);margin-top:4px">Herramientas, freelancers, extras</div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="tbtn" style="flex:1" onclick="closeClientModal()">Cancelar</button>
@@ -1574,6 +1586,12 @@
       <div class="form-field" style="margin-top:16px">
         <label class="form-label">Puesto</label>
         <input type="text" class="form-input" id="member-puesto" placeholder="Ej: Community Manager, Diseñador, Gerente...">
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Sueldo mensual (USD)</label>
+        <input type="number" class="form-input" id="member-sueldo" placeholder="0" min="0" step="1">
+        <div style="font-size:11px;color:var(--ink3);margin-top:6px">Usado para calcular rentabilidad por cliente en Métricas de Agencia.</div>
       </div>
 
       <div class="form-field">
@@ -2682,6 +2700,8 @@
     document.getElementById('client-contacto-nombre').value = c?.contacto_nombre || ''
     document.getElementById('client-contacto-email').value = c?.contacto_email || ''
     document.getElementById('client-contacto-telefono').value = c?.contacto_telefono || ''
+    document.getElementById('client-ingreso').value = c?.ingreso_mensual || ''
+    document.getElementById('client-gastos').value = c?.gastos_mensuales || ''
     document.getElementById('modal-error').classList.remove('show')
     // Redes
     ;['ig','fb','tt','li','yt','tw'].forEach(r => {
@@ -2725,7 +2745,9 @@
     const contacto_nombre = document.getElementById('client-contacto-nombre').value.trim()
     const contacto_email = document.getElementById('client-contacto-email').value.trim()
     const contacto_telefono = document.getElementById('client-contacto-telefono').value.trim()
-    const payload = { nombre, industria: industria || null, estado, brief: brief || null, redes, agency_id: agencyId, contacto_nombre: contacto_nombre||null, contacto_email: contacto_email||null, contacto_telefono: contacto_telefono||null }
+    const ingreso_mensual = parseFloat(document.getElementById('client-ingreso').value) || 0
+    const gastos_mensuales = parseFloat(document.getElementById('client-gastos').value) || 0
+    const payload = { nombre, industria: industria || null, estado, brief: brief || null, redes, agency_id: agencyId, contacto_nombre: contacto_nombre||null, contacto_email: contacto_email||null, contacto_telefono: contacto_telefono||null, ingreso_mensual, gastos_mensuales }
 
     let error, newClientId
     if (id) {
@@ -4793,7 +4815,7 @@
     if (!agencyId) return
     const { data, error } = await supabase
       .from('agency_members')
-      .select('id, role, status, puesto, activity_status, user_id, profiles(nombre, apellido, avatar_url)')
+      .select('id, role, status, puesto, activity_status, user_id, sueldo_mensual, profiles(nombre, apellido, avatar_url)')
       .eq('agency_id', agencyId)
       .eq('status', 'active')
     if (!error) teamMembers = data || []
@@ -4976,6 +4998,7 @@
     document.getElementById('member-role').value = m.role
     document.getElementById('member-status').value = m.activity_status || 'activo'
     document.getElementById('member-puesto').value = m.puesto || ''
+    document.getElementById('member-sueldo').value = m.sueldo_mensual || ''
     document.getElementById('member-error').classList.remove('show')
 
     // Clients checkboxes
@@ -4998,6 +5021,7 @@
     const role = document.getElementById('member-role').value
     const activity_status = document.getElementById('member-status').value
     const puesto = document.getElementById('member-puesto').value.trim()
+    const sueldo_mensual = parseFloat(document.getElementById('member-sueldo').value) || 0
 
     const btn = document.getElementById('btn-save-member')
     const spinner = document.getElementById('member-spinner')
@@ -5006,7 +5030,7 @@
 
     // Update member
     await supabase.from('agency_members')
-      .update({ role, activity_status, puesto: puesto || null })
+      .update({ role, activity_status, puesto: puesto || null, sueldo_mensual })
       .eq('id', memberId)
 
     // Update client assignments
@@ -6738,56 +6762,65 @@ if (id) {
   function renderRentabilidad() {
     const el = document.getElementById('rep-rentabilidad')
     if (!el || !agenciaMetricas.piezasArr) return
-    const { timeArr } = agenciaMetricas
+    const { timeArr, miembrosArr } = agenciaMetricas
 
     const clientesActivos = clients.filter(c => c.estado === 'activo')
     if (!clientesActivos.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--ink3)">Sin clientes activos</div>'; return }
 
+    // Horas totales por empleado
+    const horasPorEmpleado = {}
+    ;(miembrosArr||[]).forEach(m => {
+      horasPorEmpleado[m.user_id] = (timeArr||[])
+        .filter(t => t.user_id === m.user_id)
+        .reduce((a, t) => a + (t.duracion_segundos||0), 0) / 3600
+    })
+
+    // Horas por empleado por cliente
+    const hEmpCliente = {}
+    ;(timeArr||[]).forEach(t => {
+      const pieza = (agenciaMetricas.piezasArr||[]).find(p => p.id === t.piece_id)
+      if (!pieza?.client_id) return
+      const key = t.user_id + '__' + pieza.client_id
+      hEmpCliente[key] = (hEmpCliente[key]||0) + (t.duracion_segundos||0)/3600
+    })
+
     const data = clientesActivos.map(c => {
-      const horas = timeArr.filter(t => {
-        // Aproximar horas por cliente via piezas
-        const pieza = (agenciaMetricas.piezasArr || []).find(p => p.id === t.piece_id)
-        return pieza?.client_id === c.id
-      }).reduce((a, t) => a + (t.duracion_segundos || 0), 0) / 3600
+      const horasCliente = Object.entries(hEmpCliente)
+        .filter(([k]) => k.endsWith('__'+c.id))
+        .reduce((a,[,v]) => a+v, 0)
+
+      let costoSueldos = 0
+      ;(miembrosArr||[]).forEach(m => {
+        const hEc = hEmpCliente[(m.user_id+'__'+c.id)] || 0
+        const hEt = horasPorEmpleado[m.user_id] || 0
+        const sueldo = m.sueldo_mensual || 0
+        if (hEt > 0 && sueldo > 0) costoSueldos += (hEc/hEt)*sueldo
+      })
+
       const ingreso = c.ingreso_mensual || 0
-      const costo = horas * valorHora
-      const ganancia = ingreso - costo
-      const margen = ingreso > 0 ? Math.round((ganancia / ingreso) * 100) : null
-      return { ...c, horas, ingreso, costo, ganancia, margen }
-    }).sort((a, b) => (b.margen || 0) - (a.margen || 0))
+      const gastos = c.gastos_mensuales || 0
+      const costoTotal = costoSueldos + gastos
+      const ganancia = ingreso - costoTotal
+      const margen = ingreso > 0 ? Math.round((ganancia/ingreso)*100) : null
+      return { ...c, horasCliente, ingreso, gastos, costoSueldos, costoTotal, ganancia, margen }
+    }).sort((a,b) => (b.margen??-999)-(a.margen??-999))
 
     el.innerHTML = data.map(c => {
-      const margenColor = c.margen === null ? 'var(--ink3)' : c.margen >= 50 ? '#10B981' : c.margen >= 20 ? '#F59E0B' : 'var(--danger)'
-      const margenIcon = c.margen === null ? '—' : c.margen >= 50 ? '🟢' : c.margen >= 20 ? '🟡' : '🔴'
+      const mc = c.margen===null ? 'var(--ink3)' : c.margen>=50 ? '#10B981' : c.margen>=20 ? '#F59E0B' : 'var(--danger)'
+      const mi = c.margen===null ? '—' : c.margen>=50 ? '🟢' : c.margen>=20 ? '🟡' : '🔴'
       const ini = initials(c.nombre)
       const col = getAvColor(c.nombre)
-      return `<div style="display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border)">
-        <div style="width:34px;height:34px;border-radius:9px;background:${col.bg};color:${col.color};font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:var(--ink)">${c.nombre}</div>
-          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${c.horas.toFixed(1)}h registradas</div>
-        </div>
-        <div style="text-align:center;min-width:80px">
-          <div style="font-size:12px;color:var(--ink3)">Ingreso</div>
-          <div style="font-size:13px;font-weight:800;color:var(--ink)">$${c.ingreso.toLocaleString('es-AR')}</div>
-        </div>
-        <div style="text-align:center;min-width:80px">
-          <div style="font-size:12px;color:var(--ink3)">Costo op.</div>
-          <div style="font-size:13px;font-weight:800;color:var(--ink)">$${c.costo.toFixed(0)}</div>
-        </div>
-        <div style="text-align:center;min-width:80px">
-          <div style="font-size:12px;color:var(--ink3)">Ganancia</div>
-          <div style="font-size:13px;font-weight:800;color:${c.ganancia >= 0 ? '#10B981' : 'var(--danger)'}">$${c.ganancia.toFixed(0)}</div>
-        </div>
-        <div style="text-align:center;min-width:70px">
-          <div style="font-size:18px">${margenIcon}</div>
-          <div style="font-size:12px;font-weight:800;color:${margenColor}">${c.margen !== null ? c.margen + '%' : 'Sin datos'}</div>
-        </div>
-        <button onclick="openClientIngresoModal('${c.id}','${c.nombre.replace(/'/g,"\\'")}',${c.ingreso})" style="font-size:11px;font-weight:700;color:var(--azul);background:none;border:1.5px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer;font-family:inherit;white-space:nowrap">Editar ingreso</button>
-      </div>`
+      return '<div style="display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap">'
+        + '<div style="width:34px;height:34px;border-radius:9px;background:'+col.bg+';color:'+col.color+';font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ini+'</div>'
+        + '<div style="flex:1;min-width:120px"><div style="font-size:13px;font-weight:700;color:var(--ink)">'+c.nombre+'</div>'
+        + '<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+c.horasCliente.toFixed(1)+'h · Sueldos: $'+c.costoSueldos.toFixed(0)+' · Gastos extra: $'+c.gastos+'</div></div>'
+        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Ingreso</div><div style="font-size:13px;font-weight:800;color:var(--ink)">$'+c.ingreso.toLocaleString('es-AR')+'</div></div>'
+        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Costo total</div><div style="font-size:13px;font-weight:800;color:var(--ink)">$'+c.costoTotal.toFixed(0)+'</div></div>'
+        + '<div style="text-align:center;min-width:70px"><div style="font-size:11px;color:var(--ink3)">Ganancia</div><div style="font-size:13px;font-weight:800;color:'+(c.ganancia>=0?'#10B981':'var(--danger)')+'">$'+c.ganancia.toFixed(0)+'</div></div>'
+        + '<div style="text-align:center;min-width:60px"><div style="font-size:20px">'+mi+'</div><div style="font-size:12px;font-weight:800;color:'+mc+'">'+(c.margen!==null?c.margen+'%':'—')+'</div></div>'
+        + '</div>'
     }).join('')
   }
-
   function renderEquipoMetricas() {
     const el = document.getElementById('rep-equipo-render')
     if (!el || !agenciaMetricas.miembrosArr) return
