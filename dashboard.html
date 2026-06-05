@@ -978,7 +978,7 @@
 
       <!-- Saludo -->
       <div class="fade-up" style="margin-bottom:28px">
-        <h1 style="font-size:30px;font-weight:900;letter-spacing:-.6px;color:var(--ink)" id="greeting-title">Buenos días 👋</h1>
+        <h1 style="font-size:30px;font-weight:900;letter-spacing:-.6px;color:var(--ink)" id="greeting-title">Buenos días</h1>
         <p style="font-size:14px;color:var(--ink3);margin-top:6px" id="greeting-agency"></p>
         <p style="font-size:13px;color:var(--ink3);margin-top:2px">Esto es lo más importante hoy.</p>
       </div>
@@ -2258,7 +2258,7 @@
         <button class="modal-close" onclick="closeGestionar()"><i class="ti ti-x"></i></button>
       </div>
       <div class="modal-body" style="text-align:center">
-        <div style="font-size:40px;margin-bottom:16px">🎁</div>
+        <div style="font-size:32px;margin-bottom:16px;color:var(--ink3)"><i class="ti ti-gift"></i></div>
         <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:8px">30% de descuento el próximo mes</div>
         <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:20px">Quedate un mes más con 30% off y seguí usando todo sin límites. Sin compromisos.</div>
         <button class="tbtn primary" style="width:100%;margin-bottom:10px" onclick="acceptDiscount()">Aceptar descuento</button>
@@ -2271,7 +2271,7 @@
         <button class="modal-close" onclick="closeGestionar()"><i class="ti ti-x"></i></button>
       </div>
       <div class="modal-body" style="text-align:center">
-        <div style="font-size:40px;margin-bottom:16px">😔</div>
+        <div style="font-size:32px;margin-bottom:16px;color:var(--ink3)"><i class="ti ti-mood-sad"></i></div>
         <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:8px">Lamentamos que te vayas</div>
         <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:14px">Tu plan se cancela al final del período actual. Seguís teniendo acceso hasta entonces.</div>
         <div style="font-size:12px;color:var(--ink3);background:var(--bg);border-radius:10px;padding:12px">Para confirmar, escribinos a <strong>hola@agenciaos.com</strong> con el asunto <strong>"Cancelar suscripción"</strong>.</div>
@@ -2586,7 +2586,7 @@
   </div>
   <div class="notif-list" id="notif-list">
     <div class="notif-empty">
-      <div class="notif-empty-icon">🔔</div>
+      <div class="notif-empty-icon"><i class="ti ti-bell" style="font-size:22px"></i></div>
       <div class="notif-empty-title">Sin notificaciones</div>
       <div class="notif-empty-sub">Cuando haya actividad en tu agencia, aparecerá acá.</div>
     </div>
@@ -2799,8 +2799,8 @@
 
     if (clients.length === 0) {
       grid.innerHTML = userRole === 'MEMBER'
-        ? `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes asignados</div><div class="empty-sub">Tu administrador todavía no te asignó ningún cliente.</div></div></div>`
-        : `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">Sin clientes todavía</div><div class="empty-sub">Agregá tu primer cliente para empezar.</div><button class="tbtn primary" onclick="openClientModal()"><i class="ti ti-plus"></i> Nuevo cliente</button></div></div>`
+        ? `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i class="ti ti-building" style="font-size:28px"></i></div><div class="empty-title">Sin clientes asignados</div><div class="empty-sub">Tu administrador todavía no te asignó ningún cliente.</div></div></div>`
+        : `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i class="ti ti-building" style="font-size:28px"></i></div><div class="empty-title">Sin clientes todavía</div><div class="empty-sub">Agregá tu primer cliente para empezar.</div><button class="tbtn primary" onclick="openClientModal()"><i class="ti ti-plus"></i> Nuevo cliente</button></div></div>`
       return
     }
 
@@ -3038,7 +3038,7 @@
           agency_id: agencyId,
           user_id: owner.user_id,
           tipo: 'cuentas',
-          titulo: `🎉 Nuevo cliente: ${nombre}`,
+          titulo: `Nuevo cliente: ${nombre}`,
           mensaje: `El deal de ${contactName} se convirtió en cliente.`,
           link_modulo: 'cuentas',
           link_id: newClientId,
@@ -3122,7 +3122,7 @@
 
     const hour = new Date().getHours()
     const saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
-    document.getElementById('greeting-title').textContent = `${saludo}, ${profile?.nombre || ''} 👋`
+    document.getElementById('greeting-title').textContent = `${saludo}, ${profile?.nombre || ''}`
     document.getElementById('greeting-agency').textContent = membership.agencies?.nombre || ''
 
     // Restrict UI for MEMBER
@@ -3371,7 +3371,7 @@
       .filter(p => p.fecha_publicacion)
       .map(p => ({
         id: 'piece-' + p.id,
-        titulo: '📸 ' + p.titulo,
+        titulo: p.titulo,
         fecha_inicio: p.fecha_publicacion,
         fecha_fin: null,
         color: '#34C759',
@@ -3925,7 +3925,7 @@
 
     if (unscheduled.length === 0 && scheduled.length === 0) {
       list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ink3)">
-        <div style="font-size:32px;margin-bottom:12px">✅</div>
+        <div style="font-size:32px;margin-bottom:12px;color:var(--success)"><i class="ti ti-circle-check"></i></div>
         <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">Todo programado</div>
         <div style="font-size:12px;line-height:1.5">No hay piezas pendientes de programar.</div>
       </div>`
@@ -4220,13 +4220,13 @@
   let currentUserId = null
 
   const NOTIF_ICONS = {
-    tarea_asignada:   { icon: '📋', bg: '#E6F1FB' },
+    tarea_asignada:   { icon: 'ti-clipboard-list', bg: '#E6F1FB' },
     tarea_vencida:    { icon: '⏰', bg: '#FAEEDA' },
-    pieza_aprobacion: { icon: '👀', bg: '#E6F1FB' },
-    pieza_aprobada:   { icon: '✅', bg: '#E6FFE6' },
-    pieza_cambios:    { icon: '🔄', bg: '#FEF2F2' },
-    solicitud_equipo: { icon: '👤', bg: '#EEEDFE' },
-    default:          { icon: '🔔', bg: '#F5F5F5' },
+    pieza_aprobacion: { icon: 'ti-eye', bg: '#E6F1FB' },
+    pieza_aprobada:   { icon: 'ti-circle-check', bg: '#E6FFE6' },
+    pieza_cambios:    { icon: 'ti-refresh', bg: '#FEF2F2' },
+    solicitud_equipo: { icon: 'ti-user-plus', bg: '#EEEDFE' },
+    default:          { icon: 'ti-bell', bg: '#F5F5F5' },
   }
 
 
@@ -4267,7 +4267,7 @@
     const list = document.getElementById('notif-list')
     if (notifications.length === 0) {
       list.innerHTML = `<div class="notif-empty">
-        <div class="notif-empty-icon">🔔</div>
+        <div class="notif-empty-icon"><i class="ti ti-bell" style="font-size:22px"></i></div>
         <div class="notif-empty-title">Sin notificaciones</div>
         <div class="notif-empty-sub">Cuando haya actividad en tu agencia, aparecerá acá.</div>
       </div>`
@@ -4276,7 +4276,7 @@
     list.innerHTML = notifications.map(n => {
       const meta = NOTIF_ICONS[n.tipo] || NOTIF_ICONS.default
       return `<div class="notif-item ${n.leida ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.link_modulo||''}', '${n.link_id||''}')">
-        <div class="notif-icon" style="background:${meta.bg}">${meta.icon}</div>
+        <div class="notif-icon" style="background:${meta.bg}"><i class="ti ${meta.icon}" style="font-size:14px;color:var(--ink2)"></i></div>
         <div class="notif-body">
           <div class="notif-title">${n.titulo}</div>
           ${n.mensaje ? `<div class="notif-msg">${n.mensaje}</div>` : ''}
@@ -4534,7 +4534,7 @@
             const clientName = p.clients?.nombre || '—'
             return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario?'border-left-color:var(--danger)':''}">
               <div class="k-card-title">${p.titulo}</div>
-              ${p.aprobacion_comentario ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;background:#FEF2F2;color:var(--danger);cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')">💬 Ver cambios</span></div>` : ''}
+              ${p.aprobacion_comentario ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;background:#FEF2F2;color:var(--danger);cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')"><i class="ti ti-message-circle" style="font-size:9px"></i> Ver cambios</span></div>` : ''}
               <div class="k-card-meta">
                 <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
                 ${p.tipo ? `<span class="k-type-tag">${p.tipo}</span>` : ''}
@@ -4621,7 +4621,7 @@
           <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Archivo</div>
           ${isImage ? `<img src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:280px;object-fit:cover;display:block">` : ''}
           ${isVideo ? `<video controls src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:260px"></video>` : ''}
-          <a href="${p.archivo_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;font-weight:700;color:var(--ink2);text-decoration:none;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm)">⬇ Descargar</a>
+          <a href="${p.archivo_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;font-weight:700;color:var(--ink2);text-decoration:none;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm)"><i class="ti ti-download" style="font-size:11px"></i> Descargar</a>
         </div>`
       : ''
 
@@ -4637,7 +4637,7 @@
 
     const cambiosAlert = p.aprobacion_comentario
       ? `<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
-          <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔄 Cambios solicitados por el cliente</div>
+          <div style="font-size:10px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px"><i class="ti ti-refresh" style="font-size:10px"></i> Cambios solicitados por el cliente</div>
           <div style="font-size:13px;color:#DC2626;line-height:1.6;margin-bottom:12px">${p.aprobacion_comentario}</div>
           <label style="display:flex;align-items:center;gap:8px;padding:9px 13px;background:#fff;border:1.5px dashed #FECACA;border-radius:var(--r);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--danger)'" onmouseout="this.style.borderColor='#FECACA'">
             <i class="ti ti-upload" style="font-size:14px;color:var(--danger);flex-shrink:0"></i>
@@ -5070,7 +5070,7 @@
     const list = document.getElementById('task-list')
     let filtered = currentTaskFilter === 'todas' ? tasks : tasks.filter(t => t.estado === currentTaskFilter)
     if (filtered.length === 0) {
-      list.innerHTML = `<div class="empty-state" style="min-height:200px"><div class="empty-icon">✅</div><div class="empty-title">Sin tareas</div><div class="empty-sub">Creá una tarea y asignala a un miembro del equipo.</div></div>`
+      list.innerHTML = `<div class="empty-state" style="min-height:200px"><div class="empty-icon"><i class="ti ti-circle-check" style="font-size:28px;color:var(--success)"></i></div><div class="empty-title">Sin tareas</div><div class="empty-sub">Creá una tarea y asignala a un miembro del equipo.</div></div>`
       return
     }
     list.innerHTML = filtered.map(t => {
@@ -5341,7 +5341,7 @@
     const grid = document.getElementById('equipo-members-grid')
     if (!grid) return
     if (teamMembers.length === 0) {
-      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Sin miembros todavía</div><div class="empty-sub">Invitá a tu equipo usando el código de invitación.</div></div></div>`
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i class="ti ti-users" style="font-size:28px"></i></div><div class="empty-title">Sin miembros todavía</div><div class="empty-sub">Invitá a tu equipo usando el código de invitación.</div></div></div>`
       return
     }
     let filtered = [...teamMembers]
@@ -5897,7 +5897,7 @@
           if (pomo.phase === 'work') {
             // Guardar tiempo del pomodoro
             await supabase.from('time_logs').insert({ agency_id: agencyId, user_id: currentUserId, piece_id: pomo.pieceId, task_id: pomo.taskId, duracion_segundos: POMO_WORK, tipo: 'pomodoro' })
-            showToast('🍅 ¡Pomodoro completado! Tomá un descanso.')
+            showToast('¡Pomodoro completado! Tomá un descanso.')
             await loadPomoLogs()
             pomo.phase = 'break'
             pomo.seconds = POMO_BREAK
@@ -5905,7 +5905,7 @@
             pomo.phase = 'work'
             pomo.seconds = POMO_WORK
             pomo.cycle = pomo.cycle < 4 ? pomo.cycle + 1 : 1
-            showToast('💪 ¡Descanso terminado! A trabajar.')
+            showToast('¡Descanso terminado! A trabajar.')
           }
         }
         updatePomoDisplay()
@@ -6013,7 +6013,7 @@
           ${c.valor_deal ? `<div style="font-size:12px;font-weight:900;color:var(--azul);margin-bottom:6px">$${Number(c.valor_deal).toLocaleString('es-AR')}</div>` : ''}
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
             ${respName ? `<span style="font-size:10px;font-weight:700;color:var(--ink3)">${respName}</span>` : '<span></span>'}
-            ${overdue ? `<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;background:#FEF2F2;color:var(--danger)">⚡ Vencido</span>` : c.proximo_contacto ? `<span style="font-size:9px;color:var(--ink3)">${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>` : ''}
+            ${overdue ? `<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;background:#FEF2F2;color:var(--danger)">Vencido</span>` : c.proximo_contacto ? `<span style="font-size:9px;color:var(--ink3)">${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>` : ''}
           </div>
         </div>`
       }).join('')
@@ -6090,7 +6090,7 @@
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:6px;background:${stage?.color}18;color:${stage?.color};margin-bottom:4px">${stage?.label}</div>
-          ${overdue ? '<div style="font-size:9px;font-weight:800;color:var(--danger)">⚡ Seguimiento vencido</div>' : ''}
+          ${overdue ? '<div style="font-size:9px;font-weight:800;color:var(--danger)">Seguimiento vencido</div>' : ''}
         </div>
         <i class="ti ti-chevron-right" style="color:var(--ink3);font-size:14px;flex-shrink:0"></i>
       </div>`
@@ -6969,7 +6969,7 @@ if (id) {
         title:'Seguimientos CRM vencidos', sub:'sin contactar', count: crmVencidos.length, mod:'crm',
         rawItems: crmVencidos.map(c => ({
           titulo: c.nombre, sub: c.empresa||'—',
-          date: '⚡ ' + new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
+          date: '' + new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
           dateColor: '#F59E0B',
           onclick: `switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)`
         }))
@@ -7204,7 +7204,7 @@ if (id) {
     if (riesgoEl) {
       const clientesRiesgo = clientesActivos.filter(c => !piezasArr.some(p => p.client_id === c.id))
       riesgoEl.innerHTML = clientesRiesgo.length === 0
-        ? '<div style="padding:16px 18px;font-size:13px;color:var(--ink3)">Sin clientes en riesgo este mes 🎉</div>'
+        ? '<div style="padding:16px 18px;font-size:13px;color:var(--ink3)">Sin clientes en riesgo este mes</div>'
         : clientesRiesgo.map(c => `<div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
             <div style="width:5px;height:5px;border-radius:50%;background:var(--azul);opacity:.3;flex-shrink:0"></div>
             <div><div style="font-size:13px;color:var(--ink)">${c.nombre}</div><div style="font-size:11px;color:var(--ink3)">Sin piezas publicadas este mes</div></div>
@@ -7651,7 +7651,7 @@ if (id) {
     await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: onboardingCompleted, completed: allDone }, { onConflict: 'user_id,agency_id' })
     if (allDone) {
       onboardingDone = true
-      showToast('🎉 ¡Completaste el setup de Faro!')
+      showToast('¡Completaste el setup de Faro!')
       const el = document.getElementById('inicio-checklist')
       if (el) { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>{el.innerHTML=''},300) }
     } else {
@@ -7799,7 +7799,7 @@ if (id) {
 
   window.acceptDiscount = function() {
     closeGestionar()
-    showToast('🎉 ¡Descuento aplicado! Te contactaremos en breve.')
+    showToast('¡Descuento aplicado! Te contactaremos en breve.')
   }
 
   window.switchRepInnerTab = function(btn, tab) {
