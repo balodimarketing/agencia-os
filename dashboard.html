@@ -808,9 +808,10 @@
 
     .cal-view-btn {
       padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 700;
-      cursor: pointer; color: var(--ink3); transition: all var(--t); user-select: none;
+      cursor: pointer; color: var(--ink3); transition: color var(--t); user-select: none;
+      position: relative; z-index: 1;
     }
-    .cal-view-btn.active { background: var(--white); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .cal-view-btn.active { color: var(--celeste); font-weight: 800; }
 
     /* Side panel piece cards */
     .cal-piece-card {
@@ -1405,7 +1406,7 @@
         <!-- Toolbar -->
         <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
           <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="crm-tabs">
-            <div class="pill-slider light" id="crm-pill"></div>
+            <div class="pill-slider" id="crm-pill"></div>
             <div class="cal-view-btn active" id="crm-btn-pipeline" onclick="switchCrmView('pipeline')">Pipeline</div>
             <div class="cal-view-btn" id="crm-btn-contactos" onclick="switchCrmView('contactos')">Contactos</div>
           </div>
@@ -1426,7 +1427,7 @@
       <div id="crm-contactos-view" style="display:none;flex-direction:column;height:100%;overflow:hidden">
         <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
           <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="crm-tabs2">
-            <div class="pill-slider light" id="crm-pill2"></div>
+            <div class="pill-slider" id="crm-pill2"></div>
             <div class="cal-view-btn" id="crm-btn-pipeline2" onclick="switchCrmView('pipeline')">Pipeline</div>
             <div class="cal-view-btn active" id="crm-btn-contactos2" onclick="switchCrmView('contactos')">Contactos</div>
           </div>
@@ -1591,7 +1592,7 @@
       <!-- Cal toolbar -->
       <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
         <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="cal-tabs">
-          <div class="pill-slider light" id="cal-pill"></div>
+          <div class="pill-slider" id="cal-pill"></div>
           <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
           <div class="cal-view-btn" id="cal-btn-mes" onclick="switchCalView('mes')">Mes</div>
         </div>
@@ -7049,7 +7050,13 @@ if (id) {
     if (tabC) { tabC.style.color = isAgencia ? 'var(--ink3)' : 'var(--celeste)'; tabC.style.fontWeight = isAgencia ? '700' : '800' }
     if (tabA) { tabA.style.color = isAgencia ? 'var(--celeste)' : 'var(--ink3)'; tabA.style.fontWeight = isAgencia ? '800' : '700' }
     movePill('rep-main-tabs', 'rep-main-pill', isAgencia ? 'rep-tab-agencia' : 'rep-tab-clientes')
-    if (isAgencia) renderAgenciaMetricas()
+    if (isAgencia) {
+      renderAgenciaMetricas()
+      setTimeout(() => {
+        const firstInner = document.querySelector('.rep-inner-tab.active')
+        if (firstInner) movePill('rep-inner-tabs', 'rep-inner-pill', null, firstInner)
+      }, 50)
+    }
   }
 
   window.switchRepInnerTab = function(btn, tab) {
