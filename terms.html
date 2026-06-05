@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Términos y Condiciones — Agencia OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --azul: #0A2540; --celeste: #8EDBFF; --celeste-dim: #E8F4FF;
+    --ink: #0A2540; --ink2: #2D3748; --ink3: #718096;
+    --border: #E8ECF0; --bg: #F5F7FA; --white: #ffffff;
+  }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ink2); background: var(--white); -webkit-font-smoothing: antialiased; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,.95); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo-icon { width: 34px; height: 34px; background: var(--azul); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+  .nav-logo-icon svg { width: 18px; height: 18px; }
+  .nav-logo-text { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .nav-back { font-size: 13px; font-weight: 600; color: var(--ink3); text-decoration: none; transition: color .15s; }
+  .nav-back:hover { color: var(--ink); }
+
+  .hero { background: var(--azul); padding: 64px 40px; text-align: center; }
+  .hero-label { font-size: 11px; font-weight: 800; color: var(--celeste); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+  .hero-title { font-size: 40px; font-weight: 900; color: #fff; letter-spacing: -1.5px; margin-bottom: 12px; }
+  .hero-date { font-size: 13px; color: rgba(142,219,255,.6); font-weight: 500; }
+
+  .content { max-width: 740px; margin: 0 auto; padding: 64px 40px; }
+
+  .intro-box {
+    background: var(--celeste-dim); border: 1.5px solid rgba(142,219,255,.4);
+    border-radius: 14px; padding: 20px 24px; margin-bottom: 48px;
+    font-size: 14px; color: var(--ink2); line-height: 1.7;
+  }
+
+  .section { margin-bottom: 48px; }
+  .section-num { font-size: 11px; font-weight: 800; color: var(--celeste); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .section-title { font-size: 22px; font-weight: 900; color: var(--ink); letter-spacing: -.5px; margin-bottom: 16px; }
+  .section-body { font-size: 15px; color: var(--ink2); line-height: 1.8; }
+  .section-body p { margin-bottom: 12px; }
+  .section-body p:last-child { margin-bottom: 0; }
+  .section-body ul { padding-left: 20px; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+  .section-body ul li { font-size: 15px; color: var(--ink2); line-height: 1.7; }
+  .section-body strong { color: var(--ink); font-weight: 700; }
+  .section-body a { color: var(--azul); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(10,37,64,.2); transition: border-color .15s; }
+  .section-body a:hover { border-color: var(--azul); }
+
+  .divider { height: 1px; background: var(--border); margin-bottom: 48px; }
+
+  .highlight-box {
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; margin: 16px 0;
+    font-size: 14px; color: var(--ink2); line-height: 1.7;
+  }
+
+  .contact-box {
+    background: var(--azul); border-radius: 16px; padding: 28px 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    margin-top: 48px;
+  }
+  .contact-box-text { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .contact-box-sub { font-size: 13px; color: rgba(142,219,255,.7); }
+  .contact-btn { padding: 11px 22px; background: var(--celeste); color: var(--azul); border: none; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; text-decoration: none; white-space: nowrap; }
+
+  footer { background: var(--azul); padding: 28px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .footer-text { font-size: 13px; color: rgba(142,219,255,.5); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 12px; color: rgba(142,219,255,.5); text-decoration: none; font-weight: 600; transition: color .15s; }
+  .footer-links a:hover { color: var(--celeste); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 22 22" fill="none" stroke="#8EDBFF" stroke-width="2.5">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+        <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">Agencia OS</span>
+  </a>
+  <a href="index.html" class="nav-back">← Volver al sitio</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Legal</div>
+  <h1 class="hero-title">Términos y Condiciones</h1>
+  <div class="hero-date">Última actualización: junio de 2025</div>
+</div>
+
+<div class="content">
+
+  <div class="intro-box">
+    Al crear una cuenta en Agencia OS, aceptás estos Términos y Condiciones. Te recomendamos leerlos con atención. Si tenés alguna duda, escribinos a <strong>hola@agenciaos.com</strong> antes de registrarte.
+  </div>
+
+  <div class="section">
+    <div class="section-num">01</div>
+    <div class="section-title">¿Qué es Agencia OS?</div>
+    <div class="section-body">
+      <p>Agencia OS es una plataforma web de gestión para agencias creativas y de marketing. Permite gestionar clientes, contenido, tareas, calendario editorial, CRM y reportes desde un único lugar.</p>
+      <p>El servicio está disponible en modalidad de suscripción mensual con diferentes planes. También existe un plan gratuito con funcionalidades limitadas.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">02</div>
+    <div class="section-title">Registro y cuenta</div>
+    <div class="section-body">
+      <p>Para usar Agencia OS debés crear una cuenta con un email válido. Sos responsable de:</p>
+      <ul>
+        <li>Mantener la confidencialidad de tu contraseña.</li>
+        <li>Toda la actividad que ocurra bajo tu cuenta.</li>
+        <li>Notificarnos inmediatamente si sospechás acceso no autorizado a tu cuenta.</li>
+      </ul>
+      <p>Cada cuenta está asociada a una agencia. Podés invitar a miembros de tu equipo bajo la misma agencia según los límites de tu plan.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">03</div>
+    <div class="section-title">Planes y pagos</div>
+    <div class="section-body">
+      <p>Agencia OS ofrece los siguientes planes:</p>
+      <div class="highlight-box">
+        <strong>Free:</strong> hasta 3 clientes y 2 miembros del equipo. Sin costo, sin vencimiento.<br><br>
+        <strong>Pro (USD 29/mes):</strong> clientes y miembros ilimitados, todos los módulos, reportes ilimitados.<br><br>
+        <strong>Agency (USD 79/mes):</strong> todo lo de Pro más múltiples agencias, permisos avanzados y soporte prioritario.
+      </div>
+      <p>Los pagos se procesan de forma segura a través de Stripe. Al suscribirte a un plan pago, autorizás el cobro automático mensual hasta que canceles.</p>
+      <p><strong>No hay período de prueba gratuita en los planes pagos.</strong> Sin embargo, podés usar el plan Free sin límite de tiempo para evaluar el producto.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">04</div>
+    <div class="section-title">Cancelación y reembolsos</div>
+    <div class="section-body">
+      <p>Podés cancelar tu suscripción en cualquier momento desde tu perfil dentro de la plataforma. Al cancelar:</p>
+      <ul>
+        <li>Tu cuenta permanece activa hasta el final del período ya pagado.</li>
+        <li>No se realizan cargos adicionales.</li>
+        <li>Tus datos se conservan por 30 días después del vencimiento, luego se eliminan.</li>
+      </ul>
+      <p><strong>No ofrecemos reembolsos por períodos parciales.</strong> Si experimentás un problema técnico grave atribuible a Agencia OS, analizamos cada caso de forma individual. Escribinos a <a href="mailto:hola@agenciaos.com">hola@agenciaos.com</a>.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">05</div>
+    <div class="section-title">Uso aceptable</div>
+    <div class="section-body">
+      <p>Al usar Agencia OS te comprometés a no:</p>
+      <ul>
+        <li>Usar la plataforma para actividades ilegales o fraudulentas.</li>
+        <li>Intentar acceder a cuentas o datos de otros usuarios sin autorización.</li>
+        <li>Cargar contenido que viole derechos de terceros, sea difamatorio o contenga malware.</li>
+        <li>Realizar ingeniería inversa, copiar o redistribuir el código de la plataforma.</li>
+        <li>Sobrecargar los servidores mediante uso automatizado masivo sin autorización.</li>
+      </ul>
+      <p>El incumplimiento de estas condiciones puede resultar en la suspensión o eliminación de tu cuenta sin previo aviso.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">06</div>
+    <div class="section-title">Propiedad de los datos</div>
+    <div class="section-body">
+      <p><strong>Vos sos dueño de tus datos.</strong> Todo el contenido que cargás en Agencia OS (clientes, piezas, tareas, reportes) te pertenece. Agencia OS no reclama ningún derecho de propiedad sobre tu contenido.</p>
+      <p>Al usar el servicio, nos otorgás una licencia limitada para almacenar y procesar tu contenido únicamente con el fin de brindarte el servicio.</p>
+      <p>Podés exportar o eliminar tus datos en cualquier momento contactándonos.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">07</div>
+    <div class="section-title">Disponibilidad del servicio</div>
+    <div class="section-body">
+      <p>Nos esforzamos por mantener Agencia OS disponible las 24 horas, los 7 días de la semana. Sin embargo, no garantizamos disponibilidad ininterrumpida. Pueden existir períodos de mantenimiento, actualizaciones o interrupciones imprevistas.</p>
+      <p>No somos responsables por pérdidas derivadas de interrupciones del servicio fuera de nuestro control, incluyendo fallas de proveedores de infraestructura.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">08</div>
+    <div class="section-title">Limitación de responsabilidad</div>
+    <div class="section-body">
+      <p>Agencia OS se provee "tal como está". En ningún caso seremos responsables por daños indirectos, incidentales o consecuentes derivados del uso o imposibilidad de uso del servicio.</p>
+      <p>Nuestra responsabilidad máxima ante cualquier reclamo no superará el monto pagado por el usuario en los últimos 3 meses de suscripción.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">09</div>
+    <div class="section-title">Cambios en los términos</div>
+    <div class="section-body">
+      <p>Podemos modificar estos términos en cualquier momento. Si los cambios son significativos, te notificaremos por email con al menos 15 días de anticipación.</p>
+      <p>El uso continuado de la plataforma después de la fecha efectiva de los cambios implica la aceptación de los nuevos términos. Si no estás de acuerdo, podés cancelar tu cuenta antes de que entren en vigor.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-num">10</div>
+    <div class="section-title">Legislación aplicable</div>
+    <div class="section-body">
+      <p>Estos términos se rigen por las leyes de la República Argentina. Cualquier disputa que no pueda resolverse de forma amistosa será sometida a los tribunales competentes de la Ciudad Autónoma de Buenos Aires.</p>
+    </div>
+  </div>
+
+  <div class="contact-box">
+    <div>
+      <div class="contact-box-text">¿Tenés preguntas sobre los términos?</div>
+      <div class="contact-box-sub">Escribinos y te respondemos en menos de 48 horas.</div>
+    </div>
+    <a href="mailto:hola@agenciaos.com" class="contact-btn">Contactarnos</a>
+  </div>
+
+</div>
+
+<footer>
+  <span class="footer-text">Agencia OS · 2025 · Hecho en Latinoamérica</span>
+  <div class="footer-links">
+    <a href="terms.html">Términos</a>
+    <a href="privacy.html">Privacidad</a>
+    <a href="mailto:hola@agenciaos.com">Contacto</a>
+  </div>
+</footer>
+
+</body>
+</html>
