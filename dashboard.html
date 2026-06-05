@@ -7716,66 +7716,6 @@ if (id) {
     showToast('Gasto eliminado')
     renderGastos()
   }
-    const existing = document.getElementById('modal-gasto')
-    if (existing) existing.remove()
-    const m = document.createElement('div')
-    m.id = 'modal-gasto'
-    m.className = 'modal-overlay show'
-    m.onclick = e => { if (e.target === m) m.remove() }
-    const now = new Date()
-    m.innerHTML = `<div class="modal" style="max-width:400px">
-      <div class="modal-head"><div class="modal-title">Agregar gasto fijo</div><button class="modal-close" onclick="document.getElementById('modal-gasto').remove()"><i class="ti ti-x"></i></button></div>
-      <div class="modal-body">
-        <div class="form-field"><label class="form-label">Nombre del gasto</label><input type="text" class="form-input" id="gasto-nombre" placeholder="Ej: Supabase, Adobe, Alquiler..."></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="form-field" style="margin-bottom:0"><label class="form-label">Monto (USD)</label><input type="number" class="form-input" id="gasto-monto" placeholder="0" min="0"></div>
-          <div class="form-field" style="margin-bottom:0"><label class="form-label">Categoría</label>
-            <select class="form-input form-select" id="gasto-cat">
-              <option value="operativo">Operativo</option>
-              <option value="herramientas">Herramientas</option>
-              <option value="infraestructura">Infraestructura</option>
-              <option value="marketing">Marketing</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-        </div>
-        <div style="margin-top:14px;display:flex;align-items:center;gap:8px">
-          <input type="checkbox" id="gasto-recurrente" checked style="accent-color:var(--azul)">
-          <label for="gasto-recurrente" style="font-size:13px;color:var(--ink);cursor:pointer">Gasto recurrente mensual</label>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="tbtn" onclick="document.getElementById('modal-gasto').remove()">Cancelar</button>
-        <button class="tbtn primary" onclick="saveGasto()">Guardar gasto</button>
-      </div>
-    </div>`
-    document.body.appendChild(m)
-    setTimeout(() => document.getElementById('gasto-nombre').focus(), 100)
-  }
-
-  window.saveGasto = async function() {
-    const nombre = document.getElementById('gasto-nombre').value.trim()
-    const monto = parseFloat(document.getElementById('gasto-monto').value) || 0
-    const categoria = document.getElementById('gasto-cat').value
-    const recurrente = document.getElementById('gasto-recurrente').checked
-    if (!nombre || !monto) { showToast('Completá nombre y monto'); return }
-    const now = new Date()
-    const payload = {
-      agency_id: agencyId, nombre, monto, categoria,
-      mes: recurrente ? null : now.getMonth() + 1,
-      año: recurrente ? null : now.getFullYear()
-    }
-    await supabase.from('agency_gastos').insert(payload)
-    document.getElementById('modal-gasto').remove()
-    showToast('✓ Gasto guardado')
-    renderGastos()
-  }
-
-  window.deleteGasto = async function(id) {
-    await supabase.from('agency_gastos').delete().eq('id', id)
-    showToast('Gasto eliminado')
-    renderGastos()
-  }
 
   // ── Escape para cerrar modales
   document.addEventListener('keydown', e => {
