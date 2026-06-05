@@ -1837,6 +1837,100 @@
   </div>
 </div>
 
+<!-- Modal gestionar cuenta / cancelar -->
+<div class="modal-overlay" id="modal-gestionar" onclick="if(event.target===this)closeGestionar()">
+  <div class="modal" style="max-width:440px">
+    <div id="gestionar-p0">
+      <div class="modal-head">
+        <div class="modal-title">Gestionar cuenta</div>
+        <button class="modal-close" onclick="closeGestionar()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+            <div style="width:36px;height:36px;border-radius:10px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);flex-shrink:0"><i class="ti ti-rocket" style="font-size:18px"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Mejorar plan</div><div style="font-size:11px;color:var(--ink3)">Desbloqueá clientes y reportes ilimitados</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:background .15s" onclick="window.open('mailto:hola@agenciaos.com')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+            <div style="width:36px;height:36px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--ink3);flex-shrink:0"><i class="ti ti-mail" style="font-size:18px"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:var(--ink)">Soporte</div><div style="font-size:11px;color:var(--ink3)">Contactar al equipo de Agencia OS</div></div>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
+          <button onclick="document.getElementById('gestionar-p0').style.display='none';document.getElementById('gestionar-p1').style.display='block'" style="font-size:11px;color:var(--border);background:none;border:none;cursor:pointer;font-family:inherit;transition:color .2s" onmouseover="this.style.color='var(--ink3)'" onmouseout="this.style.color='var(--border)'">Cancelar suscripción</button>
+        </div>
+      </div>
+    </div>
+    <div id="gestionar-p1" style="display:none">
+      <div class="modal-head">
+        <div class="modal-title">¿Querés cancelar?</div>
+        <button class="modal-close" onclick="closeGestionar()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:16px">Si cancelás tu suscripción, perderás acceso a:</p>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FEF2F2;border-radius:10px"><i class="ti ti-x" style="color:#EF4444;font-size:14px;flex-shrink:0"></i><span style="font-size:13px;color:var(--ink)">Clientes y reportes ilimitados</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FEF2F2;border-radius:10px"><i class="ti ti-x" style="color:#EF4444;font-size:14px;flex-shrink:0"></i><span style="font-size:13px;color:var(--ink)">Historial completo de piezas y tareas</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FEF2F2;border-radius:10px"><i class="ti ti-x" style="color:#EF4444;font-size:14px;flex-shrink:0"></i><span style="font-size:13px;color:var(--ink)">CRM y pipeline de ventas</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FEF2F2;border-radius:10px"><i class="ti ti-x" style="color:#EF4444;font-size:14px;flex-shrink:0"></i><span style="font-size:13px;color:var(--ink)">Todos los miembros del equipo</span></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="flex-direction:column;gap:8px">
+        <button class="tbtn primary" style="width:100%" onclick="document.getElementById('gestionar-p1').style.display='none';document.getElementById('gestionar-p0').style.display='block'">Mantener mi plan</button>
+        <button onclick="document.getElementById('gestionar-p1').style.display='none';document.getElementById('gestionar-p2').style.display='block'" style="font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px">Igual quiero cancelar</button>
+      </div>
+    </div>
+    <div id="gestionar-p2" style="display:none">
+      <div class="modal-head">
+        <div class="modal-title">¿Por qué cancelás?</div>
+        <button class="modal-close" onclick="closeGestionar()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:16px">Tu feedback nos ayuda a mejorar.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer"><input type="radio" name="motivo" value="precio" style="accent-color:var(--azul)"> <span style="font-size:13px;color:var(--ink)">El precio es muy alto</span></label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer"><input type="radio" name="motivo" value="funciones" style="accent-color:var(--azul)"> <span style="font-size:13px;color:var(--ink)">Le faltan funciones que necesito</span></label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer"><input type="radio" name="motivo" value="complejo" style="accent-color:var(--azul)"> <span style="font-size:13px;color:var(--ink)">Es difícil de usar</span></label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer"><input type="radio" name="motivo" value="alternativa" style="accent-color:var(--azul)"> <span style="font-size:13px;color:var(--ink)">Encontré otra herramienta</span></label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer"><input type="radio" name="motivo" value="otro" style="accent-color:var(--azul)"> <span style="font-size:13px;color:var(--ink)">Otro motivo</span></label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="tbtn primary" style="width:100%" onclick="goToRetention()">Continuar</button>
+      </div>
+    </div>
+    <div id="gestionar-p3" style="display:none">
+      <div class="modal-head">
+        <div class="modal-title">Antes de irte...</div>
+        <button class="modal-close" onclick="closeGestionar()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:16px">🎁</div>
+        <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:8px">30% de descuento el próximo mes</div>
+        <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:20px">Quedate un mes más con 30% off y seguí usando todo sin límites. Sin compromisos.</div>
+        <button class="tbtn primary" style="width:100%;margin-bottom:10px" onclick="acceptDiscount()">Aceptar descuento</button>
+        <button onclick="document.getElementById('gestionar-p3').style.display='none';document.getElementById('gestionar-p4').style.display='block'" style="font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px">No gracias, cancelar igual</button>
+      </div>
+    </div>
+    <div id="gestionar-p4" style="display:none">
+      <div class="modal-head">
+        <div class="modal-title">Confirmar cancelación</div>
+        <button class="modal-close" onclick="closeGestionar()"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:16px">😔</div>
+        <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:8px">Lamentamos que te vayas</div>
+        <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:14px">Tu plan se cancela al final del período actual. Seguís teniendo acceso hasta entonces.</div>
+        <div style="font-size:12px;color:var(--ink3);background:var(--bg);border-radius:10px;padding:12px">Para confirmar, escribinos a <strong>hola@agenciaos.com</strong> con el asunto <strong>"Cancelar suscripción"</strong>.</div>
+      </div>
+      <div class="modal-footer" style="flex-direction:column;gap:8px">
+        <button class="tbtn primary" style="width:100%" onclick="closeGestionar()">Mantener mi plan</button>
+        <a href="mailto:hola@agenciaos.com?subject=Cancelar%20suscripci%C3%B3n" class="tbtn" style="width:100%;text-align:center;color:var(--danger);border-color:rgba(255,107,107,.3);text-decoration:none" onclick="closeGestionar()">Enviar email de cancelación</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal estadísticas pieza -->
 <div class="modal-overlay" id="modal-stats" onclick="if(event.target===this)closeStatsModal()">
   <div class="modal" style="max-width:420px">
@@ -2052,6 +2146,7 @@
         <button onclick="handleSignOut()" style="width:100%;padding:8px;border-radius:9px;border:none;background:transparent;font-size:11px;font-weight:600;color:var(--danger);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:background .15s" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
           <i class="ti ti-logout" style="font-size:12px"></i>Cerrar sesión
         </button>
+        <button onclick="openGestionarCuenta()" style="width:100%;padding:4px;border:none;background:transparent;font-size:10px;color:var(--border);cursor:pointer;font-family:inherit;margin-top:4px;transition:color .2s" onmouseover="this.style.color='var(--ink3)'" onmouseout="this.style.color='var(--border)'">Gestionar cuenta</button>
       </div>
     </div>
 
@@ -6757,6 +6852,30 @@ if (id) {
       setTimeout(() => { if (tooltipPopup) { tooltipPopup.remove(); tooltipPopup = null } }, 150)
     }
     markTooltipSeen(mod)
+  }
+
+  window.openGestionarCuenta = function() {
+    // Reset todos los pasos
+    ;['gestionar-p0','gestionar-p1','gestionar-p2','gestionar-p3','gestionar-p4'].forEach((id,i) => {
+      document.getElementById(id).style.display = i === 0 ? 'block' : 'none'
+    })
+    document.getElementById('modal-gestionar').classList.add('show')
+  }
+
+  window.closeGestionar = function() {
+    document.getElementById('modal-gestionar').classList.remove('show')
+  }
+
+  window.goToRetention = function() {
+    const selected = document.querySelector('input[name="motivo"]:checked')
+    if (!selected) { showToast('Seleccioná un motivo para continuar'); return }
+    document.getElementById('gestionar-p2').style.display = 'none'
+    document.getElementById('gestionar-p3').style.display = 'block'
+  }
+
+  window.acceptDiscount = function() {
+    closeGestionar()
+    showToast('🎉 ¡Descuento aplicado! Te contactaremos en breve.')
   }
 
   // ── Escape para cerrar modales
