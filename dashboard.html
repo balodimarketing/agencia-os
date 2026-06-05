@@ -6937,6 +6937,51 @@ if (id) {
   // ── Gastos fijos/variables ────────────────────────────
 
   // ══════════════════════════════════════
+  // PLANES Y LÍMITES
+  // ══════════════════════════════════════
+
+  const PLAN_LIMITS = {
+    free: { clientes: 3, miembros: 2 },
+    pro:  { clientes: Infinity, miembros: Infinity },
+  }
+
+  function isPro() { return agencyPlan === 'pro' || agencyPlan === 'agency' }
+
+  function checkLimit(tipo) {
+    const limits = PLAN_LIMITS[agencyPlan] || PLAN_LIMITS.free
+    if (tipo === 'clientes' && clients.length >= limits.clientes) {
+      showUpgradeModal('Llegaste al límite de clientes del plan Free.', 'Pasate a Pro para agregar clientes ilimitados.')
+      return false
+    }
+    if (tipo === 'miembros' && teamMembers.length >= limits.miembros) {
+      showUpgradeModal('Llegaste al límite de miembros del plan Free.', 'Pasate a Pro para invitar miembros ilimitados.')
+      return false
+    }
+    return true
+  }
+
+  function showUpgradeModal(titulo, desc) {
+    const existing = document.getElementById('modal-upgrade')
+    if (existing) existing.remove()
+    const m = document.createElement('div')
+    m.id = 'modal-upgrade'
+    m.className = 'modal-overlay show'
+    m.onclick = e => { if (e.target === m) m.remove() }
+    m.innerHTML = `<div class="modal" style="max-width:400px;text-align:center">
+      <div style="width:56px;height:56px;border-radius:16px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--azul)">
+        <i class="ti ti-rocket" style="font-size:28px"></i>
+      </div>
+      <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:8px">${titulo}</div>
+      <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:24px">${desc}</div>
+      <div style="display:flex;gap:8px">
+        <button class="tbtn" style="flex:1" onclick="document.getElementById('modal-upgrade').remove()">Ahora no</button>
+        <button class="tbtn primary" style="flex:2" onclick="document.getElementById('modal-upgrade').remove();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))">Ver planes →</button>
+      </div>
+    </div>`
+    document.body.appendChild(m)
+  }
+
+  // ══════════════════════════════════════
   // CHECKLIST DE BIENVENIDA
   // ══════════════════════════════════════
 
