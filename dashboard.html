@@ -2617,6 +2617,7 @@
   let agencyPlan = 'free'
   let userRole = null
   let clients = []
+  let portalData = { users: {}, invitations: {} } // clientId → datos del portal
   let currentModule = 'inicio'
   let deleteTargetId = null
 
@@ -2710,7 +2711,6 @@
 
   async function loadClients() {
     if (userRole === 'MEMBER') {
-      // Step 1: get client IDs via RPC-style join avoiding global agencyId
       const { data: mcRows } = await supabase
         .from('member_clients')
         .select('client_id, agency_members!inner(user_id, status)')
@@ -2720,7 +2720,6 @@
       const clientIds = (mcRows || []).map(r => r.client_id)
       if (clientIds.length === 0) { clients = []; return }
 
-      // Step 2: load those clients
       const { data, error } = await supabase
         .from('clients')
         .select('*')
@@ -2736,6 +2735,40 @@
         .order('created_at', { ascending: false })
       if (!error) clients = data || []
     }
+
+    // Cargar estado del portal para todas las cards
+    await loadPortalData()
+  }
+
+  async function loadPortalData() {
+    if (!agencyId || !clients.length) return
+
+    const clientIds = clients.map(c => c.id)
+
+    // Usuarios activos por cliente
+    const { data: users } = await supabase
+      .from('client_users')
+      .select('client_id, nombre, apellido')
+      .in('client_id', clientIds)
+
+    // Invitaciones pendientes por cliente
+    const { data: invs } = await supabase
+      .from('client_invitations')
+      .select('client_id, token, status')
+      .in('client_id', clientIds)
+      .eq('agency_id', agencyId)
+      .eq('status', 'pending')
+
+    // Indexar por client_id
+    portalData.users = {}
+    portalData.invitations = {}
+    ;(users || []).forEach(u => {
+      if (!portalData.users[u.client_id]) portalData.users[u.client_id] = []
+      portalData.users[u.client_id].push(u)
+    })
+    ;(invs || []).forEach(inv => {
+      portalData.invitations[inv.client_id] = inv
+    })
   }
 
   // ── Panel list ────────────────────────────────────────
@@ -2817,7 +2850,20 @@
       const estadoBg = c.estado === 'activo' ? '#F0FDF4' : '#FEF2F2'
       const estadoColor = c.estado === 'activo' ? '#166534' : '#991B1B'
 
-      return `<div class="client-card fade-up" onclick="showClientDetail('${c.id}')" style="cursor:pointer">
+      // Portal strip
+      const pUsers = portalData.users[c.id] || []
+      const pInv = portalData.invitations[c.id]
+      const pLink = pInv ? `${window.location.origin}${window.location.pathname.replace('dashboard.html','client-register.html')}?token=${pInv.token}` : ''
+      let portalStrip = ''
+      if (pUsers.length > 0) {
+        portalStrip = `<div style="margin:0 -18px;padding:9px 16px;background:#F0FDF4;border-radius:0 0 var(--r-lg) var(--r-lg);display:flex;align-items:center;justify-content:space-between;border-top:1px solid #BBF7D0"><div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#166534"><i class="ti ti-circle-check" style="font-size:14px"></i> Portal activo &middot; ${pUsers.length} usuario${pUsers.length > 1 ? 's' : ''}</div><i class="ti ti-chevron-right" style="font-size:13px;color:#166534;opacity:.6"></i></div>`
+      } else if (pInv) {
+        portalStrip = `<div style="margin:0 -18px;padding:9px 16px;background:#FFFBEB;border-radius:0 0 var(--r-lg) var(--r-lg);display:flex;align-items:center;justify-content:space-between;border-top:1px solid #FDE68A" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#92400E"><i class="ti ti-clock" style="font-size:14px"></i> Invitación pendiente</div><button onclick="navigator.clipboard.writeText('${pLink}');showToast('Link copiado')" style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:#92400E;background:transparent;border:none;cursor:pointer;font-family:inherit;padding:0">Copiar link <i class="ti ti-copy" style="font-size:12px"></i></button></div>`
+      } else {
+        portalStrip = `<div style="margin:0 -18px;padding:9px 16px;background:var(--bg);border-radius:0 0 var(--r-lg) var(--r-lg);display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--ink3)"><i class="ti ti-user-plus" style="font-size:14px"></i> Sin portal</div><button onclick="quickInviteClient('${c.id}')" style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:var(--ink2);background:transparent;border:none;cursor:pointer;font-family:inherit;padding:0">Invitar <i class="ti ti-chevron-right" style="font-size:12px"></i></button></div>`
+      }
+
+      return `<div class="client-card fade-up" onclick="showClientDetail('${c.id}')" style="cursor:pointer;padding-bottom:0">
         <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
           <div style="width:44px;height:44px;border-radius:12px;background:${col.bg};color:${col.color};font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
           <div style="flex:1;min-width:0">
@@ -2828,10 +2874,11 @@
         </div>
         ${c.redes?.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">${redes}${extra}</div>` : ''}
         ${c.brief ? `<div style="font-size:11px;color:var(--ink3);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:10px">${c.brief}</div>` : ''}
-        <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border)" onclick="event.stopPropagation()">
+        <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);padding-bottom:12px" onclick="event.stopPropagation()">
           <button class="tbtn" style="flex:1;font-size:12px;gap:5px" onclick="openClientModal('${c.id}')"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
           <button class="tbtn danger" style="padding:8px 12px" onclick="openDeleteModal('${c.id}','${c.nombre.replace(/'/g,"\'")}')"><i class="ti ti-trash" style="font-size:13px"></i></button>
         </div>
+        ${portalStrip}
       </div>`
     }).join('')
   }
@@ -3089,6 +3136,17 @@
       .upsert({ client_id: clientId, agency_id: agencyId, [key]: value }, { onConflict: 'client_id' })
 
     showToast(value ? 'Sección activada' : 'Sección desactivada')
+  }
+
+  window.quickInviteClient = async function(clientId) {
+    const token = Math.random().toString(36).substring(2) + Date.now().toString(36)
+    await supabase.from('client_invitations').update({ status: 'expired' }).eq('client_id', clientId).eq('status', 'pending')
+    const { error } = await supabase.from('client_invitations').insert({ agency_id: agencyId, client_id: clientId, token, status: 'pending' })
+    if (!error) {
+      await loadPortalData()
+      renderClientsGrid()
+      showToast('Invitación generada')
+    }
   }
 
   window.inviteClient = async function(clientId) {
