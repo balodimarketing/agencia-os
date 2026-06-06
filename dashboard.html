@@ -1004,29 +1004,97 @@
     </div></div>
 
     <!-- CUENTAS -->
-    <div class="view" id="v-cuentas"><div style="max-width:900px;margin:0 auto;width:100%">
-      <!-- Lista de clientes -->
-      <div id="cuentas-list-view">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-          <div style="flex:1;min-width:200px;position:relative">
-            <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3)"></i>
-            <input type="text" id="clientes-search" placeholder="Buscar cliente..." oninput="filterClientes()" style="width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none;background:var(--white)" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
+    <div class="view" id="v-cuentas"><div style="max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start">
+
+      <!-- Columna principal -->
+      <div>
+        <div id="cuentas-list-view">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px;position:relative">
+              <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink3)"></i>
+              <input type="text" id="clientes-search" placeholder="Buscar cliente..." oninput="filterClientes()" style="width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none;background:var(--white)" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="equipo-filter-btn active" data-filter="todos" onclick="setClientesFilter(this,'todos')">Todos</button>
+              <button class="equipo-filter-btn" data-filter="activo" onclick="setClientesFilter(this,'activo')">Activos</button>
+              <button class="equipo-filter-btn" data-filter="inactivo" onclick="setClientesFilter(this,'inactivo')">Inactivos</button>
+            </div>
           </div>
-          <div style="display:flex;gap:6px">
-            <button class="equipo-filter-btn active" data-filter="todos" onclick="setClientesFilter(this,'todos')">Todos</button>
-            <button class="equipo-filter-btn" data-filter="activo" onclick="setClientesFilter(this,'activo')">Activos</button>
-            <button class="equipo-filter-btn" data-filter="inactivo" onclick="setClientesFilter(this,'inactivo')">Inactivos</button>
+          <div id="clients-grid" class="clients-grid"></div>
+        </div>
+
+        <!-- Detalle de cliente -->
+        <div id="cuentas-detail-view" style="display:none">
+          <button style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onclick="showClientsList()" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+            <i class="ti ti-arrow-left" style="font-size:15px"></i> Cuentas
+          </button>
+          <div id="client-detail-content"></div>
+        </div>
+      </div>
+
+      <!-- Columna lateral: Portal del cliente -->
+      <div id="portal-promo-col">
+        <!-- Card portal -->
+        <div style="background:var(--azul);border-radius:var(--r-lg);padding:22px;margin-bottom:14px">
+          <div style="width:38px;height:38px;background:rgba(142,219,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+            <i class="ti ti-layout-dashboard" style="font-size:18px;color:var(--celeste)"></i>
+          </div>
+          <div style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:8px">Portal del cliente</div>
+          <div style="font-size:12px;color:rgba(142,219,255,.7);line-height:1.7;margin-bottom:16px">
+            Cada cliente tiene su propio espacio privado donde puede ver sus piezas, aprobarlas y seguir el calendario de publicaciones — sin acceso al dashboard de la agencia.
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(142,219,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-check" style="font-size:11px;color:var(--celeste)"></i>
+              </div>
+              <span style="font-size:12px;color:rgba(255,255,255,.7)">Aprobación directa desde el portal</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(142,219,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-check" style="font-size:11px;color:var(--celeste)"></i>
+              </div>
+              <span style="font-size:12px;color:rgba(255,255,255,.7)">Calendario de publicaciones</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(142,219,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-check" style="font-size:11px;color:var(--celeste)"></i>
+              </div>
+              <span style="font-size:12px;color:rgba(255,255,255,.7)">Múltiples usuarios por cliente</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(142,219,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="ti ti-check" style="font-size:11px;color:var(--celeste)"></i>
+              </div>
+              <span style="font-size:12px;color:rgba(255,255,255,.7)">Configurá qué ve cada cliente</span>
+            </div>
           </div>
         </div>
-        <div id="clients-grid" class="clients-grid"></div>
+
+        <!-- Card cómo usarlo -->
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:18px">
+          <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:14px;letter-spacing:-.2px">Cómo activarlo</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--azul);color:var(--celeste);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</div>
+              <div style="font-size:12px;color:var(--ink2);line-height:1.5">Abrí el detalle de un cliente</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--azul);color:var(--celeste);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</div>
+              <div style="font-size:12px;color:var(--ink2);line-height:1.5">Hacé click en <strong>"Invitar"</strong> en el bloque Portal</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--azul);color:var(--celeste);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</div>
+              <div style="font-size:12px;color:var(--ink2);line-height:1.5">Copiá el link y mandáselo al cliente</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--azul);color:var(--celeste);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">4</div>
+              <div style="font-size:12px;color:var(--ink2);line-height:1.5">El cliente crea su cuenta y ya tiene acceso</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <!-- Detalle de cliente -->
-      <div id="cuentas-detail-view" style="display:none">
-        <button style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:24px;padding:0" onclick="showClientsList()" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
-          <i class="ti ti-arrow-left" style="font-size:15px"></i> Cuentas
-        </button>
-        <div id="client-detail-content"></div>
-      </div>
+
     </div></div>
 
     <!-- CONTENIDO -->
@@ -3000,6 +3068,8 @@
 
     document.getElementById('cuentas-list-view').style.display = 'none'
     document.getElementById('cuentas-detail-view').style.display = 'block'
+    const promoCol = document.getElementById('portal-promo-col')
+    if (promoCol) promoCol.style.display = 'none'
     loadPortalSection(c.id)
   }
 
@@ -3206,6 +3276,8 @@
   window.showClientsList = function() {
     document.getElementById('cuentas-list-view').style.display = 'block'
     document.getElementById('cuentas-detail-view').style.display = 'none'
+    const promoCol = document.getElementById('portal-promo-col')
+    if (promoCol) promoCol.style.display = 'block'
   }
 
   // ── Modal abrir ───────────────────────────────────────
