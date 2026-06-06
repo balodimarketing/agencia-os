@@ -462,6 +462,8 @@
     }
 
     // UI rail
+    const nombre = cu.nombre || currentUser.email?.split('@')[0] || '?'
+    const apellido = cu.apellido || ''
     const ini = ((nombre[0] || '') + (apellido[0] || '')).toUpperCase() || '?'
     document.getElementById('rail-av').textContent = ini
     document.getElementById('rail-av').setAttribute('data-tip', `${nombre} ${apellido}`.trim() + ' · Salir')
