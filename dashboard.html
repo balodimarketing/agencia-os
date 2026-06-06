@@ -2963,52 +2963,79 @@
     const configEl = document.getElementById(`portal-config-${clientId}`)
     if (!statusEl || !configEl) return
 
-    // Cargar invitación existente
+    // Cargar TODOS los usuarios activos del cliente
+    const { data: users } = await supabase
+      .from('client_users')
+      .select('id, user_id, nombre, apellido, created_at')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: true })
+
+    // Cargar invitación pendiente si existe
     const { data: inv } = await supabase
       .from('client_invitations')
       .select('*')
       .eq('client_id', clientId)
       .eq('agency_id', agencyId)
+      .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
 
-    // Cargar usuario cliente si existe
-    const { data: cu } = await supabase
-      .from('client_users')
-      .select('nombre, apellido, created_at')
-      .eq('client_id', clientId)
-      .maybeSingle()
+    const cuList = users || []
+    let html = ''
 
-    if (cu) {
-      // Ya tiene usuario
-      statusEl.innerHTML = `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F0FDF4;border-radius:10px;border:1px solid #BBF7D0;margin-bottom:16px">
-          <i class="ti ti-circle-check" style="font-size:16px;color:var(--success);flex-shrink:0"></i>
-          <div>
-            <div style="font-size:12px;font-weight:800;color:#166534">Cliente con acceso activo</div>
-            <div style="font-size:11px;color:#15803D;margin-top:1px">${cu.nombre} ${cu.apellido} · desde ${new Date(cu.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})}</div>
-          </div>
-        </div>`
-      document.getElementById(`btn-invite-${clientId}`).style.display = 'none'
-    } else if (inv && inv.status === 'pending') {
-      // Invitación pendiente
+    // Lista de usuarios con acceso activo
+    if (cuList.length > 0) {
+      html += `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">`
+      cuList.forEach(cu => {
+        html += `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F0FDF4;border-radius:10px;border:1px solid #BBF7D0">
+            <div style="width:30px;height:30px;border-radius:50%;background:#0A2540;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#8EDBFF;flex-shrink:0">
+              ${((cu.nombre||'?')[0]+(cu.apellido||'')[0]||'').toUpperCase()}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:800;color:#166534">${cu.nombre} ${cu.apellido}</div>
+              <div style="font-size:11px;color:#15803D">Desde ${new Date(cu.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})}</div>
+            </div>
+            <button onclick="revokeClientAccess('${cu.user_id}','${clientId}')" style="padding:4px 10px;border-radius:7px;font-size:10px;font-weight:800;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;cursor:pointer;font-family:inherit;flex-shrink:0;transition:background var(--t)" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
+              Revocar
+            </button>
+          </div>`
+      })
+      html += `</div>`
+    }
+
+    // Invitación pendiente
+    if (inv) {
       const link = `${window.location.origin}${window.location.pathname.replace('dashboard.html','client-register.html')}?token=${inv.token}`
-      statusEl.innerHTML = `
-        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      html += `
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:14px">
           <div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:8px"><i class="ti ti-clock" style="font-size:11px"></i> Invitación pendiente</div>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="font-size:11px;color:#78350F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${link}</div>
             <button onclick="copyInviteLink('${link}')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid #FDE68A;background:#FFFBEB;color:#92400E;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">Copiar</button>
           </div>
         </div>`
-      document.getElementById(`btn-invite-${clientId}`).innerHTML = '<i class="ti ti-refresh" style="font-size:13px"></i> Reenviar'
-    } else {
-      statusEl.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg);border-radius:9px;margin-bottom:16px">
+    }
+
+    // Si no hay nada todavía
+    if (cuList.length === 0 && !inv) {
+      html += `
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg);border-radius:9px;margin-bottom:14px">
           <i class="ti ti-user-off" style="font-size:14px;color:var(--ink3)"></i>
-          <div style="font-size:12px;color:var(--ink3)">El cliente todavía no tiene acceso al portal.</div>
+          <div style="font-size:12px;color:var(--ink3)">Nadie tiene acceso al portal todavía.</div>
         </div>`
+    }
+
+    statusEl.innerHTML = html
+
+    // El botón siempre visible — permite agregar más personas
+    const invBtn = document.getElementById(`btn-invite-${clientId}`)
+    if (invBtn) {
+      invBtn.style.display = 'inline-flex'
+      invBtn.innerHTML = inv
+        ? '<i class="ti ti-refresh" style="font-size:13px"></i> Nuevo link'
+        : '<i class="ti ti-user-plus" style="font-size:13px"></i> Invitar'
     }
 
     // Cargar config
@@ -3084,6 +3111,23 @@
       loadPortalSection(clientId)
     } else {
       showToast('Error al generar la invitación')
+    }
+  }
+
+  window.revokeClientAccess = async function(userId, clientId) {
+    if (!confirm('¿Revocar el acceso de este usuario al portal?')) return
+
+    const { error } = await supabase
+      .from('client_users')
+      .delete()
+      .eq('user_id', userId)
+      .eq('client_id', clientId)
+
+    if (!error) {
+      showToast('Acceso revocado')
+      loadPortalSection(clientId)
+    } else {
+      showToast('Error al revocar el acceso')
     }
   }
 
