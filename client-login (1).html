@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faro — Ingresar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --azul: #0A2540; --celeste: #8EDBFF; --white: #FFFFFF; --bg: #F5F7FA;
+      --ink: #111111; --ink2: #4A5568; --ink3: #9AA5B4; --border: #E8ECF0;
+      --danger: #FF6B6B; --r: 12px; --r-lg: 20px; --shadow-lg: 0 12px 48px rgba(0,0,0,.12);
+      --t: .18s cubic-bezier(.4,0,.2,1);
+    }
+    html, body { min-height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--white); color: var(--ink); -webkit-font-smoothing: antialiased; }
+    .page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; position: relative; overflow: hidden; }
+    .page::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle, #E2E8F0 1px, transparent 1px); background-size: 28px 28px; opacity: .45; pointer-events: none; }
+    .page::after { content: ''; position: absolute; top: -200px; right: -200px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(142,219,255,.18) 0%, transparent 70%); pointer-events: none; }
+    .card { position: relative; background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 44px; width: 100%; max-width: 400px; box-shadow: var(--shadow-lg); z-index: 1; animation: cardIn .4s cubic-bezier(.4,0,.2,1) both; }
+    @keyframes cardIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; justify-content: center; }
+    .logo-mark { width: 38px; height: 38px; background: var(--azul); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .logo-mark svg { width: 20px; height: 20px; fill: none; stroke: var(--celeste); stroke-width: 2.5; }
+    .logo-name { font-size: 17px; font-weight: 900; color: var(--azul); letter-spacing: -.4px; }
+    .card-title { font-size: 22px; font-weight: 900; color: var(--ink); letter-spacing: -.5px; text-align: center; margin-bottom: 6px; }
+    .card-sub { font-size: 13px; color: var(--ink3); text-align: center; margin-bottom: 28px; line-height: 1.5; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 11px; font-weight: 800; color: var(--ink2); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+    .field input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--r); font-size: 14px; font-family: inherit; color: var(--ink); background: var(--white); outline: none; transition: border var(--t), box-shadow var(--t); }
+    .field input::placeholder { color: var(--ink3); }
+    .field input:focus { border-color: var(--celeste); box-shadow: 0 0 0 3px rgba(142,219,255,.2); }
+    .btn { width: 100%; padding: 13px; border: none; border-radius: var(--r); font-size: 14px; font-weight: 800; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all var(--t); margin-top: 4px; }
+    .btn-primary { background: var(--azul); color: var(--white); }
+    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .error-msg { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; display: none; }
+    .error-msg.show { display: block; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 22 22"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="12" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="12" width="7" height="7" rx="1.5"/><rect x="12" y="12" width="7" height="7" rx="1.5"/></svg>
+      </div>
+      <span class="logo-name">Faro</span>
+    </div>
+
+    <h1 class="card-title">Bienvenido</h1>
+    <p class="card-sub">Ingresá para ver el contenido de tu agencia.</p>
+
+    <div class="error-msg" id="error"></div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="tu@email.com" autocomplete="email">
+    </div>
+    <div class="field" style="margin-bottom:20px">
+      <label>Contraseña</label>
+      <input type="password" id="password" placeholder="Tu contraseña" autocomplete="current-password">
+    </div>
+
+    <button class="btn btn-primary" id="btn-login" onclick="handleLogin()">
+      <span id="btn-text">Ingresar</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+  const supabase = createClient(
+    'https://trsbjjagrpvlzvcveiph.supabase.co',
+    'sb_publishable_unJoCAXBOTCiLpLkFCG2oA_SdRcKHit'
+  )
+
+  // Si ya tiene sesión, ir directo al portal
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session) {
+    const { data: cu } = await supabase.from('client_users').select('id').eq('user_id', session.user.id).maybeSingle()
+    if (cu) { window.location.href = 'client-portal.html'; }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin() })
+
+  window.handleLogin = async function() {
+    const email    = document.getElementById('email').value.trim()
+    const password = document.getElementById('password').value
+    const btn      = document.getElementById('btn-login')
+    const spinner  = document.getElementById('spinner')
+    const btnText  = document.getElementById('btn-text')
+    const errEl    = document.getElementById('error')
+
+    errEl.classList.remove('show')
+    if (!email || !password) { errEl.textContent = 'Completá todos los campos.'; errEl.classList.add('show'); return }
+
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Ingresando...'
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Ingresar'
+      errEl.textContent = 'Email o contraseña incorrectos.'; errEl.classList.add('show')
+      return
+    }
+
+    // Verificar que sea un cliente (tiene registro en client_users)
+    const { data: cu } = await supabase.from('client_users').select('id').eq('user_id', data.user.id).maybeSingle()
+    if (!cu) {
+      await supabase.auth.signOut()
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Ingresar'
+      errEl.textContent = 'Esta cuenta no tiene acceso al portal de clientes.'; errEl.classList.add('show')
+      return
+    }
+
+    window.location.href = 'client-portal.html'
+  }
+</script>
+</body>
+</html>
