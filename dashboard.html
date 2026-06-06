@@ -3087,10 +3087,10 @@
       .eq('client_id', clientId)
       .order('created_at', { ascending: true })
 
-    // Cargar invitación pendiente si existe
+    // Cargar invitación pendiente — solo para saber el estado, no mostrar el link
     const { data: inv } = await supabase
       .from('client_invitations')
-      .select('*')
+      .select('token, status, created_at')
       .eq('client_id', clientId)
       .eq('agency_id', agencyId)
       .eq('status', 'pending')
@@ -3122,15 +3122,14 @@
       html += `</div>`
     }
 
-    // Invitación pendiente
+    // Invitación pendiente — solo mostrar estado, NO el link
     if (inv) {
-      const link = `${window.location.origin}${window.location.pathname.replace('dashboard.html','client-register.html')}?token=${inv.token}`
       html += `
-        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:14px">
-          <div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:8px"><i class="ti ti-clock" style="font-size:11px"></i> Invitación pendiente</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="font-size:11px;color:#78350F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${link}</div>
-            <button onclick="copyInviteLink('${link}')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid #FDE68A;background:#FFFBEB;color:#92400E;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">Copiar</button>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FFFBEB;border-radius:10px;border:1px solid #FDE68A;margin-bottom:14px">
+          <i class="ti ti-clock" style="font-size:15px;color:#92400E;flex-shrink:0"></i>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#92400E">Invitación pendiente</div>
+            <div style="font-size:11px;color:#B45309;margin-top:1px">El link fue enviado y está activo por 24hs</div>
           </div>
         </div>`
     }
@@ -3222,21 +3221,33 @@
   window.inviteClient = async function(clientId) {
     const token = Math.random().toString(36).substring(2) + Date.now().toString(36)
 
-    // Cancelar invitaciones anteriores pendientes
-    await supabase
-      .from('client_invitations')
-      .update({ status: 'expired' })
-      .eq('client_id', clientId)
-      .eq('status', 'pending')
+    await supabase.from('client_invitations').update({ status: 'expired' }).eq('client_id', clientId).eq('status', 'pending')
 
-    // Crear nueva invitación
-    const { error } = await supabase
-      .from('client_invitations')
-      .insert({ agency_id: agencyId, client_id: clientId, token, status: 'pending' })
+    const { error } = await supabase.from('client_invitations').insert({
+      agency_id: agencyId, client_id: clientId, token, status: 'pending'
+    })
 
     if (!error) {
-      showToast('Invitación generada')
-      loadPortalSection(clientId)
+      // Mostrar el link SOLO en este momento — desaparece al recargar
+      const link = `${window.location.origin}${window.location.pathname.replace('dashboard.html','client-register.html')}?token=${token}`
+      const statusEl = document.getElementById(`portal-invite-status-${clientId}`)
+      if (statusEl) {
+        const linkDiv = document.createElement('div')
+        linkDiv.style.cssText = 'background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:14px'
+        linkDiv.innerHTML = `
+          <div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:8px"><i class="ti ti-link" style="font-size:11px"></i> Link generado — copialo ahora</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:11px;color:#78350F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${link}</div>
+            <button onclick="navigator.clipboard.writeText('${link}');showToast('Link copiado')" style="padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid #FDE68A;background:#FFFBEB;color:#92400E;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0"><i class="ti ti-copy" style="font-size:11px"></i> Copiar</button>
+          </div>
+          <div style="font-size:10px;color:#B45309;margin-top:8px"><i class="ti ti-clock" style="font-size:10px"></i> Válido por 24hs · Si recargás la página el link desaparece pero sigue activo</div>`
+        statusEl.prepend(linkDiv)
+      }
+      showToast('Invitación generada — copiá el link')
+      await loadPortalData()
+      renderClientsGrid()
+      const invBtn = document.getElementById(`btn-invite-${clientId}`)
+      if (invBtn) invBtn.innerHTML = '<i class="ti ti-refresh" style="font-size:13px"></i> Nuevo link'
     } else {
       showToast('Error al generar la invitación')
     }
