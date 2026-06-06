@@ -49,12 +49,17 @@ export async function getUserAgency(userId) {
 // ── Detectar si el usuario es cliente del portal ──────────
 
 export async function isClientUser(userId) {
-  const { data } = await supabase
-    .from('client_users')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle()
-  return !!data
+  try {
+    const { data, error } = await supabase
+      .from('client_users')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (error) return false
+    return !!data
+  } catch {
+    return false
+  }
 }
 
 // ── Route guard ───────────────────────────────────────────
@@ -65,18 +70,6 @@ export async function requireAuth() {
     window.location.href = 'index.html'
     return null
   }
-
-  // Primero verificar si es miembro de agencia (tiene prioridad)
-  const agency = await getUserAgency(session.user.id)
-  if (agency) return session
-
-  // Si no es de agencia, verificar si es cliente del portal
-  const isClient = await isClientUser(session.user.id)
-  if (isClient) {
-    window.location.href = 'client-portal.html'
-    return null
-  }
-
   return session
 }
 
