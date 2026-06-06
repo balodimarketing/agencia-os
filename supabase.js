@@ -66,7 +66,11 @@ export async function requireAuth() {
     return null
   }
 
-  // Si es un usuario cliente del portal, mandarlo ahí — no al dashboard
+  // Primero verificar si es miembro de agencia (tiene prioridad)
+  const agency = await getUserAgency(session.user.id)
+  if (agency) return session
+
+  // Si no es de agencia, verificar si es cliente del portal
   const isClient = await isClientUser(session.user.id)
   if (isClient) {
     window.location.href = 'client-portal.html'
@@ -80,20 +84,22 @@ export async function redirectIfAuth() {
   const session = await getSession()
   if (!session) return
 
-  // Si es cliente del portal, mandarlo ahí directamente
+  // Primero verificar si es miembro de agencia (tiene prioridad)
+  const agency = await getUserAgency(session.user.id)
+  if (agency) {
+    window.location.href = 'dashboard.html'
+    return
+  }
+
+  // Si no es de agencia, verificar si es cliente del portal
   const isClient = await isClientUser(session.user.id)
   if (isClient) {
     window.location.href = 'client-portal.html'
     return
   }
 
-  // Usuario de agencia normal
-  const agency = await getUserAgency(session.user.id)
-  if (agency) {
-    window.location.href = 'dashboard.html'
-  } else {
-    window.location.href = 'onboarding.html'
-  }
+  // No es ninguno de los dos — ir a onboarding
+  window.location.href = 'onboarding.html'
 }
 
 // ── Generate slug ─────────────────────────────────────────
