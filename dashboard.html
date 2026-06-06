@@ -4654,6 +4654,50 @@
         }
       })
       .subscribe()
+
+    // Escuchar cambios en piezas para sincronizar con Calendario en tiempo real
+    supabase
+      .channel('pieces-realtime-' + agencyId)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'content_pieces',
+        filter: `agency_id=eq.${agencyId}`
+      }, async (payload) => {
+        const updated = payload.new
+        if (!updated) return
+
+        // Actualizar el array local de piezas
+        const idx = pieces.findIndex(p => p.id === updated.id)
+        if (idx !== -1) {
+          pieces[idx] = { ...pieces[idx], ...updated }
+        }
+
+        // Si llegó a publicado o programado → sincronizar Calendario
+        if (updated.estado === 'publicado' || updated.estado === 'programado') {
+          await loadPublishedPieces()
+          updateDrawerBadge()
+          // Si el usuario está en el módulo Calendario, re-renderizar
+          if (currentModule === 'calendario') renderCalGrid()
+          // Si está en Contenido, actualizar kanban
+          if (currentModule === 'contenido') {
+            renderKanban()
+            renderContenidoPanel()
+          }
+          // Toast informativo
+          if (updated.estado === 'publicado') {
+            showToast('Una pieza fue aprobada — revisá el Calendario')
+          }
+        }
+
+        // Si volvió a revisión (cliente pidió cambios) → actualizar kanban
+        if (updated.estado === 'revision' && currentModule === 'contenido') {
+          renderKanban()
+          renderContenidoPanel()
+          showToast('El cliente pidió cambios en una pieza')
+        }
+      })
+      .subscribe()
   }
 
   // ══════════════════════════════════════
