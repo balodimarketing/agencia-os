@@ -251,20 +251,56 @@
   let userName = '', userIni = '?'
 
   async function init() {
+    const params = new URLSearchParams(window.location.search)
+    const isPreview = params.get('preview') === 'true'
+    const previewClientId = params.get('client_id')
+
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { window.location.href = 'client-login.html'; return }
     currentUser = session.user
 
-    const { data: cu } = await supabase
-      .from('client_users')
-      .select('*, clients(nombre, industria), agencies(nombre)')
-      .eq('user_id', currentUser.id)
-      .maybeSingle()
+    let cu = null
 
-    if (!cu) { window.location.href = 'client-login.html'; return }
+    if (isPreview && previewClientId) {
+      // Modo preview — carga directo con el client_id sin verificar client_users
+      const { data: clientRow } = await supabase
+        .from('clients')
+        .select('nombre, industria, agencies(nombre)')
+        .eq('id', previewClientId)
+        .maybeSingle()
 
-    clientData = cu.clients
-    agencyData = cu.agencies
+      if (!clientRow) { window.location.href = 'client-login.html'; return }
+
+      clientData = clientRow
+      agencyData = clientRow.agencies
+      cu = {
+        client_id: previewClientId,
+        nombre: 'Vista previa',
+        apellido: '',
+        clients: clientRow,
+        agencies: clientRow.agencies
+      }
+
+      // Banner de preview
+      const banner = document.createElement('div')
+      banner.style.cssText = 'position:fixed;top:0;left:62px;right:0;background:#F59E0B;color:#fff;font-size:12px;font-weight:800;text-align:center;padding:8px;z-index:200;display:flex;align-items:center;justify-content:center;gap:8px'
+      banner.innerHTML = '<i class="ti ti-eye" style="font-size:14px"></i> Modo vista previa — así lo ve el cliente'
+      document.body.appendChild(banner)
+      document.querySelector('.main').style.marginTop = '36px'
+
+    } else {
+      // Flujo normal — verificar que es usuario cliente
+      const { data: cuRow } = await supabase
+        .from('client_users')
+        .select('*, clients(nombre, industria), agencies(nombre)')
+        .eq('user_id', currentUser.id)
+        .maybeSingle()
+
+      if (!cuRow) { window.location.href = 'client-login.html'; return }
+      cu = cuRow
+      clientData = cu.clients
+      agencyData = cu.agencies
+    }
 
     const { data: config } = await supabase.from('client_portal_config').select('*').eq('client_id', cu.client_id).maybeSingle()
     portalConfig = config || { mostrar_calendario: true, mostrar_en_produccion: true, mostrar_metricas: false, mostrar_historial: true }
