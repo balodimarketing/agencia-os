@@ -3281,7 +3281,10 @@
             </button>
           </div>`
       })
-      html += `</div>`
+      html += `</div>
+        <a href="client-portal.html" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px;border-radius:9px;font-size:12px;font-weight:800;background:var(--azul);color:var(--celeste);text-decoration:none;margin-bottom:14px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <i class="ti ti-external-link" style="font-size:13px"></i> Ver cómo lo ve el cliente
+        </a>`
     }
 
     // Invitación pendiente — solo mostrar estado, NO el link
