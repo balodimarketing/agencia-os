@@ -6398,6 +6398,10 @@
             ${respName ? `<span style="font-size:10px;font-weight:700;color:var(--ink3)">${respName}</span>` : '<span></span>'}
             ${overdue ? `<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;background:#FEF2F2;color:var(--danger)">Vencido</span>` : c.proximo_contacto ? `<span style="font-size:9px;color:var(--ink3)">${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>` : ''}
           </div>
+          ${stage.id === 'contacto_inicial' ? `
+          <button onclick="event.stopPropagation();initBudget('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${(c.empresa||'').replace(/'/g,"\\'")}','${(c.email||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}')" style="width:100%;margin-top:10px;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <i class="ti ti-file-invoice" style="font-size:12px"></i> Armar presupuesto
+          </button>` : ''}
         </div>`
       }).join('')
       return `<div class="crm-col" data-stage="${stage.id}" style="flex:1;min-width:160px;max-width:300px;display:flex;flex-direction:column;border-radius:12px;transition:background .15s;padding:8px">
@@ -6482,7 +6486,29 @@
 
   window.filterCrmContacts = function(val) { renderCrmList(val) }
 
-  window.switchCrmView = function(view) {
+  window.initBudget = async function(contactId, nombre, empresa, email, telefono) {
+    // Mover contacto a Propuesta enviada
+    const contact = crmContacts.find(c => c.id === contactId)
+    if (contact) contact.pipeline_stage = 'propuesta_enviada'
+    await supabase.from('crm_contacts').update({ pipeline_stage: 'propuesta_enviada' }).eq('id', contactId)
+    renderCrmPipeline()
+    showToast('Contacto movido a Propuesta enviada')
+
+    // Guardar datos del contacto para pre-completar el generador
+    sessionStorage.setItem('budget_contact', JSON.stringify({ contactId, nombre, empresa, email, telefono }))
+
+    // Ir al módulo Herramientas — sección Presupuestos
+    setTimeout(() => {
+      switchModule('herramientas')
+      setTimeout(() => openBudgetTool(), 300)
+    }, 600)
+  }
+
+  window.openBudgetTool = function() {
+    // Activar la pestaña de presupuestos dentro de Herramientas
+    const budgetTab = document.getElementById('tool-tab-presupuesto')
+    if (budgetTab) budgetTab.click()
+  }
     crmView = view
     document.getElementById('crm-pipeline-view').style.display = view === 'pipeline' ? 'flex' : 'none'
     document.getElementById('crm-contactos-view').style.display = view === 'contactos' ? 'flex' : 'none'
