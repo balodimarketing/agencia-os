@@ -7593,6 +7593,64 @@ if (id) {
     renderRepPieces(clientPieces)
   }
 
+  window.repGoHome = function() {
+    repCurrentClient = null
+    repCurrentMonth = null
+    document.getElementById('rep-home').style.display = 'block'
+    document.getElementById('rep-months').style.display = 'none'
+  }
+
+  window.repGoMonths = function() { repGoHome() }
+
+  function renderRepPieces(pieces) {
+    const el = document.getElementById('rep-pieces-list')
+    if (!el) return
+
+    if (!pieces.length) {
+      el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--ink3);font-size:13px">Sin piezas este mes.</div>'
+      return
+    }
+
+    el.innerHTML = pieces.map(p => {
+      const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+      const stats = repStats[p.id]
+      const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
+      const isImage = p.archivo_url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(p.archivo_url)
+
+      const statsRow = hasStats ? `
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          ${stats.visitas ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-eye" style="font-size:13px;color:var(--ink3)"></i>${Number(stats.visitas).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.likes ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-heart" style="font-size:13px;color:var(--danger)"></i>${Number(stats.likes).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.comentarios ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-message" style="font-size:13px;color:var(--ink3)"></i>${Number(stats.comentarios).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.compartidos ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-share" style="font-size:13px;color:var(--ink3)"></i>${Number(stats.compartidos).toLocaleString('es-AR')}</div>` : ''}
+          ${stats.reposteos ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-repeat" style="font-size:13px;color:var(--ink3)"></i>${Number(stats.reposteos).toLocaleString('es-AR')}</div>` : ''}
+        </div>` : ''
+
+      return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;display:flex">
+        ${isImage
+          ? `<div style="width:80px;flex-shrink:0;background:var(--bg)"><img src="${p.archivo_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink3)\\'><i class=\\'ti ti-photo\\' style=\\'font-size:24px\\'></i></div>'"></div>`
+          : `<div style="width:80px;flex-shrink:0;background:var(--bg);display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:24px;color:var(--ink3)"></i></div>`
+        }
+        <div style="flex:1;min-width:0;padding:14px 16px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;padding:2px 8px;background:var(--cel-dim);color:var(--azul);border-radius:6px">${p.tipo || '—'}</span>
+                <span style="font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:3px"><i class="ti ti-calendar" style="font-size:10px"></i> ${fecha}</span>
+              </div>
+              ${statsRow}
+            </div>
+            <button onclick="openStatsModal('${p.id}','${p.titulo.replace(/'/g, "\\'")}')" style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--ink3);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all var(--t);white-space:nowrap" onmouseover="this.style.borderColor='var(--azul)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">
+              <i class="ti ti-chart-bar" style="font-size:12px"></i>
+              ${hasStats ? 'Editar' : 'Cargar stats'}
+            </button>
+          </div>
+        </div>
+      </div>`
+    }).join('')
+  }
+
   window.openStatsModal = function(pieceId, titulo) {
     document.getElementById('stats-piece-id').value = pieceId
     document.getElementById('stats-piece-name').textContent = titulo
