@@ -6967,7 +6967,7 @@
     showToast('PDF listo para descargar')
   }
 
-  }
+  window.switchCrmView = function(view) {
     crmView = view
     document.getElementById('crm-pipeline-view').style.display = view === 'pipeline' ? 'flex' : 'none'
     document.getElementById('crm-contactos-view').style.display = view === 'contactos' ? 'flex' : 'none'
