@@ -92,20 +92,20 @@
     .section-sub { font-size: 12px; color: var(--ink3); margin-top: 2px; }
 
     /* Piece cards */
-    .pieces-grid { display: flex; flex-direction: column; gap: 8px; }
-    .piece-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: box-shadow var(--t), border-color var(--t), transform var(--t); }
+    .pieces-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .piece-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; cursor: pointer; transition: box-shadow var(--t), border-color var(--t), transform var(--t); }
     .piece-card:hover { box-shadow: var(--shadow); border-color: #D0DCE8; transform: translateY(-1px); }
-    .piece-card.needs-approval { border-left: 3px solid #F97316; }
-    .piece-thumb { width: 48px; height: 48px; border-radius: 10px; background: var(--bg); flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .piece-card.needs-approval { border: 1.5px solid #F97316; }
+    .piece-thumb { width: 100%; aspect-ratio: 1/1; background: var(--bg); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
     .piece-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .piece-info { flex: 1; min-width: 0; }
-    .piece-name { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .piece-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-    .estado-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 20px; }
-    .estado-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .piece-date { font-size: 11px; color: var(--ink3); display: flex; align-items: center; gap: 3px; }
-    .piece-type { font-size: 11px; color: var(--ink3); background: var(--bg); padding: 2px 8px; border-radius: 6px; font-weight: 700; }
-    .piece-review-btn { flex-shrink: 0; padding: 7px 14px; background: #FFF7ED; border: 1.5px solid #FED7AA; border-radius: 8px; font-size: 11px; font-weight: 800; color: #C2410C; white-space: nowrap; }
+    .piece-thumb-overlay { position: absolute; inset: 0; background: rgba(249,115,22,.85); display: flex; align-items: center; justify-content: center; }
+    .piece-info { padding: 10px 12px; }
+    .piece-name { font-size: 12px; font-weight: 800; color: var(--ink); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .piece-meta { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+    .estado-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+    .estado-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .piece-date { font-size: 10px; color: var(--ink3); white-space: nowrap; }
+    .piece-type { font-size: 10px; color: var(--ink3); }
 
     /* Calendar */
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
@@ -434,23 +434,34 @@
   function pieceCardHTML(p) {
     const estado = ESTADOS[p.estado] || { name: p.estado, color: '#94A3B8', bg: '#F1F5F9' }
     const isImage = p.archivo_url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(p.archivo_url)
-    const thumb = isImage
-      ? `<img src="${p.archivo_url}" onerror="this.parentElement.innerHTML='<i class=\\'ti ti-photo\\' style=\\'font-size:20px;color:var(--ink3)\\'></i>'">`
-      : `<i class="ti ti-${p.tipo === 'Video' || p.tipo === 'Reel' ? 'video' : 'photo'}" style="font-size:20px;color:var(--ink3)"></i>`
+    const isVideo = p.archivo_url && /\.(mp4|mov|webm|avi)$/i.test(p.archivo_url)
     const needsApproval = p.estado === 'aprobacion'
+
+    const iconName = isVideo || p.tipo === 'Video' || p.tipo === 'Reel' ? 'ti-video' : 'ti-photo'
+
+    const thumbContent = isImage
+      ? `<img src="${p.archivo_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<i class=\\'ti ${iconName}\\' style=\\'font-size:28px;color:var(--ink3)\\'></i>'">`
+      : `<i class="ti ${iconName}" style="font-size:28px;color:var(--ink3)"></i>`
+
+    const overlay = needsApproval
+      ? `<div class="piece-thumb-overlay"><span style="font-size:11px;font-weight:800;color:#fff;display:flex;align-items:center;gap:5px"><i class="ti ti-eye" style="font-size:13px"></i> Revisar</span></div>`
+      : ''
+
+    const fechaStr = p.fecha_publicacion
+      ? new Date(p.fecha_publicacion).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+      : (p.tipo || '')
+
     return `<div class="piece-card ${needsApproval ? 'needs-approval' : ''}" onclick="openPiece('${p.id}')">
-      <div class="piece-thumb">${thumb}</div>
+      <div class="piece-thumb">${thumbContent}${overlay}</div>
       <div class="piece-info">
         <div class="piece-name">${p.titulo}</div>
         <div class="piece-meta">
           <span class="estado-badge" style="background:${estado.bg};color:${estado.color}">
             <span class="estado-dot" style="background:${estado.color}"></span>${estado.name}
           </span>
-          ${p.tipo ? `<span class="piece-type">${p.tipo}</span>` : ''}
-          ${p.fecha_publicacion ? `<span class="piece-date"><i class="ti ti-calendar" style="font-size:10px"></i> ${new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>` : ''}
+          <span class="piece-date">${fechaStr}</span>
         </div>
       </div>
-      ${needsApproval ? `<div class="piece-review-btn">Revisar</div>` : `<i class="ti ti-chevron-right" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>`}
     </div>`
   }
 
