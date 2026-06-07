@@ -6683,6 +6683,7 @@
 
   function initBudgetTool() {
     budgetItems = []
+    budgetCurrentColor = '#0A2540'
     renderBudgetItems()
     recalcBudget()
 
@@ -6788,16 +6789,25 @@
     reader.readAsDataURL(file)
   }
 
+  let budgetCurrentColor = '#0A2540'
+
   window.setBudgetColor = function(color) {
-    document.getElementById('budget-color-primary').value = color
-    document.getElementById('budget-color-hex').value = color
-    document.getElementById('budget-color-swatch').style.background = color
+    budgetCurrentColor = color
+    const hidden = document.getElementById('budget-color-primary')
+    const hex = document.getElementById('budget-color-hex')
+    const swatch = document.getElementById('budget-color-swatch')
+    if (hidden) hidden.value = color
+    if (hex) hex.value = color
+    if (swatch) swatch.style.background = color
   }
 
   window.setBudgetColorFromHex = function(val) {
     if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-      document.getElementById('budget-color-primary').value = val
-      document.getElementById('budget-color-swatch').style.background = val
+      budgetCurrentColor = val
+      const hidden = document.getElementById('budget-color-primary')
+      const swatch = document.getElementById('budget-color-swatch')
+      if (hidden) hidden.value = val
+      if (swatch) swatch.style.background = val
     }
   }
 
@@ -6930,7 +6940,7 @@
     const condiciones = document.getElementById('budget-condiciones')?.value.trim() || ''
     const moneda = document.getElementById('budget-moneda')?.value || 'ARS'
     const descuento = parseFloat(document.getElementById('budget-descuento')?.value || 0)
-    const color = document.getElementById('budget-color-primary')?.value || '#0A2540'
+    const color = budgetCurrentColor || '#0A2540'
     const agencyName = document.getElementById('budget-agency-name')?.value.trim() || 'Mi agencia'
 
     if (budgetItems.length === 0) { showToast('Agregá al menos un ítem al presupuesto'); return }
