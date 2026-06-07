@@ -1653,6 +1653,170 @@
         </div>
       </div>
 
+      <!-- Vista: Generador de presupuestos -->
+      <div id="tools-presupuesto" style="display:none;padding:28px 32px;max-width:800px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+            <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
+          </button>
+          <div style="display:flex;gap:8px">
+            <button onclick="loadBudgetTemplates()" id="btn-mis-plantillas" style="padding:8px 16px;border-radius:var(--r);font-size:12px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all var(--t)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'">
+              <i class="ti ti-bookmarks" style="font-size:13px"></i> Mis plantillas
+            </button>
+            <button onclick="saveBudgetTemplate()" style="padding:8px 16px;border-radius:var(--r);font-size:12px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all var(--t)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'">
+              <i class="ti ti-bookmark-plus" style="font-size:13px"></i> Guardar plantilla
+            </button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
+
+          <!-- Constructor -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+
+            <!-- Datos del cliente -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-user" style="font-size:15px;color:#8B5CF6"></i> Datos del cliente
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Nombre / Empresa</label>
+                  <input type="text" class="form-input" id="budget-cliente" placeholder="Nombre del cliente">
+                </div>
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" id="budget-email" placeholder="email@cliente.com">
+                </div>
+              </div>
+            </div>
+
+            <!-- Info del presupuesto -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-file-text" style="font-size:15px;color:#8B5CF6"></i> Información del presupuesto
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Título</label>
+                  <input type="text" class="form-input" id="budget-titulo" placeholder="Ej: Gestión de redes sociales">
+                </div>
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Moneda</label>
+                  <select class="form-input form-select" id="budget-moneda">
+                    <option value="ARS">ARS — Peso argentino</option>
+                    <option value="USD">USD — Dólar</option>
+                    <option value="UYU">UYU — Peso uruguayo</option>
+                    <option value="COP">COP — Peso colombiano</option>
+                    <option value="MXN">MXN — Peso mexicano</option>
+                    <option value="EUR">EUR — Euro</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-field" style="margin-bottom:0;margin-top:12px">
+                <label class="form-label">Introducción (opcional)</label>
+                <textarea class="form-input form-textarea" id="budget-intro" placeholder="Breve descripción del servicio o propuesta..." style="min-height:70px"></textarea>
+              </div>
+            </div>
+
+            <!-- Items / Servicios -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:13px;font-weight:900;color:var(--ink);display:flex;align-items:center;gap:8px">
+                  <i class="ti ti-list" style="font-size:15px;color:#8B5CF6"></i> Servicios / Planes
+                </div>
+                <button onclick="addBudgetItem()" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                  <i class="ti ti-plus" style="font-size:12px"></i> Agregar ítem
+                </button>
+              </div>
+              <div id="budget-items-list" style="display:flex;flex-direction:column;gap:10px"></div>
+              <div id="budget-items-empty" style="text-align:center;padding:24px 0;color:var(--ink3);font-size:13px">
+                Agregá los servicios o planes que incluye este presupuesto
+              </div>
+            </div>
+
+            <!-- Totales -->
+            <div style="background:var(--azul);border-radius:var(--r-lg);padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:12px;font-weight:700;color:rgba(142,219,255,.7)">Subtotal</div>
+                <div style="font-size:14px;font-weight:800;color:#fff" id="budget-subtotal">—</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                <div style="font-size:12px;font-weight:700;color:rgba(142,219,255,.7);flex:1">Descuento</div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="number" id="budget-descuento" min="0" max="100" placeholder="0" oninput="recalcBudget()" style="width:60px;padding:5px 8px;border-radius:6px;border:1px solid rgba(142,219,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:12px;font-family:inherit;text-align:center;outline:none">
+                  <span style="font-size:12px;color:rgba(142,219,255,.7)">%</span>
+                </div>
+              </div>
+              <div style="border-top:1px solid rgba(142,219,255,.15);padding-top:12px;display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:14px;font-weight:900;color:var(--celeste)">Total</div>
+                <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px" id="budget-total">—</div>
+              </div>
+            </div>
+
+            <!-- Condiciones -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-notes" style="font-size:15px;color:#8B5CF6"></i> Condiciones y cierre
+              </div>
+              <div class="form-field" style="margin-bottom:0">
+                <label class="form-label">Condiciones (opcional)</label>
+                <textarea class="form-input form-textarea" id="budget-condiciones" placeholder="Vigencia del presupuesto, forma de pago, condiciones generales..." style="min-height:70px"></textarea>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Panel derecho: Personalización -->
+          <div style="display:flex;flex-direction:column;gap:16px;position:sticky;top:20px">
+
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-palette" style="font-size:15px;color:#8B5CF6"></i> Personalización
+              </div>
+
+              <div class="form-field" style="margin-bottom:14px">
+                <label class="form-label">Logo de la agencia</label>
+                <div id="budget-logo-preview" style="width:100%;height:70px;border:1.5px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:6px;overflow:hidden;transition:border-color var(--t)" onclick="document.getElementById('budget-logo-input').click()" onmouseover="this.style.borderColor='var(--celeste)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span id="budget-logo-placeholder" style="font-size:12px;color:var(--ink3);display:flex;align-items:center;gap:6px"><i class="ti ti-upload" style="font-size:14px"></i> Subir logo</span>
+                </div>
+                <input type="file" id="budget-logo-input" accept="image/*" style="display:none" onchange="previewBudgetLogo(this)">
+              </div>
+
+              <div class="form-field" style="margin-bottom:14px">
+                <label class="form-label">Color principal</label>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <input type="color" id="budget-color-primary" value="#0A2540" oninput="updateBudgetPreview()" style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;padding:2px">
+                  <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap" id="budget-color-presets">
+                    <div onclick="setBudgetColor('#0A2540')" style="width:22px;height:22px;border-radius:6px;background:#0A2540;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
+                    <div onclick="setBudgetColor('#1e40af')" style="width:22px;height:22px;border-radius:6px;background:#1e40af;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
+                    <div onclick="setBudgetColor('#7c3aed')" style="width:22px;height:22px;border-radius:6px;background:#7c3aed;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
+                    <div onclick="setBudgetColor('#be185d')" style="width:22px;height:22px;border-radius:6px;background:#be185d;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
+                    <div onclick="setBudgetColor('#047857')" style="width:22px;height:22px;border-radius:6px;background:#047857;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
+                    <div onclick="setBudgetColor('#b45309')" style="width:22px;height:22px;border-radius:6px;background:#b45309;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-field" style="margin-bottom:0">
+                <label class="form-label">Nombre de la agencia en el PDF</label>
+                <input type="text" class="form-input" id="budget-agency-name" placeholder="Tu agencia">
+              </div>
+            </div>
+
+            <button onclick="generateBudgetPDF()" style="width:100%;padding:14px;border-radius:var(--r);font-size:13px;font-weight:900;border:none;background:#8B5CF6;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity var(--t);letter-spacing:-.2px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+              <i class="ti ti-download" style="font-size:15px"></i> Descargar PDF
+            </button>
+
+            <div id="budget-templates-panel" style="display:none;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px">
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:12px">Mis plantillas</div>
+              <div id="budget-templates-list" style="display:flex;flex-direction:column;gap:8px"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </div>
 
         <!-- CALENDARIO -->
@@ -6028,8 +6192,9 @@
   let toolSearch = ''
 
   const TOOLS_CATALOG = [
-    { id: 'timer',    nombre: 'Timer',    categoria: 'Tiempo', color: 'var(--azul)', iconBg: 'var(--celeste-dim)', iconColor: 'var(--azul)', icon: 'ti-clock', desc: 'Medí exactamente cuánto tiempo le dedicás a cada pieza o tarea.' },
-    { id: 'pomodoro', nombre: 'Pomodoro', categoria: 'Tiempo', color: '#E65100',     iconBg: '#FFF3E0',            iconColor: '#E65100',      icon: 'ti-clock-hour-4', desc: 'Bloques de foco de 25 minutos con descansos cortos para rendir más.' },
+    { id: 'timer',      nombre: 'Timer',              categoria: 'Tiempo',    color: 'var(--azul)', iconBg: 'var(--celeste-dim)', iconColor: 'var(--azul)', icon: 'ti-clock',         desc: 'Medí exactamente cuánto tiempo le dedicás a cada pieza o tarea.' },
+    { id: 'pomodoro',   nombre: 'Pomodoro',           categoria: 'Tiempo',    color: '#E65100',     iconBg: '#FFF3E0',            iconColor: '#E65100',     icon: 'ti-clock-hour-4', desc: 'Bloques de foco de 25 minutos con descansos cortos para rendir más.' },
+    { id: 'presupuesto',nombre: 'Generador de presupuestos', categoria: 'Ventas', color: '#8B5CF6', iconBg: '#F5F3FF',           iconColor: '#8B5CF6',     icon: 'ti-file-invoice', desc: 'Armá presupuestos profesionales en PDF con el branding de tu agencia. Guardá plantillas reutilizables.' },
   ]
 
   window.setToolFilter = function(btn, filter) {
@@ -6082,9 +6247,11 @@
     document.getElementById('tools-home').style.display = 'none'
     document.getElementById('tools-timer').style.display = tool === 'timer' ? 'block' : 'none'
     document.getElementById('tools-pomodoro').style.display = tool === 'pomodoro' ? 'block' : 'none'
-    document.getElementById('ws-title').textContent = tool === 'timer' ? 'Timer' : 'Pomodoro'
+    document.getElementById('tools-presupuesto').style.display = tool === 'presupuesto' ? 'block' : 'none'
+    document.getElementById('ws-title').textContent = tool === 'timer' ? 'Timer' : tool === 'pomodoro' ? 'Pomodoro' : 'Generador de presupuestos'
     if (tool === 'timer') { await loadTimerLogs(); updatePomoDisplay(); renderPomoDots() }
     if (tool === 'pomodoro') { await loadPomoLogs(); updatePomoDisplay(); renderPomoDots() }
+    if (tool === 'presupuesto') { initBudgetTool() }
   }
 
   window.closeTool = function() {
@@ -6092,6 +6259,7 @@
     document.getElementById('tools-home').style.display = 'block'
     document.getElementById('tools-timer').style.display = 'none'
     document.getElementById('tools-pomodoro').style.display = 'none'
+    document.getElementById('tools-presupuesto').style.display = 'none'
     document.getElementById('ws-title').textContent = 'Herramientas'
     renderToolsGrid()
   }
@@ -6505,9 +6673,338 @@
   }
 
   window.openBudgetTool = function() {
-    // Activar la pestaña de presupuestos dentro de Herramientas
-    const budgetTab = document.getElementById('tool-tab-presupuesto')
-    if (budgetTab) budgetTab.click()
+    openTool('presupuesto')
+  }
+
+  // ── Generador de presupuestos ──────────────────────────
+
+  let budgetItems = []
+  let budgetLogoBase64 = null
+  let budgetTemplates = []
+
+  function initBudgetTool() {
+    budgetItems = []
+    renderBudgetItems()
+    recalcBudget()
+
+    // Pre-completar desde CRM si vino de ahí
+    const raw = sessionStorage.getItem('budget_contact')
+    if (raw) {
+      try {
+        const contact = JSON.parse(raw)
+        document.getElementById('budget-cliente').value = contact.empresa || contact.nombre || ''
+        document.getElementById('budget-email').value = contact.email || ''
+        sessionStorage.removeItem('budget_contact')
+      } catch(e) {}
+    }
+
+    // Pre-completar nombre de agencia
+    const agencyName = document.getElementById('greeting-agency')?.textContent || ''
+    if (agencyName) document.getElementById('budget-agency-name').value = agencyName
+
+    // Cargar plantillas guardadas
+    loadBudgetTemplatesFromStorage()
+  }
+
+  window.addBudgetItem = function() {
+    budgetItems.push({ id: Date.now(), nombre: '', descripcion: '', precio: 0, cantidad: 1 })
+    renderBudgetItems()
+    recalcBudget()
+  }
+
+  window.removeBudgetItem = function(id) {
+    budgetItems = budgetItems.filter(i => i.id !== id)
+    renderBudgetItems()
+    recalcBudget()
+  }
+
+  window.updateBudgetItem = function(id, field, value) {
+    const item = budgetItems.find(i => i.id === id)
+    if (item) {
+      item[field] = field === 'precio' || field === 'cantidad' ? (parseFloat(value) || 0) : value
+    }
+    recalcBudget()
+  }
+
+  function renderBudgetItems() {
+    const list = document.getElementById('budget-items-list')
+    const empty = document.getElementById('budget-items-empty')
+    if (!list) return
+    if (budgetItems.length === 0) {
+      list.innerHTML = ''
+      if (empty) empty.style.display = 'block'
+      return
+    }
+    if (empty) empty.style.display = 'none'
+    list.innerHTML = budgetItems.map(item => `
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start">
+          <input type="text" placeholder="Nombre del servicio o plan" value="${item.nombre}" oninput="updateBudgetItem(${item.id},'nombre',this.value)" class="form-input" style="font-weight:700;font-size:13px">
+          <button onclick="removeBudgetItem(${item.id})" style="padding:8px;border-radius:8px;background:#FEF2F2;border:1px solid #FECACA;color:var(--danger);cursor:pointer;font-family:inherit;flex-shrink:0">
+            <i class="ti ti-trash" style="font-size:13px"></i>
+          </button>
+        </div>
+        <input type="text" placeholder="Descripción (opcional)" value="${item.descripcion}" oninput="updateBudgetItem(${item.id},'descripcion',this.value)" class="form-input" style="font-size:12px;color:var(--ink2)">
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:10px;align-items:center">
+          <div class="form-field" style="margin-bottom:0">
+            <label class="form-label">Cantidad</label>
+            <input type="number" min="1" value="${item.cantidad}" oninput="updateBudgetItem(${item.id},'cantidad',this.value)" class="form-input" style="text-align:center">
+          </div>
+          <div class="form-field" style="margin-bottom:0">
+            <label class="form-label">Precio unitario</label>
+            <input type="number" min="0" value="${item.precio || ''}" placeholder="0" oninput="updateBudgetItem(${item.id},'precio',this.value)" class="form-input">
+          </div>
+        </div>
+      </div>`).join('')
+  }
+
+  window.recalcBudget = function() {
+    const subtotal = budgetItems.reduce((a, i) => a + (i.precio * i.cantidad), 0)
+    const descuento = parseFloat(document.getElementById('budget-descuento')?.value || 0)
+    const total = subtotal * (1 - descuento / 100)
+    const moneda = document.getElementById('budget-moneda')?.value || 'ARS'
+    const fmt = (n) => `${moneda} ${n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    const subEl = document.getElementById('budget-subtotal')
+    const totEl = document.getElementById('budget-total')
+    if (subEl) subEl.textContent = budgetItems.length > 0 ? fmt(subtotal) : '—'
+    if (totEl) totEl.textContent = budgetItems.length > 0 ? fmt(total) : '—'
+  }
+
+  window.previewBudgetLogo = function(input) {
+    const file = input.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      budgetLogoBase64 = e.target.result
+      const preview = document.getElementById('budget-logo-preview')
+      const placeholder = document.getElementById('budget-logo-placeholder')
+      if (preview) {
+        preview.style.backgroundImage = `url('${budgetLogoBase64}')`
+        preview.style.backgroundSize = 'contain'
+        preview.style.backgroundRepeat = 'no-repeat'
+        preview.style.backgroundPosition = 'center'
+      }
+      if (placeholder) placeholder.style.display = 'none'
+    }
+    reader.readAsDataURL(file)
+  }
+
+  window.setBudgetColor = function(color) {
+    const input = document.getElementById('budget-color-primary')
+    if (input) input.value = color
+  }
+
+  window.updateBudgetPreview = function() {}
+
+  // ── Plantillas ─────────────────────────────────────────
+
+  function loadBudgetTemplatesFromStorage() {
+    try {
+      const raw = localStorage.getItem(`budget_templates_${agencyId}`)
+      budgetTemplates = raw ? JSON.parse(raw) : []
+    } catch(e) { budgetTemplates = [] }
+  }
+
+  window.saveBudgetTemplate = function() {
+    const titulo = document.getElementById('budget-titulo')?.value.trim()
+    if (!titulo) { showToast('Poné un título antes de guardar la plantilla'); return }
+    if (budgetItems.length === 0) { showToast('Agregá al menos un ítem antes de guardar'); return }
+
+    const template = {
+      id: Date.now(),
+      nombre: titulo,
+      items: [...budgetItems],
+      moneda: document.getElementById('budget-moneda')?.value,
+      intro: document.getElementById('budget-intro')?.value,
+      condiciones: document.getElementById('budget-condiciones')?.value,
+      savedAt: new Date().toISOString()
+    }
+
+    loadBudgetTemplatesFromStorage()
+    budgetTemplates.unshift(template)
+    try {
+      localStorage.setItem(`budget_templates_${agencyId}`, JSON.stringify(budgetTemplates))
+      showToast('Plantilla guardada')
+    } catch(e) {
+      showToast('Error al guardar la plantilla')
+    }
+  }
+
+  window.loadBudgetTemplates = function() {
+    loadBudgetTemplatesFromStorage()
+    const panel = document.getElementById('budget-templates-panel')
+    const list = document.getElementById('budget-templates-list')
+    if (!panel || !list) return
+
+    if (budgetTemplates.length === 0) {
+      list.innerHTML = '<div style="font-size:12px;color:var(--ink3);text-align:center;padding:12px 0">No tenés plantillas guardadas todavía</div>'
+    } else {
+      list.innerHTML = budgetTemplates.map(t => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.nombre}</div>
+            <div style="font-size:10px;color:var(--ink3)">${t.items.length} ítem${t.items.length !== 1 ? 's' : ''}</div>
+          </div>
+          <button onclick="applyBudgetTemplate(${t.id})" style="padding:4px 10px;border-radius:6px;font-size:10px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit">Usar</button>
+          <button onclick="deleteBudgetTemplate(${t.id})" style="padding:4px 8px;border-radius:6px;font-size:10px;border:1px solid #FECACA;background:#FEF2F2;color:var(--danger);cursor:pointer;font-family:inherit">
+            <i class="ti ti-x" style="font-size:10px"></i>
+          </button>
+        </div>`).join('')
+    }
+
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none'
+  }
+
+  window.applyBudgetTemplate = function(id) {
+    const template = budgetTemplates.find(t => t.id === id)
+    if (!template) return
+    budgetItems = template.items.map(i => ({ ...i, id: Date.now() + Math.random() }))
+    if (template.moneda) document.getElementById('budget-moneda').value = template.moneda
+    if (template.intro) document.getElementById('budget-intro').value = template.intro
+    if (template.condiciones) document.getElementById('budget-condiciones').value = template.condiciones
+    renderBudgetItems()
+    recalcBudget()
+    document.getElementById('budget-templates-panel').style.display = 'none'
+    showToast('Plantilla aplicada')
+  }
+
+  window.deleteBudgetTemplate = function(id) {
+    budgetTemplates = budgetTemplates.filter(t => t.id !== id)
+    try {
+      localStorage.setItem(`budget_templates_${agencyId}`, JSON.stringify(budgetTemplates))
+    } catch(e) {}
+    loadBudgetTemplates()
+    showToast('Plantilla eliminada')
+  }
+
+  // ── Generar PDF ────────────────────────────────────────
+
+  window.generateBudgetPDF = function() {
+    const cliente = document.getElementById('budget-cliente')?.value.trim() || 'Cliente'
+    const email = document.getElementById('budget-email')?.value.trim() || ''
+    const titulo = document.getElementById('budget-titulo')?.value.trim() || 'Presupuesto'
+    const intro = document.getElementById('budget-intro')?.value.trim() || ''
+    const condiciones = document.getElementById('budget-condiciones')?.value.trim() || ''
+    const moneda = document.getElementById('budget-moneda')?.value || 'ARS'
+    const descuento = parseFloat(document.getElementById('budget-descuento')?.value || 0)
+    const color = document.getElementById('budget-color-primary')?.value || '#0A2540'
+    const agencyName = document.getElementById('budget-agency-name')?.value.trim() || 'Mi agencia'
+
+    if (budgetItems.length === 0) { showToast('Agregá al menos un ítem al presupuesto'); return }
+
+    const subtotal = budgetItems.reduce((a, i) => a + (i.precio * i.cantidad), 0)
+    const descuentoAmt = subtotal * (descuento / 100)
+    const total = subtotal - descuentoAmt
+    const fmt = (n) => `${moneda} ${n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    const today = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+    // Generar HTML del PDF
+    const itemsHTML = budgetItems.map(item => `
+      <tr>
+        <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0">
+          <div style="font-size:13px;font-weight:700;color:#111">${item.nombre || 'Sin nombre'}</div>
+          ${item.descripcion ? `<div style="font-size:11px;color:#718096;margin-top:2px">${item.descripcion}</div>` : ''}
+        </td>
+        <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:center;font-size:13px;color:#4A5568">${item.cantidad}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-size:13px;color:#4A5568">${fmt(item.precio)}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-size:13px;font-weight:700;color:#111">${fmt(item.precio * item.cantidad)}</td>
+      </tr>`).join('')
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; color: #111; background: #fff; }
+  .page { max-width: 780px; margin: 0 auto; padding: 40px; }
+  .header { background: ${color}; border-radius: 12px; padding: 32px; margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; }
+  .header-left h1 { font-size: 24px; font-weight: 900; color: #fff; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .header-left p { font-size: 12px; color: rgba(255,255,255,0.65); }
+  .header-logo { max-width: 120px; max-height: 50px; object-fit: contain; }
+  .header-logo-placeholder { font-size: 18px; font-weight: 900; color: rgba(255,255,255,0.4); }
+  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .meta-box { background: #f8f9fa; border-radius: 10px; padding: 16px 18px; }
+  .meta-label { font-size: 10px; font-weight: 700; color: #9AA5B4; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+  .meta-value { font-size: 14px; font-weight: 700; color: #111; }
+  .meta-sub { font-size: 12px; color: #718096; margin-top: 2px; }
+  .intro { background: #f8f9fa; border-radius: 10px; padding: 16px 18px; margin-bottom: 24px; font-size: 13px; color: #4A5568; line-height: 1.7; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  thead tr { background: ${color}; }
+  thead th { padding: 10px 12px; font-size: 11px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
+  thead th:last-child, thead th:nth-child(3), thead th:nth-child(2) { text-align: right; }
+  thead th:nth-child(2) { text-align: center; }
+  .totals { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; margin-bottom: 24px; }
+  .total-row { display: flex; gap: 40px; font-size: 13px; color: #4A5568; }
+  .total-row span:last-child { min-width: 140px; text-align: right; font-weight: 600; }
+  .total-final { background: ${color}; border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .total-final .label { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.8); }
+  .total-final .amount { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+  .conditions { background: #f8f9fa; border-radius: 10px; padding: 16px 18px; font-size: 12px; color: #718096; line-height: 1.7; margin-bottom: 28px; }
+  .conditions-title { font-size: 11px; font-weight: 800; color: #9AA5B4; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+  .footer { border-top: 1px solid #eee; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .footer-agency { font-size: 12px; font-weight: 700; color: #4A5568; }
+  .footer-faro { font-size: 10px; color: #C0CAD4; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="header-left">
+      <h1>${titulo}</h1>
+      <p>${today}</p>
+    </div>
+    ${budgetLogoBase64 ? `<img src="${budgetLogoBase64}" class="header-logo" alt="Logo">` : `<div class="header-logo-placeholder">${agencyName.substring(0,2).toUpperCase()}</div>`}
+  </div>
+  <div class="meta">
+    <div class="meta-box">
+      <div class="meta-label">Para</div>
+      <div class="meta-value">${cliente}</div>
+      ${email ? `<div class="meta-sub">${email}</div>` : ''}
+    </div>
+    <div class="meta-box">
+      <div class="meta-label">De parte de</div>
+      <div class="meta-value">${agencyName}</div>
+    </div>
+  </div>
+  ${intro ? `<div class="intro">${intro}</div>` : ''}
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left">Servicio / Plan</th>
+        <th>Cantidad</th>
+        <th>Precio unit.</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>${itemsHTML}</tbody>
+  </table>
+  <div class="totals">
+    <div class="total-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+    ${descuento > 0 ? `<div class="total-row"><span>Descuento (${descuento}%)</span><span>- ${fmt(descuentoAmt)}</span></div>` : ''}
+  </div>
+  <div class="total-final">
+    <div class="label">Total</div>
+    <div class="amount">${fmt(total)}</div>
+  </div>
+  ${condiciones ? `<div class="conditions"><div class="conditions-title">Condiciones</div>${condiciones}</div>` : ''}
+  <div class="footer">
+    <div class="footer-agency">${agencyName}</div>
+    <div class="footer-faro">Presupuesto generado con Faro</div>
+  </div>
+</div>
+</body>
+</html>`
+
+    // Abrir ventana de impresión para descargar como PDF
+    const win = window.open('', '_blank')
+    win.document.write(htmlContent)
+    win.document.close()
+    win.onload = () => {
+      win.focus()
+      win.print()
+    }
+    showToast('PDF listo para descargar')
   }
     crmView = view
     document.getElementById('crm-pipeline-view').style.display = view === 'pipeline' ? 'flex' : 'none'
