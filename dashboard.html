@@ -6665,11 +6665,12 @@
     // Guardar datos del contacto para pre-completar el generador
     sessionStorage.setItem('budget_contact', JSON.stringify({ contactId, nombre, empresa, email, telefono }))
 
-    // Ir al módulo Herramientas — sección Presupuestos
-    setTimeout(() => {
-      switchModule('herramientas')
-      setTimeout(() => openBudgetTool(), 300)
-    }, 600)
+    // Navegar al módulo Herramientas y abrir el generador
+    const railBtn = document.querySelector('.rail-btn[data-module="herramientas"]')
+    if (railBtn) {
+      await switchModule(railBtn)
+      setTimeout(() => openTool('presupuesto'), 350)
+    }
   }
 
   window.openBudgetTool = function() {
