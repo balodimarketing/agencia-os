@@ -7013,10 +7013,13 @@
       '<div class="footer"><div class="footer-agency">' + agencyName + '</div><div class="footer-faro">Presupuesto generado con Faro</div></div>' +
       '</div></body></html>'
 
-    const win = window.open('', '_blank')
-    win.document.write(htmlContent)
-    win.document.close()
-    win.onload = () => { win.focus(); win.print() }
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const win = window.open(url, '_blank')
+    if (win) {
+      win.onload = () => { win.focus(); win.print() }
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
     showToast('PDF listo para descargar')
   }
 
