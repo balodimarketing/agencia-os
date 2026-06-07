@@ -1785,17 +1785,15 @@
 
               <div class="form-field" style="margin-bottom:14px">
                 <label class="form-label">Color principal</label>
-                <div style="display:flex;align-items:center;gap:10px">
-                  <input type="color" id="budget-color-primary" value="#0A2540" oninput="updateBudgetPreview()" style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;padding:2px">
-                  <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap" id="budget-color-presets">
-                    <div onclick="setBudgetColor('#0A2540')" style="width:22px;height:22px;border-radius:6px;background:#0A2540;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
-                    <div onclick="setBudgetColor('#1e40af')" style="width:22px;height:22px;border-radius:6px;background:#1e40af;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
-                    <div onclick="setBudgetColor('#7c3aed')" style="width:22px;height:22px;border-radius:6px;background:#7c3aed;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
-                    <div onclick="setBudgetColor('#be185d')" style="width:22px;height:22px;border-radius:6px;background:#be185d;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
-                    <div onclick="setBudgetColor('#047857')" style="width:22px;height:22px;border-radius:6px;background:#047857;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
-                    <div onclick="setBudgetColor('#b45309')" style="width:22px;height:22px;border-radius:6px;background:#b45309;cursor:pointer;transition:transform var(--t)" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''"></div>
-                  </div>
+                <!-- Barra de degradé clickeable -->
+                <div id="budget-color-bar" onclick="pickColorFromBar(event)" style="width:100%;height:28px;border-radius:8px;cursor:crosshair;margin-bottom:8px;position:relative;background:linear-gradient(to right,#0A2540,#1e40af,#7c3aed,#be185d,#dc2626,#b45309,#047857,#0891b2,#111827);box-shadow:0 1px 4px rgba(0,0,0,.15)">
+                  <div id="budget-color-cursor" style="position:absolute;top:-3px;width:6px;height:34px;border-radius:3px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);transform:translateX(-50%);pointer-events:none;left:5%"></div>
                 </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div id="budget-color-swatch" style="width:28px;height:28px;border-radius:8px;background:#0A2540;flex-shrink:0;border:2px solid var(--border)"></div>
+                  <input type="text" id="budget-color-hex" value="#0A2540" oninput="setBudgetColorFromHex(this.value)" placeholder="#0A2540" style="flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:monospace;color:var(--ink);outline:none" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <input type="hidden" id="budget-color-primary" value="#0A2540">
               </div>
 
               <div class="form-field" style="margin-bottom:0">
@@ -6791,8 +6789,52 @@
   }
 
   window.setBudgetColor = function(color) {
-    const input = document.getElementById('budget-color-primary')
-    if (input) input.value = color
+    document.getElementById('budget-color-primary').value = color
+    document.getElementById('budget-color-hex').value = color
+    document.getElementById('budget-color-swatch').style.background = color
+  }
+
+  window.setBudgetColorFromHex = function(val) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      document.getElementById('budget-color-primary').value = val
+      document.getElementById('budget-color-swatch').style.background = val
+    }
+  }
+
+  window.pickColorFromBar = function(e) {
+    const bar = document.getElementById('budget-color-bar')
+    const cursor = document.getElementById('budget-color-cursor')
+    const rect = bar.getBoundingClientRect()
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+
+    // Colores del degradé en orden
+    const stops = [
+      { p: 0,    r: 10,  g: 37,  b: 64  },  // #0A2540
+      { p: 0.12, r: 30,  g: 64,  b: 175 },  // #1e40af
+      { p: 0.25, r: 124, g: 58,  b: 237 },  // #7c3aed
+      { p: 0.38, r: 190, g: 24,  b: 93  },  // #be185d
+      { p: 0.5,  r: 220, g: 38,  b: 38  },  // #dc2626
+      { p: 0.62, r: 180, g: 83,  b: 9   },  // #b45309
+      { p: 0.75, r: 4,   g: 120, b: 87  },  // #047857
+      { p: 0.88, r: 8,   g: 145, b: 178 },  // #0891b2
+      { p: 1,    r: 17,  g: 24,  b: 39  },  // #111827
+    ]
+
+    // Interpolar entre los dos stops más cercanos
+    let s1 = stops[0], s2 = stops[stops.length - 1]
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (pct >= stops[i].p && pct <= stops[i+1].p) { s1 = stops[i]; s2 = stops[i+1]; break }
+    }
+    const t = s1.p === s2.p ? 0 : (pct - s1.p) / (s2.p - s1.p)
+    const r = Math.round(s1.r + (s2.r - s1.r) * t)
+    const g = Math.round(s1.g + (s2.g - s1.g) * t)
+    const b = Math.round(s1.b + (s2.b - s1.b) * t)
+    const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('')
+
+    // Mover cursor
+    if (cursor) cursor.style.left = (pct * 100) + '%'
+
+    setBudgetColor(hex)
   }
 
   window.updateBudgetPreview = function() {}
