@@ -1841,84 +1841,225 @@
       </div>
 
       <!-- Vista: Generador de contratos -->
-      <div id="tools-contrato" style="display:none;padding:28px 32px;max-width:800px;margin:0 auto">
+
+      <!-- Vista: Generador de contratos -->
+      <div id="tools-contrato" style="display:none;padding:28px 32px;max-width:900px;margin:0 auto">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
           <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
             <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
           </button>
+          <div style="display:flex;gap:8px">
+            <button onclick="loadContratoTemplates()" style="padding:8px 14px;border-radius:var(--r);font-size:12px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'">
+              <i class="ti ti-bookmarks" style="font-size:13px"></i> Mis plantillas
+            </button>
+            <button onclick="saveContratoTemplate()" style="padding:8px 14px;border-radius:var(--r);font-size:12px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'">
+              <i class="ti ti-bookmark-plus" style="font-size:13px"></i> Guardar plantilla
+            </button>
+          </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
-          <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
+          <!-- ── Columna izquierda: formulario ── -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+
+            <!-- 1. DATOS DE LA AGENCIA -->
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
-              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-users" style="font-size:15px;color:var(--azul)"></i> Partes del contrato
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+                <i class="ti ti-building" style="font-size:14px;color:var(--azul)"></i> Datos de la agencia (Prestador)
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-                <div class="form-field" style="margin-bottom:0"><label class="form-label">Nombre de la agencia</label><input type="text" class="form-input" id="contrato-agencia" placeholder="Tu agencia S.A."></div>
-                <div class="form-field" style="margin-bottom:0"><label class="form-label">CUIT / RUT de la agencia</label><input type="text" class="form-input" id="contrato-agencia-cuit" placeholder="20-12345678-9"></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                <div class="form-field" style="margin-bottom:0"><label class="form-label">Nombre del cliente</label><input type="text" class="form-input" id="contrato-cliente" placeholder="Empresa del cliente"></div>
-                <div class="form-field" style="margin-bottom:0"><label class="form-label">CUIT / RUT del cliente</label><input type="text" class="form-input" id="contrato-cliente-cuit" placeholder="20-98765432-1"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Nombre / Razón social</label><input type="text" class="form-input" id="contrato-agencia" placeholder="Tu Agencia S.A."></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">CUIT / CUIL</label><input type="text" class="form-input" id="contrato-agencia-cuit" placeholder="20-12345678-9"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Domicilio</label><input type="text" class="form-input" id="contrato-agencia-domicilio" placeholder="Av. Siempreviva 742, CABA"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Email</label><input type="email" class="form-input" id="contrato-agencia-email" placeholder="hola@tuagencia.com"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Teléfono</label><input type="text" class="form-input" id="contrato-agencia-tel" placeholder="+54 9 11 1234-5678"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Representante legal (opcional)</label><input type="text" class="form-input" id="contrato-agencia-rep" placeholder="Nombre del representante"></div>
               </div>
             </div>
 
+            <!-- 2. DATOS DEL CLIENTE -->
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
-              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-file-text" style="font-size:15px;color:var(--azul)"></i> Servicio contratado
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+                <i class="ti ti-user" style="font-size:14px;color:var(--azul)"></i> Datos del cliente
               </div>
-              <div class="form-field" style="margin-bottom:12px">
-                <label class="form-label">Descripción del servicio</label>
-                <textarea class="form-input form-textarea" id="contrato-servicio" placeholder="Gestión de redes sociales, producción de contenido mensual..." style="min-height:80px"></textarea>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Nombre / Razón social</label><input type="text" class="form-input" id="contrato-cliente" placeholder="Empresa del Cliente S.R.L."></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">CUIT / CUIL</label><input type="text" class="form-input" id="contrato-cliente-cuit" placeholder="30-98765432-1"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Domicilio</label><input type="text" class="form-input" id="contrato-cliente-domicilio" placeholder="Calle Falsa 123, Rosario"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Email</label><input type="email" class="form-input" id="contrato-cliente-email" placeholder="contacto@cliente.com"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Teléfono</label><input type="text" class="form-input" id="contrato-cliente-tel" placeholder="+54 9 341 123-4567"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Representante legal (opcional)</label><input type="text" class="form-input" id="contrato-cliente-rep" placeholder="Nombre del representante"></div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-                <div class="form-field" style="margin-bottom:0"><label class="form-label">Monto mensual</label><input type="text" class="form-input" id="contrato-monto" placeholder="0"></div>
+            </div>
+
+            <!-- 3. OBJETO DEL CONTRATO -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+                <i class="ti ti-file-text" style="font-size:14px;color:var(--azul)"></i> Objeto del contrato
+              </div>
+              <div class="form-field" style="margin-bottom:10px"><label class="form-label">Descripción del servicio</label><textarea class="form-input form-textarea" id="contrato-servicio" placeholder="Ej: Gestión de redes sociales, producción de contenido audiovisual y administración de campañas publicitarias en Meta Ads." style="min-height:80px"></textarea></div>
+              <div class="form-field" style="margin-bottom:10px"><label class="form-label">Alcance del trabajo / Servicios incluidos</label><textarea class="form-input form-textarea" id="contrato-incluidos" placeholder="Ej: - 12 reels mensuales&#10;- 20 historias&#10;- Gestión de comentarios&#10;- Reporte mensual de métricas" style="min-height:80px"></textarea></div>
+              <div class="form-field" style="margin-bottom:0"><label class="form-label">Servicios excluidos (opcional)</label><textarea class="form-input form-textarea" id="contrato-excluidos" placeholder="Ej: Fotografía profesional, impresión de materiales gráficos, compra de espacios publicitarios." style="min-height:60px"></textarea></div>
+            </div>
+
+            <!-- 4. CONDICIONES ECONÓMICAS -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+                <i class="ti ti-currency-dollar" style="font-size:14px;color:var(--azul)"></i> Condiciones económicas
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Monto</label><input type="text" class="form-input" id="contrato-monto" placeholder="50.000"></div>
                 <div class="form-field" style="margin-bottom:0"><label class="form-label">Moneda</label>
-                  <select class="form-input form-select" id="contrato-moneda"><option value="ARS">ARS</option><option value="USD">USD</option><option value="UYU">UYU</option><option value="COP">COP</option><option value="MXN">MXN</option></select>
+                  <select class="form-input form-select" id="contrato-moneda"><option value="ARS">ARS — Peso argentino</option><option value="USD">USD — Dólar</option><option value="UYU">UYU — Peso uruguayo</option><option value="COP">COP — Peso colombiano</option><option value="MXN">MXN — Peso mexicano</option></select>
                 </div>
-                <div class="form-field" style="margin-bottom:0"><label class="form-label">Duración</label>
-                  <select class="form-input form-select" id="contrato-duracion"><option value="1 mes">1 mes</option><option value="3 meses">3 meses</option><option value="6 meses">6 meses</option><option value="12 meses" selected>12 meses</option><option value="Indefinido">Indefinido</option></select>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Frecuencia de pago</label>
+                  <select class="form-input form-select" id="contrato-frecuencia"><option value="mensual">Mensual</option><option value="quincenal">Quincenal</option><option value="semanal">Semanal</option><option value="por entrega">Por entrega</option></select>
                 </div>
               </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Día de vencimiento</label><input type="number" class="form-input" id="contrato-dia-pago" placeholder="1" min="1" max="31" value="1"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Forma de pago</label>
+                  <select class="form-input form-select" id="contrato-forma-pago"><option value="transferencia bancaria">Transferencia bancaria</option><option value="efectivo">Efectivo</option><option value="cheque">Cheque</option><option value="tarjeta de crédito">Tarjeta de crédito</option><option value="criptomonedas">Criptomonedas</option></select>
+                </div>
+              </div>
+              <div class="form-field" style="margin-bottom:0"><label class="form-label">Datos bancarios (opcional)</label><input type="text" class="form-input" id="contrato-banco" placeholder="CBU / Alias / Banco y cuenta"></div>
             </div>
 
+            <!-- 5. DURACIÓN -->
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
-              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-calendar" style="font-size:15px;color:var(--azul)"></i> Fechas y condiciones
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+                <i class="ti ti-calendar" style="font-size:14px;color:var(--azul)"></i> Duración
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
                 <div class="form-field" style="margin-bottom:0"><label class="form-label">Fecha de inicio</label><input type="date" class="form-input" id="contrato-fecha-inicio"></div>
-                <div class="form-field" style="margin-bottom:0"><label class="form-label">Día de pago mensual</label><input type="number" class="form-input" id="contrato-dia-pago" placeholder="1" min="1" max="31" value="1"></div>
-              </div>
-              <div class="form-field" style="margin-bottom:0">
-                <label class="form-label">Condiciones de rescisión</label>
-                <textarea class="form-input form-textarea" id="contrato-rescision" style="min-height:60px">Cualquiera de las partes puede rescindir el presente contrato con un preaviso de 30 días corridos mediante notificación escrita.</textarea>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Fecha de finalización</label><input type="date" class="form-input" id="contrato-fecha-fin"></div>
+                <div class="form-field" style="margin-bottom:0"><label class="form-label">Renovación automática</label>
+                  <select class="form-input form-select" id="contrato-renovacion"><option value="no">No se renueva</option><option value="si">Sí, automática</option><option value="preaviso">Con preaviso de 30 días</option></select>
+                </div>
               </div>
             </div>
 
+            <!-- 6. CLÁUSULAS OPCIONALES -->
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
-              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-notes" style="font-size:15px;color:var(--azul)"></i> Cláusulas adicionales
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+                <i class="ti ti-toggle-right" style="font-size:14px;color:var(--azul)"></i> Cláusulas del contrato
               </div>
-              <div class="form-field" style="margin-bottom:0">
-                <label class="form-label">Condiciones adicionales (opcional)</label>
-                <textarea class="form-input form-textarea" id="contrato-clausulas" placeholder="Confidencialidad, propiedad intelectual, etc." style="min-height:80px"></textarea>
+              <div style="font-size:11px;color:var(--ink3);margin-bottom:14px">Activá o desactivá cada cláusula. Las activas se incluirán en el PDF.</div>
+
+              <!-- Mora y falta de pago -->
+              <div style="border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div style="font-size:12px;font-weight:800;color:var(--ink)">Mora y falta de pago</div>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cl-mora" checked onchange="toggleClausula('mora')" style="cursor:pointer"><span style="font-size:11px;color:var(--ink3)">Incluir</span></label>
+                </div>
+                <div id="cl-mora-body">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <div class="form-field" style="margin-bottom:0"><label class="form-label">Días de gracia</label><input type="number" class="form-input" id="contrato-mora-dias" value="5" min="0"></div>
+                    <div class="form-field" style="margin-bottom:0"><label class="form-label">Interés mensual por mora (%)</label><input type="number" class="form-input" id="contrato-mora-interes" value="3" min="0" step="0.5"></div>
+                  </div>
+                </div>
               </div>
+
+              <!-- Confidencialidad -->
+              <div style="border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div>
+                    <div style="font-size:12px;font-weight:800;color:var(--ink)">Confidencialidad</div>
+                    <div style="font-size:11px;color:var(--ink3);margin-top:2px">Ambas partes se comprometen a mantener confidencial la información compartida.</div>
+                  </div>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0"><input type="checkbox" id="cl-confidencialidad" checked onchange="toggleClausula('confidencialidad')" style="cursor:pointer"><span style="font-size:11px;color:var(--ink3)">Incluir</span></label>
+                </div>
+              </div>
+
+              <!-- Propiedad intelectual -->
+              <div style="border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div style="font-size:12px;font-weight:800;color:var(--ink)">Propiedad intelectual</div>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cl-pi" checked onchange="toggleClausula('pi')" style="cursor:pointer"><span style="font-size:11px;color:var(--ink3)">Incluir</span></label>
+                </div>
+                <div id="cl-pi-body">
+                  <div class="form-field" style="margin-bottom:0"><label class="form-label">Titularidad de los materiales generados</label>
+                    <select class="form-input form-select" id="contrato-pi-modalidad">
+                      <option value="cliente">El cliente es titular una vez abonado el servicio</option>
+                      <option value="agencia">La agencia retiene los derechos hasta rescisión</option>
+                      <option value="compartida">Titularidad compartida entre ambas partes</option>
+                      <option value="licencia">La agencia otorga licencia de uso no exclusiva al cliente</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Responsabilidad limitada -->
+              <div style="border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div>
+                    <div style="font-size:12px;font-weight:800;color:var(--ink)">Responsabilidad limitada</div>
+                    <div style="font-size:11px;color:var(--ink3);margin-top:2px">Limita la responsabilidad del prestador sobre resultados comerciales, ventas o rendimiento de campañas.</div>
+                  </div>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0"><input type="checkbox" id="cl-responsabilidad" checked onchange="toggleClausula('responsabilidad')" style="cursor:pointer"><span style="font-size:11px;color:var(--ink3)">Incluir</span></label>
+                </div>
+              </div>
+
+              <!-- Fuerza mayor -->
+              <div style="border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div>
+                    <div style="font-size:12px;font-weight:800;color:var(--ink)">Fuerza mayor</div>
+                    <div style="font-size:11px;color:var(--ink3);margin-top:2px">Ninguna parte será responsable por incumplimientos causados por situaciones extraordinarias fuera de su control.</div>
+                  </div>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0"><input type="checkbox" id="cl-fuerzamayor" checked onchange="toggleClausula('fuerzamayor')" style="cursor:pointer"><span style="font-size:11px;color:var(--ink3)">Incluir</span></label>
+                </div>
+              </div>
+
+              <!-- Rescisión -->
+              <div style="border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div style="font-size:12px;font-weight:800;color:var(--ink)">Rescisión</div>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cl-rescision" checked onchange="toggleClausula('rescision')" style="cursor:pointer"><span style="font-size:11px;color:var(--ink3)">Incluir</span></label>
+                </div>
+                <div id="cl-rescision-body">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                    <div class="form-field" style="margin-bottom:0"><label class="form-label">Días de preaviso</label><input type="number" class="form-input" id="contrato-rescision-dias" value="30" min="0"></div>
+                    <div class="form-field" style="margin-bottom:0"><label class="form-label">¿Rescisión inmediata por incumplimiento?</label>
+                      <select class="form-input form-select" id="contrato-rescision-inmediata"><option value="si">Sí</option><option value="no">No</option></select>
+                    </div>
+                  </div>
+                  <div class="form-field" style="margin-bottom:0"><label class="form-label">Causales adicionales (opcional)</label><textarea class="form-input form-textarea" id="contrato-rescision-causales" placeholder="Ej: Falta de pago por más de 2 períodos consecutivos." style="min-height:50px"></textarea></div>
+                </div>
+              </div>
+
+              <!-- Jurisdicción -->
+              <div style="border:1px solid var(--border);border-radius:var(--r);padding:14px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <div style="font-size:12px;font-weight:800;color:var(--ink)">Jurisdicción</div>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cl-jurisdiccion" checked onchange="toggleClausula('jurisdiccion')" style="cursor:pointer"><span style="font-size:11px;color:var(--ink3)">Incluir</span></label>
+                </div>
+                <div id="cl-jurisdiccion-body">
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                    <div class="form-field" style="margin-bottom:0"><label class="form-label">Ciudad</label><input type="text" class="form-input" id="contrato-jurisdiccion-ciudad" placeholder="Rosario"></div>
+                    <div class="form-field" style="margin-bottom:0"><label class="form-label">Provincia</label><input type="text" class="form-input" id="contrato-jurisdiccion-provincia" placeholder="Santa Fe"></div>
+                    <div class="form-field" style="margin-bottom:0"><label class="form-label">País</label><input type="text" class="form-input" id="contrato-jurisdiccion-pais" value="Argentina"></div>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
+            <!-- Aviso legal -->
             <div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:var(--r);padding:14px 16px;display:flex;gap:10px;align-items:flex-start">
               <i class="ti ti-info-circle" style="font-size:16px;color:#92400E;flex-shrink:0;margin-top:1px"></i>
-              <div style="font-size:12px;color:#92400E;line-height:1.6">Para que este contrato tenga <strong>validez legal</strong> debe ser impreso y firmado de puño y letra por ambas partes. Guardá una copia firmada cada uno.</div>
+              <div style="font-size:12px;color:#92400E;line-height:1.6">Este contrato es un modelo base. <strong>Se recomienda revisión de un abogado</strong> antes de utilizarlo comercialmente. Para validez legal debe ser impreso y firmado de puño y letra por ambas partes.</div>
             </div>
 
           </div>
 
+          <!-- ── Columna derecha: personalización + acciones ── -->
           <div style="display:flex;flex-direction:column;gap:14px;position:sticky;top:20px">
+
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
-              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-palette" style="font-size:15px;color:var(--azul)"></i> Personalización
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px">
+                <i class="ti ti-palette" style="font-size:14px;color:var(--azul)"></i> Personalización
               </div>
               <div class="form-field" style="margin-bottom:14px">
                 <label class="form-label">Logo de la agencia</label>
@@ -1929,16 +2070,14 @@
               </div>
               <div class="form-field" style="margin-bottom:0">
                 <label class="form-label">Color del encabezado</label>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <input type="color" id="contrato-color" value="#0A2540" style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;padding:2px">
-                  <div style="flex:1;display:flex;gap:6px">
-                    <div onclick="document.getElementById('contrato-color').value='#0A2540'" style="width:22px;height:22px;border-radius:6px;background:#0A2540;cursor:pointer"></div>
-                    <div onclick="document.getElementById('contrato-color').value='#1e40af'" style="width:22px;height:22px;border-radius:6px;background:#1e40af;cursor:pointer"></div>
-                    <div onclick="document.getElementById('contrato-color').value='#7c3aed'" style="width:22px;height:22px;border-radius:6px;background:#7c3aed;cursor:pointer"></div>
-                    <div onclick="document.getElementById('contrato-color').value='#047857'" style="width:22px;height:22px;border-radius:6px;background:#047857;cursor:pointer"></div>
-                    <div onclick="document.getElementById('contrato-color').value='#be185d'" style="width:22px;height:22px;border-radius:6px;background:#be185d;cursor:pointer"></div>
-                  </div>
+                <div id="contrato-color-bar" onclick="pickContratoColor(event)" style="width:100%;height:20px;border-radius:6px;cursor:crosshair;margin-bottom:8px;position:relative;background:linear-gradient(to right,#0A2540,#1e40af,#7c3aed,#be185d,#dc2626,#b45309,#047857,#0891b2,#111827);box-shadow:0 1px 4px rgba(0,0,0,.15)">
+                  <div id="contrato-color-cursor" style="position:absolute;top:-4px;width:6px;height:28px;border-radius:3px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);transform:translateX(-50%);pointer-events:none;left:5%"></div>
                 </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div id="contrato-color-swatch" style="width:28px;height:28px;border-radius:8px;background:#0A2540;flex-shrink:0;border:0.5px solid var(--border)"></div>
+                  <input type="text" id="contrato-color-hex" value="#0A2540" oninput="setContratoColorFromHex(this.value)" style="flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:monospace;color:var(--ink);outline:none">
+                </div>
+                <input type="hidden" id="contrato-color" value="#0A2540">
               </div>
             </div>
 
@@ -1959,6 +2098,7 @@
               <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:12px">Mis plantillas</div>
               <div id="contrato-templates-list" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
+
           </div>
         </div>
       </div>
@@ -7079,16 +7219,411 @@
   window.initContrato = async function(contactId, nombre, empresa, email, telefono, valorDeal) {
     sessionStorage.setItem('contrato_contact', JSON.stringify({ contactId, nombre, empresa, email, telefono, valorDeal }))
     const railBtn = document.querySelector('.rail-btn[data-module="herramientas"]')
-    if (railBtn) {
-      await switchModule(railBtn)
-      setTimeout(() => openTool('contrato'), 350)
-    }
+    if (railBtn) { await switchModule(railBtn); setTimeout(() => openTool('contrato'), 350) }
   }
 
   // ── Generador de contratos ─────────────────────────────
 
   let contratoLogoBase64 = null
   let contratoTemplates = []
+  let contratoCurrentColor = '#0A2540'
+
+  function initContratoTool() {
+    contratoLogoBase64 = null
+    contratoCurrentColor = '#0A2540'
+
+    const raw = sessionStorage.getItem('contrato_contact')
+    if (raw) {
+      try {
+        const contact = JSON.parse(raw)
+        const el = document.getElementById('contrato-cliente')
+        if (el) el.value = contact.empresa || contact.nombre || ''
+        const emailEl = document.getElementById('contrato-cliente-email')
+        if (emailEl && contact.email) emailEl.value = contact.email
+        const telEl = document.getElementById('contrato-cliente-tel')
+        if (telEl && contact.telefono) telEl.value = contact.telefono
+        const montoEl = document.getElementById('contrato-monto')
+        if (montoEl && contact.valorDeal > 0) montoEl.value = contact.valorDeal
+        sessionStorage.removeItem('contrato_contact')
+      } catch(e) {}
+    }
+
+    const agencyName = document.body.dataset.agencyName || ''
+    if (agencyName) { const el = document.getElementById('contrato-agencia'); if (el) el.value = agencyName }
+    const fechaEl = document.getElementById('contrato-fecha-inicio')
+    if (fechaEl) fechaEl.value = new Date().toISOString().slice(0,10)
+
+    loadContratoTemplatesFromStorage()
+  }
+
+  window.toggleClausula = function(id) {
+    const body = document.getElementById('cl-' + id + '-body')
+    const cb = document.getElementById('cl-' + id)
+    if (body) body.style.display = cb?.checked ? 'block' : 'none'
+  }
+
+  window.previewContratoLogo = function(input) {
+    const file = input.files[0]; if (!file) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      contratoLogoBase64 = e.target.result
+      const preview = document.getElementById('contrato-logo-preview')
+      const placeholder = document.getElementById('contrato-logo-placeholder')
+      if (preview) { preview.style.backgroundImage = 'url(' + contratoLogoBase64 + ')'; preview.style.backgroundSize = 'contain'; preview.style.backgroundRepeat = 'no-repeat'; preview.style.backgroundPosition = 'center' }
+      if (placeholder) placeholder.style.display = 'none'
+    }
+    reader.readAsDataURL(file)
+  }
+
+  window.pickContratoColor = function(e) {
+    const bar = document.getElementById('contrato-color-bar')
+    const cursor = document.getElementById('contrato-color-cursor')
+    const rect = bar.getBoundingClientRect()
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+    const stops = [
+      {p:0,r:10,g:37,b:64},{p:.12,r:30,g:64,b:175},{p:.25,r:124,g:58,b:237},
+      {p:.38,r:190,g:24,b:93},{p:.5,r:220,g:38,b:38},{p:.62,r:180,g:83,b:9},
+      {p:.75,r:4,g:120,b:87},{p:.88,r:8,g:145,b:178},{p:1,r:17,g:24,b:39}
+    ]
+    let s1 = stops[0], s2 = stops[stops.length-1]
+    for (let i = 0; i < stops.length-1; i++) { if (pct >= stops[i].p && pct <= stops[i+1].p) { s1=stops[i]; s2=stops[i+1]; break } }
+    const t = s1.p===s2.p ? 0 : (pct-s1.p)/(s2.p-s1.p)
+    const r=Math.round(s1.r+(s2.r-s1.r)*t), g=Math.round(s1.g+(s2.g-s1.g)*t), b=Math.round(s1.b+(s2.b-s1.b)*t)
+    const hex = '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')
+    if (cursor) cursor.style.left = (pct*100)+'%'
+    setContratoColor(hex)
+  }
+
+  function setContratoColor(color) {
+    contratoCurrentColor = color
+    const hidden = document.getElementById('contrato-color')
+    const hex = document.getElementById('contrato-color-hex')
+    const swatch = document.getElementById('contrato-color-swatch')
+    if (hidden) hidden.value = color
+    if (hex) hex.value = color
+    if (swatch) swatch.style.background = color
+  }
+
+  window.setContratoColorFromHex = function(val) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) { contratoCurrentColor = val; setContratoColor(val) }
+  }
+
+  function loadContratoTemplatesFromStorage() {
+    try { const r = localStorage.getItem('contrato_templates_'+agencyId); contratoTemplates = r ? JSON.parse(r) : [] }
+    catch(e) { contratoTemplates = [] }
+  }
+
+  window.saveContratoTemplate = function() {
+    const nombre = document.getElementById('contrato-agencia')?.value.trim() || 'Plantilla'
+    const t = {
+      id: Date.now(), nombre: nombre + ' — Contrato',
+      agencia: document.getElementById('contrato-agencia')?.value,
+      agenciaCuit: document.getElementById('contrato-agencia-cuit')?.value,
+      agenciaDom: document.getElementById('contrato-agencia-domicilio')?.value,
+      agenciaEmail: document.getElementById('contrato-agencia-email')?.value,
+      agenciaTel: document.getElementById('contrato-agencia-tel')?.value,
+      agenciaRep: document.getElementById('contrato-agencia-rep')?.value,
+      servicio: document.getElementById('contrato-servicio')?.value,
+      incluidos: document.getElementById('contrato-incluidos')?.value,
+      excluidos: document.getElementById('contrato-excluidos')?.value,
+      moneda: document.getElementById('contrato-moneda')?.value,
+      frecuencia: document.getElementById('contrato-frecuencia')?.value,
+      formaPago: document.getElementById('contrato-forma-pago')?.value,
+      diaPago: document.getElementById('contrato-dia-pago')?.value,
+      banco: document.getElementById('contrato-banco')?.value,
+      duracion: document.getElementById('contrato-duracion')?.value,
+      renovacion: document.getElementById('contrato-renovacion')?.value,
+      clMora: document.getElementById('cl-mora')?.checked,
+      moraDias: document.getElementById('contrato-mora-dias')?.value,
+      moraInteres: document.getElementById('contrato-mora-interes')?.value,
+      clConf: document.getElementById('cl-confidencialidad')?.checked,
+      clPi: document.getElementById('cl-pi')?.checked,
+      piModalidad: document.getElementById('contrato-pi-modalidad')?.value,
+      clResp: document.getElementById('cl-responsabilidad')?.checked,
+      clFuerza: document.getElementById('cl-fuerzamayor')?.checked,
+      clRescision: document.getElementById('cl-rescision')?.checked,
+      rescisionDias: document.getElementById('contrato-rescision-dias')?.value,
+      rescisionInmediata: document.getElementById('contrato-rescision-inmediata')?.value,
+      rescisionCausales: document.getElementById('contrato-rescision-causales')?.value,
+      clJurisd: document.getElementById('cl-jurisdiccion')?.checked,
+      jurisdCiudad: document.getElementById('contrato-jurisdiccion-ciudad')?.value,
+      jurisdProvincia: document.getElementById('contrato-jurisdiccion-provincia')?.value,
+      jurisdPais: document.getElementById('contrato-jurisdiccion-pais')?.value,
+      savedAt: new Date().toISOString()
+    }
+    loadContratoTemplatesFromStorage()
+    contratoTemplates.unshift(t)
+    try { localStorage.setItem('contrato_templates_'+agencyId, JSON.stringify(contratoTemplates)); showToast('Plantilla guardada') }
+    catch(e) { showToast('Error al guardar') }
+  }
+
+  window.loadContratoTemplates = function() {
+    loadContratoTemplatesFromStorage()
+    const panel = document.getElementById('contrato-templates-panel')
+    const list = document.getElementById('contrato-templates-list')
+    if (!panel || !list) return
+    list.innerHTML = contratoTemplates.length === 0
+      ? '<div style="font-size:12px;color:var(--ink3);text-align:center;padding:12px 0">No tenés plantillas guardadas todavía</div>'
+      : contratoTemplates.map(t => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.nombre}</div></div>
+          <button onclick="applyContratoTemplate(${t.id})" style="padding:4px 10px;border-radius:6px;font-size:10px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit">Usar</button>
+          <button onclick="deleteContratoTemplate(${t.id})" style="padding:4px 8px;border-radius:6px;font-size:10px;border:1px solid #FECACA;background:#FEF2F2;color:var(--danger);cursor:pointer;font-family:inherit"><i class="ti ti-x" style="font-size:10px"></i></button>
+        </div>`).join('')
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none'
+  }
+
+  window.applyContratoTemplate = function(id) {
+    const t = contratoTemplates.find(x => x.id === id); if (!t) return
+    const set = (elId, val) => { const el = document.getElementById(elId); if (el && val !== undefined) el.value = val }
+    const setChk = (elId, val) => { const el = document.getElementById(elId); if (el) el.checked = !!val }
+    set('contrato-agencia', t.agencia); set('contrato-agencia-cuit', t.agenciaCuit)
+    set('contrato-agencia-domicilio', t.agenciaDom); set('contrato-agencia-email', t.agenciaEmail)
+    set('contrato-agencia-tel', t.agenciaTel); set('contrato-agencia-rep', t.agenciaRep)
+    set('contrato-servicio', t.servicio); set('contrato-incluidos', t.incluidos); set('contrato-excluidos', t.excluidos)
+    set('contrato-moneda', t.moneda); set('contrato-frecuencia', t.frecuencia)
+    set('contrato-forma-pago', t.formaPago); set('contrato-dia-pago', t.diaPago); set('contrato-banco', t.banco)
+    set('contrato-duracion', t.duracion); set('contrato-renovacion', t.renovacion)
+    setChk('cl-mora', t.clMora); set('contrato-mora-dias', t.moraDias); set('contrato-mora-interes', t.moraInteres)
+    setChk('cl-confidencialidad', t.clConf); setChk('cl-pi', t.clPi); set('contrato-pi-modalidad', t.piModalidad)
+    setChk('cl-responsabilidad', t.clResp); setChk('cl-fuerzamayor', t.clFuerza)
+    setChk('cl-rescision', t.clRescision); set('contrato-rescision-dias', t.rescisionDias)
+    set('contrato-rescision-inmediata', t.rescisionInmediata); set('contrato-rescision-causales', t.rescisionCausales)
+    setChk('cl-jurisdiccion', t.clJurisd)
+    set('contrato-jurisdiccion-ciudad', t.jurisdCiudad); set('contrato-jurisdiccion-provincia', t.jurisdProvincia); set('contrato-jurisdiccion-pais', t.jurisdPais)
+    ;['mora','confidencialidad','pi','responsabilidad','fuerzamayor','rescision','jurisdiccion'].forEach(id => toggleClausula(id))
+    document.getElementById('contrato-templates-panel').style.display = 'none'
+    showToast('Plantilla aplicada')
+  }
+
+  window.deleteContratoTemplate = function(id) {
+    contratoTemplates = contratoTemplates.filter(t => t.id !== id)
+    try { localStorage.setItem('contrato_templates_'+agencyId, JSON.stringify(contratoTemplates)) } catch(e) {}
+    loadContratoTemplates(); showToast('Plantilla eliminada')
+  }
+
+  window.generateContratoPDF = function() {
+    const g = (id) => document.getElementById(id)?.value?.trim() || ''
+    const chk = (id) => document.getElementById(id)?.checked
+
+    const agencia = g('contrato-agencia') || 'La Agencia'
+    const agenciaCuit = g('contrato-agencia-cuit')
+    const agenciaDom = g('contrato-agencia-domicilio')
+    const agenciaEmail = g('contrato-agencia-email')
+    const agenciaTel = g('contrato-agencia-tel')
+    const agenciaRep = g('contrato-agencia-rep')
+    const cliente = g('contrato-cliente') || 'El Cliente'
+    const clienteCuit = g('contrato-cliente-cuit')
+    const clienteDom = g('contrato-cliente-domicilio')
+    const clienteEmail = g('contrato-cliente-email')
+    const clienteTel = g('contrato-cliente-tel')
+    const clienteRep = g('contrato-cliente-rep')
+    const servicio = g('contrato-servicio')
+    const incluidos = g('contrato-incluidos')
+    const excluidos = g('contrato-excluidos')
+    const monto = g('contrato-monto')
+    const moneda = g('contrato-moneda') || 'ARS'
+    const frecuencia = g('contrato-frecuencia') || 'mensual'
+    const formaPago = g('contrato-forma-pago') || 'transferencia bancaria'
+    const diaPago = g('contrato-dia-pago') || '1'
+    const banco = g('contrato-banco')
+    const fechaInicio = g('contrato-fecha-inicio')
+    const fechaFin = g('contrato-fecha-fin')
+    const renovacion = g('contrato-renovacion')
+    const moraDias = g('contrato-mora-dias') || '5'
+    const moraInteres = g('contrato-mora-interes') || '3'
+    const piModalidad = g('contrato-pi-modalidad')
+    const rescisionDias = g('contrato-rescision-dias') || '30'
+    const rescisionInmediata = g('contrato-rescision-inmediata')
+    const rescisionCausales = g('contrato-rescision-causales')
+    const jurisdCiudad = g('contrato-jurisdiccion-ciudad') || 'la ciudad pactada'
+    const jurisdProvincia = g('contrato-jurisdiccion-provincia') || ''
+    const jurisdPais = g('contrato-jurisdiccion-pais') || 'Argentina'
+    const color = contratoCurrentColor || '#0A2540'
+
+    if (!servicio) { showToast('Completá la descripción del servicio'); return }
+
+    const fmtFecha = (d) => d ? new Date(d+'T00:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '___/___/______'
+    const montoStr = monto ? moneda+' '+Number(monto.replace(/\./g,'')).toLocaleString('es-AR') : '___________'
+    const today = new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})
+    const nl = (t) => (t||'').replace(/\n/g,'<br>')
+
+    const piTextos = {
+      'cliente': 'Los materiales, diseños, contenidos y demás productos del trabajo generados en virtud del presente contrato serán de titularidad del CLIENTE una vez abonada la totalidad de los honorarios correspondientes.',
+      'agencia': 'Todos los materiales generados son de titularidad del PRESTADOR hasta tanto se produzca la rescisión o finalización del contrato, momento en el cual se transferirán al CLIENTE previo pago total de los honorarios adeudados.',
+      'compartida': 'Ambas partes serán cotitulares de los materiales generados en virtud de este contrato, pudiendo cada una utilizarlos libremente sin necesidad de autorización de la otra parte.',
+      'licencia': 'El PRESTADOR es y seguirá siendo el titular de los materiales generados. Se otorga al CLIENTE una licencia de uso no exclusiva, no transferible, para utilizar dichos materiales en el marco de su actividad comercial habitual.'
+    }
+
+    const renovTextos = {
+      'no': 'El presente contrato no se renovará automáticamente al vencimiento del plazo establecido.',
+      'si': 'Al vencimiento del plazo, el presente contrato se renovará automáticamente por períodos iguales, salvo que alguna de las partes manifieste su voluntad de no renovarlo con un preaviso de 30 días.',
+      'preaviso': 'El presente contrato podrá ser renovado de común acuerdo entre las partes. En caso de que ninguna de las partes manifieste su intención de no renovarlo con un preaviso de 30 días, se entenderá tácitamente prorrogado.'
+    }
+
+    const css = [
+      '* { box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }',
+      'body { font-family:Arial,sans-serif; color:#111; background:#fff; font-size:12px; line-height:1.7; }',
+      '.page { max-width:800px; margin:0 auto; padding:40px; }',
+      '.header { background:'+color+'; border-radius:12px; padding:28px 32px; margin-bottom:28px; display:flex; align-items:center; justify-content:space-between; }',
+      '.header-left h1 { font-size:20px; font-weight:900; color:#fff; letter-spacing:-0.4px; margin-bottom:4px; }',
+      '.header-left p { font-size:11px; color:rgba(255,255,255,0.65); }',
+      '.header-logo { max-width:110px; max-height:45px; object-fit:contain; }',
+      '.header-logo-ph { font-size:16px; font-weight:900; color:rgba(255,255,255,0.4); }',
+      '.section { margin-bottom:22px; }',
+      '.section-title { font-size:10px; font-weight:900; color:'+color+'; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid '+color+'; }',
+      '.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }',
+      '.grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }',
+      '.field { margin-bottom:8px; }',
+      '.fl { font-size:9px; font-weight:700; color:#9AA5B4; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }',
+      '.fv { font-size:12px; color:#111; font-weight:500; }',
+      '.clause { background:#f8f9fa; border-left:3px solid '+color+'; padding:12px 14px; margin-bottom:10px; font-size:11px; color:#374151; line-height:1.8; border-radius:0 6px 6px 0; }',
+      '.clause-title { font-size:10px; font-weight:900; color:#111; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }',
+      '.firma-grid { display:grid; grid-template-columns:1fr 1fr; gap:50px; margin-top:40px; padding-top:20px; border-top:1px solid #eee; }',
+      '.firma-box .linea { border-top:1.5px solid #111; margin-bottom:8px; padding-top:6px; }',
+      '.firma-box .fl2 { font-size:10px; color:#718096; margin-bottom:3px; }',
+      '.firma-box .nombre { font-size:12px; font-weight:700; color:#111; }',
+      '.firma-box .cuit { font-size:11px; color:#718096; margin-top:2px; }',
+      '.firma-espacio { height:60px; }',
+      '.footer { display:flex; justify-content:space-between; align-items:center; margin-top:28px; padding-top:14px; border-top:1px solid #eee; }',
+      '.footer-left { font-size:10px; font-weight:700; color:#4A5568; }',
+      '.footer-right { font-size:9px; color:#C0CAD4; }',
+      '.aviso { background:#FFFBEB; border:1px solid #FDE68A; border-radius:6px; padding:10px 12px; margin-bottom:22px; font-size:10px; color:#92400E; line-height:1.6; }',
+      '@media print { * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; } .header { background:'+color+' !important; } .clause { border-left-color:'+color+' !important; } }'
+    ].join('\n')
+
+    const parteAgencia = '<div class="fl">Nombre / Razón social</div><div class="fv">'+agencia+'</div>' +
+      (agenciaCuit ? '<div class="fl" style="margin-top:4px">CUIT / CUIL</div><div class="fv">'+agenciaCuit+'</div>' : '') +
+      (agenciaDom ? '<div class="fl" style="margin-top:4px">Domicilio</div><div class="fv">'+agenciaDom+'</div>' : '') +
+      (agenciaEmail ? '<div class="fl" style="margin-top:4px">Email</div><div class="fv">'+agenciaEmail+'</div>' : '') +
+      (agenciaTel ? '<div class="fl" style="margin-top:4px">Teléfono</div><div class="fv">'+agenciaTel+'</div>' : '') +
+      (agenciaRep ? '<div class="fl" style="margin-top:4px">Representante legal</div><div class="fv">'+agenciaRep+'</div>' : '')
+
+    const parteCliente = '<div class="fl">Nombre / Razón social</div><div class="fv">'+cliente+'</div>' +
+      (clienteCuit ? '<div class="fl" style="margin-top:4px">CUIT / CUIL</div><div class="fv">'+clienteCuit+'</div>' : '') +
+      (clienteDom ? '<div class="fl" style="margin-top:4px">Domicilio</div><div class="fv">'+clienteDom+'</div>' : '') +
+      (clienteEmail ? '<div class="fl" style="margin-top:4px">Email</div><div class="fv">'+clienteEmail+'</div>' : '') +
+      (clienteTel ? '<div class="fl" style="margin-top:4px">Teléfono</div><div class="fv">'+clienteTel+'</div>' : '') +
+      (clienteRep ? '<div class="fl" style="margin-top:4px">Representante legal</div><div class="fv">'+clienteRep+'</div>' : '')
+
+    let body = ''
+
+    // Aviso legal
+    body += '<div class="aviso">⚠ Este contrato es un modelo base generado automáticamente. Se recomienda la revisión de un profesional legal antes de su utilización comercial. Para que tenga validez legal debe ser <strong>impreso y firmado de puño y letra por ambas partes</strong>.</div>'
+
+    // 1. Partes
+    body += '<div class="section"><div class="section-title">I. Partes del contrato</div><div class="grid2"><div>'+parteAgencia+'</div><div>'+parteCliente+'</div></div></div>'
+
+    // 2. Objeto
+    body += '<div class="section"><div class="section-title">II. Objeto del contrato</div>'
+    body += '<div class="clause"><div class="clause-title">Descripción del servicio</div>'+nl(servicio)+'</div>'
+    if (incluidos) body += '<div class="clause"><div class="clause-title">Servicios incluidos</div>'+nl(incluidos)+'</div>'
+    if (excluidos) body += '<div class="clause"><div class="clause-title">Servicios excluidos</div>'+nl(excluidos)+'</div>'
+    body += '</div>'
+
+    // 3. Condiciones económicas
+    body += '<div class="section"><div class="section-title">III. Condiciones económicas</div><div class="grid3">'
+    body += '<div class="field"><div class="fl">Monto</div><div class="fv">'+montoStr+'</div></div>'
+    body += '<div class="field"><div class="fl">Frecuencia</div><div class="fv">'+frecuencia.charAt(0).toUpperCase()+frecuencia.slice(1)+'</div></div>'
+    body += '<div class="field"><div class="fl">Forma de pago</div><div class="fv">'+formaPago.charAt(0).toUpperCase()+formaPago.slice(1)+'</div></div>'
+    body += '<div class="field"><div class="fl">Vencimiento</div><div class="fv">Día '+diaPago+' de cada período</div></div>'
+    if (banco) body += '<div class="field" style="grid-column:1/-1"><div class="fl">Datos bancarios</div><div class="fv">'+banco+'</div></div>'
+    body += '</div></div>'
+
+    // 4. Duración
+    body += '<div class="section"><div class="section-title">IV. Duración del contrato</div><div class="grid3">'
+    body += '<div class="field"><div class="fl">Fecha de inicio</div><div class="fv">'+fmtFecha(fechaInicio)+'</div></div>'
+    body += '<div class="field"><div class="fl">Fecha de finalización</div><div class="fv">'+(fechaFin ? fmtFecha(fechaFin) : 'Según duración pactada')+'</div></div>'
+    body += '<div class="field"><div class="fl">Renovación</div><div class="fv">'+(renovacion === 'si' ? 'Automática' : renovacion === 'preaviso' ? 'Con preaviso' : 'No se renueva')+'</div></div>'
+    body += '</div>'
+    body += '<div class="clause">'+renovTextos[renovacion]+'</div></div>'
+
+    // 5. Obligaciones
+    body += '<div class="section"><div class="section-title">V. Obligaciones de las partes</div>'
+    body += '<div class="clause"><div class="clause-title">Obligaciones del prestador ('+agencia+')</div>El PRESTADOR se obliga a: (a) ejecutar los servicios descritos en el presente contrato con diligencia y profesionalismo; (b) mantener comunicación fluida con el CLIENTE e informar sobre el avance de los trabajos; (c) entregar los materiales acordados en los plazos establecidos; (d) mantener la confidencialidad de la información del CLIENTE.</div>'
+    body += '<div class="clause"><div class="clause-title">Obligaciones del cliente ('+cliente+')</div>El CLIENTE se obliga a: (a) suministrar oportunamente la información, materiales y accesos necesarios para la prestación del servicio; (b) revisar y aprobar o rechazar las entregas del PRESTADOR en un plazo razonable no mayor a 5 días hábiles; (c) abonar los honorarios en los términos pactados; (d) respetar las indicaciones del PRESTADOR en materia de plazos y procesos de trabajo.</div>'
+    body += '</div>'
+
+    // Cláusulas opcionales
+    let numClausa = 6
+
+    // Mora
+    if (chk('cl-mora')) {
+      body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Mora y falta de pago</div>'
+      body += '<div class="clause">El pago se considerará en mora transcurridos '+moraDias+' días corridos desde la fecha de vencimiento sin que se hubiera efectuado. La mora devengará un interés del '+moraInteres+'% mensual sobre el saldo adeudado. El PRESTADOR podrá suspender la prestación de servicios ante una mora superior a 10 días, sin que ello constituya incumplimiento de su parte.</div></div>'
+    }
+
+    // Confidencialidad
+    if (chk('cl-confidencialidad')) {
+      body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Confidencialidad</div>'
+      body += '<div class="clause">Ambas partes se comprometen a mantener estricta confidencialidad sobre toda la información comercial, técnica, financiera y estratégica que se divulgue en el marco de este contrato. Esta obligación subsistirá por un plazo de 2 años desde la finalización del contrato.</div></div>'
+    }
+
+    // PI
+    if (chk('cl-pi')) {
+      body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Propiedad intelectual</div>'
+      body += '<div class="clause">'+piTextos[piModalidad || 'cliente']+'</div></div>'
+    }
+
+    // Responsabilidad
+    if (chk('cl-responsabilidad')) {
+      body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Limitación de responsabilidad</div>'
+      body += '<div class="clause">El PRESTADOR no garantiza resultados comerciales, niveles de ventas, alcance de publicaciones, rendimiento de campañas publicitarias ni ningún otro indicador que dependa de factores externos fuera de su control. La responsabilidad del PRESTADOR quedará limitada al monto total abonado por el CLIENTE en los últimos 3 meses de vigencia del contrato.</div></div>'
+    }
+
+    // Rescisión
+    if (chk('cl-rescision')) {
+      body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Rescisión</div>'
+      let rescText = 'Cualquiera de las partes podrá rescindir el presente contrato mediante notificación escrita con un preaviso de '+rescisionDias+' días corridos.'
+      if (rescisionInmediata === 'si') rescText += ' Se admitirá la rescisión inmediata sin preaviso en caso de incumplimiento grave de cualquiera de las partes.'
+      if (rescisionCausales) rescText += ' Causales adicionales: '+rescisionCausales
+      body += '<div class="clause">'+rescText+'</div></div>'
+    }
+
+    // Fuerza mayor
+    if (chk('cl-fuerzamayor')) {
+      body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Fuerza mayor</div>'
+      body += '<div class="clause">Ninguna de las partes será responsable por el incumplimiento de sus obligaciones cuando dicho incumplimiento sea causado por circunstancias ajenas a su voluntad, incluyendo pero sin limitarse a: desastres naturales, pandemias, actos de autoridad gubernamental, fallas en servicios de internet o plataformas de terceros.</div></div>'
+    }
+
+    // Notificaciones
+    body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Notificaciones</div>'
+    const emailAgenciaStr = agenciaEmail || '_______________'
+    const emailClienteStr = clienteEmail || '_______________'
+    body += '<div class="clause">Todas las comunicaciones formales derivadas del presente contrato podrán realizarse por correo electrónico a las direcciones indicadas: PRESTADOR: '+emailAgenciaStr+' — CLIENTE: '+emailClienteStr+'. Las notificaciones se considerarán recibidas al día siguiente hábil de su envío.</div></div>'
+
+    // Jurisdicción
+    if (chk('cl-jurisdiccion')) {
+      body += '<div class="section"><div class="section-title">'+toRoman(numClausa++)+'. Jurisdicción y ley aplicable</div>'
+      const lugar = [jurisdCiudad, jurisdProvincia, jurisdPais].filter(Boolean).join(', ')
+      body += '<div class="clause">Para la resolución de cualquier conflicto derivado del presente contrato, las partes se someten voluntariamente a la competencia de los Tribunales Ordinarios de la ciudad de '+lugar+', renunciando expresamente a cualquier otro fuero que pudiera corresponderles. El presente contrato se regirá por las leyes de '+jurisdPais+'.</div></div>'
+    }
+
+    // Firmas
+    body += '<div class="firma-grid">'
+    body += '<div class="firma-box"><div class="firma-espacio"></div><div class="linea"></div><div class="fl2">Firma — Prestador del servicio</div><div class="nombre">'+agencia+'</div>'+(agenciaCuit?'<div class="cuit">CUIT: '+agenciaCuit+'</div>':'')+(agenciaRep?'<div class="cuit">Rep. Legal: '+agenciaRep+'</div>':'')+'<div class="fl2" style="margin-top:8px">Lugar y fecha: ________________</div></div>'
+    body += '<div class="firma-box"><div class="firma-espacio"></div><div class="linea"></div><div class="fl2">Firma — Cliente</div><div class="nombre">'+cliente+'</div>'+(clienteCuit?'<div class="cuit">CUIT: '+clienteCuit+'</div>':'')+(clienteRep?'<div class="cuit">Rep. Legal: '+clienteRep+'</div>':'')+'<div class="fl2" style="margin-top:8px">Lugar y fecha: ________________</div></div>'
+    body += '</div>'
+
+    body += '<div class="footer"><div class="footer-left">'+agencia+'</div><div class="footer-right">Contrato generado con Faro · '+today+'</div></div>'
+
+    const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Contrato — '+cliente+'</title><style>'+css+'</style></head><body><div class="page">'+body+'</div></body></html>'
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const win = window.open(url, '_blank')
+    if (win) win.onload = () => { win.focus(); win.print() }
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    showToast('Contrato listo para descargar')
+  }
+
+  function toRoman(n) {
+    const vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1]
+    const syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I']
+    let result = ''
+    for (let i = 0; i < vals.length; i++) { while (n >= vals[i]) { result += syms[i]; n -= vals[i] } }
+    return result
+  }
 
   function initContratoTool() {
     contratoLogoBase64 = null
