@@ -679,7 +679,7 @@
         .from('form_assignments')
         .select('*, form_templates(nombre, descripcion, preguntas)')
         .eq('client_id', clientId)
-        .order('created_at', { ascending: false })
+        .order('enviado_at', { ascending: false })
 
       if (error) console.error('loadForms error:', error)
       portalForms = data || []
