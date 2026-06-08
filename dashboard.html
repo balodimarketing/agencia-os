@@ -1700,7 +1700,7 @@
             <!-- Datos del cliente -->
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
               <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-user" style="font-size:15px;color:#8B5CF6"></i> Datos del cliente
+                <i class="ti ti-user" style="font-size:15px;color:var(--azul)"></i> Datos del cliente
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                 <div class="form-field" style="margin-bottom:0">
@@ -1717,7 +1717,7 @@
             <!-- Info del presupuesto -->
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
               <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-file-text" style="font-size:15px;color:#8B5CF6"></i> Información del presupuesto
+                <i class="ti ti-file-text" style="font-size:15px;color:var(--azul)"></i> Información del presupuesto
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                 <div class="form-field" style="margin-bottom:0">
@@ -1746,7 +1746,7 @@
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
                 <div style="font-size:13px;font-weight:900;color:var(--ink);display:flex;align-items:center;gap:8px">
-                  <i class="ti ti-list" style="font-size:15px;color:#8B5CF6"></i> Servicios / Planes
+                  <i class="ti ti-list" style="font-size:15px;color:var(--azul)"></i> Servicios / Planes
                 </div>
                 <button onclick="addBudgetItem()" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
                   <i class="ti ti-plus" style="font-size:12px"></i> Agregar ítem
@@ -1780,7 +1780,7 @@
             <!-- Condiciones -->
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
               <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-notes" style="font-size:15px;color:#8B5CF6"></i> Condiciones y cierre
+                <i class="ti ti-notes" style="font-size:15px;color:var(--azul)"></i> Condiciones y cierre
               </div>
               <div class="form-field" style="margin-bottom:0">
                 <label class="form-label">Condiciones (opcional)</label>
@@ -1795,13 +1795,13 @@
 
             <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
               <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px">
-                <i class="ti ti-palette" style="font-size:15px;color:#8B5CF6"></i> Personalización
+                <i class="ti ti-palette" style="font-size:15px;color:var(--azul)"></i> Personalización
               </div>
 
               <div class="form-field" style="margin-bottom:14px">
                 <label class="form-label">Logo de la agencia</label>
-                <div id="budget-logo-preview" style="width:100%;height:70px;border:1.5px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:6px;overflow:hidden;transition:border-color var(--t)" onclick="document.getElementById('budget-logo-input').click()" onmouseover="this.style.borderColor='var(--celeste)'" onmouseout="this.style.borderColor='var(--border)'">
-                  <span id="budget-logo-placeholder" style="font-size:12px;color:var(--ink3);display:flex;align-items:center;gap:6px"><i class="ti ti-upload" style="font-size:14px"></i> Subir logo</span>
+                <div id="budget-logo-preview" style="width:100%;height:90px;border:1.5px dashed var(--border);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:6px;overflow:hidden;transition:border-color var(--t);gap:5px" onclick="document.getElementById('budget-logo-input').click()" onmouseover="this.style.borderColor='var(--azul)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span id="budget-logo-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:4px"><i class="ti ti-upload" style="font-size:18px;color:var(--ink3)"></i><span style="font-size:12px;color:var(--ink3)">Subir logo</span><span style="font-size:10px;color:var(--ink3);opacity:.6">PNG, JPG o SVG</span></span>
                 </div>
                 <input type="file" id="budget-logo-input" accept="image/*" style="display:none" onchange="previewBudgetLogo(this)">
               </div>
@@ -1809,8 +1809,8 @@
               <div class="form-field" style="margin-bottom:14px">
                 <label class="form-label">Color principal</label>
                 <!-- Barra de degradé clickeable -->
-                <div id="budget-color-bar" onclick="pickColorFromBar(event)" style="width:100%;height:28px;border-radius:8px;cursor:crosshair;margin-bottom:8px;position:relative;background:linear-gradient(to right,#0A2540,#1e40af,#7c3aed,#be185d,#dc2626,#b45309,#047857,#0891b2,#111827);box-shadow:0 1px 4px rgba(0,0,0,.15)">
-                  <div id="budget-color-cursor" style="position:absolute;top:-3px;width:6px;height:34px;border-radius:3px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);transform:translateX(-50%);pointer-events:none;left:5%"></div>
+                <div id="budget-color-bar" onclick="pickColorFromBar(event)" style="width:100%;height:20px;border-radius:6px;cursor:crosshair;margin-bottom:8px;position:relative;background:linear-gradient(to right,#0A2540,#1e40af,#7c3aed,#be185d,#dc2626,#b45309,#047857,#0891b2,#111827);box-shadow:0 1px 4px rgba(0,0,0,.15)">
+                  <div id="budget-color-cursor" style="position:absolute;top:-4px;width:6px;height:28px;border-radius:3px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);transform:translateX(-50%);pointer-events:none;left:5%"></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px">
                   <div id="budget-color-swatch" style="width:28px;height:28px;border-radius:8px;background:#0A2540;flex-shrink:0;border:2px solid var(--border)"></div>
@@ -1825,7 +1825,7 @@
               </div>
             </div>
 
-            <button onclick="generateBudgetPDF()" style="width:100%;padding:14px;border-radius:var(--r);font-size:13px;font-weight:900;border:none;background:#8B5CF6;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity var(--t);letter-spacing:-.2px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+            <button onclick="generateBudgetPDF()" style="width:100%;padding:14px;border-radius:var(--r);font-size:13px;font-weight:900;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity var(--t);letter-spacing:-.2px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
               <i class="ti ti-download" style="font-size:15px"></i> Descargar PDF
             </button>
 
