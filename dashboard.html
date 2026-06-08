@@ -10031,8 +10031,6 @@ if (id) {
         .eq('client_id', clientId)
         .order('enviado_at', { ascending: false })
 
-      if (error) { console.error('Supabase error completo:', JSON.stringify(error)); throw error }
-
       if (error) throw error
 
       if (!assignments || assignments.length === 0) {
