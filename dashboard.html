@@ -2522,6 +2522,97 @@
 </div>
 
 <!-- MODAL NUEVA TAREA -->
+<!-- Modal: Constructor de formularios -->
+<div class="modal-overlay" id="modal-form-builder" onclick="if(event.target===this)closeFormBuilder()" style="display:none">
+  <div class="modal" style="max-width:640px;width:100%;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="form-builder-title">Nuevo formulario</div>
+      <button class="modal-close" onclick="closeFormBuilder()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto;flex:1">
+
+      <!-- Datos básicos del formulario -->
+      <div style="margin-bottom:20px">
+        <div class="form-field">
+          <label class="form-label">Nombre del formulario *</label>
+          <input type="text" class="form-input" id="fb-nombre" placeholder="Ej: Brief de redes sociales">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Descripción (opcional)</label>
+          <textarea class="form-input form-textarea" id="fb-descripcion" placeholder="Explicá brevemente qué información necesitás del cliente..." style="min-height:60px;resize:none"></textarea>
+        </div>
+      </div>
+
+      <!-- Lista de preguntas -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.5px">Preguntas</div>
+          <span id="fb-preguntas-count" style="font-size:11px;color:var(--ink3)">0 preguntas</span>
+        </div>
+        <div id="fb-preguntas-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
+
+        <!-- Agregar nueva pregunta -->
+        <div style="background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--r-lg);padding:14px">
+          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Agregar pregunta</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end">
+            <div>
+              <div class="form-field" style="margin-bottom:8px">
+                <label class="form-label">Texto de la pregunta</label>
+                <input type="text" class="form-input" id="fb-new-pregunta" placeholder="Ej: ¿Cuál es el nombre de tu marca?" onkeydown="if(event.key==='Enter'){event.preventDefault();addFormPregunta()}">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Tipo de respuesta</label>
+                  <select class="form-input form-select" id="fb-new-tipo" onchange="toggleOpcionesField()">
+                    <option value="texto_corto">Texto corto</option>
+                    <option value="texto_largo">Texto largo</option>
+                    <option value="opcion_unica">Opción única</option>
+                    <option value="opcion_multiple">Opción múltiple</option>
+                  </select>
+                </div>
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">¿Requerida?</label>
+                  <select class="form-input form-select" id="fb-new-requerida">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+              </div>
+              <div id="fb-opciones-field" style="display:none;margin-top:8px">
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Opciones (una por línea)</label>
+                  <textarea class="form-input form-textarea" id="fb-new-opciones" placeholder="Instagram&#10;TikTok&#10;LinkedIn&#10;Facebook" style="min-height:80px;resize:none"></textarea>
+                </div>
+              </div>
+            </div>
+            <button onclick="addFormPregunta()" class="tbtn primary" style="height:38px;padding:0 16px;font-size:12px;align-self:end">
+              <i class="ti ti-plus" style="font-size:13px"></i> Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closeFormBuilder()">Cancelar</button>
+      <button class="tbtn primary" onclick="saveFormAndAssign()" id="btn-save-form" style="gap:6px">
+        <i class="ti ti-send" style="font-size:13px"></i> Guardar y enviar al cliente
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ver respuestas de formulario -->
+<div class="modal-overlay" id="modal-form-responses" onclick="if(event.target===this)closeFormResponses()" style="display:none">
+  <div class="modal" style="max-width:600px;width:100%;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="form-responses-title">Respuestas</div>
+      <button class="modal-close" onclick="closeFormResponses()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto;flex:1" id="form-responses-body"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-task" onclick="if(event.target===this)closeTaskModal()">
   <div class="modal" style="max-width:480px">
     <div class="modal-head">
@@ -3531,6 +3622,25 @@
         </div>
       </div>
 
+      <!-- Formularios del cliente -->
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--ink)">Formularios</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Briefs y formularios de onboarding enviados al cliente</div>
+          </div>
+          <button onclick="openFormBuilder('${c.id}')" class="tbtn primary" style="font-size:12px;gap:6px">
+            <i class="ti ti-plus" style="font-size:13px"></i> Nuevo formulario
+          </button>
+        </div>
+        <div id="client-forms-list-${c.id}" style="display:flex;flex-direction:column;gap:8px">
+          <div style="text-align:center;padding:20px 0;color:var(--ink3)">
+            <i class="ti ti-loader" style="font-size:20px;display:block;margin-bottom:6px;opacity:.4"></i>
+            <div style="font-size:12px">Cargando formularios...</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Acceso a reportes -->
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between">
@@ -3567,6 +3677,7 @@
     const promoCol = document.getElementById('portal-promo-col')
     if (promoCol) promoCol.style.display = 'none'
     loadPortalSection(c.id)
+    renderClientFormsSection(c.id)
   }
 
   // ── Documentación del cliente ─────────────────────────
@@ -9890,6 +10001,304 @@ if (id) {
       closePieceModal()
       closePieceDetail()
       closeTaskModal()
+    }
+  })
+
+  // ══════════════════════════════════════════════════════
+  // FORMULARIOS — AGENCIA
+  // ══════════════════════════════════════════════════════
+
+  let formBuilderClientId = null
+  let formBuilderPreguntas = []
+  let formBuilderEditId = null
+
+  // ── Render de la sección en el detalle del cliente ────
+
+  async function renderClientFormsSection(clientId) {
+    const el = document.getElementById(`client-forms-list-${clientId}`)
+    if (!el) return
+
+    try {
+      const { data: assignments, error } = await supabase
+        .from('form_assignments')
+        .select('*, form_templates(nombre, descripcion)')
+        .eq('client_id', clientId)
+        .order('enviado_at', { ascending: false })
+
+      if (error) throw error
+
+      if (!assignments || assignments.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--ink3)">
+          <i class="ti ti-clipboard-list" style="font-size:28px;opacity:.4;display:block;margin-bottom:8px"></i>
+          <div style="font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:3px">Sin formularios todavía</div>
+          <div style="font-size:12px">Creá un formulario y enviáselo al cliente para recopilar información.</div>
+        </div>`
+        return
+      }
+
+      // Ordenar: pendiente → visto → completado, luego por fecha desc
+      const orden = { pendiente: 0, visto: 1, completado: 2 }
+      const sorted = [...assignments].sort((a, b) => {
+        const diff = orden[a.estado] - orden[b.estado]
+        if (diff !== 0) return diff
+        return new Date(b.enviado_at) - new Date(a.enviado_at)
+      })
+
+      const estadoBadge = {
+        pendiente: { label: 'Pendiente', bg: '#FEF2F2', color: '#DC2626', dot: '#EF4444' },
+        visto: { label: 'Visto', bg: '#FFFBEB', color: '#92400E', dot: '#F59E0B' },
+        completado: { label: 'Completado', bg: '#F0FDF4', color: '#166534', dot: '#22C55E' }
+      }
+
+      el.innerHTML = sorted.map(a => {
+        const badge = estadoBadge[a.estado] || estadoBadge.pendiente
+        const fecha = new Date(a.enviado_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })
+        const isCompletado = a.estado === 'completado'
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);transition:border-color var(--t)" onmouseover="this.style.borderColor='#D0DCE8'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:7px;height:7px;border-radius:50%;background:${badge.dot};flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.form_templates?.nombre || 'Formulario'}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px">Enviado el ${fecha}</div>
+          </div>
+          <span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:${badge.bg};color:${badge.color};white-space:nowrap">${badge.label}</span>
+          ${isCompletado
+            ? `<button onclick="openFormResponses('${a.id}','${(a.form_templates?.nombre||'Formulario').replace(/'/g,"\\'")}')" class="tbtn" style="font-size:11px;padding:5px 10px;gap:4px"><i class="ti ti-eye" style="font-size:12px"></i> Ver respuestas</button>`
+            : `<button onclick="deleteFormAssignment('${a.id}','${clientId}')" class="tbtn danger" style="font-size:11px;padding:5px 10px;gap:4px"><i class="ti ti-trash" style="font-size:12px"></i></button>`
+          }
+        </div>`
+      }).join('')
+
+    } catch(e) {
+      console.error('renderClientFormsSection error:', e)
+      el.innerHTML = '<div style="font-size:12px;color:var(--ink3);text-align:center;padding:16px 0">No se pudieron cargar los formularios.</div>'
+    }
+  }
+
+  // ── Constructor de formularios ─────────────────────────
+
+  window.openFormBuilder = function(clientId) {
+    formBuilderClientId = clientId
+    formBuilderPreguntas = []
+    formBuilderEditId = null
+    document.getElementById('fb-nombre').value = ''
+    document.getElementById('fb-descripcion').value = ''
+    document.getElementById('fb-new-pregunta').value = ''
+    document.getElementById('fb-new-tipo').value = 'texto_corto'
+    document.getElementById('fb-new-requerida').value = 'true'
+    document.getElementById('fb-new-opciones').value = ''
+    document.getElementById('fb-opciones-field').style.display = 'none'
+    document.getElementById('form-builder-title').textContent = 'Nuevo formulario'
+    renderFormPreguntasList()
+    document.getElementById('modal-form-builder').style.display = 'flex'
+    setTimeout(() => document.getElementById('fb-nombre').focus(), 100)
+  }
+
+  window.closeFormBuilder = function() {
+    document.getElementById('modal-form-builder').style.display = 'none'
+    formBuilderClientId = null
+    formBuilderPreguntas = []
+  }
+
+  window.toggleOpcionesField = function() {
+    const tipo = document.getElementById('fb-new-tipo').value
+    const show = tipo === 'opcion_unica' || tipo === 'opcion_multiple'
+    document.getElementById('fb-opciones-field').style.display = show ? 'block' : 'none'
+  }
+
+  window.addFormPregunta = function() {
+    const texto = document.getElementById('fb-new-pregunta').value.trim()
+    const tipo = document.getElementById('fb-new-tipo').value
+    const requerida = document.getElementById('fb-new-requerida').value === 'true'
+    const opcionesRaw = document.getElementById('fb-new-opciones').value.trim()
+
+    if (!texto) { showToast('Escribí el texto de la pregunta'); return }
+
+    const needsOpciones = tipo === 'opcion_unica' || tipo === 'opcion_multiple'
+    if (needsOpciones && !opcionesRaw) { showToast('Agregá al menos una opción'); return }
+
+    const opciones = needsOpciones
+      ? opcionesRaw.split('\n').map(o => o.trim()).filter(Boolean)
+      : undefined
+
+    const pregunta = {
+      id: 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      tipo,
+      pregunta: texto,
+      requerida,
+      ...(opciones ? { opciones } : {})
+    }
+
+    formBuilderPreguntas.push(pregunta)
+    renderFormPreguntasList()
+
+    // Limpiar campos
+    document.getElementById('fb-new-pregunta').value = ''
+    document.getElementById('fb-new-opciones').value = ''
+    document.getElementById('fb-new-pregunta').focus()
+  }
+
+  window.removeFormPregunta = function(id) {
+    formBuilderPreguntas = formBuilderPreguntas.filter(p => p.id !== id)
+    renderFormPreguntasList()
+  }
+
+  window.moveFormPregunta = function(id, dir) {
+    const idx = formBuilderPreguntas.findIndex(p => p.id === id)
+    if (idx === -1) return
+    const newIdx = idx + dir
+    if (newIdx < 0 || newIdx >= formBuilderPreguntas.length) return
+    const arr = [...formBuilderPreguntas]
+    ;[arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]]
+    formBuilderPreguntas = arr
+    renderFormPreguntasList()
+  }
+
+  function renderFormPreguntasList() {
+    const el = document.getElementById('fb-preguntas-list')
+    const count = document.getElementById('fb-preguntas-count')
+    if (count) count.textContent = formBuilderPreguntas.length + ' pregunta' + (formBuilderPreguntas.length !== 1 ? 's' : '')
+
+    if (!formBuilderPreguntas.length) {
+      el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--ink3);font-size:12px;background:var(--bg);border-radius:var(--r);border:1px dashed var(--border)">
+        Todavía no hay preguntas. Agregá la primera abajo.
+      </div>`
+      return
+    }
+
+    const tipoLabel = { texto_corto: 'Texto corto', texto_largo: 'Texto largo', opcion_unica: 'Opción única', opcion_multiple: 'Opción múltiple' }
+
+    el.innerHTML = formBuilderPreguntas.map((p, i) => `
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px">
+        <div style="font-size:12px;font-weight:900;color:var(--ink3);padding-top:2px;min-width:18px">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px">${p.pregunta}${p.requerida ? ' <span style="color:var(--danger)">*</span>' : ''}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--cel-dim);color:var(--azul)">${tipoLabel[p.tipo]}</span>
+            ${p.opciones ? `<span style="font-size:10px;color:var(--ink3)">${p.opciones.join(', ')}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button onclick="moveFormPregunta('${p.id}',-1)" class="tbtn" style="padding:4px 7px;font-size:11px" ${i===0?'disabled':''} title="Subir"><i class="ti ti-chevron-up" style="font-size:12px"></i></button>
+          <button onclick="moveFormPregunta('${p.id}',1)" class="tbtn" style="padding:4px 7px;font-size:11px" ${i===formBuilderPreguntas.length-1?'disabled':''} title="Bajar"><i class="ti ti-chevron-down" style="font-size:12px"></i></button>
+          <button onclick="removeFormPregunta('${p.id}')" class="tbtn danger" style="padding:4px 7px;font-size:11px" title="Eliminar"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        </div>
+      </div>`).join('')
+  }
+
+  window.saveFormAndAssign = async function() {
+    const nombre = document.getElementById('fb-nombre')?.value.trim()
+    const descripcion = document.getElementById('fb-descripcion')?.value.trim()
+
+    if (!nombre) { showToast('Poné un nombre al formulario'); return }
+    if (formBuilderPreguntas.length === 0) { showToast('Agregá al menos una pregunta'); return }
+    if (!formBuilderClientId) { showToast('Error: no hay cliente seleccionado'); return }
+
+    const btn = document.getElementById('btn-save-form')
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="font-size:13px"></i> Guardando...' }
+
+    try {
+      // Crear el template
+      const { data: template, error: tErr } = await supabase
+        .from('form_templates')
+        .insert({
+          agency_id: agencyId,
+          nombre,
+          descripcion: descripcion || null,
+          preguntas: formBuilderPreguntas,
+          created_by: currentUserId
+        })
+        .select('id')
+        .single()
+
+      if (tErr) throw tErr
+
+      // Asignar al cliente
+      const { error: aErr } = await supabase
+        .from('form_assignments')
+        .insert({
+          template_id: template.id,
+          agency_id: agencyId,
+          client_id: formBuilderClientId,
+          estado: 'pendiente'
+        })
+
+      if (aErr) throw aErr
+
+      closeFormBuilder()
+      showToast('Formulario enviado al cliente')
+      renderClientFormsSection(formBuilderClientId)
+
+    } catch(e) {
+      console.error('saveFormAndAssign error:', e)
+      showToast('Error al guardar el formulario')
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send" style="font-size:13px"></i> Guardar y enviar al cliente' }
+    }
+  }
+
+  // ── Ver respuestas ─────────────────────────────────────
+
+  window.openFormResponses = async function(assignmentId, nombre) {
+    document.getElementById('form-responses-title').textContent = nombre || 'Respuestas'
+    const body = document.getElementById('form-responses-body')
+    body.innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink3)"><i class="ti ti-loader" style="font-size:24px"></i></div>'
+    document.getElementById('modal-form-responses').style.display = 'flex'
+
+    try {
+      const { data: assignment } = await supabase
+        .from('form_assignments')
+        .select('*, form_templates(nombre, preguntas)')
+        .eq('id', assignmentId)
+        .single()
+
+      const { data: response } = await supabase
+        .from('form_responses')
+        .select('respuestas, created_at')
+        .eq('assignment_id', assignmentId)
+        .maybeSingle()
+
+      if (!response) {
+        body.innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink3);font-size:13px">El cliente no completó este formulario todavía.</div>'
+        return
+      }
+
+      const preguntas = assignment?.form_templates?.preguntas || []
+      const respuestas = response.respuestas || {}
+      const fechaResp = new Date(response.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+      body.innerHTML = `
+        <div style="padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:16px">
+          <div style="font-size:11px;color:var(--ink3)">Completado el ${fechaResp}</div>
+        </div>
+        ${preguntas.map((p, i) => {
+          const resp = respuestas[p.id]
+          const respStr = Array.isArray(resp) ? resp.join(', ') : (resp || '—')
+          return `<div style="margin-bottom:16px;padding-bottom:16px;${i < preguntas.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
+            <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${p.pregunta}${p.requerida ? ' *' : ''}</div>
+            <div style="font-size:13px;color:var(--ink);line-height:1.6">${respStr}</div>
+          </div>`
+        }).join('')}
+      `
+    } catch(e) {
+      body.innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink3);font-size:13px">Error al cargar respuestas.</div>'
+    }
+  }
+
+  window.closeFormResponses = function() {
+    document.getElementById('modal-form-responses').style.display = 'none'
+  }
+
+  window.deleteFormAssignment = async function(assignmentId, clientId) {
+    if (!confirm('¿Eliminar este formulario? Esta acción no se puede deshacer.')) return
+    await supabase.from('form_assignments').delete().eq('id', assignmentId)
+    showToast('Formulario eliminado')
+    renderClientFormsSection(clientId)
+  }
+
+  // Cerrar modales de formulario con Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('modal-form-builder')?.style.display !== 'none') closeFormBuilder()
+      if (document.getElementById('modal-form-responses')?.style.display !== 'none') closeFormResponses()
     }
   })
 
