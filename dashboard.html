@@ -6588,7 +6588,13 @@
     console.log('renderCrmPipeline called')
     renderCrmMetrics()
     const kanban = document.getElementById('crm-kanban')
-    console.log('crm-kanban element:', kanban, 'visible:', kanban?.offsetParent)
+    // Buscar ancestro oculto
+    let el = kanban
+    while (el) {
+      const s = window.getComputedStyle(el)
+      if (s.display === 'none') { console.log('ANCESTRO OCULTO:', el.id || el.className, el.style.cssText); break }
+      el = el.parentElement
+    }
     if (!kanban) return
     kanban.innerHTML = CRM_STAGES.map(stage => {
       const contacts = crmContacts.filter(c => c.pipeline_stage === stage.id)
