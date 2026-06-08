@@ -10068,7 +10068,7 @@ if (id) {
           </div>
           <span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:${badge.bg};color:${badge.color};white-space:nowrap">${badge.label}</span>
           ${isCompletado
-            ? `<button onclick="openFormResponses('${a.id}','${(a.form_templates?.nombre||'Formulario').replace(/'/g,"\\'")}')" class="tbtn" style="font-size:11px;padding:5px 10px;gap:4px"><i class="ti ti-eye" style="font-size:12px"></i> Ver respuestas</button>`
+            ? `<div style="display:flex;gap:6px"><button onclick="openFormResponses('${a.id}','${(a.form_templates?.nombre||'Formulario').replace(/'/g,"\\'")}')" class="tbtn" style="font-size:11px;padding:5px 10px;gap:4px"><i class="ti ti-eye" style="font-size:12px"></i> Ver respuestas</button><button onclick="deleteFormAssignment('${a.id}','${clientId}')" class="tbtn danger" style="font-size:11px;padding:5px 10px"><i class="ti ti-trash" style="font-size:12px"></i></button></div>`
             : `<button onclick="deleteFormAssignment('${a.id}','${clientId}')" class="tbtn danger" style="font-size:11px;padding:5px 10px;gap:4px"><i class="ti ti-trash" style="font-size:12px"></i></button>`
           }
         </div>`
