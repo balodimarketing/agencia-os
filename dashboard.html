@@ -7850,193 +7850,186 @@ if (id) {
       { data: tareasVencidas },
       { data: crmVencidos },
       { data: piezasPublicadas },
-      { data: proximasPublicaciones }
+      { data: proximasPublicaciones },
+      { data: piezasAprobacion }
     ] = await Promise.all([
-      supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).in('estado',['revision','aprobacion']).limit(10),
+      supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).in('estado',['revision']).limit(10),
       supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(10),
       supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(10),
       supabase.from('content_pieces').select('id').eq('agency_id',agencyId).in('estado',['publicado','programado']).gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
-      supabase.from('calendar_events').select('id,titulo,fecha_inicio,color,tipo').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(4)
+      supabase.from('calendar_events').select('id,titulo,fecha_inicio,color,tipo').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(3),
+      supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion').limit(10)
     ])
 
-    // ── Métricas ──
-    const metrics = [
-      { value: (piezasUrgentes||[]).length, label:'Piezas en revisión', sub:'esperando atención', numColor:'#0A2540', numBg:'#0A2540', dark:true, mod:'contenido' },
-      { value: (tareasVencidas||[]).length,  label:'Tareas vencidas',    sub:'requieren acción',   numColor:'#EF4444', dark:false, mod:'contenido' },
-      { value: (crmVencidos||[]).length,     label:'Seguimientos CRM',   sub:'sin contactar',      numColor:'#F59E0B', dark:false, mod:'crm'       },
-      { value: (piezasPublicadas||[]).length, label:'Publicadas este mes', sub:'contenido entregado', numColor:'#10B981', dark:false, mod:'contenido' },
-    ]
+    const urgentes = piezasUrgentes || []
+    const vencidas = tareasVencidas || []
+    const crmV = crmVencidos || []
+    const aprobacion = piezasAprobacion || []
+    const totalUrgente = urgentes.length + vencidas.length + crmV.length + aprobacion.length
 
+    // ── Header bienvenida ──
     const metricsEl = document.getElementById('inicio-metrics')
     if (metricsEl) {
-      metricsEl.style.background = 'var(--white)'
-      metricsEl.style.border = '1.5px solid var(--border)'
-      metricsEl.style.borderRadius = '18px'
-      metricsEl.style.padding = '4px'
-      metricsEl.innerHTML = metrics.map((m,i) => {
-        const isDark = i === 0
-        const bg = isDark ? '#0A2540' : 'transparent'
-        const border = isDark ? 'none' : 'none'
-        const labelColor = isDark ? '#fff' : 'var(--ink)'
-        const subColor = isDark ? 'rgba(142,219,255,.65)' : 'var(--ink3)'
-        const numColor = isDark ? '#8EDBFF' : m.numColor
-        const sep = i < metrics.length-1 && !isDark ? 'border-right:1px solid var(--border)' : ''
-        return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=${m.mod}]'))" style="background:${bg};border-radius:14px;padding:18px 20px;cursor:pointer;transition:opacity .15s;${sep}" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-          <div style="font-size:32px;font-weight:900;color:${numColor};letter-spacing:-1px;line-height:1">${m.value}</div>
-          <div style="font-size:12px;font-weight:800;color:${labelColor};margin-top:8px;letter-spacing:-.1px">${m.label}</div>
-          <div style="font-size:11px;color:${subColor};margin-top:3px">${m.sub}</div>
-        </div>`
-      }).join('')
-    }
+      const h = today.getHours()
+      const saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'
+      const agencyName = document.getElementById('greeting-agency')?.textContent || ''
 
-    // ── Próximas publicaciones ──
-    const pubEl = document.getElementById('inicio-publicaciones')
-    if (pubEl) {
-      const pubs = proximasPublicaciones || []
-      const pubCards = pubs.slice(0,3).map(e => {
-        const d = new Date(e.fecha_inicio)
-        const dia = d.getDate()
-        const mes = d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
-        const hora = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-        return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="flex:1;min-width:160px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
-          <div style="background:${e.color};border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0">
-            <div style="font-size:18px;font-weight:900;color:#fff;line-height:1">${dia}</div>
-            <div style="font-size:9px;font-weight:800;color:#8EDBFF;letter-spacing:.5px;margin-top:2px">${mes}</div>
+      metricsEl.innerHTML = `
+        <div style="background:var(--azul);border-radius:var(--r-lg);padding:24px 28px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;margin-bottom:4px">
+          <div>
+            <div style="font-size:11px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">${saludo}</div>
+            <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.4px;margin-bottom:3px" id="greeting-title-inner">${document.getElementById('greeting-title')?.textContent || ''}</div>
+            <div style="font-size:13px;color:rgba(142,219,255,.55)">${agencyName}</div>
           </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
-            <div style="font-size:11px;color:var(--ink3);margin-top:3px">${hora}</div>
+          <div style="display:flex;gap:20px">
+            <div style="text-align:center">
+              <div style="font-size:26px;font-weight:900;color:${aprobacion.length > 0 ? '#FED7AA' : 'rgba(142,219,255,.5)'};letter-spacing:-.5px;line-height:1">${aprobacion.length}</div>
+              <div style="font-size:10px;font-weight:700;color:rgba(142,219,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Para aprobar</div>
+            </div>
+            <div style="width:1px;background:rgba(142,219,255,.12)"></div>
+            <div style="text-align:center">
+              <div style="font-size:26px;font-weight:900;color:${vencidas.length > 0 ? '#FCA5A5' : 'rgba(142,219,255,.5)'};letter-spacing:-.5px;line-height:1">${vencidas.length}</div>
+              <div style="font-size:10px;font-weight:700;color:rgba(142,219,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Tareas vencidas</div>
+            </div>
+            <div style="width:1px;background:rgba(142,219,255,.12)"></div>
+            <div style="text-align:center">
+              <div style="font-size:26px;font-weight:900;color:#C4B5FD;letter-spacing:-.5px;line-height:1">${(piezasPublicadas||[]).length}</div>
+              <div style="font-size:10px;font-weight:700;color:rgba(142,219,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Este mes</div>
+            </div>
           </div>
-        </div>`
-      }).join('')
-
-      const verTodoCard = `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="flex:1;min-width:120px;max-width:160px;background:var(--white);border:1.5px dashed var(--border);border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--azul)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="width:32px;height:32px;border-radius:50%;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);font-size:18px;font-weight:300">+</div>
-        <div style="font-size:11px;font-weight:700;color:var(--ink3);text-align:center">Ver calendario completo</div>
-      </div>`
-
-      pubEl.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Próximas publicaciones</div>
-        </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          ${pubs.length ? pubCards + verTodoCard : `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="flex:1;min-width:160px;background:var(--white);border:1.5px dashed var(--border);border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:72px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--azul)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:13px;color:var(--ink3);font-weight:600">Sin publicaciones próximas</div><div style="font-size:11px;color:var(--ink3);opacity:.7">Agregá eventos al calendario →</div></div>`}
         </div>`
     }
 
-    // ── Banner Faro Pro ──
-    const bannerEl = document.getElementById('inicio-banner')
-    if (bannerEl && userRole === 'OWNER' && !isPro()) bannerEl.innerHTML = `
-      <div style="background:var(--azul);border-radius:18px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(142,219,255,.07)"></div>
-        <div style="position:absolute;bottom:-50px;right:140px;width:120px;height:120px;border-radius:50%;background:rgba(142,219,255,.05)"></div>
-        <div style="position:relative">
-          <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Faro Pro</div>
-          <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:5px">Llevá tu agencia al siguiente nivel</div>
-          <div style="font-size:13px;color:rgba(142,219,255,.75);line-height:1.5">Métricas avanzadas, más clientes, reportes ilimitados y soporte prioritario.</div>
-        </div>
-        <button style="flex-shrink:0;padding:11px 22px;background:var(--celeste);color:var(--azul);border:none;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Conocer Pro →</button>
-      </div>`
-
-    // ── Alertas ──
+    // ── "Para hacer hoy" ──
     const alertsEl = document.getElementById('inicio-alerts')
     if (!alertsEl) return
 
-    const alertSections = []
+    const todoHoy = []
 
-    if ((piezasUrgentes||[]).length) {
-      alertSections.push({
-        icon:'ti-photo', iconBg:'#EEF2FF', iconColor:'#3730A3', accentColor:'#3730A3',
-        title:'Piezas que necesitan atención', sub:'esperando revisión', count: piezasUrgentes.length, mod:'contenido',
-        rawItems: piezasUrgentes.map(p => ({
-          titulo: p.titulo, sub: p.clients?.nombre||'—',
-          date: p.estado==='revision' ? 'Revisión' : 'Aprobación',
-          dateColor: p.estado==='revision' ? '#F59E0B' : '#EF4444',
-          onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)`
-        }))
-      })
-    }
+    // Piezas esperando aprobación del cliente
+    aprobacion.forEach(p => todoHoy.push({
+      tipo: 'aprobacion',
+      titulo: p.titulo,
+      sub: p.clients?.nombre || '—',
+      badge: 'Esperando cliente',
+      badgeBg: '#FFF7ED', badgeColor: '#C2410C',
+      dot: '#F97316',
+      onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)`
+    }))
 
-    if ((tareasVencidas||[]).length) {
-      alertSections.push({
-        icon:'ti-check', iconBg:'#FEF2F2', iconColor:'var(--danger)', accentColor:'var(--danger)',
-        title:'Tareas vencidas', sub:'requieren acción', count: tareasVencidas.length, mod:'contenido',
-        rawItems: tareasVencidas.map(t => ({
-          titulo: t.titulo, sub: t.clients?.nombre||'—',
-          date: new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
-          dateColor: '#EF4444',
-          onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)`
-        }))
-      })
-    }
+    // Piezas en revisión interna
+    urgentes.forEach(p => todoHoy.push({
+      tipo: 'revision',
+      titulo: p.titulo,
+      sub: p.clients?.nombre || '—',
+      badge: 'Revisión interna',
+      badgeBg: '#FFFBEB', badgeColor: '#92400E',
+      dot: '#F59E0B',
+      onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)`
+    }))
 
-    if ((crmVencidos||[]).length) {
-      alertSections.push({
-        icon:'ti-address-book', iconBg:'#F0FDF4', iconColor:'#166634', accentColor:'#166534',
-        title:'Seguimientos CRM vencidos', sub:'sin contactar', count: crmVencidos.length, mod:'crm',
-        rawItems: crmVencidos.map(c => ({
-          titulo: c.nombre, sub: c.empresa||'—',
-          date: '' + new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
-          dateColor: '#F59E0B',
-          onclick: `switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)`
-        }))
-      })
-    }
+    // Tareas vencidas
+    vencidas.forEach(t => todoHoy.push({
+      tipo: 'tarea',
+      titulo: t.titulo,
+      sub: t.clients?.nombre || '—',
+      badge: 'Vencida el ' + new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
+      badgeBg: '#FEF2F2', badgeColor: '#DC2626',
+      dot: '#EF4444',
+      onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)`
+    }))
 
-    if (!alertSections.length) {
-      alertsEl.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:32px;text-align:center">
-        <div style="width:48px;height:48px;border-radius:14px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px">✅</div>
-        <div style="font-size:15px;font-weight:900;color:var(--ink);margin-bottom:4px">Todo al día</div>
-        <div style="font-size:13px;color:var(--ink3)">No hay nada urgente por atender hoy.</div>
+    // CRM vencidos
+    crmV.forEach(c => todoHoy.push({
+      tipo: 'crm',
+      titulo: c.nombre,
+      sub: c.empresa || '—',
+      badge: 'Seguimiento vencido',
+      badgeBg: '#F0FDF4', badgeColor: '#166534',
+      dot: '#22C55E',
+      onclick: `switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)`
+    }))
+
+    const pubEl = document.getElementById('inicio-publicaciones')
+    const pubs = proximasPublicaciones || []
+
+    let html = ''
+
+    // Sección "Para hacer hoy"
+    if (todoHoy.length > 0) {
+      html += `<div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Para hacer hoy</div>
+          <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:#FEF2F2;color:var(--danger)">${todoHoy.length} pendiente${todoHoy.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${todoHoy.map(item => `
+            <div onclick="${item.onclick}" style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow var(--t),border-color var(--t),transform var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)';this.style.transform=''">
+              <div style="width:8px;height:8px;border-radius:50%;background:${item.dot};flex-shrink:0"></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo}</div>
+                <div style="font-size:11px;color:var(--ink3);margin-top:2px">${item.sub}</div>
+              </div>
+              <span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:${item.badgeBg};color:${item.badgeColor};white-space:nowrap;flex-shrink:0">${item.badge}</span>
+              <i class="ti ti-chevron-right" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
+            </div>`).join('')}
+        </div>
       </div>`
-      return
-    }
-
-    // Una card unificada: primera mitad azul, segunda blanca
-    const az = alertSections[0]
-    const bl = alertSections[1]
-
-    const renderHalf = (s, dark) => {
-      const bg = dark ? 'var(--azul)' : 'var(--white)'
-      const numColor = dark ? 'var(--celeste)' : s.iconColor
-      const titleColor = dark ? '#fff' : 'var(--ink)'
-      const subColor = dark ? 'rgba(142,219,255,.6)' : 'var(--ink3)'
-      const borderColor = dark ? 'rgba(142,219,255,.15)' : 'var(--border)'
-      const itemsHTML = s.rawItems.map(item => {
-        const dotColor = dark ? item.dateColor : item.dateColor
-        const nameColor = dark ? '#fff' : 'var(--ink)'
-        const subNameColor = dark ? 'rgba(142,219,255,.5)' : 'var(--ink3)'
-        const chevColor = dark ? 'rgba(142,219,255,.3)' : 'var(--border)'
-        return `<div onclick="${item.onclick}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
-          <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0"></div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:${nameColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo}</div>
-            <div style="font-size:11px;color:${subNameColor};margin-top:2px">${item.sub}</div>
-          </div>
-          <span style="font-size:10px;font-weight:800;color:${dotColor};flex-shrink:0">${item.date}</span>
-          <i class="ti ti-chevron-right" style="font-size:13px;color:${chevColor};flex-shrink:0"></i>
-        </div>`
-      }).join('')
-      return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=${s.mod}]'))" style="background:${bg};padding:18px 20px;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
-        <div style="font-size:32px;font-weight:900;color:${numColor};letter-spacing:-1px;line-height:1">${s.count}</div>
-        <div style="font-size:12px;font-weight:800;color:${titleColor};margin-top:8px;letter-spacing:-.1px">${s.title}</div>
-        <div style="font-size:11px;color:${subColor};margin-top:2px;margin-bottom:14px">${s.sub}</div>
-        <div style="border-top:1px solid ${borderColor};padding-top:12px;display:flex;flex-direction:column;gap:10px">${itemsHTML}</div>
+    } else {
+      html += `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px;display:flex;align-items:center;gap:14px;margin-bottom:20px">
+        <div style="width:40px;height:40px;border-radius:12px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-circle-check" style="font-size:20px;color:#22C55E"></i>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:2px">Todo al día</div>
+          <div style="font-size:12px;color:var(--ink3)">No hay nada urgente por atender hoy.</div>
+        </div>
       </div>`
     }
 
-    if (az && bl) {
-      alertsEl.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr">
-        ${renderHalf(az, true)}
-        <div style="border-left:1px solid var(--border)">${renderHalf(bl, false).replace(/^<div/, '<div')}</div>
+    // Sección próximas publicaciones
+    if (pubs.length > 0) {
+      html += `<div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Próximas publicaciones</div>
+          <div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'">Ver calendario <i class="ti ti-chevron-right" style="font-size:11px"></i></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+          ${pubs.map(e => {
+            const d = new Date(e.fecha_inicio)
+            const dia = d.getDate()
+            const mes = d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
+            const hora = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+            return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow var(--t),border-color var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+              <div style="background:${e.color||'var(--azul)'};border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0;min-width:44px">
+                <div style="font-size:18px;font-weight:900;color:#fff;line-height:1">${dia}</div>
+                <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:.5px;margin-top:2px">${mes}</div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
+                <div style="font-size:11px;color:var(--ink3);margin-top:3px;display:flex;align-items:center;gap:3px"><i class="ti ti-clock" style="font-size:10px"></i> ${hora}</div>
+              </div>
+            </div>`
+          }).join('')}
+        </div>
       </div>`
-    } else if (az) {
-      alertsEl.innerHTML = `<div style="background:var(--azul);border:1.5px solid var(--border);border-radius:18px;overflow:hidden">${renderHalf(az, true)}</div>`
-    } else if (bl) {
-      alertsEl.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:18px;overflow:hidden">${renderHalf(bl, false)}</div>`
     }
+
+    alertsEl.innerHTML = html
+
+    // Banner Pro
+    const bannerEl = document.getElementById('inicio-banner')
+    if (bannerEl && userRole === 'OWNER' && !isPro()) bannerEl.innerHTML = `
+      <div style="background:var(--azul);border-radius:var(--r-lg);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden;margin-bottom:20px">
+        <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(142,219,255,.07)"></div>
+        <div style="position:relative">
+          <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Faro Pro</div>
+          <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:4px">Llevá tu agencia al siguiente nivel</div>
+          <div style="font-size:12px;color:rgba(142,219,255,.7)">Métricas avanzadas, más clientes y soporte prioritario.</div>
+        </div>
+        <button style="flex-shrink:0;padding:10px 20px;background:var(--celeste);color:var(--azul);border:none;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Conocer Pro →</button>
+      </div>`
   }
-
 
   // ══════════════════════════════════════
   // MÉTRICAS DE AGENCIA
