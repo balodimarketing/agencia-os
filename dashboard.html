@@ -9999,6 +9999,7 @@ if (id) {
   // ── Render de la sección en el detalle del cliente ────
 
   async function renderClientFormsSection(clientId) {
+    if (!clientId || clientId === 'null' || clientId === 'undefined') return
     const placeholder = document.getElementById('client-forms-section-placeholder')
     if (placeholder) {
       placeholder.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px">
