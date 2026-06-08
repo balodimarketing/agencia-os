@@ -1469,6 +1469,8 @@
         <div id="rep-pieces-list" style="display:flex;flex-direction:column;gap:10px"></div>
       </div>
 
+    </div><!-- fin v-reportes -->
+
     <!-- CRM -->
     <div class="view flex-view" id="v-crm" style="padding:0;flex-direction:column;height:calc(100vh - 52px);overflow:hidden">
 
@@ -6585,16 +6587,8 @@
   let crmDragId = null
 
   function renderCrmPipeline() {
-    console.log('renderCrmPipeline called')
     renderCrmMetrics()
     const kanban = document.getElementById('crm-kanban')
-    // Buscar ancestro oculto
-    let el = kanban
-    while (el) {
-      const s = window.getComputedStyle(el)
-      if (s.display === 'none') { console.log('ANCESTRO OCULTO:', el.id || el.className, el.style.cssText); break }
-      el = el.parentElement
-    }
     if (!kanban) return
     kanban.innerHTML = CRM_STAGES.map(stage => {
       const contacts = crmContacts.filter(c => c.pipeline_stage === stage.id)
@@ -7468,9 +7462,7 @@ if (id) {
   }
 
   async function renderCrm() {
-    console.log('renderCrm called, agencyId:', agencyId, 'crmView:', crmView)
     await loadCrmContacts()
-    console.log('crmContacts loaded:', crmContacts.length)
     if (crmView === 'pipeline') renderCrmPipeline()
     else renderCrmList()
   }
