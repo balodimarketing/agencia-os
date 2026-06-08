@@ -6585,8 +6585,10 @@
   let crmDragId = null
 
   function renderCrmPipeline() {
+    console.log('renderCrmPipeline called')
     renderCrmMetrics()
     const kanban = document.getElementById('crm-kanban')
+    console.log('crm-kanban element:', kanban, 'visible:', kanban?.offsetParent)
     if (!kanban) return
     kanban.innerHTML = CRM_STAGES.map(stage => {
       const contacts = crmContacts.filter(c => c.pipeline_stage === stage.id)
