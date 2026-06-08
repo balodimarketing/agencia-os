@@ -10007,7 +10007,7 @@ if (id) {
             <div style="font-size:13px;font-weight:800;color:var(--ink)">Formularios</div>
             <div style="font-size:12px;color:var(--ink3);margin-top:2px">Briefs y formularios de onboarding enviados al cliente</div>
           </div>
-          <button onclick="openFormBuilder('${clientId}')" class="tbtn primary" style="font-size:12px;gap:6px">
+          <button data-action="open-form-builder" data-client-id="${clientId}" class="tbtn primary" style="font-size:12px;gap:6px">
             <i class="ti ti-plus" style="font-size:13px"></i> Nuevo formulario
           </button>
         </div>
@@ -10298,6 +10298,17 @@ if (id) {
     showToast('Formulario eliminado')
     renderClientFormsSection(clientId)
   }
+
+  // Event delegation para botones de formularios generados dinámicamente
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]')
+    if (!btn) return
+    const action = btn.dataset.action
+    if (action === 'open-form-builder') {
+      e.stopPropagation()
+      window.openFormBuilder(btn.dataset.clientId)
+    }
+  })
 
   // Cerrar modales de formulario con Escape
   document.addEventListener('keydown', e => {
