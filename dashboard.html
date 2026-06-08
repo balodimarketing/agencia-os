@@ -3222,6 +3222,51 @@
         <div style="font-size:13px;color:var(--ink2);line-height:1.7">${c.brief}</div>
       </div>` : ''}
 
+      <!-- Documentación del cliente -->
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--ink)">Documentación</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Brief, guía de marca, tono de voz, links y notas internas</div>
+          </div>
+          <button onclick="toggleDocEditor('${c.id}')" id="btn-edit-doc-${c.id}" class="tbtn" style="gap:6px;font-size:12px">
+            <i class="ti ti-pencil" style="font-size:13px"></i> Editar
+          </button>
+        </div>
+
+        <!-- Vista renderizada -->
+        <div id="doc-view-${c.id}" style="${c.documentacion ? '' : 'display:none'}">
+          <div id="doc-rendered-${c.id}" style="font-size:13px;color:var(--ink2);line-height:1.8">${renderMarkdown(c.documentacion || '')}</div>
+        </div>
+
+        <!-- Placeholder vacío -->
+        <div id="doc-empty-${c.id}" style="${c.documentacion ? 'display:none' : ''}">
+          <div style="text-align:center;padding:20px 0;color:var(--ink3)">
+            <i class="ti ti-file-text" style="font-size:28px;opacity:.4;display:block;margin-bottom:8px"></i>
+            <div style="font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:3px">Sin documentación todavía</div>
+            <div style="font-size:12px">Agregá el brief, guía de marca o cualquier info relevante del cliente.</div>
+          </div>
+        </div>
+
+        <!-- Editor -->
+        <div id="doc-editor-${c.id}" style="display:none">
+          <div style="font-size:10px;color:var(--ink3);margin-bottom:6px;display:flex;align-items:center;gap:12px">
+            <span>Soporta markdown básico:</span>
+            <code style="font-size:10px;background:var(--bg);padding:2px 6px;border-radius:4px"># Título</code>
+            <code style="font-size:10px;background:var(--bg);padding:2px 6px;border-radius:4px">**negrita**</code>
+            <code style="font-size:10px;background:var(--bg);padding:2px 6px;border-radius:4px">- lista</code>
+            <code style="font-size:10px;background:var(--bg);padding:2px 6px;border-radius:4px">[link](url)</code>
+          </div>
+          <textarea id="doc-textarea-${c.id}" style="width:100%;min-height:200px;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;color:var(--ink);line-height:1.7;resize:vertical;outline:none;transition:border var(--t)" onfocus="this.style.borderColor='var(--azul)'" onblur="this.style.borderColor='var(--border)'" placeholder="# Brief del cliente&#10;&#10;**Industria:** Marketing digital&#10;**Tono de voz:** Profesional y cercano&#10;&#10;## Guía de marca&#10;- Color principal: #0A2540&#10;- Tipografía: Plus Jakarta Sans&#10;&#10;## Links útiles&#10;- [Website](https://...)&#10;- [Drive](https://...)">${c.documentacion || ''}</textarea>
+          <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+            <button onclick="cancelDocEdit('${c.id}')" class="tbtn" style="font-size:12px">Cancelar</button>
+            <button onclick="saveDocumentacion('${c.id}')" class="tbtn primary" style="font-size:12px;gap:6px">
+              <i class="ti ti-check" style="font-size:13px"></i> Guardar
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Acceso a reportes -->
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between">
@@ -3258,6 +3303,95 @@
     const promoCol = document.getElementById('portal-promo-col')
     if (promoCol) promoCol.style.display = 'none'
     loadPortalSection(c.id)
+  }
+
+  // ── Documentación del cliente ─────────────────────────
+
+  function renderMarkdown(text) {
+    if (!text) return ''
+    return text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/^### (.+)$/gm,'<h3 style="font-size:13px;font-weight:900;color:var(--ink);margin:14px 0 6px;letter-spacing:-.2px">$1</h3>')
+      .replace(/^## (.+)$/gm,'<h2 style="font-size:14px;font-weight:900;color:var(--ink);margin:16px 0 8px;letter-spacing:-.3px">$1</h2>')
+      .replace(/^# (.+)$/gm,'<h1 style="font-size:16px;font-weight:900;color:var(--ink);margin:0 0 10px;letter-spacing:-.4px">$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/`(.+?)`/g,'<code style="font-size:12px;background:var(--bg);padding:1px 6px;border-radius:4px;font-family:monospace">$1</code>')
+      .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank" style="color:var(--azul);text-decoration:underline;text-underline-offset:2px">$1</a>')
+      .replace(/^- (.+)$/gm,'<li style="margin:3px 0;padding-left:4px">$1</li>')
+      .replace(/(<li.*<\/li>\n?)+/g,'<ul style="padding-left:16px;margin:8px 0">$&</ul>')
+      .replace(/^(?!<[hul]).+$/gm, (line) => line.trim() ? `<p style="margin:4px 0">${line}</p>` : '')
+      .replace(/\n{2,}/g,'<br>')
+  }
+
+  window.toggleDocEditor = function(clientId) {
+    const view = document.getElementById(`doc-view-${clientId}`)
+    const empty = document.getElementById(`doc-empty-${clientId}`)
+    const editor = document.getElementById(`doc-editor-${clientId}`)
+    const btn = document.getElementById(`btn-edit-doc-${clientId}`)
+    const isEditing = editor.style.display !== 'none'
+    if (isEditing) {
+      cancelDocEdit(clientId)
+    } else {
+      if (view) view.style.display = 'none'
+      if (empty) empty.style.display = 'none'
+      editor.style.display = 'block'
+      btn.innerHTML = '<i class="ti ti-x" style="font-size:13px"></i> Cancelar'
+      document.getElementById(`doc-textarea-${clientId}`)?.focus()
+    }
+  }
+
+  window.cancelDocEdit = function(clientId) {
+    const client = clients.find(c => c.id === clientId)
+    const view = document.getElementById(`doc-view-${clientId}`)
+    const empty = document.getElementById(`doc-empty-${clientId}`)
+    const editor = document.getElementById(`doc-editor-${clientId}`)
+    const btn = document.getElementById(`btn-edit-doc-${clientId}`)
+    editor.style.display = 'none'
+    btn.innerHTML = '<i class="ti ti-pencil" style="font-size:13px"></i> Editar'
+    if (client?.documentacion) {
+      if (view) view.style.display = 'block'
+    } else {
+      if (empty) empty.style.display = 'block'
+    }
+  }
+
+  window.saveDocumentacion = async function(clientId) {
+    const textarea = document.getElementById(`doc-textarea-${clientId}`)
+    const text = textarea?.value || ''
+    const btn = document.querySelector(`#doc-editor-${clientId} .tbtn.primary`)
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="font-size:13px"></i> Guardando...' }
+
+    const { error } = await supabase.from('clients').update({ documentacion: text }).eq('id', clientId)
+
+    if (!error) {
+      // Actualizar cache local
+      const client = clients.find(c => c.id === clientId)
+      if (client) client.documentacion = text
+
+      // Actualizar vista
+      const rendered = document.getElementById(`doc-rendered-${clientId}`)
+      const view = document.getElementById(`doc-view-${clientId}`)
+      const empty = document.getElementById(`doc-empty-${clientId}`)
+      const editor = document.getElementById(`doc-editor-${clientId}`)
+      const editBtn = document.getElementById(`btn-edit-doc-${clientId}`)
+
+      if (rendered) rendered.innerHTML = renderMarkdown(text)
+      editor.style.display = 'none'
+      editBtn.innerHTML = '<i class="ti ti-pencil" style="font-size:13px"></i> Editar'
+
+      if (text.trim()) {
+        if (view) view.style.display = 'block'
+        if (empty) empty.style.display = 'none'
+      } else {
+        if (view) view.style.display = 'none'
+        if (empty) empty.style.display = 'block'
+      }
+      showToast('Documentación guardada')
+    } else {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check" style="font-size:13px"></i> Guardar' }
+      showToast('Error al guardar')
+    }
   }
 
   // ── Portal del cliente ────────────────────────────────
