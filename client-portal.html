@@ -249,7 +249,7 @@
 
   let currentUser = null, clientData = null, agencyData = null, portalConfig = null
   let pieces = [], calDate = new Date(), currentTab = 'contenido', currentPiece = null
-  let portalForms = [], portalClientId = null
+  let portalForms = [], portalClientId = null, isPreviewMode = false
   let userName = '', userIni = '?'
 
   async function init() {
@@ -264,6 +264,7 @@
     let cu = null
 
     if (isPreview && previewClientId) {
+      isPreviewMode = true
       // Modo preview — carga directo con el client_id sin verificar client_users
       const { data: clientRow } = await supabase
         .from('clients')
@@ -826,6 +827,21 @@
   }
 
   window.submitPortalForm = async function(assignmentId) {
+    // En modo preview no se pueden enviar respuestas reales
+    if (isPreviewMode) {
+      const content = document.getElementById('main-content')
+      const btn = document.getElementById(`btn-submit-form-${assignmentId}`)
+      if (btn) {
+        btn.style.background = '#F59E0B'
+        btn.innerHTML = '<i class="ti ti-eye" style="font-size:15px"></i> Modo vista previa — el cliente real puede enviar'
+        setTimeout(() => {
+          btn.style.background = '#0A2540'
+          btn.innerHTML = '<i class="ti ti-send" style="font-size:15px"></i> Enviar respuestas'
+        }, 3000)
+      }
+      return
+    }
+
     const assignment = portalForms.find(f => f.id === assignmentId)
     if (!assignment) return
 
