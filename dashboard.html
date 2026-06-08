@@ -3650,8 +3650,9 @@
 
     const hour = new Date().getHours()
     const saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
-    document.getElementById('greeting-title').textContent = `${saludo}, ${profile?.nombre || ''}`
-    document.getElementById('greeting-agency').textContent = membership.agencies?.nombre || ''
+    // Guardar datos en data attributes del body para que renderInicio los lea
+    document.body.dataset.userName = `${saludo}, ${profile?.nombre || ''}`
+    document.body.dataset.agencyName = membership.agencies?.nombre || ''
 
     // Restrict UI for MEMBER
     if (userRole === 'MEMBER') {
@@ -7869,8 +7870,8 @@ if (id) {
     const h = today.getHours()
     const saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'
     const fechaLabel = `${DIAS[today.getDay()]} ${today.getDate()} de ${MESES_FULL2[today.getMonth()]}`
-    const nombreUsuario = document.getElementById('greeting-title')?.textContent?.replace(/buenos (días|tardes|noches),?\s*/i,'').trim() || ''
-    const agencyName = document.getElementById('greeting-agency')?.textContent || ''
+    const nombreUsuario = (document.body.dataset.userName || '').replace(/^(buenos (días|tardes|noches)),?\s*/i,'').trim()
+    const agencyName = document.body.dataset.agencyName || ''
 
     const [
       { data: piezasRevision },
