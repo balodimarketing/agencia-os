@@ -10094,12 +10094,16 @@ if (id) {
     document.getElementById('fb-opciones-field').style.display = 'none'
     document.getElementById('form-builder-title').textContent = 'Nuevo formulario'
     renderFormPreguntasList()
-    document.getElementById('modal-form-builder').style.display = 'flex'
+    const modal = document.getElementById('modal-form-builder')
+    modal.style.display = 'flex'
+    requestAnimationFrame(() => modal.classList.add('show'))
     setTimeout(() => document.getElementById('fb-nombre').focus(), 100)
   }
 
   window.closeFormBuilder = function() {
-    document.getElementById('modal-form-builder').style.display = 'none'
+    const modal = document.getElementById('modal-form-builder')
+    modal.classList.remove('show')
+    setTimeout(() => { modal.style.display = 'none' }, 200)
     formBuilderClientId = null
     formBuilderPreguntas = []
   }
@@ -10246,7 +10250,9 @@ if (id) {
     document.getElementById('form-responses-title').textContent = nombre || 'Respuestas'
     const body = document.getElementById('form-responses-body')
     body.innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink3)"><i class="ti ti-loader" style="font-size:24px"></i></div>'
-    document.getElementById('modal-form-responses').style.display = 'flex'
+    const modalR = document.getElementById('modal-form-responses')
+    modalR.style.display = 'flex'
+    requestAnimationFrame(() => modalR.classList.add('show'))
 
     try {
       const { data: assignment } = await supabase
@@ -10289,7 +10295,9 @@ if (id) {
   }
 
   window.closeFormResponses = function() {
-    document.getElementById('modal-form-responses').style.display = 'none'
+    const modal = document.getElementById('modal-form-responses')
+    modal.classList.remove('show')
+    setTimeout(() => { modal.style.display = 'none' }, 200)
   }
 
   window.deleteFormAssignment = async function(assignmentId, clientId) {
