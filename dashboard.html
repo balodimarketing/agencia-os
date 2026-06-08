@@ -7864,12 +7864,11 @@ if (id) {
     const todayStr = today.toISOString().slice(0,10)
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString()
     const monthEnd = new Date(today.getFullYear(), today.getMonth()+1, 0).toISOString()
-
     const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
-    const MESES_FULL2 = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+    const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
     const h = today.getHours()
     const saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'
-    const fechaLabel = `${DIAS[today.getDay()]} ${today.getDate()} de ${MESES_FULL2[today.getMonth()]}`
+    const fechaLabel = `${DIAS[today.getDay()]} ${today.getDate()} de ${MESES_ES[today.getMonth()]}`
     const nombreUsuario = (document.body.dataset.userName || '').replace(/^(buenos (días|tardes|noches)),?\s*/i,'').trim()
     const agencyName = document.body.dataset.agencyName || ''
 
@@ -7879,14 +7878,18 @@ if (id) {
       { data: crmVencidos },
       { data: piezasPublicadas },
       { data: proximasPublicaciones },
-      { data: piezasAprobacion }
+      { data: piezasAprobacion },
+      { data: clientesActivos },
+      { data: todasPiezas }
     ] = await Promise.all([
       supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).eq('estado','revision').limit(8),
       supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(8),
       supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(8),
       supabase.from('content_pieces').select('id').eq('agency_id',agencyId).in('estado',['publicado','programado']).gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
-      supabase.from('calendar_events').select('id,titulo,fecha_inicio,color,tipo').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(3),
-      supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion').limit(8)
+      supabase.from('calendar_events').select('id,titulo,fecha_inicio,color').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(3),
+      supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion').limit(8),
+      supabase.from('clients').select('id').eq('agency_id',agencyId).eq('estado','activo'),
+      supabase.from('content_pieces').select('id,estado').eq('agency_id',agencyId).in('estado',['produccion','revision','aprobacion','publicado','programado'])
     ])
 
     const aprobacion = piezasAprobacion || []
@@ -7894,46 +7897,57 @@ if (id) {
     const vencidas = tareasVencidas || []
     const crmV = crmVencidos || []
     const pubs = proximasPublicaciones || []
+    const todas = todasPiezas || []
+    const crmContactsLocal = crmContacts || []
 
-    // ── Header ──
-    const metricsEl = document.getElementById('inicio-metrics')
-    if (metricsEl) {
-      metricsEl.innerHTML = `
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">${fechaLabel} · ${saludo}</div>
-            <div style="font-size:22px;font-weight:900;color:var(--ink);letter-spacing:-.4px;margin-bottom:2px">${nombreUsuario}</div>
-            <div style="font-size:13px;color:var(--ink3)">${agencyName}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;padding-top:4px">
-            <div style="text-align:center">
-              <div style="font-size:22px;font-weight:900;color:${aprobacion.length > 0 ? '#F97316' : 'var(--ink3)'};letter-spacing:-.5px;line-height:1">${aprobacion.length}</div>
-              <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">Para aprobar</div>
-            </div>
-            <div style="width:1px;height:32px;background:var(--border)"></div>
-            <div style="text-align:center">
-              <div style="font-size:22px;font-weight:900;color:${vencidas.length > 0 ? '#EF4444' : 'var(--ink3)'};letter-spacing:-.5px;line-height:1">${vencidas.length}</div>
-              <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">Vencidas</div>
-            </div>
-            <div style="width:1px;height:32px;background:var(--border)"></div>
-            <div style="text-align:center">
-              <div style="font-size:22px;font-weight:900;color:var(--ink);letter-spacing:-.5px;line-height:1">${(piezasPublicadas||[]).length}</div>
-              <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">Este mes</div>
-            </div>
-          </div>
-        </div>`
+    // Contar por estado del kanban
+    const kanbanCount = {
+      produccion: todas.filter(p => p.estado === 'produccion').length,
+      revision: todas.filter(p => p.estado === 'revision').length,
+      aprobacion: todas.filter(p => p.estado === 'aprobacion').length,
+      programado: todas.filter(p => p.estado === 'programado').length,
     }
 
-    // ── Banner Pro ──
-    const bannerEl = document.getElementById('inicio-banner')
-    if (bannerEl && userRole === 'OWNER' && !isPro()) {
-      bannerEl.innerHTML = `
-        <div style="background:var(--azul);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px">
-          <div>
-            <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Faro Pro</div>
-            <div style="font-size:13px;font-weight:800;color:#fff">Métricas avanzadas, más clientes y soporte prioritario.</div>
+    // Contar CRM por etapa
+    const crmCount = {
+      contacto_inicial: crmContactsLocal.filter(c => c.pipeline_stage === 'contacto_inicial').length,
+      propuesta_enviada: crmContactsLocal.filter(c => c.pipeline_stage === 'propuesta_enviada').length,
+      negociacion: crmContactsLocal.filter(c => c.pipeline_stage === 'negociacion').length,
+      cerrado_ganado: crmContactsLocal.filter(c => c.pipeline_stage === 'cerrado_ganado').length,
+    }
+
+    // ── Skeleton → Contenido ──
+    const sk = document.getElementById('inicio-skeleton')
+    const ct = document.getElementById('inicio-content')
+
+    // ── Métricas ──
+    const metricsEl = document.getElementById('inicio-metrics')
+    if (metricsEl) {
+      const hasAprobacion = aprobacion.length > 0
+      const hasVencidas = vencidas.length > 0
+      metricsEl.innerHTML = `
+        <div style="margin-bottom:20px">
+          <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">${fechaLabel} · ${saludo}</div>
+          <div style="font-size:24px;font-weight:900;color:var(--ink);letter-spacing:-.4px;margin-bottom:2px">${nombreUsuario}</div>
+          <div style="font-size:13px;color:var(--ink3)">${agencyName}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+          <div style="background:${hasAprobacion ? 'var(--azul)' : 'var(--white)'};border:1.5px solid ${hasAprobacion ? 'transparent' : 'var(--border)'};border-radius:var(--r-lg);padding:16px 18px;cursor:pointer;transition:opacity var(--t)" onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'))" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <div style="font-size:28px;font-weight:900;color:${hasAprobacion ? '#FED7AA' : 'var(--ink)'};letter-spacing:-.5px;line-height:1;margin-bottom:6px">${aprobacion.length}</div>
+            <div style="font-size:10px;font-weight:800;color:${hasAprobacion ? 'rgba(142,219,255,.6)' : 'var(--ink3)'};text-transform:uppercase;letter-spacing:.5px">Para aprobar</div>
           </div>
-          <button style="flex-shrink:0;padding:8px 16px;background:var(--celeste);color:var(--azul);border:none;border-radius:8px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Conocer Pro →</button>
+          <div style="background:${hasVencidas ? '#FEF2F2' : 'var(--white)'};border:1.5px solid ${hasVencidas ? '#FECACA' : 'var(--border)'};border-radius:var(--r-lg);padding:16px 18px;cursor:pointer;transition:opacity var(--t)" onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <div style="font-size:28px;font-weight:900;color:${hasVencidas ? '#DC2626' : 'var(--ink)'};letter-spacing:-.5px;line-height:1;margin-bottom:6px">${vencidas.length}</div>
+            <div style="font-size:10px;font-weight:800;color:${hasVencidas ? '#DC2626' : 'var(--ink3)'};text-transform:uppercase;letter-spacing:.5px">Tareas vencidas</div>
+          </div>
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;cursor:pointer;transition:opacity var(--t)" onclick="switchModule(document.querySelector('.rail-btn[data-module=reportes]'))" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <div style="font-size:28px;font-weight:900;color:var(--ink);letter-spacing:-.5px;line-height:1;margin-bottom:6px">${(piezasPublicadas||[]).length}</div>
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Publicadas este mes</div>
+          </div>
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;cursor:pointer;transition:opacity var(--t)" onclick="switchModule(document.querySelector('.rail-btn[data-module=cuentas]'))" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <div style="font-size:28px;font-weight:900;color:var(--ink);letter-spacing:-.5px;line-height:1;margin-bottom:6px">${(clientesActivos||[]).length}</div>
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Clientes activos</div>
+          </div>
         </div>`
     }
 
@@ -7949,56 +7963,51 @@ if (id) {
 
     let html = ''
 
+    // Para hacer hoy
     if (todoHoy.length > 0) {
-      html += `<div style="margin-bottom:22px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      html += `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">Para hacer hoy</div>
           <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:#FEF2F2;color:var(--danger)">${todoHoy.length} pendiente${todoHoy.length!==1?'s':''}</span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${todoHoy.map(item=>`
-            <div onclick="${item.onclick}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:box-shadow var(--t),border-color var(--t),transform var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)';this.style.transform=''">
-              <div style="width:8px;height:8px;border-radius:50%;background:${item.dot};flex-shrink:0"></div>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo}</div>
-                <div style="font-size:11px;color:var(--ink3);margin-top:1px">${item.sub}</div>
-              </div>
-              <span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:${item.badgeBg};color:${item.badgeColor};white-space:nowrap;flex-shrink:0">${item.badge}</span>
-              <i class="ti ti-chevron-right" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
-            </div>`).join('')}
-        </div>
+        ${todoHoy.map((item,i) => `
+          <div onclick="${item.onclick}" style="display:flex;align-items:center;gap:12px;padding:10px 0;${i < todoHoy.length-1 ? 'border-bottom:1px solid var(--border);' : ''}cursor:pointer;transition:opacity var(--t)" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+            <div style="width:7px;height:7px;border-radius:50%;background:${item.dot};flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo}</div>
+              <div style="font-size:11px;color:var(--ink3);margin-top:1px">${item.sub}</div>
+            </div>
+            <span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:${item.badgeBg};color:${item.badgeColor};white-space:nowrap;flex-shrink:0">${item.badge}</span>
+            <i class="ti ti-chevron-right" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
+          </div>`).join('')}
       </div>`
     } else {
-      html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg);border-radius:var(--r);margin-bottom:22px">
-        <div style="width:36px;height:36px;border-radius:10px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <i class="ti ti-circle-check" style="font-size:18px;color:#22C55E"></i>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">Todo al día</div>
-          <div style="font-size:12px;color:var(--ink3)">No hay nada urgente por atender hoy.</div>
-        </div>
+      html += `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:36px;height:36px;border-radius:10px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-circle-check" style="font-size:18px;color:#22C55E"></i></div>
+        <div><div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">Todo al día</div><div style="font-size:12px;color:var(--ink3)">No hay nada urgente por atender hoy.</div></div>
       </div>`
     }
 
+    // Próximas publicaciones
     if (pubs.length > 0) {
-      html += `<div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      html += `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">Próximas publicaciones</div>
-          <div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:3px" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'">Ver calendario <i class="ti ti-chevron-right" style="font-size:11px"></i></div>
+          <div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:3px;transition:color var(--t)" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'">Ver calendario <i class="ti ti-chevron-right" style="font-size:11px"></i></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
-          ${pubs.map(e=>{
-            const d=new Date(e.fecha_inicio)
-            const dia=d.getDate()
-            const mes=d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
-            const hora=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-            return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:box-shadow var(--t),border-color var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          ${pubs.map(e => {
+            const d = new Date(e.fecha_inicio)
+            const dia = d.getDate()
+            const mes = d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
+            const hora = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+            return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="background:var(--bg);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color var(--t)" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg)'">
               <div style="background:${e.color||'var(--azul)'};border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0;min-width:42px">
                 <div style="font-size:16px;font-weight:900;color:#fff;line-height:1">${dia}</div>
-                <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.4px;margin-top:2px">${mes}</div>
+                <div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:2px">${mes}</div>
               </div>
               <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
+                <div style="font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
                 <div style="font-size:11px;color:var(--ink3);margin-top:2px;display:flex;align-items:center;gap:3px"><i class="ti ti-clock" style="font-size:10px"></i> ${hora}</div>
               </div>
             </div>`
@@ -8007,11 +8016,50 @@ if (id) {
       </div>`
     }
 
+    // Pipeline CRM + Contenido activo
+    const CRM_STAGES_LOCAL = [
+      { id:'contacto_inicial', label:'Prospecto', color:'#6B7280' },
+      { id:'propuesta_enviada', label:'Propuesta enviada', color:'#3B82F6' },
+      { id:'negociacion', label:'Negociación', color:'#F59E0B' },
+      { id:'cerrado_ganado', label:'Cerrado ganado', color:'#22C55E' },
+    ]
+    const KANBAN_SUMMARY = [
+      { id:'produccion', label:'En producción', color:'#60A5FA' },
+      { id:'revision', label:'Revisión interna', color:'#FBBF24' },
+      { id:'aprobacion', label:'Esp. aprobación', color:'#F97316' },
+      { id:'programado', label:'Programado', color:'#8B5CF6' },
+    ]
+
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:18px 20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">Pipeline CRM</div>
+          <div onclick="switchModule(document.querySelector('.rail-btn[data-module=crm]'))" style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:3px;transition:color var(--t)" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'">Ver CRM <i class="ti ti-chevron-right" style="font-size:11px"></i></div>
+        </div>
+        ${CRM_STAGES_LOCAL.map((s,i) => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i < CRM_STAGES_LOCAL.length-1 ? 'border-bottom:1px solid var(--border);' : ''}">
+            <div style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+            <div style="font-size:12px;color:var(--ink2);flex:1">${s.label}</div>
+            <div style="font-size:14px;font-weight:900;color:var(--ink)">${crmCount[s.id] || 0}</div>
+          </div>`).join('')}
+      </div>
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:18px 20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">Contenido activo</div>
+          <div onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'))" style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:3px;transition:color var(--t)" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'">Ver kanban <i class="ti ti-chevron-right" style="font-size:11px"></i></div>
+        </div>
+        ${KANBAN_SUMMARY.map((s,i) => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i < KANBAN_SUMMARY.length-1 ? 'border-bottom:1px solid var(--border);' : ''}">
+            <div style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+            <div style="font-size:12px;color:var(--ink2);flex:1">${s.label}</div>
+            <div style="font-size:14px;font-weight:900;color:var(--ink)">${kanbanCount[s.id] || 0}</div>
+          </div>`).join('')}
+      </div>
+    </div>`
+
     alertsEl.innerHTML = html
 
-    // Mostrar contenido, ocultar skeleton
-    const sk = document.getElementById('inicio-skeleton')
-    const ct = document.getElementById('inicio-content')
+    // Skeleton → contenido
     if (sk) sk.style.display = 'none'
     if (ct) { ct.style.display = 'block'; ct.classList.add('fade-up') }
   }
