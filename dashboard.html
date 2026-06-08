@@ -3622,8 +3622,8 @@
         </div>
       </div>
 
-      <!-- Formularios: se inserta dinámicamente desde showClientDetail via renderClientFormsSection -->
-      <div id="client-forms-section-placeholder"></div>
+      <!-- Formularios del cliente -->
+      <div id="client-forms-section-placeholder" style="margin-bottom:16px"></div>
 
       <!-- Acceso a reportes -->
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
@@ -9999,10 +9999,9 @@ if (id) {
   // ── Render de la sección en el detalle del cliente ────
 
   async function renderClientFormsSection(clientId) {
-    // Inyectar el HTML del bloque con el clientId real
     const placeholder = document.getElementById('client-forms-section-placeholder')
     if (placeholder) {
-      placeholder.outerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px">
+      placeholder.innerHTML = `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div>
             <div style="font-size:13px;font-weight:800;color:var(--ink)">Formularios</div>
