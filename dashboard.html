@@ -7460,9 +7460,13 @@ if (id) {
   }
 
   async function renderCrm() {
-    await loadCrmContacts()
-    if (crmView === 'pipeline') renderCrmPipeline()
-    else renderCrmList()
+    try {
+      await loadCrmContacts()
+      if (crmView === 'pipeline') renderCrmPipeline()
+      else renderCrmList()
+    } catch(e) {
+      console.error('renderCrm error:', e)
+    }
   }
 
   // ══════════════════════════════════════
