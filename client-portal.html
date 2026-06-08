@@ -200,7 +200,8 @@
     </div>
     <div class="rail-sep"></div>
     <div class="rail-btn active" data-tab="contenido" data-tip="Contenido" onclick="switchTab('contenido')"><i class="ti ti-layout-kanban"></i><span class="notif-dot" id="nav-badge-approval"></span></div>
-    <div class="rail-btn" data-tab="calendario" data-tip="Calendario" onclick="switchTab('calendario')"><i class="ti ti-calendar"></i></div>
+    <div class="rail-btn" data-tab="formularios" data-tip="Formularios" onclick="switchTab('formularios')" id="nav-formularios"><i class="ti ti-clipboard-list"></i><span class="notif-dot" id="nav-badge-forms"></span></div>
+    <div class="rail-btn" data-tab="calendario" data-tip="Calendario" onclick="switchTab('calendario')"></i><i class="ti ti-calendar"></i></div>
     <div class="rail-btn" id="nav-historial" data-tab="historial" data-tip="Historial" onclick="switchTab('historial')" style="display:none"><i class="ti ti-history"></i></div>
     <div class="rail-btn" id="nav-metricas" data-tab="metricas" data-tip="Estadísticas" onclick="switchTab('metricas')" style="display:none"><i class="ti ti-chart-bar"></i></div>
     <div class="rail-bottom">
@@ -248,6 +249,7 @@
 
   let currentUser = null, clientData = null, agencyData = null, portalConfig = null
   let pieces = [], calDate = new Date(), currentTab = 'contenido', currentPiece = null
+  let portalForms = [], portalClientId = null
   let userName = '', userIni = '?'
 
   async function init() {
@@ -319,6 +321,7 @@
     if (portalConfig.mostrar_metricas) document.getElementById('nav-metricas').style.display = 'flex'
 
     await loadPieces(cu.client_id)
+    await loadForms(cu.client_id)
 
     const loader = document.getElementById('page-loader')
     loader.classList.add('hide')
@@ -340,13 +343,14 @@
     currentTab = tab
     document.querySelectorAll('.rail-btn[data-tab]').forEach(n => n.classList.remove('active'))
     document.querySelector(`.rail-btn[data-tab="${tab}"]`)?.classList.add('active')
-    const titles = { contenido: 'Contenido', calendario: 'Calendario', historial: 'Historial', metricas: 'Estadísticas' }
+    const titles = { contenido: 'Contenido', calendario: 'Calendario', historial: 'Historial', metricas: 'Estadísticas', formularios: 'Formularios' }
     document.getElementById('topbar-title').textContent = titles[tab] || tab
     document.getElementById('topbar-actions').innerHTML = ''
     if (tab === 'contenido') renderContenido()
     else if (tab === 'calendario') renderCalendario()
     else if (tab === 'historial') renderHistorial()
     else if (tab === 'metricas') renderMetricas()
+    else if (tab === 'formularios') renderFormularios()
   }
 
   function renderContenido() {
@@ -663,6 +667,245 @@
   }
 
   init()
+  // ══════════════════════════════════════════════════════
+  // FORMULARIOS — PORTAL DEL CLIENTE
+  // ══════════════════════════════════════════════════════
+
+  async function loadForms(clientId) {
+    portalClientId = clientId
+    try {
+      const { data } = await supabase
+        .from('form_assignments')
+        .select('*, form_templates(nombre, descripcion, preguntas)')
+        .eq('client_id', clientId)
+        .order('enviado_at', { ascending: false })
+
+      portalForms = data || []
+
+      // Badge en el rail si hay formularios pendientes
+      const pendientes = portalForms.filter(f => f.estado === 'pendiente').length
+      const badge = document.getElementById('nav-badge-forms')
+      if (badge) badge.classList.toggle('show', pendientes > 0)
+
+    } catch(e) {
+      portalForms = []
+    }
+  }
+
+  function renderFormularios() {
+    const content = document.getElementById('main-content')
+    if (!content) return
+
+    if (!portalForms.length) {
+      content.innerHTML = `<div style="padding:40px 32px;max-width:700px;margin:0 auto">
+        <div style="text-align:center;padding:60px 0">
+          <i class="ti ti-clipboard-list" style="font-size:48px;color:rgba(142,219,255,.3);display:block;margin-bottom:16px"></i>
+          <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px">Sin formularios por ahora</div>
+          <div style="font-size:13px;color:rgba(142,219,255,.55)">Tu agencia todavía no te envió ningún formulario.</div>
+        </div>
+      </div>`
+      return
+    }
+
+    const orden = { pendiente: 0, visto: 1, completado: 2 }
+    const sorted = [...portalForms].sort((a, b) => {
+      const diff = orden[a.estado] - orden[b.estado]
+      return diff !== 0 ? diff : new Date(b.enviado_at) - new Date(a.enviado_at)
+    })
+
+    const estadoBadge = {
+      pendiente: { label: 'Pendiente', bg: 'rgba(249,115,22,.2)', color: '#FED7AA', dot: '#F97316' },
+      visto: { label: 'En progreso', bg: 'rgba(245,158,11,.15)', color: '#FDE68A', dot: '#F59E0B' },
+      completado: { label: 'Completado', bg: 'rgba(34,197,94,.15)', color: '#BBF7D0', dot: '#22C55E' }
+    }
+
+    content.innerHTML = `<div style="padding:32px;max-width:700px;margin:0 auto">
+      <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:6px">Formularios</div>
+      <div style="font-size:13px;color:rgba(142,219,255,.55);margin-bottom:24px">Información que tu agencia necesita de tu parte</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${sorted.map(f => {
+          const badge = estadoBadge[f.estado] || estadoBadge.pendiente
+          const fecha = new Date(f.enviado_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+          const preguntas = f.form_templates?.preguntas || []
+          const isCompletado = f.estado === 'completado'
+          return `<div style="background:rgba(255,255,255,.06);border:1px solid rgba(142,219,255,.12);border-radius:14px;padding:20px;${!isCompletado ? 'cursor:pointer' : ''}" ${!isCompletado ? `onclick="openPortalForm('${f.id}')"` : ''} ${!isCompletado ? `onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.06)'"` : ''}>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px">${f.form_templates?.nombre || 'Formulario'}</div>
+                ${f.form_templates?.descripcion ? `<div style="font-size:12px;color:rgba(142,219,255,.55);margin-bottom:8px">${f.form_templates.descripcion}</div>` : ''}
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:${badge.bg};color:${badge.color}">${badge.label}</span>
+                  <span style="font-size:11px;color:rgba(142,219,255,.4)">${preguntas.length} pregunta${preguntas.length !== 1 ? 's' : ''} · Enviado el ${fecha}</span>
+                </div>
+              </div>
+              ${!isCompletado
+                ? `<div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:rgba(249,115,22,.2);display:flex;align-items:center;justify-content:center">
+                    <i class="ti ti-arrow-right" style="font-size:16px;color:#FED7AA"></i>
+                  </div>`
+                : `<div style="flex-shrink:0;width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center">
+                    <i class="ti ti-check" style="font-size:16px;color:#BBF7D0"></i>
+                  </div>`
+              }
+            </div>
+          </div>`
+        }).join('')}
+      </div>
+    </div>`
+  }
+
+  window.openPortalForm = async function(assignmentId) {
+    const assignment = portalForms.find(f => f.id === assignmentId)
+    if (!assignment) return
+
+    const preguntas = assignment.form_templates?.preguntas || []
+    const nombre = assignment.form_templates?.nombre || 'Formulario'
+    const descripcion = assignment.form_templates?.descripcion || ''
+
+    // Marcar como visto si estaba pendiente
+    if (assignment.estado === 'pendiente') {
+      assignment.estado = 'visto'
+      await supabase
+        .from('form_assignments')
+        .update({ estado: 'visto', visto_at: new Date().toISOString() })
+        .eq('id', assignmentId)
+      const badge = document.getElementById('nav-badge-forms')
+      const pendientes = portalForms.filter(f => f.estado === 'pendiente').length
+      if (badge) badge.classList.toggle('show', pendientes > 0)
+    }
+
+    const content = document.getElementById('main-content')
+    content.innerHTML = `<div style="padding:32px;max-width:680px;margin:0 auto">
+      <button onclick="renderFormularios()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:rgba(142,219,255,.55);font-size:13px;font-weight:700;padding:0;margin-bottom:24px;font-family:inherit;transition:color var(--t)" onmouseover="this.style.color='var(--celeste)'" onmouseout="this.style.color='rgba(142,219,255,.55)'">
+        <i class="ti ti-arrow-left" style="font-size:15px"></i> Formularios
+      </button>
+      <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:${descripcion ? '6px' : '24px'}">${nombre}</div>
+      ${descripcion ? `<div style="font-size:13px;color:rgba(142,219,255,.55);margin-bottom:24px">${descripcion}</div>` : ''}
+
+      <form id="portal-form-${assignmentId}" onsubmit="event.preventDefault();submitPortalForm('${assignmentId}')">
+        <div style="display:flex;flex-direction:column;gap:20px;margin-bottom:28px">
+          ${preguntas.map((p, i) => `
+            <div style="background:rgba(255,255,255,.06);border:1px solid rgba(142,219,255,.1);border-radius:12px;padding:18px 20px">
+              <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:10px">
+                ${i+1}. ${p.pregunta}${p.requerida ? ' <span style="color:#F97316">*</span>' : ''}
+              </div>
+              ${renderFormInput(p)}
+            </div>`).join('')}
+        </div>
+        <button type="submit" style="width:100%;padding:14px;border-radius:12px;font-size:14px;font-weight:900;border:none;background:#F97316;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity var(--t)" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'" id="btn-submit-form-${assignmentId}">
+          <i class="ti ti-send" style="font-size:15px"></i> Enviar respuestas
+        </button>
+      </form>
+    </div>`
+  }
+
+  function renderFormInput(p) {
+    const baseInput = 'width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(142,219,255,.2);border-radius:9px;color:#fff;font-family:inherit;outline:none;transition:border-color var(--t);'
+    const focusStyle = `onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='rgba(142,219,255,.2)'"`
+
+    if (p.tipo === 'texto_corto') {
+      return `<input type="text" name="${p.id}" ${p.requerida ? 'required' : ''} placeholder="Tu respuesta..." style="${baseInput}padding:10px 13px;font-size:13px;" ${focusStyle}>`
+    }
+    if (p.tipo === 'texto_largo') {
+      return `<textarea name="${p.id}" ${p.requerida ? 'required' : ''} placeholder="Tu respuesta..." style="${baseInput}padding:10px 13px;font-size:13px;min-height:100px;resize:vertical;" ${focusStyle}></textarea>`
+    }
+    if (p.tipo === 'opcion_unica') {
+      return `<div style="display:flex;flex-direction:column;gap:8px">${(p.opciones||[]).map(o => `
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 13px;background:rgba(255,255,255,.04);border:1px solid rgba(142,219,255,.1);border-radius:9px;transition:border-color var(--t)" onmouseover="this.style.borderColor='rgba(142,219,255,.3)'" onmouseout="this.style.borderColor='rgba(142,219,255,.1)'">
+          <input type="radio" name="${p.id}" value="${o}" ${p.requerida ? 'required' : ''} style="accent-color:#F97316;width:16px;height:16px;flex-shrink:0">
+          <span style="font-size:13px;color:rgba(255,255,255,.85)">${o}</span>
+        </label>`).join('')}</div>`
+    }
+    if (p.tipo === 'opcion_multiple') {
+      return `<div style="display:flex;flex-direction:column;gap:8px">${(p.opciones||[]).map(o => `
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 13px;background:rgba(255,255,255,.04);border:1px solid rgba(142,219,255,.1);border-radius:9px;transition:border-color var(--t)" onmouseover="this.style.borderColor='rgba(142,219,255,.3)'" onmouseout="this.style.borderColor='rgba(142,219,255,.1)'">
+          <input type="checkbox" name="${p.id}" value="${o}" style="accent-color:#F97316;width:16px;height:16px;flex-shrink:0">
+          <span style="font-size:13px;color:rgba(255,255,255,.85)">${o}</span>
+        </label>`).join('')}</div>`
+    }
+    return `<input type="text" name="${p.id}" placeholder="Tu respuesta..." style="${baseInput}padding:10px 13px;font-size:13px;" ${focusStyle}>`
+  }
+
+  window.submitPortalForm = async function(assignmentId) {
+    const assignment = portalForms.find(f => f.id === assignmentId)
+    if (!assignment) return
+
+    const preguntas = assignment.form_templates?.preguntas || []
+    const form = document.getElementById(`portal-form-${assignmentId}`)
+    const btn = document.getElementById(`btn-submit-form-${assignmentId}`)
+    const respuestas = {}
+
+    // Recolectar respuestas
+    let valid = true
+    preguntas.forEach(p => {
+      if (p.tipo === 'opcion_multiple') {
+        const checked = [...form.querySelectorAll(`input[name="${p.id}"]:checked`)].map(el => el.value)
+        if (p.requerida && checked.length === 0) { valid = false }
+        respuestas[p.id] = checked
+      } else if (p.tipo === 'opcion_unica') {
+        const checked = form.querySelector(`input[name="${p.id}"]:checked`)
+        if (p.requerida && !checked) { valid = false }
+        respuestas[p.id] = checked?.value || ''
+      } else {
+        const el = form.querySelector(`[name="${p.id}"]`)
+        if (p.requerida && !el?.value?.trim()) { valid = false }
+        respuestas[p.id] = el?.value?.trim() || ''
+      }
+    })
+
+    if (!valid) {
+      // Highlight campos vacíos requeridos
+      preguntas.filter(p => p.requerida).forEach(p => {
+        const el = form.querySelector(`[name="${p.id}"]`)
+        if (el && !el.value) el.style.borderColor = '#F97316'
+      })
+      return
+    }
+
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="font-size:15px"></i> Enviando...' }
+
+    try {
+      // Guardar respuesta
+      const { error: rErr } = await supabase
+        .from('form_responses')
+        .insert({
+          assignment_id: assignmentId,
+          client_user_id: currentUser.id,
+          respuestas
+        })
+      if (rErr) throw rErr
+
+      // Actualizar estado a completado
+      const { error: aErr } = await supabase
+        .from('form_assignments')
+        .update({ estado: 'completado', completado_at: new Date().toISOString() })
+        .eq('id', assignmentId)
+      if (aErr) throw aErr
+
+      // Actualizar cache local
+      assignment.estado = 'completado'
+      const badge = document.getElementById('nav-badge-forms')
+      const pendientes = portalForms.filter(f => f.estado === 'pendiente').length
+      if (badge) badge.classList.toggle('show', pendientes > 0)
+
+      // Mostrar confirmación
+      const content = document.getElementById('main-content')
+      content.innerHTML = `<div style="padding:32px;max-width:680px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center">
+        <div style="width:64px;height:64px;border-radius:20px;background:rgba(34,197,94,.2);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+          <i class="ti ti-circle-check" style="font-size:32px;color:#22C55E"></i>
+        </div>
+        <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:8px">¡Respuestas enviadas!</div>
+        <div style="font-size:14px;color:rgba(142,219,255,.55);margin-bottom:28px">Tu agencia ya puede ver tus respuestas.</div>
+        <button onclick="renderFormularios()" style="padding:12px 24px;border-radius:12px;font-size:13px;font-weight:800;border:1px solid rgba(142,219,255,.2);background:transparent;color:var(--celeste);cursor:pointer;font-family:inherit" onmouseover="this.style.background='rgba(142,219,255,.1)'" onmouseout="this.style.background='transparent'">
+          Volver a formularios
+        </button>
+      </div>`
+
+    } catch(e) {
+      console.error('submitPortalForm error:', e)
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send" style="font-size:15px"></i> Enviar respuestas' }
+    }
+  }
+
 </script>
 </body>
 </html>
