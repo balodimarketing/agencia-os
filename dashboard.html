@@ -35,6 +35,10 @@
 
     html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow: hidden; }
 
+    /* Skeleton loader */
+    @keyframes sk-shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+    .sk { background:linear-gradient(90deg,var(--border) 25%,#f0f0f0 50%,var(--border) 75%);background-size:400px 100%;animation:sk-shimmer 1.4s ease-in-out infinite; }
+
     /* ── Shell ── */
     .app { display: flex; height: 100vh; overflow: hidden; }
 
@@ -983,30 +987,44 @@
     <!-- INICIO -->
     <div class="view active" id="v-inicio" style="padding:32px 32px 40px"><div style="max-width:860px;margin:0 auto;width:100%">
 
-      <!-- Saludo -->
-      <div class="fade-up" style="margin-bottom:28px">
-        <h1 style="font-size:30px;font-weight:900;letter-spacing:-.6px;color:var(--ink)" id="greeting-title">Buenos días</h1>
-        <p style="font-size:14px;color:var(--ink3);margin-top:6px" id="greeting-agency"></p>
-        <p style="font-size:13px;color:var(--ink3);margin-top:2px">Esto es lo más importante hoy.</p>
+      <!-- Skeleton loader -->
+      <div id="inicio-skeleton">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <div>
+            <div class="sk" style="width:80px;height:13px;margin-bottom:8px;border-radius:6px"></div>
+            <div class="sk" style="width:180px;height:24px;margin-bottom:6px;border-radius:6px"></div>
+            <div class="sk" style="width:120px;height:13px;border-radius:6px"></div>
+          </div>
+          <div style="display:flex;gap:24px">
+            <div style="text-align:center"><div class="sk" style="width:32px;height:22px;margin:0 auto 6px;border-radius:6px"></div><div class="sk" style="width:56px;height:10px;border-radius:4px"></div></div>
+            <div style="text-align:center"><div class="sk" style="width:32px;height:22px;margin:0 auto 6px;border-radius:6px"></div><div class="sk" style="width:56px;height:10px;border-radius:4px"></div></div>
+            <div style="text-align:center"><div class="sk" style="width:32px;height:22px;margin:0 auto 6px;border-radius:6px"></div><div class="sk" style="width:56px;height:10px;border-radius:4px"></div></div>
+          </div>
+        </div>
+        <div class="sk" style="height:1px;margin-bottom:24px;border-radius:0"></div>
+        <div class="sk" style="width:120px;height:14px;margin-bottom:14px;border-radius:6px"></div>
+        <div class="sk" style="height:52px;border-radius:12px;margin-bottom:8px"></div>
+        <div class="sk" style="height:52px;border-radius:12px;margin-bottom:8px"></div>
+        <div class="sk" style="height:52px;border-radius:12px;margin-bottom:24px"></div>
+        <div class="sk" style="width:140px;height:14px;margin-bottom:14px;border-radius:6px"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="sk" style="height:66px;border-radius:12px"></div>
+          <div class="sk" style="height:66px;border-radius:12px"></div>
+          <div class="sk" style="height:66px;border-radius:12px"></div>
+        </div>
       </div>
 
-      <!-- Banner de novedades -->
-      <div id="inicio-novedad" style="margin-bottom:28px"></div>
-
-      <!-- Checklist de bienvenida -->
-      <div id="inicio-checklist" style="margin-bottom:28px"></div>
-
-      <!-- 4 métricas -->
-      <div id="inicio-metrics" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px"></div>
-
-      <!-- Próximas publicaciones -->
-      <div id="inicio-publicaciones" style="margin-bottom:28px"></div>
-
-      <!-- Banner Faro -->
-      <div id="inicio-banner" style="margin-bottom:28px"></div>
-
-      <!-- Cards de alertas -->
-      <div id="inicio-alerts" style="display:flex;flex-direction:column;gap:12px"></div>
+      <!-- Contenido real -->
+      <div id="inicio-content" style="display:none">
+        <div id="inicio-novedad" style="margin-bottom:20px"></div>
+        <div id="inicio-checklist" style="margin-bottom:20px"></div>
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:22px 24px">
+          <div id="inicio-metrics"></div>
+          <div id="inicio-divider" style="height:1px;background:var(--border);margin:18px 0"></div>
+          <div id="inicio-banner"></div>
+          <div id="inicio-alerts"></div>
+        </div>
+      </div>
 
     </div></div>
 
@@ -7840,135 +7858,109 @@ if (id) {
   async function renderInicio() {
     renderNovedad()
     renderChecklist()
+
     const today = new Date()
     const todayStr = today.toISOString().slice(0,10)
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString()
     const monthEnd = new Date(today.getFullYear(), today.getMonth()+1, 0).toISOString()
 
+    const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
+    const MESES_FULL2 = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+    const h = today.getHours()
+    const saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'
+    const fechaLabel = `${DIAS[today.getDay()]} ${today.getDate()} de ${MESES_FULL2[today.getMonth()]}`
+    const nombreUsuario = document.getElementById('greeting-title')?.textContent?.replace(/buenos (días|tardes|noches),?\s*/i,'').trim() || ''
+    const agencyName = document.getElementById('greeting-agency')?.textContent || ''
+
     const [
-      { data: piezasUrgentes },
+      { data: piezasRevision },
       { data: tareasVencidas },
       { data: crmVencidos },
       { data: piezasPublicadas },
       { data: proximasPublicaciones },
       { data: piezasAprobacion }
     ] = await Promise.all([
-      supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).in('estado',['revision']).limit(10),
-      supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(10),
-      supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(10),
+      supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).eq('estado','revision').limit(8),
+      supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(8),
+      supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(8),
       supabase.from('content_pieces').select('id').eq('agency_id',agencyId).in('estado',['publicado','programado']).gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
       supabase.from('calendar_events').select('id,titulo,fecha_inicio,color,tipo').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(3),
-      supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion').limit(10)
+      supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion').limit(8)
     ])
 
-    const urgentes = piezasUrgentes || []
+    const aprobacion = piezasAprobacion || []
+    const revision = piezasRevision || []
     const vencidas = tareasVencidas || []
     const crmV = crmVencidos || []
-    const aprobacion = piezasAprobacion || []
-    const totalUrgente = urgentes.length + vencidas.length + crmV.length + aprobacion.length
+    const pubs = proximasPublicaciones || []
 
-    // ── Header bienvenida ──
+    // ── Header ──
     const metricsEl = document.getElementById('inicio-metrics')
     if (metricsEl) {
-      const h = today.getHours()
-      const saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'
-      const agencyName = document.getElementById('greeting-agency')?.textContent || ''
-
       metricsEl.innerHTML = `
-        <div style="background:var(--azul);border-radius:var(--r-lg);padding:24px 28px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;margin-bottom:4px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
           <div>
-            <div style="font-size:11px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">${saludo}</div>
-            <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.4px;margin-bottom:3px" id="greeting-title-inner">${document.getElementById('greeting-title')?.textContent || ''}</div>
-            <div style="font-size:13px;color:rgba(142,219,255,.55)">${agencyName}</div>
+            <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">${fechaLabel} · ${saludo}</div>
+            <div style="font-size:22px;font-weight:900;color:var(--ink);letter-spacing:-.4px;margin-bottom:2px">${nombreUsuario}</div>
+            <div style="font-size:13px;color:var(--ink3)">${agencyName}</div>
           </div>
-          <div style="display:flex;gap:20px">
+          <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;padding-top:4px">
             <div style="text-align:center">
-              <div style="font-size:26px;font-weight:900;color:${aprobacion.length > 0 ? '#FED7AA' : 'rgba(142,219,255,.5)'};letter-spacing:-.5px;line-height:1">${aprobacion.length}</div>
-              <div style="font-size:10px;font-weight:700;color:rgba(142,219,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Para aprobar</div>
+              <div style="font-size:22px;font-weight:900;color:${aprobacion.length > 0 ? '#F97316' : 'var(--ink3)'};letter-spacing:-.5px;line-height:1">${aprobacion.length}</div>
+              <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">Para aprobar</div>
             </div>
-            <div style="width:1px;background:rgba(142,219,255,.12)"></div>
+            <div style="width:1px;height:32px;background:var(--border)"></div>
             <div style="text-align:center">
-              <div style="font-size:26px;font-weight:900;color:${vencidas.length > 0 ? '#FCA5A5' : 'rgba(142,219,255,.5)'};letter-spacing:-.5px;line-height:1">${vencidas.length}</div>
-              <div style="font-size:10px;font-weight:700;color:rgba(142,219,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Tareas vencidas</div>
+              <div style="font-size:22px;font-weight:900;color:${vencidas.length > 0 ? '#EF4444' : 'var(--ink3)'};letter-spacing:-.5px;line-height:1">${vencidas.length}</div>
+              <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">Vencidas</div>
             </div>
-            <div style="width:1px;background:rgba(142,219,255,.12)"></div>
+            <div style="width:1px;height:32px;background:var(--border)"></div>
             <div style="text-align:center">
-              <div style="font-size:26px;font-weight:900;color:#C4B5FD;letter-spacing:-.5px;line-height:1">${(piezasPublicadas||[]).length}</div>
-              <div style="font-size:10px;font-weight:700;color:rgba(142,219,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Este mes</div>
+              <div style="font-size:22px;font-weight:900;color:var(--ink);letter-spacing:-.5px;line-height:1">${(piezasPublicadas||[]).length}</div>
+              <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">Este mes</div>
             </div>
           </div>
         </div>`
     }
 
-    // ── "Para hacer hoy" ──
+    // ── Banner Pro ──
+    const bannerEl = document.getElementById('inicio-banner')
+    if (bannerEl && userRole === 'OWNER' && !isPro()) {
+      bannerEl.innerHTML = `
+        <div style="background:var(--azul);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Faro Pro</div>
+            <div style="font-size:13px;font-weight:800;color:#fff">Métricas avanzadas, más clientes y soporte prioritario.</div>
+          </div>
+          <button style="flex-shrink:0;padding:8px 16px;background:var(--celeste);color:var(--azul);border:none;border-radius:8px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Conocer Pro →</button>
+        </div>`
+    }
+
+    // ── Para hacer hoy + publicaciones ──
     const alertsEl = document.getElementById('inicio-alerts')
     if (!alertsEl) return
 
     const todoHoy = []
-
-    // Piezas esperando aprobación del cliente
-    aprobacion.forEach(p => todoHoy.push({
-      tipo: 'aprobacion',
-      titulo: p.titulo,
-      sub: p.clients?.nombre || '—',
-      badge: 'Esperando cliente',
-      badgeBg: '#FFF7ED', badgeColor: '#C2410C',
-      dot: '#F97316',
-      onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)`
-    }))
-
-    // Piezas en revisión interna
-    urgentes.forEach(p => todoHoy.push({
-      tipo: 'revision',
-      titulo: p.titulo,
-      sub: p.clients?.nombre || '—',
-      badge: 'Revisión interna',
-      badgeBg: '#FFFBEB', badgeColor: '#92400E',
-      dot: '#F59E0B',
-      onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)`
-    }))
-
-    // Tareas vencidas
-    vencidas.forEach(t => todoHoy.push({
-      tipo: 'tarea',
-      titulo: t.titulo,
-      sub: t.clients?.nombre || '—',
-      badge: 'Vencida el ' + new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'}),
-      badgeBg: '#FEF2F2', badgeColor: '#DC2626',
-      dot: '#EF4444',
-      onclick: `switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)`
-    }))
-
-    // CRM vencidos
-    crmV.forEach(c => todoHoy.push({
-      tipo: 'crm',
-      titulo: c.nombre,
-      sub: c.empresa || '—',
-      badge: 'Seguimiento vencido',
-      badgeBg: '#F0FDF4', badgeColor: '#166534',
-      dot: '#22C55E',
-      onclick: `switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)`
-    }))
-
-    const pubEl = document.getElementById('inicio-publicaciones')
-    const pubs = proximasPublicaciones || []
+    aprobacion.forEach(p => todoHoy.push({ titulo: p.titulo, sub: p.clients?.nombre||'—', badge:'Esperando cliente', badgeBg:'#FFF7ED', badgeColor:'#C2410C', dot:'#F97316', onclick:`switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)` }))
+    revision.forEach(p => todoHoy.push({ titulo: p.titulo, sub: p.clients?.nombre||'—', badge:'Revisión interna', badgeBg:'#FFFBEB', badgeColor:'#92400E', dot:'#F59E0B', onclick:`switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)` }))
+    vencidas.forEach(t => todoHoy.push({ titulo: t.titulo, sub: t.clients?.nombre||'—', badge:'Vencida el '+new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'}), badgeBg:'#FEF2F2', badgeColor:'#DC2626', dot:'#EF4444', onclick:`switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)` }))
+    crmV.forEach(c => todoHoy.push({ titulo: c.nombre, sub: c.empresa||'—', badge:'Seguimiento vencido', badgeBg:'#F0FDF4', badgeColor:'#166534', dot:'#22C55E', onclick:`switchModule(document.querySelector('.rail-btn[data-module=crm]'));setTimeout(()=>openCrmDetail('${c.id}'),400)` }))
 
     let html = ''
 
-    // Sección "Para hacer hoy"
     if (todoHoy.length > 0) {
-      html += `<div style="margin-bottom:20px">
+      html += `<div style="margin-bottom:22px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Para hacer hoy</div>
-          <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:#FEF2F2;color:var(--danger)">${todoHoy.length} pendiente${todoHoy.length !== 1 ? 's' : ''}</span>
+          <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">Para hacer hoy</div>
+          <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:#FEF2F2;color:var(--danger)">${todoHoy.length} pendiente${todoHoy.length!==1?'s':''}</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          ${todoHoy.map(item => `
-            <div onclick="${item.onclick}" style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow var(--t),border-color var(--t),transform var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)';this.style.transform=''">
+          ${todoHoy.map(item=>`
+            <div onclick="${item.onclick}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:box-shadow var(--t),border-color var(--t),transform var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)';this.style.transform=''">
               <div style="width:8px;height:8px;border-radius:50%;background:${item.dot};flex-shrink:0"></div>
               <div style="flex:1;min-width:0">
                 <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo}</div>
-                <div style="font-size:11px;color:var(--ink3);margin-top:2px">${item.sub}</div>
+                <div style="font-size:11px;color:var(--ink3);margin-top:1px">${item.sub}</div>
               </div>
               <span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:${item.badgeBg};color:${item.badgeColor};white-space:nowrap;flex-shrink:0">${item.badge}</span>
               <i class="ti ti-chevron-right" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
@@ -7976,38 +7968,37 @@ if (id) {
         </div>
       </div>`
     } else {
-      html += `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px;display:flex;align-items:center;gap:14px;margin-bottom:20px">
-        <div style="width:40px;height:40px;border-radius:12px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <i class="ti ti-circle-check" style="font-size:20px;color:#22C55E"></i>
+      html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg);border-radius:var(--r);margin-bottom:22px">
+        <div style="width:36px;height:36px;border-radius:10px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-circle-check" style="font-size:18px;color:#22C55E"></i>
         </div>
         <div>
-          <div style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:2px">Todo al día</div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">Todo al día</div>
           <div style="font-size:12px;color:var(--ink3)">No hay nada urgente por atender hoy.</div>
         </div>
       </div>`
     }
 
-    // Sección próximas publicaciones
     if (pubs.length > 0) {
       html += `<div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Próximas publicaciones</div>
-          <div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:4px" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'">Ver calendario <i class="ti ti-chevron-right" style="font-size:11px"></i></div>
+          <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.2px">Próximas publicaciones</div>
+          <div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'))" style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:3px" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'">Ver calendario <i class="ti ti-chevron-right" style="font-size:11px"></i></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
-          ${pubs.map(e => {
-            const d = new Date(e.fecha_inicio)
-            const dia = d.getDate()
-            const mes = d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
-            const hora = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-            return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow var(--t),border-color var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
-              <div style="background:${e.color||'var(--azul)'};border-radius:10px;padding:8px 12px;text-align:center;flex-shrink:0;min-width:44px">
-                <div style="font-size:18px;font-weight:900;color:#fff;line-height:1">${dia}</div>
-                <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:.5px;margin-top:2px">${mes}</div>
+          ${pubs.map(e=>{
+            const d=new Date(e.fecha_inicio)
+            const dia=d.getDate()
+            const mes=d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
+            const hora=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+            return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:box-shadow var(--t),border-color var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+              <div style="background:${e.color||'var(--azul)'};border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0;min-width:42px">
+                <div style="font-size:16px;font-weight:900;color:#fff;line-height:1">${dia}</div>
+                <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.4px;margin-top:2px">${mes}</div>
               </div>
               <div style="flex:1;min-width:0">
                 <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
-                <div style="font-size:11px;color:var(--ink3);margin-top:3px;display:flex;align-items:center;gap:3px"><i class="ti ti-clock" style="font-size:10px"></i> ${hora}</div>
+                <div style="font-size:11px;color:var(--ink3);margin-top:2px;display:flex;align-items:center;gap:3px"><i class="ti ti-clock" style="font-size:10px"></i> ${hora}</div>
               </div>
             </div>`
           }).join('')}
@@ -8017,18 +8008,11 @@ if (id) {
 
     alertsEl.innerHTML = html
 
-    // Banner Pro
-    const bannerEl = document.getElementById('inicio-banner')
-    if (bannerEl && userRole === 'OWNER' && !isPro()) bannerEl.innerHTML = `
-      <div style="background:var(--azul);border-radius:var(--r-lg);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden;margin-bottom:20px">
-        <div style="position:absolute;top:-40px;right:-20px;width:160px;height:160px;border-radius:50%;background:rgba(142,219,255,.07)"></div>
-        <div style="position:relative">
-          <div style="font-size:10px;font-weight:800;color:var(--celeste);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Faro Pro</div>
-          <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:-.3px;margin-bottom:4px">Llevá tu agencia al siguiente nivel</div>
-          <div style="font-size:12px;color:rgba(142,219,255,.7)">Métricas avanzadas, más clientes y soporte prioritario.</div>
-        </div>
-        <button style="flex-shrink:0;padding:10px 20px;background:var(--celeste);color:var(--azul);border:none;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Conocer Pro →</button>
-      </div>`
+    // Mostrar contenido, ocultar skeleton
+    const sk = document.getElementById('inicio-skeleton')
+    const ct = document.getElementById('inicio-content')
+    if (sk) sk.style.display = 'none'
+    if (ct) { ct.style.display = 'block'; ct.classList.add('fade-up') }
   }
 
   // ══════════════════════════════════════
