@@ -7460,13 +7460,11 @@ if (id) {
   }
 
   async function renderCrm() {
-    try {
-      await loadCrmContacts()
-      if (crmView === 'pipeline') renderCrmPipeline()
-      else renderCrmList()
-    } catch(e) {
-      console.error('renderCrm error:', e)
-    }
+    console.log('renderCrm called, agencyId:', agencyId, 'crmView:', crmView)
+    await loadCrmContacts()
+    console.log('crmContacts loaded:', crmContacts.length)
+    if (crmView === 'pipeline') renderCrmPipeline()
+    else renderCrmList()
   }
 
   // ══════════════════════════════════════
