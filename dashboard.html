@@ -10030,6 +10030,8 @@ if (id) {
         .eq('client_id', clientId)
         .order('enviado_at', { ascending: false })
 
+      if (error) { console.error('Supabase error completo:', JSON.stringify(error)); throw error }
+
       if (error) throw error
 
       if (!assignments || assignments.length === 0) {
@@ -10309,11 +10311,14 @@ if (id) {
 
   // Event delegation para botones de formularios generados dinámicamente
   document.addEventListener('click', function(e) {
-    const btn = e.target.closest('[data-action]')
+    const btn = e.target.closest('[data-action]') || e.target.closest('button[data-client-id]')
     if (!btn) return
     const action = btn.dataset.action
     if (action === 'open-form-builder') {
+      e.preventDefault()
       e.stopPropagation()
+      const modal = document.getElementById('modal-form-builder')
+      if (!modal) { console.error('Modal no encontrado'); return }
       window.openFormBuilder(btn.dataset.clientId)
     }
   })
