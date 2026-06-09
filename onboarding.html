@@ -3,683 +3,242 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agencia OS — Configurar cuenta</title>
+  <title>Faro — Configurando tu cuenta</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <style>
-    /* ── Onboarding shell ── */
-    .ob-page {
+    .onboarding-page {
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      background: var(--white);
-      position: relative;
-      overflow: hidden;
+      background: var(--bg, #F5F7FA);
+      padding: 20px;
     }
-
-    .ob-page::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, #E2E8F0 1px, transparent 1px);
-      background-size: 28px 28px;
-      opacity: .45;
-      pointer-events: none;
-    }
-
-    .ob-page::after {
-      content: '';
-      position: absolute;
-      top: -200px;
-      right: -200px;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(142,219,255,.18) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    /* ── Progress bar ── */
-    .ob-progress {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--border);
-      z-index: 10;
-    }
-
-    .ob-progress-fill {
-      height: 100%;
-      background: var(--celeste);
-      border-radius: 0 2px 2px 0;
-      transition: width .4s cubic-bezier(.4,0,.2,1);
-    }
-
-    /* ── Step card ── */
-    .ob-card {
-      position: relative;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 48px 44px 40px;
+    .onboarding-card {
+      background: #fff;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 480px;
       width: 100%;
-      max-width: 460px;
-      box-shadow: var(--shadow-lg);
-      z-index: 1;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,.06);
     }
-
+    .spinner-big {
+      width: 48px; height: 48px;
+      border: 3px solid #E2E8F0;
+      border-top-color: #0A2540;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ob-icon {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      background: #F0FDF4;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
+      color: #16A34A;
+    }
+    .ob-title { font-size: 20px; font-weight: 900; color: #0A2540; margin-bottom: 8px; }
+    .ob-sub { font-size: 14px; color: #64748B; line-height: 1.6; margin-bottom: 28px; }
+    .ob-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px;
+      background: #0A2540; color: #8EDBFF;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 800;
+      cursor: pointer; font-family: inherit;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+    .ob-btn:hover { opacity: .88; }
+    .ob-steps {
+      display: flex; flex-direction: column; gap: 12px;
+      text-align: left; margin-bottom: 28px;
+    }
     .ob-step {
-      display: none;
-      animation: stepIn .3s cubic-bezier(.4,0,.2,1) both;
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: #F8FAFC; border-radius: 10px;
+      font-size: 13px; color: #475569;
     }
-
-    .ob-step.active { display: block; }
-
-    @keyframes stepIn {
-      from { opacity: 0; transform: translateX(20px); }
-      to   { opacity: 1; transform: translateX(0); }
+    .ob-step.done { background: #F0FDF4; color: #166534; }
+    .ob-step.active { background: #EFF6FF; color: #1E40AF; }
+    .ob-step-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+      background: #E2E8F0; color: #94A3B8;
     }
-
-    @keyframes stepBack {
-      from { opacity: 0; transform: translateX(-20px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-
-    .ob-step.back { animation-name: stepBack; }
-
-    /* ── Step label ── */
-    .ob-label {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--ink3);
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      margin-bottom: 12px;
-    }
-
-    /* ── Step title ── */
-    .ob-title {
-      font-size: 24px;
-      font-weight: 900;
-      color: var(--ink);
-      letter-spacing: -.6px;
-      margin-bottom: 8px;
-      line-height: 1.2;
-    }
-
-    .ob-sub {
-      font-size: 13px;
-      color: var(--ink3);
-      margin-bottom: 32px;
-      line-height: 1.6;
-    }
-
-    /* ── Role options ── */
-    .role-options {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .role-opt {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 18px 20px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: all var(--transition);
-      background: var(--white);
-    }
-
-    .role-opt:hover {
-      border-color: var(--celeste);
-      background: var(--celeste-dim);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-
-    .role-opt-ico {
-      width: 42px;
-      height: 42px;
-      border-radius: 11px;
-      background: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-      transition: background var(--transition);
-    }
-
-    .role-opt:hover .role-opt-ico { background: rgba(142,219,255,.2); }
-
-    .role-opt-info { flex: 1; }
-
-    .role-opt-name {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--ink);
-      letter-spacing: -.2px;
-    }
-
-    .role-opt-desc {
-      font-size: 12px;
-      color: var(--ink3);
-      margin-top: 2px;
-    }
-
-    .role-opt-arrow {
-      color: var(--ink3);
-      font-size: 18px;
-      transition: transform var(--transition), color var(--transition);
-    }
-
-    .role-opt:hover .role-opt-arrow {
-      transform: translateX(4px);
-      color: var(--azul);
-    }
-
-    /* ── Size options ── */
-    .size-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-
-    .size-opt {
-      padding: 16px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      cursor: pointer;
-      text-align: center;
-      transition: all var(--transition);
-      background: var(--white);
-    }
-
-    .size-opt:hover {
-      border-color: var(--celeste);
-      background: var(--celeste-dim);
-    }
-
-    .size-opt.selected {
-      border-color: var(--azul);
-      background: var(--azul);
-    }
-
-    .size-opt-val {
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--ink);
-      letter-spacing: -.4px;
-      transition: color var(--transition);
-    }
-
-    .size-opt.selected .size-opt-val { color: var(--white); }
-
-    .size-opt-lbl {
-      font-size: 11px;
-      color: var(--ink3);
-      font-weight: 700;
-      margin-top: 3px;
-      transition: color var(--transition);
-    }
-
-    .size-opt.selected .size-opt-lbl { color: rgba(255,255,255,.6); }
-
-    /* ── Nav buttons ── */
-    .ob-nav {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .btn-back-ob {
-      width: 42px;
-      height: 42px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--white);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--ink2);
-      transition: all var(--transition);
-      flex-shrink: 0;
-      font-size: 18px;
-    }
-
-    .btn-back-ob:hover { background: var(--bg); border-color: var(--ink3); }
-
-    /* ── Employee search ── */
-    .search-tabs {
-      display: flex;
-      gap: 2px;
-      background: var(--bg);
-      border-radius: var(--radius-sm);
-      padding: 3px;
-      margin-bottom: 20px;
-    }
-
-    .search-tab {
-      flex: 1;
-      padding: 8px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink3);
-      cursor: pointer;
-      border-radius: 6px;
-      transition: all var(--transition);
-    }
-
-    .search-tab.active {
-      background: var(--white);
-      color: var(--ink);
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-    }
-
-    /* ── Error ── */
-    .error-msg {
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
-      color: #DC2626;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 10px 14px;
-      border-radius: var(--radius-sm);
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .error-msg.show { display: block; animation: cardIn .2s both; }
+    .ob-step.done .ob-step-icon { background: #DCFCE7; color: #16A34A; }
+    .ob-step.active .ob-step-icon { background: #DBEAFE; color: #1E40AF; }
   </style>
 </head>
 <body>
 
-<div class="ob-progress">
-  <div class="ob-progress-fill" id="progress" style="width: 25%"></div>
-</div>
+<div class="onboarding-page">
+  <div class="onboarding-card" id="card-loading">
 
-<div class="ob-page">
-  <div class="ob-card">
+    <div class="logo" style="justify-content:center;margin-bottom:28px">
+      <div class="logo-mark">
+        <svg viewBox="0 0 22 22">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+          <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+        </svg>
+      </div>
+      <span class="logo-name">Faro</span>
+    </div>
 
-    <!-- STEP 1: Quién sos -->
-    <div class="ob-step active" id="step-1">
-      <div class="ob-label">Paso 1 de 3</div>
-      <h1 class="ob-title">¿Cómo vas a<br>usar Agencia OS?</h1>
-      <p class="ob-sub">Esto nos ayuda a configurar tu espacio correctamente.</p>
+    <div class="spinner-big"></div>
+    <div class="ob-title">Configurando tu cuenta</div>
+    <div class="ob-sub">Estamos preparando tu espacio en Faro. Esto tarda solo unos segundos.</div>
 
-      <div class="role-options">
-        <div class="role-opt" onclick="selectRole('owner')">
-          <div class="role-opt-ico">🏢</div>
-          <div class="role-opt-info">
-            <div class="role-opt-name">Soy dueño de una agencia</div>
-            <div class="role-opt-desc">Creo y administro mi propio espacio</div>
-          </div>
-          <div class="role-opt-arrow">→</div>
-        </div>
-        <div class="role-opt" onclick="selectRole('employee')">
-          <div class="role-opt-ico">👤</div>
-          <div class="role-opt-info">
-            <div class="role-opt-name">Soy empleado o colaborador</div>
-            <div class="role-opt-desc">Me uno a una agencia existente</div>
-          </div>
-          <div class="role-opt-arrow">→</div>
-        </div>
+    <div class="ob-steps" id="steps">
+      <div class="ob-step active" id="step-auth">
+        <div class="ob-step-icon"><i class="ti ti-user"></i></div>
+        Verificando tu sesión...
+      </div>
+      <div class="ob-step" id="step-agency">
+        <div class="ob-step-icon"><i class="ti ti-building"></i></div>
+        Creando tu agencia
+      </div>
+      <div class="ob-step" id="step-member">
+        <div class="ob-step-icon"><i class="ti ti-crown"></i></div>
+        Configurando permisos de Owner
       </div>
     </div>
 
-    <!-- STEP 2A: Nombre de la agencia (owner) -->
-    <div class="ob-step" id="step-2-owner">
-      <div class="ob-label">Paso 2 de 3</div>
-      <h1 class="ob-title">¿Cómo se llama<br>tu agencia?</h1>
-      <p class="ob-sub">Podés cambiarlo después desde la configuración.</p>
+    <div class="error-msg" id="error" style="text-align:left"></div>
 
-      <div class="error-msg" id="err-nombre"></div>
+  </div>
 
-      <div class="field">
-        <label>Nombre de la agencia</label>
-        <input type="text" id="agency-name" placeholder="Ej: Studio Norte">
-      </div>
+  <!-- Estado: completado -->
+  <div class="onboarding-card" id="card-done" style="display:none">
+    <div class="ob-icon"><i class="ti ti-circle-check"></i></div>
+    <div class="ob-title">¡Todo listo!</div>
+    <div class="ob-sub">Tu agencia está configurada. Ya podés empezar a usar Faro.</div>
+    <a href="dashboard.html" class="ob-btn">
+      <i class="ti ti-arrow-right" style="font-size:15px"></i>
+      Ir a mi agencia
+    </a>
+  </div>
 
-      <div class="ob-nav">
-        <button class="btn-back-ob" onclick="goBack()">←</button>
-        <button class="btn btn-primary" style="flex:1" onclick="goToSize()">
-          <span>Continuar</span>
-        </button>
-      </div>
+  <!-- Estado: error -->
+  <div class="onboarding-card" id="card-error" style="display:none">
+    <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+    <div class="ob-title">Algo salió mal</div>
+    <div class="ob-sub" id="error-detail">Hubo un error al configurar tu cuenta.</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button onclick="runOnboarding()" class="ob-btn">
+        <i class="ti ti-refresh" style="font-size:15px"></i>
+        Reintentar
+      </button>
+      <a href="login.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#F1F5F9;color:#475569;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">
+        Volver al inicio
+      </a>
     </div>
-
-    <!-- STEP 2B: Buscar agencia (employee) -->
-    <div class="ob-step" id="step-2-employee">
-      <div class="ob-label">Paso 2 de 3</div>
-      <h1 class="ob-title">Unirte a una<br>agencia</h1>
-      <p class="ob-sub">Buscá tu agencia o ingresá el código de invitación que te dieron.</p>
-
-      <div class="search-tabs">
-        <div class="search-tab active" id="tab-search" onclick="switchTab('search')">Buscar agencia</div>
-        <div class="search-tab" id="tab-code" onclick="switchTab('code')">Tengo un código</div>
-      </div>
-
-      <div class="error-msg" id="err-join"></div>
-
-      <div id="panel-search">
-        <div class="field">
-          <label>Nombre de la agencia</label>
-          <input type="text" id="agency-search" placeholder="Ej: Studio Norte">
-        </div>
-      </div>
-
-      <div id="panel-code" style="display:none">
-        <div class="field">
-          <label>Código de invitación</label>
-          <input type="text" id="invite-code" placeholder="Ej: AB12CD" style="text-transform:uppercase;letter-spacing:2px;font-weight:700">
-        </div>
-      </div>
-
-      <div class="ob-nav">
-        <button class="btn-back-ob" onclick="goBack()">←</button>
-        <button class="btn btn-primary" style="flex:1" id="btn-join" onclick="requestJoin()">
-          <span id="btn-join-text">Solicitar acceso</span>
-          <div class="spinner" id="join-spinner"></div>
-        </button>
-      </div>
-    </div>
-
-    <!-- STEP 3: Tamaño del equipo (owner) -->
-    <div class="ob-step" id="step-3-owner">
-      <div class="ob-label">Paso 3 de 3</div>
-      <h1 class="ob-title">¿Cuántas personas<br>trabajan con vos?</h1>
-      <p class="ob-sub">Ayuda a personalizar tu experiencia. Podés cambiarlo después.</p>
-
-      <div class="size-options">
-        <div class="size-opt" onclick="selectSize(this, 'solo')" data-val="solo">
-          <div class="size-opt-val">Solo yo</div>
-          <div class="size-opt-lbl">Freelance</div>
-        </div>
-        <div class="size-opt" onclick="selectSize(this, '2-5')" data-val="2-5">
-          <div class="size-opt-val">2 — 5</div>
-          <div class="size-opt-lbl">Equipo pequeño</div>
-        </div>
-        <div class="size-opt" onclick="selectSize(this, '6-15')" data-val="6-15">
-          <div class="size-opt-val">6 — 15</div>
-          <div class="size-opt-lbl">Equipo mediano</div>
-        </div>
-        <div class="size-opt" onclick="selectSize(this, '15+')" data-val="15+">
-          <div class="size-opt-val">+15</div>
-          <div class="size-opt-lbl">Agencia grande</div>
-        </div>
-      </div>
-
-      <div class="error-msg" id="err-size"></div>
-
-      <div class="ob-nav">
-        <button class="btn-back-ob" onclick="goBack()">←</button>
-        <button class="btn btn-primary" style="flex:1" id="btn-create" onclick="createAgency()">
-          <span id="btn-create-text">Crear mi agencia</span>
-          <div class="spinner" id="create-spinner"></div>
-        </button>
-      </div>
-    </div>
-
   </div>
 </div>
 
 <script type="module">
-  import { supabase, requireAuth, toSlug, generateCode } from './supabase.js'
+  import { supabase, requireAuth } from './supabase.js'
 
-  let session = null
-  let role = null
-  let agencyName = ''
-  let teamSize = null
-  let currentStep = 'step-1'
-  let activeTab = 'search'
-
-  async function init() {
-    session = await requireAuth()
-    if (!session) return
-  }
-
-  init()
-
-  // ── Navigation ──────────────────────────────────────────
-
-  function showStep(stepId, isBack = false) {
-    const current = document.querySelector('.ob-step.active')
-    if (current) current.classList.remove('active', 'back')
-
-    const next = document.getElementById(stepId)
-    if (isBack) next.classList.add('back')
-    next.classList.add('active')
-    currentStep = stepId
-
-    // Update progress
-    const progress = {
-      'step-1': 25,
-      'step-2-owner': 60,
-      'step-2-employee': 60,
-      'step-3-owner': 90,
-    }
-    document.getElementById('progress').style.width = (progress[stepId] || 25) + '%'
-  }
-
-  window.goBack = function() {
-    if (currentStep === 'step-2-owner' || currentStep === 'step-2-employee') {
-      showStep('step-1', true)
-    } else if (currentStep === 'step-3-owner') {
-      showStep('step-2-owner', true)
+  function setStep(id, state) {
+    const el = document.getElementById(id)
+    if (!el) return
+    el.className = 'ob-step ' + state
+    const icon = el.querySelector('.ob-step-icon i')
+    if (state === 'done' && icon) icon.className = 'ti ti-check'
+    if (state === 'active' && icon) {
+      const icons = { 'step-auth': 'ti-loader', 'step-agency': 'ti-loader', 'step-member': 'ti-loader' }
+      icon.className = 'ti ' + (icons[id] || 'ti-loader')
     }
   }
 
-  // ── Step 1: Role ────────────────────────────────────────
+  window.runOnboarding = async function() {
+    document.getElementById('card-loading').style.display = 'block'
+    document.getElementById('card-done').style.display = 'none'
+    document.getElementById('card-error').style.display = 'none'
 
-  window.selectRole = function(selectedRole) {
-    role = selectedRole
-    if (role === 'owner') {
-      showStep('step-2-owner')
-    } else {
-      showStep('step-2-employee')
-    }
-  }
+    // Reset steps
+    setStep('step-auth', 'active')
+    setStep('step-agency', '')
+    setStep('step-member', '')
 
-  // ── Step 2A: Agency name ─────────────────────────────────
+    try {
+      // 1 — Verificar sesión
+      const session = await requireAuth()
+      if (!session) return
 
-  window.goToSize = function() {
-    agencyName = document.getElementById('agency-name').value.trim()
-    const errEl = document.getElementById('err-nombre')
-    errEl.classList.remove('show')
+      const userId = session.user.id
+      setStep('step-auth', 'done')
 
-    if (!agencyName) {
-      errEl.textContent = 'Ingresá el nombre de tu agencia.'
-      errEl.classList.add('show')
-      return
-    }
-
-    showStep('step-3-owner')
-  }
-
-  // ── Step 2B: Employee tabs ───────────────────────────────
-
-  window.switchTab = function(tab) {
-    activeTab = tab
-    document.getElementById('tab-search').classList.toggle('active', tab === 'search')
-    document.getElementById('tab-code').classList.toggle('active', tab === 'code')
-    document.getElementById('panel-search').style.display = tab === 'search' ? 'block' : 'none'
-    document.getElementById('panel-code').style.display = tab === 'code' ? 'block' : 'none'
-    document.getElementById('err-join').classList.remove('show')
-  }
-
-  window.requestJoin = async function() {
-    const errEl = document.getElementById('err-join')
-    errEl.classList.remove('show')
-
-    const btn = document.getElementById('btn-join')
-    const spinner = document.getElementById('join-spinner')
-    const btnText = document.getElementById('btn-join-text')
-
-    // Loading
-    btn.disabled = true
-    spinner.style.display = 'block'
-    btnText.textContent = 'Buscando...'
-
-    function resetBtn() {
-      btn.disabled = false
-      spinner.style.display = 'none'
-      btnText.textContent = 'Solicitar acceso'
-    }
-
-    if (activeTab === 'code') {
-      const code = document.getElementById('invite-code').value.trim().toUpperCase()
-      if (!code) {
-        errEl.textContent = 'Ingresá el código de invitación.'
-        errEl.classList.add('show')
-        resetBtn()
-        return
-      }
-
-      // Buscar invitación por código
-      const { data: inv, error } = await supabase
-        .from('invitations')
-        .select('id, agency_id, status')
-        .eq('code', code)
+      // 2 — Verificar si ya tiene agencia (por si recarga la página)
+      const { data: existing } = await supabase
+        .from('agency_members')
+        .select('agency_id, role, agencies(id, nombre)')
+        .eq('user_id', userId)
         .maybeSingle()
 
-      if (error || !inv) {
-        errEl.textContent = 'Código no válido. Verificá y volvé a intentar.'
-        errEl.classList.add('show')
-        resetBtn()
+      if (existing?.agency_id) {
+        // Ya tiene agencia, ir al dashboard
+        window.location.href = 'dashboard.html'
         return
       }
 
-      if (inv.status !== 'pending') {
-        errEl.textContent = 'Este código ya fue usado.'
-        errEl.classList.add('show')
-        resetBtn()
-        return
-      }
+      // 3 — Obtener datos del perfil
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nombre, apellido')
+        .eq('id', userId)
+        .maybeSingle()
 
-      // Asociar invitación al user y crear membresía pending
-      await supabase.from('invitations').update({ user_id: session.user.id }).eq('id', inv.id)
-      await supabase.from('agency_members').insert({
-        agency_id: inv.agency_id,
-        user_id: session.user.id,
-        role: 'MEMBER',
-        status: 'pending'
-      })
+      const nombreAgencia = (profile?.nombre || 'Mi') + ' Agencia'
+      setStep('step-agency', 'active')
 
-      window.location.href = 'waiting.html'
-
-    } else {
-      const name = document.getElementById('agency-search').value.trim()
-      if (!name) {
-        errEl.textContent = 'Ingresá el nombre de la agencia.'
-        errEl.classList.add('show')
-        resetBtn()
-        return
-      }
-
-      // Buscar agencia por nombre (ilike)
-      const { data: agency, error } = await supabase
+      // 4 — Crear agencia
+      const { data: agency, error: agErr } = await supabase
         .from('agencies')
-        .select('id, nombre')
-        .ilike('nombre', `%${name}%`)
-        .maybeSingle()
+        .insert({ nombre: nombreAgencia, plan: 'free' })
+        .select('id')
+        .single()
 
-      if (error || !agency) {
-        errEl.textContent = 'No encontramos esa agencia. Pedile el código de invitación al dueño.'
-        errEl.classList.add('show')
-        resetBtn()
-        return
-      }
+      if (agErr) throw new Error('No se pudo crear la agencia: ' + agErr.message)
+      setStep('step-agency', 'done')
+      setStep('step-member', 'active')
 
-      // Crear solicitud pendiente
-      await supabase.from('agency_members').insert({
-        agency_id: agency.id,
-        user_id: session.user.id,
-        role: 'MEMBER',
-        status: 'pending'
-      })
+      // 5 — Vincular como OWNER
+      const { error: memErr } = await supabase
+        .from('agency_members')
+        .insert({ user_id: userId, agency_id: agency.id, role: 'OWNER', status: 'active' })
 
-      window.location.href = 'waiting.html'
+      if (memErr) throw new Error('No se pudieron configurar los permisos: ' + memErr.message)
+      setStep('step-member', 'done')
+
+      // 6 — Mostrar éxito y redirigir
+      await new Promise(r => setTimeout(r, 600))
+      document.getElementById('card-loading').style.display = 'none'
+      document.getElementById('card-done').style.display = 'block'
+
+      // Auto-redirigir después de 2 segundos
+      setTimeout(() => { window.location.href = 'dashboard.html' }, 2000)
+
+    } catch (err) {
+      console.error('Onboarding error:', err)
+      document.getElementById('card-loading').style.display = 'none'
+      document.getElementById('card-error').style.display = 'block'
+      document.getElementById('error-detail').textContent = err.message || 'Hubo un error al configurar tu cuenta. Intentá de nuevo.'
     }
   }
 
-  // ── Step 3: Team size + create agency ──────────────────
-
-  window.selectSize = function(el, val) {
-    document.querySelectorAll('.size-opt').forEach(o => o.classList.remove('selected'))
-    el.classList.add('selected')
-    teamSize = val
-    document.getElementById('err-size').classList.remove('show')
-  }
-
-  window.createAgency = async function() {
-    const errEl = document.getElementById('err-size')
-    errEl.classList.remove('show')
-
-    if (!teamSize) {
-      errEl.textContent = 'Seleccioná el tamaño de tu equipo.'
-      errEl.classList.add('show')
-      return
-    }
-
-    const btn = document.getElementById('btn-create')
-    const spinner = document.getElementById('create-spinner')
-    const btnText = document.getElementById('btn-create-text')
-
-    btn.disabled = true
-    spinner.style.display = 'block'
-    btnText.textContent = 'Creando...'
-
-    const slug = toSlug(agencyName) + '-' + Math.random().toString(36).substring(2, 6)
-
-    // 1. Crear agencia
-    const { data: agency, error: agencyErr } = await supabase
-      .from('agencies')
-      .insert({
-        nombre: agencyName,
-        slug,
-        size: teamSize,
-        owner_id: session.user.id
-      })
-      .select()
-      .single()
-
-    if (agencyErr) {
-      btn.disabled = false
-      spinner.style.display = 'none'
-      btnText.textContent = 'Crear mi agencia'
-      errEl.textContent = 'Error al crear la agencia. Intentá de nuevo.'
-      errEl.classList.add('show')
-      return
-    }
-
-    // 2. Crear membresía OWNER
-    await supabase.from('agency_members').insert({
-      agency_id: agency.id,
-      user_id: session.user.id,
-      role: 'OWNER',
-      status: 'active'
-    })
-
-    // 3. Crear código de invitación inicial
-    await supabase.from('invitations').insert({
-      agency_id: agency.id,
-      code: generateCode(),
-      status: 'pending'
-    })
-
-    window.location.href = 'dashboard.html'
-  }
+  // Arrancar automáticamente
+  runOnboarding()
 </script>
 
 </body>
