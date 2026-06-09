@@ -5660,7 +5660,15 @@
             const badgeFeedback = (!esPendiente && p.feedback_interno)
               ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:#FFF7ED;color:#C2410C;display:inline-flex;align-items:center;gap:4px;cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')"><i class="ti ti-message-circle" style="font-size:10px"></i> Ver feedback</span></div>` : ''
 
-            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario ? 'border-left-color:var(--danger);' : ''}${esPendiente ? 'border-left:3px solid #A78BFA;' : ''}">
+            // Botones para Member en Producción
+            const btnsMemberProduccion = (col.id === 'produccion' && isMember)
+              ? `<div style="display:flex;gap:5px;margin-top:8px">
+                  <button onclick="event.stopPropagation();openPieceModal('${p.id}')" style="flex:1;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'"><i class="ti ti-upload" style="font-size:11px"></i> Cambiar archivo</button>
+                  <button onclick="event.stopPropagation();sendToApproval('${p.id}')" style="flex:1;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-send" style="font-size:11px"></i> Enviar al cliente</button>
+                </div>`
+              : ''
+
+            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario ? 'border-left-color:var(--danger);' : ''}${esPendiente ? 'border-left:3px solid #A78BFA;' : ''}${p.feedback_interno && !esPendiente ? 'border-left:3px solid #F97316;' : ''}">
               <div class="k-card-title">${p.titulo}</div>
               ${badgeParaAprobar}
               ${badgeFeedback}
@@ -5674,6 +5682,7 @@
               ${btnSolicitar}
               ${btnAprobar}
               ${badgeEsperando}
+              ${btnsMemberProduccion}
             </div>`
           }).join('')
       return `<div class="k-col" data-col="${col.id}">
