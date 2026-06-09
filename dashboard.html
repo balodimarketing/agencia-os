@@ -2661,7 +2661,15 @@
         </div>
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Asignar a</label>
-          <div id="task-asignados-list" style="display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:8px"></div>
+          <div style="position:relative">
+            <div id="task-asignados-trigger" onclick="toggleAsignadosDropdown()" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:border-color var(--t);min-height:38px" onmouseover="this.style.borderColor='var(--azul)'" onmouseout="if(!document.getElementById('task-asignados-dropdown').classList.contains('open'))this.style.borderColor='var(--border)'">
+              <span id="task-asignados-label" style="font-size:13px;color:var(--ink3)">Sin asignar</span>
+              <i class="ti ti-chevron-down" id="task-asignados-chevron" style="font-size:14px;color:var(--ink3);transition:transform var(--t)"></i>
+            </div>
+            <div id="task-asignados-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:200;overflow:hidden">
+              <div id="task-asignados-list" style="display:flex;flex-direction:column;max-height:180px;overflow-y:auto;padding:6px"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -6376,21 +6384,61 @@
 
     const taList = document.getElementById('task-asignados-list')
     if (!teamMembers.length) {
-      taList.innerHTML = '<div style="font-size:12px;color:var(--ink3);padding:4px">No hay miembros en el equipo</div>'
+      taList.innerHTML = '<div style="font-size:12px;color:var(--ink3);padding:8px">No hay miembros en el equipo</div>'
     } else {
       taList.innerHTML = teamMembers.map(m => {
         const n = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
         const checked = currentAssignees.includes(m.id)
-        return `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 6px;border-radius:6px;transition:background var(--t)" onmouseover="this.style.background='var(--celeste-dim)'" onmouseout="this.style.background='transparent'">
-          <input type="checkbox" value="${m.id}" class="task-assignee-cb" ${checked ? 'checked' : ''} style="accent-color:var(--azul);width:14px;height:14px;flex-shrink:0">
-          <span style="font-size:12px;color:var(--ink);font-weight:600">${n || 'Sin nombre'}</span>
+        return `<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 8px;border-radius:var(--r);transition:background var(--t)" onmouseover="this.style.background='var(--celeste-dim)'" onmouseout="this.style.background='transparent'">
+          <input type="checkbox" value="${m.id}" class="task-assignee-cb" ${checked ? 'checked' : ''} onchange="updateAsignadosLabel()" style="accent-color:var(--azul);width:15px;height:15px;flex-shrink:0;cursor:pointer">
+          <span style="font-size:13px;color:var(--ink);font-weight:600">${n || 'Sin nombre'}</span>
         </label>`
       }).join('')
     }
+    updateAsignadosLabel()
 
     document.getElementById('modal-task').classList.add('show')
     setTimeout(() => document.getElementById('task-titulo').focus(), 100)
   }
+
+  window.toggleAsignadosDropdown = function() {
+    const dd = document.getElementById('task-asignados-dropdown')
+    const chevron = document.getElementById('task-asignados-chevron')
+    const trigger = document.getElementById('task-asignados-trigger')
+    const isOpen = dd.style.display !== 'none'
+    dd.style.display = isOpen ? 'none' : 'block'
+    chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)'
+    trigger.style.borderColor = isOpen ? 'var(--border)' : 'var(--azul)'
+  }
+
+  window.updateAsignadosLabel = function() {
+    const checked = [...document.querySelectorAll('.task-assignee-cb:checked')]
+    const label = document.getElementById('task-asignados-label')
+    if (!label) return
+    if (checked.length === 0) {
+      label.textContent = 'Sin asignar'
+      label.style.color = 'var(--ink3)'
+    } else {
+      const names = checked.map(cb => {
+        const lbl = cb.closest('label')?.querySelector('span')?.textContent || ''
+        return lbl.split(' ')[0]
+      })
+      label.textContent = names.join(', ')
+      label.style.color = 'var(--ink)'
+    }
+  }
+
+  // Cerrar dropdown de asignados al hacer click fuera
+  document.addEventListener('click', function(e) {
+    const dd = document.getElementById('task-asignados-dropdown')
+    const trigger = document.getElementById('task-asignados-trigger')
+    const chevron = document.getElementById('task-asignados-chevron')
+    if (dd && !dd.contains(e.target) && !trigger?.contains(e.target)) {
+      dd.style.display = 'none'
+      if (chevron) chevron.style.transform = 'rotate(0deg)'
+      if (trigger) trigger.style.borderColor = 'var(--border)'
+    }
+  })
 
   window.closeTaskModal = function() { document.getElementById('modal-task').classList.remove('show') }
 
