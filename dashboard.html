@@ -5514,13 +5514,12 @@
   let detailPieceId = null
 
   const KANBAN_COLS = [
-    { id: 'idea',               name: 'Idea',                    color: '#94A3B8' },
-    { id: 'aprobacion_interna', name: 'Aprobación interna',      color: '#A78BFA' },
-    { id: 'produccion',         name: 'Producción',              color: '#60A5FA' },
-    { id: 'revision',           name: 'Revisión interna',        color: '#FBBF24' },
-    { id: 'aprobacion',         name: 'Esperando aprobación',    color: '#F87171' },
-    { id: 'publicado',          name: 'Lista para programar',    color: '#34C759' },
-    { id: 'programado',         name: 'Programado',              color: '#8B5CF6' },
+    { id: 'idea',        name: 'Idea',                    color: '#94A3B8' },
+    { id: 'produccion',  name: 'Producción',              color: '#60A5FA' },
+    { id: 'revision',    name: 'Revisión interna',        color: '#FBBF24' },
+    { id: 'aprobacion',  name: 'Esperando aprobación',    color: '#F87171' },
+    { id: 'publicado',   name: 'Lista para programar',    color: '#34C759' },
+    { id: 'programado',  name: 'Programado',              color: '#8B5CF6' },
   ]
 
   const CLIENT_COLORS = ['#E1F5EE','#EEEDFE','#FAECE7','#E6F1FB','#FFF3E0','#FCE4EC']
@@ -5631,7 +5630,9 @@
   function renderKanban() {
     const board = document.getElementById('kanban-board')
     board.innerHTML = KANBAN_COLS.map(col => {
-      const colPieces = pieces.filter(p => p.estado === col.id)
+      const colPieces = col.id === 'idea'
+        ? pieces.filter(p => p.estado === 'idea' || p.estado === 'aprobacion_interna')
+        : pieces.filter(p => p.estado === col.id)
       const cards = colPieces.length === 0
         ? `<div style="padding:12px;font-size:11px;color:var(--ink3);text-align:center">Sin piezas</div>`
         : colPieces.map(p => {
@@ -5639,24 +5640,26 @@
             const clientName = p.clients?.nombre || '—'
             const isOwnerAdmin = userRole === 'OWNER' || userRole === 'ADMIN'
             const isMember = userRole === 'MEMBER'
+            const esPendiente = p.estado === 'aprobacion_interna'
 
-            const btnSolicitarHTML = (col.id === 'idea' && isMember)
-              ? `<button onclick="event.stopPropagation();solicitarAprobacionInterna('${p.id}')" style="width:100%;margin-top:8px;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-send" style="font-size:11px"></i> Solicitar aprobación</button>`
-              : ''
+            const btnSolicitar = (col.id === 'idea' && isMember && !esPendiente)
+              ? `<button onclick="event.stopPropagation();solicitarAprobacionInterna('${p.id}')" style="width:100%;margin-top:8px;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-send" style="font-size:11px"></i> Solicitar aprobación</button>` : ''
 
-            const btnAprobacionHTML = (col.id === 'aprobacion_interna' && isOwnerAdmin)
+            const btnAprobar = (esPendiente && isOwnerAdmin)
               ? `<div style="display:flex;gap:5px;margin-top:8px">
                   <button onclick="event.stopPropagation();aprobarIdea('${p.id}')" style="flex:1;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:#16a34a;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-check" style="font-size:11px"></i> Aprobar</button>
                   <button onclick="event.stopPropagation();pedirCambiosIdea('${p.id}','${p.titulo.replace(/'/g,"\\'")}')" style="flex:1;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:#f97316;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-pencil" style="font-size:11px"></i> Cambios</button>
-                </div>`
-              : ''
+                </div>` : ''
 
-            const badgePendienteHTML = (col.id === 'aprobacion_interna' && isMember)
-              ? `<div style="margin-top:6px"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:#F5F3FF;color:#6D28D9;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-clock" style="font-size:10px"></i> Pendiente</span></div>`
-              : ''
+            const badgeParaAprobar = (esPendiente && isOwnerAdmin)
+              ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:#F5F3FF;color:#6D28D9;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-bell" style="font-size:10px"></i> Para aprobar</span></div>` : ''
 
-            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario ? 'border-left-color:var(--danger)' : ''}${col.id === 'aprobacion_interna' ? ';border-left:3px solid #A78BFA;' : ''}">
+            const badgeEsperando = (esPendiente && isMember)
+              ? `<div style="margin-top:6px"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:#F5F3FF;color:#6D28D9;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-clock" style="font-size:10px"></i> Esperando aprobación</span></div>` : ''
+
+            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario ? 'border-left-color:var(--danger);' : ''}${esPendiente ? 'border-left:3px solid #A78BFA;' : ''}">
               <div class="k-card-title">${p.titulo}</div>
+              ${badgeParaAprobar}
               ${p.aprobacion_comentario ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;background:#FEF2F2;color:var(--danger);cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')"><i class="ti ti-message-circle" style="font-size:9px"></i> Ver cambios</span></div>` : ''}
               <div class="k-card-meta">
                 <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
@@ -5664,9 +5667,9 @@
                 ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
               </div>
               ${(() => { const names = getResponsableNames(p); return names ? `<div style="font-size:10px;color:var(--ink3);margin-top:5px;display:flex;align-items:center;gap:4px"><i class="ti ti-user" style="font-size:10px"></i>${names}</div>` : '' })()}
-              ${btnSolicitarHTML}
-              ${btnAprobacionHTML}
-              ${badgePendienteHTML}
+              ${btnSolicitar}
+              ${btnAprobar}
+              ${badgeEsperando}
             </div>`
           }).join('')
       return `<div class="k-col" data-col="${col.id}">
