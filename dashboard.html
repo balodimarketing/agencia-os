@@ -2613,6 +2613,30 @@
   </div>
 </div>
 
+<!-- Modal: Pedir cambios en idea -->
+<div class="modal-overlay" id="modal-cambios-idea" onclick="if(event.target===this)closeCambiosModal()" style="display:none">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <div class="modal-title">Pedir cambios</div>
+      <button class="modal-close" onclick="closeCambiosModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cambios-piece-id">
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:14px" id="cambios-piece-titulo"></div>
+      <div class="form-field" style="margin-bottom:0">
+        <label class="form-label">¿Qué cambios necesitás?</label>
+        <textarea class="form-input form-textarea" id="cambios-comentario" placeholder="Describí los cambios que necesitás en esta idea..." style="min-height:100px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closeCambiosModal()">Cancelar</button>
+      <button class="tbtn primary" onclick="enviarCambiosIdea()" style="gap:6px">
+        <i class="ti ti-send" style="font-size:13px"></i> Enviar feedback
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-task" onclick="if(event.target===this)closeTaskModal()">
   <div class="modal" style="max-width:480px">
     <div class="modal-head">
@@ -5490,12 +5514,13 @@
   let detailPieceId = null
 
   const KANBAN_COLS = [
-    { id: 'idea',        name: 'Idea',                    color: '#94A3B8' },
-    { id: 'produccion',  name: 'Producción',               color: '#60A5FA' },
-    { id: 'revision',    name: 'Revisión interna',         color: '#FBBF24' },
-    { id: 'aprobacion',  name: 'Esperando aprobación',     color: '#F87171' },
-    { id: 'publicado',   name: 'Lista para programar',     color: '#34C759' },
-    { id: 'programado',  name: 'Programado',               color: '#8B5CF6' },
+    { id: 'idea',               name: 'Idea',                    color: '#94A3B8' },
+    { id: 'aprobacion_interna', name: 'Aprobación interna',      color: '#A78BFA' },
+    { id: 'produccion',         name: 'Producción',              color: '#60A5FA' },
+    { id: 'revision',           name: 'Revisión interna',        color: '#FBBF24' },
+    { id: 'aprobacion',         name: 'Esperando aprobación',    color: '#F87171' },
+    { id: 'publicado',          name: 'Lista para programar',    color: '#34C759' },
+    { id: 'programado',         name: 'Programado',              color: '#8B5CF6' },
   ]
 
   const CLIENT_COLORS = ['#E1F5EE','#EEEDFE','#FAECE7','#E6F1FB','#FFF3E0','#FCE4EC']
@@ -5612,7 +5637,25 @@
         : colPieces.map(p => {
             const due = formatDate(p.fecha_entrega)
             const clientName = p.clients?.nombre || '—'
-            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario?'border-left-color:var(--danger)':''}">
+            const isOwnerAdmin = userRole === 'OWNER' || userRole === 'ADMIN'
+            const isMember = userRole === 'MEMBER'
+
+            const btnSolicitarHTML = (col.id === 'idea' && isMember)
+              ? `<button onclick="event.stopPropagation();solicitarAprobacionInterna('${p.id}')" style="width:100%;margin-top:8px;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-send" style="font-size:11px"></i> Solicitar aprobación</button>`
+              : ''
+
+            const btnAprobacionHTML = (col.id === 'aprobacion_interna' && isOwnerAdmin)
+              ? `<div style="display:flex;gap:5px;margin-top:8px">
+                  <button onclick="event.stopPropagation();aprobarIdea('${p.id}')" style="flex:1;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:#16a34a;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-check" style="font-size:11px"></i> Aprobar</button>
+                  <button onclick="event.stopPropagation();pedirCambiosIdea('${p.id}','${p.titulo.replace(/'/g,"\\'")}')" style="flex:1;padding:6px;border-radius:7px;font-size:11px;font-weight:800;border:none;background:#f97316;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="ti ti-pencil" style="font-size:11px"></i> Cambios</button>
+                </div>`
+              : ''
+
+            const badgePendienteHTML = (col.id === 'aprobacion_interna' && isMember)
+              ? `<div style="margin-top:6px"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:#F5F3FF;color:#6D28D9;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-clock" style="font-size:10px"></i> Pendiente</span></div>`
+              : ''
+
+            return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario ? 'border-left-color:var(--danger)' : ''}${col.id === 'aprobacion_interna' ? ';border-left:3px solid #A78BFA;' : ''}">
               <div class="k-card-title">${p.titulo}</div>
               ${p.aprobacion_comentario ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;background:#FEF2F2;color:var(--danger);cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')"><i class="ti ti-message-circle" style="font-size:9px"></i> Ver cambios</span></div>` : ''}
               <div class="k-card-meta">
@@ -5621,6 +5664,9 @@
                 ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
               </div>
               ${(() => { const names = getResponsableNames(p); return names ? `<div style="font-size:10px;color:var(--ink3);margin-top:5px;display:flex;align-items:center;gap:4px"><i class="ti ti-user" style="font-size:10px"></i>${names}</div>` : '' })()}
+              ${btnSolicitarHTML}
+              ${btnAprobacionHTML}
+              ${badgePendienteHTML}
             </div>`
           }).join('')
       return `<div class="k-col" data-col="${col.id}">
@@ -8818,6 +8864,7 @@ if (id) {
       { data: piezasPublicadas },
       { data: proximasPublicaciones },
       { data: piezasAprobacion },
+      { data: piezasAprobacionInterna },
       { data: clientesActivos },
       { data: todasPiezas }
     ] = await Promise.all([
@@ -8827,11 +8874,13 @@ if (id) {
       supabase.from('content_pieces').select('id').eq('agency_id',agencyId).in('estado',['publicado','programado']).gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
       supabase.from('calendar_events').select('id,titulo,fecha_inicio,color').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(3),
       supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion').limit(8),
+      supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion_interna').limit(8),
       supabase.from('clients').select('id').eq('agency_id',agencyId).eq('estado','activo'),
       supabase.from('content_pieces').select('id,estado').eq('agency_id',agencyId).in('estado',['produccion','revision','aprobacion','publicado','programado'])
     ])
 
     const aprobacion = piezasAprobacion || []
+    const aprobacionInterna = piezasAprobacionInterna || []
     const revision = piezasRevision || []
     const vencidas = tareasVencidas || []
     const crmV = crmVencidos || []
@@ -8895,6 +8944,12 @@ if (id) {
     if (!alertsEl) return
 
     const todoHoy = []
+
+    // Aprobaciones internas pendientes (solo Owner/Admin)
+    if (userRole === 'OWNER' || userRole === 'ADMIN') {
+      aprobacionInterna.forEach(p => todoHoy.push({ titulo: p.titulo, sub: p.clients?.nombre||'—', badge:'Aprobación interna', badgeBg:'#F5F3FF', badgeColor:'#6D28D9', dot:'#A78BFA', onclick:`switchModule(document.querySelector('.rail-btn[data-module=contenido]'))` }))
+    }
+
     aprobacion.forEach(p => todoHoy.push({ titulo: p.titulo, sub: p.clients?.nombre||'—', badge:'Esperando cliente', badgeBg:'#FFF7ED', badgeColor:'#C2410C', dot:'#F97316', onclick:`switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)` }))
     revision.forEach(p => todoHoy.push({ titulo: p.titulo, sub: p.clients?.nombre||'—', badge:'Revisión interna', badgeBg:'#FFFBEB', badgeColor:'#92400E', dot:'#F59E0B', onclick:`switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${p.id}'),400)` }))
     vencidas.forEach(t => todoHoy.push({ titulo: t.titulo, sub: t.clients?.nombre||'—', badge:'Vencida el '+new Date(t.fecha_entrega).toLocaleDateString('es-AR',{day:'numeric',month:'short'}), badgeBg:'#FEF2F2', badgeColor:'#DC2626', dot:'#EF4444', onclick:`switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>switchContentTab('tareas'),400)` }))
@@ -10359,6 +10414,93 @@ if (id) {
       if (document.getElementById('modal-form-responses')?.style.display !== 'none') closeFormResponses()
     }
   })
+
+  // ══════════════════════════════════════════════════════
+  // APROBACIÓN INTERNA DE IDEAS
+  // ══════════════════════════════════════════════════════
+
+  window.solicitarAprobacionInterna = async function(pieceId) {
+    const piece = pieces.find(p => p.id === pieceId)
+    if (!piece) return
+    piece.estado = 'aprobacion_interna'
+    renderKanban()
+    await supabase.from('content_pieces').update({ estado: 'aprobacion_interna' }).eq('id', pieceId)
+    await supabase.from('piece_approvals').insert({
+      piece_id: pieceId,
+      agency_id: agencyId,
+      accion: 'solicitud',
+      user_id: currentUserId
+    })
+    // Notificación interna
+    await supabase.from('notifications').insert({
+      agency_id: agencyId,
+      tipo: 'aprobacion_interna',
+      titulo: 'Nueva idea para aprobar',
+      mensaje: `"${piece.titulo}" está esperando tu aprobación`,
+      link_to: 'contenido',
+      leida: false
+    }).then(() => {}).catch(() => {})
+    showToast('Solicitud enviada al Owner y Admins')
+  }
+
+  window.aprobarIdea = async function(pieceId) {
+    const piece = pieces.find(p => p.id === pieceId)
+    if (!piece) return
+    piece.estado = 'produccion'
+    renderKanban()
+    await supabase.from('content_pieces').update({ estado: 'produccion' }).eq('id', pieceId)
+    await supabase.from('piece_approvals').insert({
+      piece_id: pieceId,
+      agency_id: agencyId,
+      accion: 'aprobado',
+      user_id: currentUserId
+    })
+    showToast('Idea aprobada — pasó a Producción')
+  }
+
+  window.pedirCambiosIdea = function(pieceId, titulo) {
+    // Abrir modal para comentario
+    document.getElementById('cambios-piece-id').value = pieceId
+    document.getElementById('cambios-piece-titulo').textContent = titulo
+    document.getElementById('cambios-comentario').value = ''
+    const modal = document.getElementById('modal-cambios-idea')
+    modal.style.display = 'flex'
+    requestAnimationFrame(() => modal.classList.add('show'))
+    setTimeout(() => document.getElementById('cambios-comentario').focus(), 100)
+  }
+
+  window.closeCambiosModal = function() {
+    const modal = document.getElementById('modal-cambios-idea')
+    modal.classList.remove('show')
+    setTimeout(() => { modal.style.display = 'none' }, 200)
+  }
+
+  window.enviarCambiosIdea = async function() {
+    const pieceId = document.getElementById('cambios-piece-id').value
+    const comentario = document.getElementById('cambios-comentario').value.trim()
+    if (!comentario) { showToast('Escribí qué cambios necesitás'); return }
+
+    const piece = pieces.find(p => p.id === pieceId)
+    if (!piece) return
+
+    piece.estado = 'idea'
+    piece.aprobacion_comentario = comentario
+    closeCambiosModal()
+    renderKanban()
+
+    await supabase.from('content_pieces')
+      .update({ estado: 'idea', aprobacion_comentario: comentario })
+      .eq('id', pieceId)
+
+    await supabase.from('piece_approvals').insert({
+      piece_id: pieceId,
+      agency_id: agencyId,
+      accion: 'cambios_pedidos',
+      comentario,
+      user_id: currentUserId
+    })
+    showToast('Cambios enviados — la pieza volvió a Idea')
+  }
 
   init()
 </script>
