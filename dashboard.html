@@ -2445,7 +2445,7 @@
 
       <div style="display:flex;flex-direction:column;gap:13px;padding-left:20px">
         <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Archivo</label>
+          <label class="form-label" id="piece-file-label">Archivo</label>
           <div style="display:flex;gap:4px;margin-bottom:10px">
             <button onclick="switchFileTab('upload')" id="ftab-upload" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:800;border:none;cursor:pointer;font-family:inherit;background:var(--azul);color:#fff;transition:all var(--t)">Subir</button>
             <button onclick="switchFileTab('drive')" id="ftab-drive" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:inherit;background:var(--bg);color:var(--ink3);transition:all var(--t)"><i class="ti ti-brand-google-drive" style="font-size:11px;color:#4285F4"></i> Drive</button>
@@ -5749,12 +5749,27 @@
 
     const isImage = p.archivo_url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(p.archivo_url)
     const isVideo = p.archivo_url && /\.(mp4|mov|webm|avi)$/i.test(p.archivo_url)
+    const isIdea = p.estado === 'idea' || p.estado === 'aprobacion_interna'
+
+    // Detectar tipo de link externo
+    const getLinkInfo = (url) => {
+      if (!url) return null
+      if (url.includes('drive.google.com')) return { icon: 'ti-brand-google-drive', label: 'Abrir en Drive', color: '#4285F4' }
+      if (url.includes('youtube.com') || url.includes('youtu.be')) return { icon: 'ti-brand-youtube', label: 'Ver en YouTube', color: '#FF0000' }
+      if (url.includes('vimeo.com')) return { icon: 'ti-brand-vimeo', label: 'Ver en Vimeo', color: '#1AB7EA' }
+      if (url.includes('figma.com')) return { icon: 'ti-vector-bezier', label: 'Abrir en Figma', color: '#F24E1E' }
+      return { icon: 'ti-link', label: 'Abrir link', color: 'var(--ink2)' }
+    }
+    const linkInfo = (!isImage && !isVideo && p.archivo_url) ? getLinkInfo(p.archivo_url) : null
+
+    const fileLabel = isIdea ? 'Material de referencia' : 'Archivo final'
     const filePreview = p.archivo_url
       ? `<div style="margin-bottom:16px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Archivo</div>
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">${fileLabel}</div>
           ${isImage ? `<img src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:280px;object-fit:cover;display:block">` : ''}
           ${isVideo ? `<video controls src="${p.archivo_url}" style="width:100%;border-radius:var(--r);max-height:260px"></video>` : ''}
-          <a href="${p.archivo_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;font-weight:700;color:var(--ink2);text-decoration:none;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm)"><i class="ti ti-download" style="font-size:11px"></i> Descargar</a>
+          ${linkInfo ? `<a href="${p.archivo_url}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);text-decoration:none;transition:border-color var(--t)" onmouseover="this.style.borderColor='var(--azul)'" onmouseout="this.style.borderColor='var(--border)'"><i class="ti ${linkInfo.icon}" style="font-size:20px;color:${linkInfo.color};flex-shrink:0"></i><div><div style="font-size:12px;font-weight:800;color:var(--ink)">${linkInfo.label}</div><div style="font-size:11px;color:var(--ink3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px">${p.archivo_url}</div></div><i class="ti ti-external-link" style="font-size:14px;color:var(--ink3);margin-left:auto"></i></a>` : ''}
+          ${(isImage || isVideo) ? `<a href="${p.archivo_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;font-weight:700;color:var(--ink2);text-decoration:none;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm)"><i class="ti ti-download" style="font-size:11px"></i> Descargar</a>` : ''}
         </div>`
       : ''
 
@@ -5849,7 +5864,14 @@
     document.getElementById('piece-id').value = p?.id || ''
     document.getElementById('piece-titulo').value = p?.titulo || ''
     document.getElementById('piece-tipo').value = p?.tipo || ''
-    document.getElementById('piece-estado').value = p?.estado || defaultEstado || 'idea'
+    const estado = p?.estado || defaultEstado || 'idea'
+    document.getElementById('piece-estado').value = estado
+
+    // Label del archivo según estado
+    const fileLabelEl = document.getElementById('piece-file-label')
+    if (fileLabelEl) {
+      fileLabelEl.textContent = estado === 'idea' ? 'Material de referencia (imagen, video, link o Drive)' : 'Archivo final'
+    }
     document.getElementById('piece-fecha').value = p?.fecha_entrega || ''
     document.getElementById('piece-descripcion').value = p?.descripcion || ''
     document.getElementById('piece-error').classList.remove('show')
@@ -6125,6 +6147,12 @@
   window.sendToApproval = async function(pieceId) {
     const piece = pieces.find(p => p.id === pieceId)
     if (!piece) return
+
+    // Verificar que haya archivo cargado
+    if (!piece.archivo_url) {
+      showToast('Cargá el archivo final antes de enviarlo al cliente')
+      return
+    }
 
     const { error } = await supabase
       .from('content_pieces')
