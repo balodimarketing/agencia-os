@@ -196,13 +196,32 @@
       return
     }
 
-    // 2 — Guardar perfil
+    // 2 — Esperar que el trigger cree el perfil y luego actualizarlo
+    btnText.textContent = 'Configurando tu cuenta...'
+    await new Promise(r => setTimeout(r, 1500))
+
+    // Upsert del perfil con los datos del formulario
     await supabase.from('profiles').upsert({
       id: userId,
       nombre,
       apellido,
       email
-    })
+    }, { onConflict: 'id' })
+
+    // Verificar que el perfil existe antes de crear la agencia
+    let profileExists = false
+    for (let i = 0; i < 5; i++) {
+      const { data: p } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+      if (p) { profileExists = true; break }
+      await new Promise(r => setTimeout(r, 800))
+    }
+
+    if (!profileExists) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
+      errEl.textContent = 'Error al configurar el perfil. Intentá de nuevo.'
+      errEl.classList.add('show')
+      return
+    }
 
     // 3 — Crear la agencia
     const { data: agencyData, error: agencyError } = await supabase
