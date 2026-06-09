@@ -2701,7 +2701,37 @@
         </div>
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Hora de entrega</label>
-          <input type="time" class="form-input" id="task-hora">
+          <select class="form-input form-select" id="task-hora">
+            <option value="">Sin hora</option>
+            <option value="08:00">08:00</option>
+            <option value="08:30">08:30</option>
+            <option value="09:00">09:00</option>
+            <option value="09:30">09:30</option>
+            <option value="10:00">10:00</option>
+            <option value="10:30">10:30</option>
+            <option value="11:00">11:00</option>
+            <option value="11:30">11:30</option>
+            <option value="12:00">12:00</option>
+            <option value="12:30">12:30</option>
+            <option value="13:00">13:00</option>
+            <option value="13:30">13:30</option>
+            <option value="14:00">14:00</option>
+            <option value="14:30">14:30</option>
+            <option value="15:00">15:00</option>
+            <option value="15:30">15:30</option>
+            <option value="16:00">16:00</option>
+            <option value="16:30">16:30</option>
+            <option value="17:00">17:00</option>
+            <option value="17:30">17:30</option>
+            <option value="18:00">18:00</option>
+            <option value="18:30">18:30</option>
+            <option value="19:00">19:00</option>
+            <option value="19:30">19:30</option>
+            <option value="20:00">20:00</option>
+            <option value="20:30">20:30</option>
+            <option value="21:00">21:00</option>
+            <option value="23:59">Fin del día</option>
+          </select>
         </div>
       </div>
 
@@ -5543,13 +5573,17 @@
 
   function formatDate(d) {
     if (!d) return null
-    const date = new Date(d + 'T12:00:00')
+    // Si ya tiene hora (timestamptz), usarlo directo; si no, agregar mediodía para evitar desfase de timezone
+    const date = d.includes('T') ? new Date(d) : new Date(d + 'T12:00:00')
+    if (isNaN(date.getTime())) return null
     const today = new Date(); today.setHours(0,0,0,0)
     const diff = Math.floor((date - today) / 86400000)
-    if (diff < 0) return { text: `Hace ${Math.abs(diff)}d`, overdue: true }
-    if (diff === 0) return { text: 'Hoy', overdue: false }
-    if (diff === 1) return { text: 'Mañana', overdue: false }
-    return { text: date.toLocaleDateString('es-AR',{day:'numeric',month:'short'}), overdue: false }
+    const hora = d.includes('T') ? date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : null
+    const horaStr = hora && hora !== '00:00' ? ` ${hora}` : ''
+    if (diff < 0) return { text: `Hace ${Math.abs(diff)}d${horaStr}`, overdue: true }
+    if (diff === 0) return { text: `Hoy${horaStr}`, overdue: false }
+    if (diff === 1) return { text: `Mañana${horaStr}`, overdue: false }
+    return { text: date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }) + horaStr, overdue: false }
   }
 
   // ── Load ──────────────────────────────────────────────
@@ -6364,9 +6398,18 @@
     document.getElementById('task-estado').value = t?.estado || 'pendiente'
     document.getElementById('task-prioridad').value = t?.prioridad || 'normal'
     const fechaEntrega = t?.fecha_entrega ? t.fecha_entrega.slice(0, 10) : ''
-    const horaEntrega = t?.fecha_entrega && t.fecha_entrega.includes('T') ? t.fecha_entrega.slice(11, 16) : ''
+    const horaRaw = t?.fecha_entrega && t.fecha_entrega.includes('T')
+      ? new Date(t.fecha_entrega).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
+      : ''
+    // Redondear a la opción más cercana del select (cada 30 min)
+    let horaSelect = ''
+    if (horaRaw && horaRaw !== '00:00') {
+      const [h, m] = horaRaw.split(':').map(Number)
+      horaSelect = `${String(h).padStart(2,'0')}:${m < 30 ? '00' : '30'}`
+    }
     document.getElementById('task-fecha').value = fechaEntrega
-    document.getElementById('task-hora').value = horaEntrega
+    const horaEl = document.getElementById('task-hora')
+    if (horaEl) horaEl.value = horaSelect
     document.getElementById('task-descripcion').value = t?.descripcion || ''
     document.getElementById('task-error').classList.remove('show')
 
