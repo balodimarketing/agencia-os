@@ -5549,7 +5549,7 @@
       if (clientIds.length === 0) { pieces = []; return }
       const { data } = await supabase
         .from('content_pieces')
-        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), piece_responsables(agency_member_id, agency_members(profiles(nombre,apellido))), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), piece_responsables(agency_member_id, agency_members(profiles(nombre,apellido))), aprobacion_comentario, feedback_interno, aprobacion_token, archivo_url, archivo_nombre')
         .eq('agency_id', agencyId)
         .in('client_id', clientIds)
         .order('created_at', { ascending: false })
@@ -5557,7 +5557,7 @@
     } else {
       const { data } = await supabase
         .from('content_pieces')
-        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), piece_responsables(agency_member_id, agency_members(profiles(nombre,apellido))), aprobacion_comentario, aprobacion_token, archivo_url, archivo_nombre')
+        .select('*, clients(nombre), profiles!content_pieces_created_by_fkey(nombre,apellido), piece_responsables(agency_member_id, agency_members(profiles(nombre,apellido))), aprobacion_comentario, feedback_interno, aprobacion_token, archivo_url, archivo_nombre')
         .eq('agency_id', agencyId)
         .order('created_at', { ascending: false })
       pieces = data || []
@@ -5657,9 +5657,13 @@
             const badgeEsperando = (esPendiente && isMember)
               ? `<div style="margin-top:6px"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:#F5F3FF;color:#6D28D9;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-clock" style="font-size:10px"></i> Esperando aprobación</span></div>` : ''
 
+            const badgeFeedback = (!esPendiente && p.feedback_interno)
+              ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:#FFF7ED;color:#C2410C;display:inline-flex;align-items:center;gap:4px;cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')"><i class="ti ti-message-circle" style="font-size:10px"></i> Ver feedback</span></div>` : ''
+
             return `<div class="k-card" draggable="true" data-id="${p.id}" onclick="openPieceDetail('${p.id}')" style="${p.aprobacion_comentario ? 'border-left-color:var(--danger);' : ''}${esPendiente ? 'border-left:3px solid #A78BFA;' : ''}">
               <div class="k-card-title">${p.titulo}</div>
               ${badgeParaAprobar}
+              ${badgeFeedback}
               ${p.aprobacion_comentario ? `<div style="margin-bottom:6px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;background:#FEF2F2;color:var(--danger);cursor:pointer" onclick="event.stopPropagation();openPieceDetail('${p.id}')"><i class="ti ti-message-circle" style="font-size:9px"></i> Ver cambios</span></div>` : ''}
               <div class="k-card-meta">
                 <span class="k-client-tag" style="background:${clientColor(p.client_id||'x','bg')};color:${clientColor(p.client_id||'x','text')}">${clientName}</span>
@@ -5778,8 +5782,16 @@
         </div>`
       : ''
 
+    const feedbackInternoAlert = p.feedback_interno
+      ? `<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+          <div style="font-size:10px;font-weight:800;color:#C2410C;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px"><i class="ti ti-message-circle" style="font-size:10px"></i> Feedback interno</div>
+          <div style="font-size:13px;color:#92400E;line-height:1.6">${p.feedback_interno}</div>
+        </div>`
+      : ''
+
     document.getElementById('piece-detail-body').innerHTML = `
       ${cambiosAlert}
+      ${feedbackInternoAlert}
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
         <span style="font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;background:${col?.color}22;color:${col?.color}">${col?.name||p.estado}</span>
         ${p.tipo ? `<span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:var(--bg);color:var(--ink2);border:1px solid var(--border)">${p.tipo}</span>` : ''}
@@ -10487,12 +10499,12 @@ if (id) {
     if (!piece) return
 
     piece.estado = 'idea'
-    piece.aprobacion_comentario = comentario
+    piece.feedback_interno = comentario
     closeCambiosModal()
     renderKanban()
 
     await supabase.from('content_pieces')
-      .update({ estado: 'idea', aprobacion_comentario: comentario })
+      .update({ estado: 'idea', feedback_interno: comentario })
       .eq('id', pieceId)
 
     await supabase.from('piece_approvals').insert({
