@@ -207,7 +207,12 @@
     // 3 — Crear la agencia
     const { data: agencyData, error: agencyError } = await supabase
       .from('agencies')
-      .insert({ nombre: agencia, plan: 'free', owner_id: userId })
+      .insert({ 
+          nombre: agencia, 
+          plan: 'free', 
+          owner_id: userId,
+          slug: agencia.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Math.random().toString(36).slice(2,6)
+        })
       .select('id')
       .single()
 
