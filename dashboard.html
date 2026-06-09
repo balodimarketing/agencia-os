@@ -9197,7 +9197,7 @@ if (id) {
             const dia = d.getDate()
             const mes = d.toLocaleDateString('es-AR',{month:'short'}).toUpperCase()
             const hora = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-            return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="background:var(--bg);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color var(--t)" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg)'">
+            return `<div onclick="switchModule(document.querySelector('.rail-btn[data-module=calendario]'));setTimeout(()=>openEventDetail('${e.id}'),400)" style="background:var(--bg);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color var(--t);overflow:hidden;min-width:0" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg)'">
               <div style="background:${e.color||'var(--azul)'};border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0;min-width:42px">
                 <div style="font-size:16px;font-weight:900;color:#fff;line-height:1">${dia}</div>
                 <div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:2px">${mes}</div>
