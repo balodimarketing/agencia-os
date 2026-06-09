@@ -37,13 +37,33 @@ export async function getProfile(userId) {
 // ── Agency ────────────────────────────────────────────────
 
 export async function getUserAgency(userId) {
-  const { data, error } = await supabase
-    .from('agency_members')
-    .select('role, agencies(*)')
-    .eq('user_id', userId)
-    .single()
-  if (error) return null
-  return data
+  try {
+    // Primero obtener el membership sin JOIN a agencies
+    const { data: member, error: memErr } = await supabase
+      .from('agency_members')
+      .select('role, agency_id, status')
+      .eq('user_id', userId)
+      .maybeSingle()
+    
+    if (memErr || !member) return null
+
+    // Después obtener la agencia por separado
+    const { data: agency, error: agErr } = await supabase
+      .from('agencies')
+      .select('id, nombre, plan')
+      .eq('id', member.agency_id)
+      .maybeSingle()
+
+    if (agErr || !agency) return null
+
+    return {
+      role: member.role,
+      status: member.status,
+      agencies: agency
+    }
+  } catch {
+    return null
+  }
 }
 
 // ── Detectar si el usuario es cliente del portal ──────────
