@@ -196,17 +196,16 @@
       return
     }
 
-    // 2 — Esperar que el trigger cree el perfil y luego actualizarlo
-    btnText.textContent = 'Configurando tu cuenta...'
-    await new Promise(r => setTimeout(r, 1500))
-
-    // Upsert del perfil con los datos del formulario
-    await supabase.from('profiles').upsert({
+    // 2 — Guardar perfil
+    await supabase.from('profiles').insert({
       id: userId,
       nombre,
       apellido,
       email
-    }, { onConflict: 'id' })
+    }).then(() => {}).catch(() => {})
+
+    // Si ya existía, actualizarlo
+    await supabase.from('profiles').update({ nombre, apellido, email }).eq('id', userId)
 
     // Verificar que el perfil existe antes de crear la agencia
     let profileExists = false
