@@ -6224,68 +6224,6 @@
       </div>`
     }).join('')
   }
-    const list = document.getElementById('task-list')
-    let filtered = currentTaskFilter === 'todas' ? tasks : tasks.filter(t => t.estado === currentTaskFilter)
-
-    // Stats badges
-    const statsEl = document.getElementById('task-stats-row')
-    if (statsEl) {
-      const pendiente = tasks.filter(t => t.estado === 'pendiente').length
-      const enProgreso = tasks.filter(t => t.estado === 'en-progreso').length
-      const vencidas = tasks.filter(t => t.fecha_entrega && new Date(t.fecha_entrega) < new Date() && t.estado !== 'completada').length
-      statsEl.innerHTML = [
-        pendiente > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--bg);color:var(--ink3)">${pendiente} pendiente${pendiente !== 1 ? 's' : ''}</span>` : '',
-        enProgreso > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#E6F1FB;color:#0C447C">${enProgreso} en progreso</span>` : '',
-        vencidas > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#FEF2F2;color:var(--danger)">${vencidas} vencida${vencidas !== 1 ? 's' : ''}</span>` : ''
-      ].join('')
-    }
-
-    // Pill del filtro activo
-    setTimeout(() => {
-      const activeBtn = document.querySelector('.filter-btn.active')
-      if (activeBtn) movePill('task-filter-tabs', 'task-filter-pill', null, activeBtn)
-    }, 50)
-
-    if (filtered.length === 0) {
-      list.innerHTML = `<div style="text-align:center;padding:48px 0;color:var(--ink3)">
-        <i class="ti ti-circle-check" style="font-size:32px;opacity:.4;display:block;margin-bottom:10px"></i>
-        <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:4px">Sin tareas</div>
-        <div style="font-size:13px">Creá una tarea y asignala a un miembro del equipo.</div>
-      </div>`
-      return
-    }
-
-    // Activas primero, completadas al fondo
-    const activas = filtered.filter(t => t.estado !== 'completada')
-    const completadas = filtered.filter(t => t.estado === 'completada')
-    const ordenadas = [...activas, ...completadas]
-
-    list.innerHTML = ordenadas.map(t => {
-      const due = formatDate(t.fecha_entrega)
-      const assignee = t.agency_members?.profiles
-      const assigneeName = assignee ? (assignee.nombre + ' ' + assignee.apellido).trim() : null
-      const isDone = t.estado === 'completada'
-      const isOverdue = t.fecha_entrega && new Date(t.fecha_entrega) < new Date() && !isDone
-      const statusLabel = { 'pendiente': 'Pendiente', 'en-progreso': 'En progreso', 'revision': 'Revisión', 'completada': 'Completada' }
-
-      return `<div class="task-item ${isDone ? 'done-item' : ''}" onclick="openTaskModal('${t.id}')">
-        <div class="task-chk ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}')"></div>
-        <div class="task-body">
-          <div class="task-title ${isDone ? 'done' : ''}">${t.titulo}</div>
-          <div class="task-meta-row">
-            ${t.clients ? `<span class="task-client" style="background:${clientColor(t.client_id,'bg')};color:${clientColor(t.client_id,'text')}">${t.clients.nombre}</span>` : ''}
-            ${assigneeName ? `<span class="task-assignee"><i class="ti ti-user" style="font-size:10px"></i> ${assigneeName}</span>` : ''}
-            ${due ? `<span class="task-due ${isOverdue ? 'overdue' : ''}"><i class="ti ti-calendar" style="font-size:10px"></i> ${due.text}${isOverdue ? ' · Vencida' : ''}</span>` : ''}
-          </div>
-        </div>
-        <span class="task-status-badge ts-${t.estado}">${statusLabel[t.estado] || t.estado}</span>
-        <div onclick="event.stopPropagation();startTimerFromTask('${t.id}','${t.titulo.replace(/'/g,"\\'")}')" title="Iniciar timer" style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink3);cursor:pointer;transition:background var(--t),color var(--t);flex-shrink:0" onmouseover="this.style.background='var(--celeste-dim)';this.style.color='var(--azul)'" onmouseout="this.style.background='';this.style.color='var(--ink3)'">
-          <i class="ti ti-player-play" style="font-size:14px"></i>
-        </div>
-      </div>`
-    }).join('')
-  }
-
   window.filterTasks = function(el) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
     el.classList.add('active')
