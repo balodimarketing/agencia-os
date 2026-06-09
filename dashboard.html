@@ -4205,15 +4205,22 @@
 
     const { data: membership } = await supabase
       .from('agency_members')
-      .select('role, status, agencies(id, nombre, plan)')
+      .select('role, status, agency_id')
       .eq('user_id', currentUserId)
       .maybeSingle()
 
     if (!membership) { window.location.href = 'onboarding.html'; return }
     if (membership.status === 'pending') { window.location.href = 'waiting.html'; return }
 
-    agencyId = membership.agencies?.id
-    agencyPlan = membership.agencies?.plan || 'free'
+    // Obtener datos de la agencia por separado para evitar recursión en RLS
+    const { data: agencyData } = await supabase
+      .from('agencies')
+      .select('id, nombre, plan')
+      .eq('id', membership.agency_id)
+      .maybeSingle()
+
+    agencyId = agencyData?.id || membership.agency_id
+    agencyPlan = agencyData?.plan || 'free'
     userRole = membership.role
 
     const { data: profile } = await supabase
@@ -4223,7 +4230,7 @@
     const saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
     // Guardar datos en data attributes del body para que renderInicio los lea
     document.body.dataset.userName = `${saludo}, ${profile?.nombre || ''}`
-    document.body.dataset.agencyName = membership.agencies?.nombre || ''
+    document.body.dataset.agencyName = agencyData?.nombre || ''
 
     // Restrict UI for MEMBER
     if (userRole === 'MEMBER') {
