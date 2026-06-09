@@ -207,7 +207,7 @@
     // 3 — Crear la agencia
     const { data: agencyData, error: agencyError } = await supabase
       .from('agencies')
-      .insert({ nombre: agencia, plan: 'free' })
+      .insert({ nombre: agencia, plan: 'free', owner_id: userId })
       .select('id')
       .single()
 
