@@ -2661,9 +2661,7 @@
         </div>
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Asignar a</label>
-          <select class="form-input form-select" id="task-asignado">
-            <option value="">Sin asignar</option>
-          </select>
+          <div id="task-asignados-list" style="display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:8px"></div>
         </div>
       </div>
 
@@ -2680,8 +2678,8 @@
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Prioridad</label>
           <select class="form-input form-select" id="task-prioridad">
-            <option value="normal">Normal</option>
             <option value="baja">Baja</option>
+            <option value="normal">Normal</option>
             <option value="alta">Alta</option>
             <option value="urgente">Urgente</option>
           </select>
@@ -2692,6 +2690,10 @@
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Fecha de entrega</label>
           <input type="date" class="form-input" id="task-fecha">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Hora de entrega</label>
+          <input type="time" class="form-input" id="task-hora">
         </div>
       </div>
 
@@ -5576,17 +5578,17 @@
       if (!agencyId) agencyId = myMemberData.agency_id
       const { data } = await supabase
         .from('content_tasks')
-        .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
+        .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido)), task_assignees(agency_member_id, agency_members(profiles(nombre,apellido)))')
         .eq('asignado_a', myMemberData.id)
         .order('created_at', { ascending: false })
-      tasks = data || []
+      tasks = (data || []).map(t => ({ ...t, _assignees: t.task_assignees || [] }))
     } else {
       const { data } = await supabase
         .from('content_tasks')
-        .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido))')
+        .select('*, clients(nombre), agency_members!content_tasks_asignado_a_fkey(id,puesto,profiles(nombre,apellido)), task_assignees(agency_member_id, agency_members(profiles(nombre,apellido)))')
         .eq('agency_id', agencyId)
         .order('created_at', { ascending: false })
-      tasks = data || []
+      tasks = (data || []).map(t => ({ ...t, _assignees: t.task_assignees || [] }))
     }
   }
 
@@ -6281,7 +6283,7 @@
       urgente: { label: 'Urgente', color: '#DC2626', bg: '#FEF2F2', dot: '#EF4444' },
       alta:    { label: 'Alta',    color: '#C2410C', bg: '#FFF7ED', dot: '#F97316' },
       normal:  { label: 'Normal',  color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
-      baja:    { label: 'Baja',    color: '#6B7280', bg: '#F3F4F6', dot: '#D1D5DB' },
+      baja:    { label: 'Baja',    color: '#9CA3AF', bg: '#F9FAFB', dot: '#D1D5DB' },
     }
 
     // Activas ordenadas por prioridad, completadas al fondo
@@ -6297,10 +6299,19 @@
       const due = formatDate(t.fecha_entrega)
       const assignee = t.agency_members?.profiles
       const assigneeName = assignee ? (assignee.nombre + ' ' + assignee.apellido).trim() : null
+      // También mostrar asignados de task_assignees si están en cache
+      const extraAssignees = t._assignees ? t._assignees.map(a => {
+        const p = a.agency_members?.profiles
+        return p ? (p.nombre + ' ' + p.apellido).trim() : null
+      }).filter(Boolean) : []
+      const allAssigneeNames = assigneeName
+        ? [assigneeName, ...extraAssignees.filter(n => n !== assigneeName)]
+        : extraAssignees
+      const assigneeDisplay = allAssigneeNames.length > 0 ? allAssigneeNames.join(', ') : null
       const isDone = t.estado === 'completada'
       const isOverdue = t.fecha_entrega && new Date(t.fecha_entrega) < new Date() && !isDone
       const prio = prioConfig[t.prioridad || 'normal']
-      const showPrio = (t.prioridad === 'urgente' || t.prioridad === 'alta') && !isDone
+      const showPrio = !isDone
 
       return `<div class="task-item ${isDone ? 'done-item' : ''}" onclick="openTaskModal('${t.id}')">
         <div class="task-chk ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}')"></div>
@@ -6311,7 +6322,7 @@
           </div>
           <div class="task-meta-row">
             ${t.clients ? `<span class="task-client" style="background:${clientColor(t.client_id,'bg')};color:${clientColor(t.client_id,'text')}">${t.clients.nombre}</span>` : ''}
-            ${assigneeName ? `<span class="task-assignee"><i class="ti ti-user" style="font-size:10px"></i> ${assigneeName}</span>` : ''}
+            ${assigneeDisplay ? `<span class="task-assignee"><i class="ti ti-user" style="font-size:10px"></i> ${assigneeDisplay}</span>` : ''}
             ${due ? `<span class="task-due ${isOverdue ? 'overdue' : ''}"><i class="ti ti-calendar" style="font-size:10px"></i> ${due.text}${isOverdue ? ' · Vencida' : ''}</span>` : ''}
           </div>
         </div>
@@ -6344,18 +6355,38 @@
     document.getElementById('task-titulo').value = t?.titulo || ''
     document.getElementById('task-estado').value = t?.estado || 'pendiente'
     document.getElementById('task-prioridad').value = t?.prioridad || 'normal'
-    document.getElementById('task-fecha').value = t?.fecha_entrega || ''
+    const fechaEntrega = t?.fecha_entrega ? t.fecha_entrega.slice(0, 10) : ''
+    const horaEntrega = t?.fecha_entrega && t.fecha_entrega.includes('T') ? t.fecha_entrega.slice(11, 16) : ''
+    document.getElementById('task-fecha').value = fechaEntrega
+    document.getElementById('task-hora').value = horaEntrega
     document.getElementById('task-descripcion').value = t?.descripcion || ''
     document.getElementById('task-error').classList.remove('show')
 
     const tc = document.getElementById('task-client')
     tc.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}" ${t?.client_id===c.id?'selected':''}>${c.nombre}</option>`).join('')
 
-    const ta = document.getElementById('task-asignado')
-    ta.innerHTML = '<option value="">Sin asignar</option>' + teamMembers.map(m => {
-      const n = (m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')
-      return `<option value="${m.id}" ${t?.asignado_a===m.id?'selected':''}>${n.trim()}</option>`
-    }).join('')
+    // Cargar checkboxes de asignados
+    let currentAssignees = []
+    if (t?.id) {
+      const { data: assignees } = await supabase
+        .from('task_assignees').select('agency_member_id').eq('task_id', t.id)
+      currentAssignees = (assignees || []).map(a => a.agency_member_id)
+      if (currentAssignees.length === 0 && t.asignado_a) currentAssignees = [t.asignado_a]
+    }
+
+    const taList = document.getElementById('task-asignados-list')
+    if (!teamMembers.length) {
+      taList.innerHTML = '<div style="font-size:12px;color:var(--ink3);padding:4px">No hay miembros en el equipo</div>'
+    } else {
+      taList.innerHTML = teamMembers.map(m => {
+        const n = ((m.profiles?.nombre||'') + ' ' + (m.profiles?.apellido||'')).trim()
+        const checked = currentAssignees.includes(m.id)
+        return `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 6px;border-radius:6px;transition:background var(--t)" onmouseover="this.style.background='var(--celeste-dim)'" onmouseout="this.style.background='transparent'">
+          <input type="checkbox" value="${m.id}" class="task-assignee-cb" ${checked ? 'checked' : ''} style="accent-color:var(--azul);width:14px;height:14px;flex-shrink:0">
+          <span style="font-size:12px;color:var(--ink);font-weight:600">${n || 'Sin nombre'}</span>
+        </label>`
+      }).join('')
+    }
 
     document.getElementById('modal-task').classList.add('show')
     setTimeout(() => document.getElementById('task-titulo').focus(), 100)
@@ -6384,33 +6415,54 @@
     const btnText = document.getElementById('btn-save-task-text')
     btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
 
+    const fecha = document.getElementById('task-fecha').value
+    const hora = document.getElementById('task-hora').value
+    const fechaHora = fecha ? (hora ? `${fecha}T${hora}:00` : fecha) : null
+
     const payload = {
       titulo,
       estado: document.getElementById('task-estado').value,
       prioridad: document.getElementById('task-prioridad').value || 'normal',
-      fecha_entrega: document.getElementById('task-fecha').value || null,
+      fecha_entrega: fechaHora,
       descripcion: document.getElementById('task-descripcion').value.trim() || null,
       client_id: document.getElementById('task-client').value || null,
-      asignado_a: document.getElementById('task-asignado').value || null,
       agency_id: agencyId,
     }
 
-    let error
+    // Obtener asignados seleccionados
+    const selectedAssignees = [...document.querySelectorAll('.task-assignee-cb:checked')].map(cb => cb.value)
+    // Para compatibilidad legacy: guardar el primero en asignado_a
+    payload.asignado_a = selectedAssignees[0] || null
+
+    let error, savedId = id
     if (id) {
       ({ error } = await supabase.from('content_tasks').update(payload).eq('id', id))
     } else {
       payload.created_by = (await supabase.auth.getUser()).data.user.id
-      ;({ error } = await supabase.from('content_tasks').insert(payload))
+      const { data: inserted, error: iErr } = await supabase.from('content_tasks').insert(payload).select('id').single()
+      error = iErr
+      savedId = inserted?.id
     }
 
     btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar tarea'
     if (error) { errEl.textContent = 'Error al guardar.'; errEl.classList.add('show'); return }
+
+    // Guardar asignados múltiples
+    if (savedId) {
+      await supabase.from('task_assignees').delete().eq('task_id', savedId)
+      if (selectedAssignees.length > 0) {
+        await supabase.from('task_assignees').insert(
+          selectedAssignees.map(mid => ({ task_id: savedId, agency_member_id: mid }))
+        )
+      }
+    }
+
     closeTaskModal()
     showToast(id ? '✓ Tarea actualizada' : '✓ Tarea creada')
     await loadTasks(); renderTasks(); renderContenidoPanel()
 
-    // Notify assignee if assigned to someone else
-    const asignadoId = document.getElementById('task-asignado').value
+    // Notificar asignados
+    const asignadoId = selectedAssignees[0] || null
     if (asignadoId) {
       const member = teamMembers.find(m => m.id === asignadoId)
       if (member && member.user_id !== currentUserId) {
