@@ -3,13 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agencia OS — Crear cuenta</title>
+  <title>Faro — Crear cuenta</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .terms-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; }
+    .terms-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; accent-color: #0A2540; cursor: pointer; }
+    .terms-row label { font-size: 13px; color: #64748B; line-height: 1.5; cursor: pointer; }
+    .terms-row label a { color: #0A2540; font-weight: 700; text-decoration: none; }
+    .terms-row label a:hover { text-decoration: underline; }
+    .strength-bar { height: 4px; border-radius: 2px; background: #E2E8F0; margin-top: 6px; overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 2px; width: 0; transition: width .3s, background .3s; }
+    .strength-text { font-size: 11px; margin-top: 4px; font-weight: 600; }
+    .pass-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94A3B8; padding: 0; font-size: 16px; }
+    .field-pass { position: relative; }
+    .field-pass input { padding-right: 40px; }
+    @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
 
 <div class="auth-page">
-  <div class="card">
+  <div class="card" style="max-width:480px">
 
     <div class="logo">
       <div class="logo-mark">
@@ -20,18 +36,18 @@
           <rect x="12" y="12" width="7" height="7" rx="1.5"/>
         </svg>
       </div>
-      <span class="logo-name">Agencia OS</span>
+      <span class="logo-name">Faro</span>
     </div>
 
     <h1 class="card-title">Crear cuenta</h1>
-    <p class="card-sub">Empezá a gestionar tu agencia hoy.</p>
+    <p class="card-sub">Configurá tu agencia en menos de un minuto.</p>
 
     <div class="error-msg" id="error"></div>
 
     <div class="field-row">
       <div class="field">
         <label>Nombre</label>
-        <input type="text" id="nombre" placeholder="Ana" autocomplete="given-name">
+        <input type="text" id="nombre" placeholder="Juan" autocomplete="given-name">
       </div>
       <div class="field">
         <label>Apellido</label>
@@ -40,22 +56,41 @@
     </div>
 
     <div class="field">
+      <label>Nombre de la agencia</label>
+      <input type="text" id="agencia" placeholder="Ej: Studio Creativo, Agencia Norte...">
+    </div>
+
+    <div class="field">
       <label>Email</label>
-      <input type="email" id="email" placeholder="tu@email.com" autocomplete="email">
+      <input type="email" id="email" placeholder="tu@agencia.com" autocomplete="email">
     </div>
 
     <div class="field">
       <label>Contraseña</label>
-      <input type="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      <div class="field-pass">
+        <input type="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" oninput="checkPasswordStrength(this.value)">
+        <button class="pass-toggle" type="button" onclick="togglePassword('password', this)" tabindex="-1">
+          <i class="ti ti-eye" id="eye-password"></i>
+        </button>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+      <div class="strength-text" id="strength-text" style="color:#94A3B8"></div>
     </div>
 
-    <button class="btn btn-primary" id="btn-register" onclick="handleRegister()">
-      <span id="btn-text">Crear cuenta</span>
+    <div class="terms-row">
+      <input type="checkbox" id="terms">
+      <label for="terms">
+        Al crear una cuenta aceptás los <a href="#" onclick="return false">Términos y Condiciones</a> y la <a href="#" onclick="return false">Política de Privacidad</a> de Faro.
+      </label>
+    </div>
+
+    <button class="btn btn-primary" id="btn-register" onclick="handleRegister()" style="margin-top:20px">
+      <span id="btn-text">Crear mi agencia</span>
       <div class="spinner" id="spinner"></div>
     </button>
 
     <div class="card-footer">
-      ¿Ya tenés cuenta? <a href="index.html">Iniciar sesión</a>
+      ¿Ya tenés cuenta? <a href="login.html">Iniciar sesión</a>
     </div>
 
   </div>
@@ -70,34 +105,71 @@
     if (e.key === 'Enter') handleRegister()
   })
 
+  window.togglePassword = function(id, btn) {
+    const input = document.getElementById(id)
+    const icon = btn.querySelector('i')
+    if (input.type === 'password') {
+      input.type = 'text'
+      icon.className = 'ti ti-eye-off'
+    } else {
+      input.type = 'password'
+      icon.className = 'ti ti-eye'
+    }
+  }
+
+  window.checkPasswordStrength = function(val) {
+    const fill = document.getElementById('strength-fill')
+    const text = document.getElementById('strength-text')
+    if (!val) { fill.style.width = '0'; text.textContent = ''; return }
+
+    let score = 0
+    if (val.length >= 8) score++
+    if (val.length >= 12) score++
+    if (/[A-Z]/.test(val)) score++
+    if (/[0-9]/.test(val)) score++
+    if (/[^A-Za-z0-9]/.test(val)) score++
+
+    const levels = [
+      { pct: '20%', color: '#EF4444', label: 'Muy débil' },
+      { pct: '40%', color: '#F97316', label: 'Débil' },
+      { pct: '60%', color: '#EAB308', label: 'Regular' },
+      { pct: '80%', color: '#22C55E', label: 'Buena' },
+      { pct: '100%', color: '#16A34A', label: 'Excelente' },
+    ]
+    const level = levels[Math.min(score - 1, 4)] || levels[0]
+    fill.style.width = level.pct
+    fill.style.background = level.color
+    text.textContent = level.label
+    text.style.color = level.color
+  }
+
   window.handleRegister = async function() {
     const nombre   = document.getElementById('nombre').value.trim()
     const apellido = document.getElementById('apellido').value.trim()
+    const agencia  = document.getElementById('agencia').value.trim()
     const email    = document.getElementById('email').value.trim()
     const password = document.getElementById('password').value
-    const btn      = document.getElementById('btn-register')
-    const spinner  = document.getElementById('spinner')
-    const btnText  = document.getElementById('btn-text')
+    const terms    = document.getElementById('terms').checked
 
-    document.getElementById('error').classList.remove('show')
+    const errEl   = document.getElementById('error')
+    const btn     = document.getElementById('btn-register')
+    const spinner = document.getElementById('spinner')
+    const btnText = document.getElementById('btn-text')
 
-    // Validaciones
-    if (!nombre || !apellido || !email || !password) {
-      showError('Completá todos los campos.')
-      return
-    }
-    if (password.length < 8) {
-      showError('La contraseña debe tener al menos 8 caracteres.')
-      return
-    }
+    errEl.classList.remove('show')
 
-    // Loading
+    if (!nombre || !apellido) { errEl.textContent = 'Completá tu nombre y apellido.'; errEl.classList.add('show'); return }
+    if (!agencia) { errEl.textContent = 'Ingresá el nombre de tu agencia.'; errEl.classList.add('show'); return }
+    if (!email) { errEl.textContent = 'Ingresá tu email.'; errEl.classList.add('show'); return }
+    if (password.length < 8) { errEl.textContent = 'La contraseña debe tener al menos 8 caracteres.'; errEl.classList.add('show'); return }
+    if (!terms) { errEl.textContent = 'Tenés que aceptar los términos y condiciones para continuar.'; errEl.classList.add('show'); return }
+
     btn.disabled = true
     spinner.style.display = 'block'
     btnText.textContent = 'Creando cuenta...'
 
-    // 1. Crear usuario en Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
+    // 1 — Crear usuario en Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -105,41 +177,58 @@
       }
     })
 
-    if (error) {
-      reset()
-      if (error.message.includes('already registered')) {
-        showError('Ya existe una cuenta con ese email.')
+    if (authError) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
+      if (authError.message.includes('already registered')) {
+        errEl.textContent = 'Ya existe una cuenta con ese email. ¿Querés iniciar sesión?'
       } else {
-        showError('No se pudo crear la cuenta. Intentá de nuevo.')
+        errEl.textContent = authError.message || 'Error al crear la cuenta.'
       }
+      errEl.classList.add('show')
       return
     }
 
-    // 2. Crear perfil en tabla profiles
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({ id: data.user.id, nombre, apellido })
-
-    if (profileError) {
-      reset()
-      showError('Error al guardar el perfil. Intentá de nuevo.')
+    const userId = authData.user?.id
+    if (!userId) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
+      errEl.textContent = 'Error inesperado. Intentá de nuevo.'
+      errEl.classList.add('show')
       return
     }
 
-    // 3. Ir a onboarding
-    window.location.href = 'onboarding.html'
+    // 2 — Guardar perfil
+    await supabase.from('profiles').upsert({
+      id: userId,
+      nombre,
+      apellido,
+      email
+    })
 
-    function reset() {
-      btn.disabled = false
-      spinner.style.display = 'none'
-      btnText.textContent = 'Crear cuenta'
+    // 3 — Crear la agencia
+    const { data: agencyData, error: agencyError } = await supabase
+      .from('agencies')
+      .insert({ nombre: agencia, plan: 'free' })
+      .select('id')
+      .single()
+
+    if (agencyError) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
+      errEl.textContent = 'Error al crear la agencia. Intentá de nuevo.'
+      errEl.classList.add('show')
+      return
     }
-  }
 
-  function showError(msg) {
-    const el = document.getElementById('error')
-    el.textContent = msg
-    el.classList.add('show')
+    // 4 — Vincular usuario como OWNER de la agencia
+    await supabase.from('agency_members').insert({
+      user_id: userId,
+      agency_id: agencyData.id,
+      role: 'OWNER',
+      status: 'active'
+    })
+
+    // 5 — Ir al dashboard
+    btnText.textContent = '¡Listo! Entrando a Faro...'
+    window.location.href = 'dashboard.html'
   }
 </script>
 
