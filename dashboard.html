@@ -6347,7 +6347,7 @@
   }
 
   // ── Task modal ────────────────────────────────────────
-  window.openTaskModal = function(id) {
+  window.openTaskModal = async function(id) {
     const t = id ? tasks.find(x => x.id === id) : null
     document.getElementById('modal-task-title').textContent = t ? 'Editar tarea' : 'Nueva tarea'
     document.getElementById('task-id').value = t?.id || ''
