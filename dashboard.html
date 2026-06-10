@@ -6523,7 +6523,7 @@
         .eq('estado', 'activo')
         .order('fecha_fin', { ascending: true })
       const opts = (objActivos || []).map(o => {
-        const nombre = o.assigned_to === currentUserId ? 'Yo' : miembrosCache.find(m => m.user_id === o.assigned_to)?.profiles?.nombre || ''
+        const m2 = miembrosCache.find(m => m.user_id === o.assigned_to); const nombre = m2?.profiles?.nombre || ''
         const label = nombre ? `${o.titulo} (${nombre})` : o.titulo
         return `<option value="${o.id}" ${t?.objetivo_id === o.id ? 'selected' : ''}>${label}</option>`
       }).join('')
@@ -10852,7 +10852,6 @@ if (id) {
   }
 
   function getMiembroNombre(userId) {
-    if (userId === currentUserId) return 'Yo'
     const m = miembrosCache.find(m => m.user_id === userId)
     if (!m?.profiles) return 'Miembro'
     return m.profiles.nombre + ' ' + m.profiles.apellido
@@ -10863,7 +10862,6 @@ if (id) {
     if (!users || users.length === 0) return ''
     if (users.length === 1) return getMiembroNombre(users[0])
     const nombres = users.map(uid => {
-      if (uid === currentUserId) return 'Yo'
       const m = miembrosCache.find(m => m.user_id === uid)
       return m?.profiles?.nombre || 'Miembro'
     })
@@ -10961,12 +10959,12 @@ if (id) {
         const esGrupal = users.length > 1
         const avatares = users.slice(0,3).map((uid, i) => {
           const nombre = getMiembroNombre(uid)
-          const ini = nombre === 'Yo' ? (document.body.dataset.userName||'YO').slice(0,2).toUpperCase() : nombre.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()
+          const ini = nombre.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()
           return `<div title="${nombre}" style="width:24px;height:24px;border-radius:50%;background:var(--celeste-dim);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;border:2px solid var(--white);margin-left:${i>0?'-6px':'0'}">${ini}</div>`
         }).join('')
         const nombresStr = users.length === 1
           ? getMiembroNombre(users[0])
-          : users.slice(0,2).map(u => { const n = getMiembroNombre(u); return n === 'Yo' ? 'Yo' : n.split(' ')[0] }).join(', ') + (users.length > 2 ? ' +' + (users.length-2) : '')
+          : users.slice(0,2).map(u => getMiembroNombre(u).split(' ')[0]).join(', ') + (users.length > 2 ? ' +' + (users.length-2) : '')
         const estadoBadge = riesgo === 'cumplido'
           ? `<span style="font-size:10px;font-weight:800;color:#16A34A;background:#F0FDF4;padding:2px 8px;border-radius:20px;white-space:nowrap">✓ Listo</span>`
           : riesgo === 'alto'
@@ -11103,9 +11101,7 @@ if (id) {
   function buildObjAsignadosOpts(seleccionados) {
     return (window.miembrosCache || []).map(m => {
       if (!m.profiles) return ''
-      const label = m.user_id === currentUserId
-        ? 'Yo (' + m.profiles.nombre + ')'
-        : m.profiles.nombre + ' ' + m.profiles.apellido
+      const label = m.profiles.nombre + ' ' + m.profiles.apellido
       const checked = seleccionados.includes(m.user_id) ? 'checked' : ''
       return '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:9px 12px;transition:background var(--t)" onmouseover="this.style.background=\'var(--celeste-dim)\'" onmouseout="this.style.background=\'transparent\'">' +
         '<input type="checkbox" value="' + m.user_id + '" class="obj-asignado-cb" ' + checked + ' onchange="updateObjAsignadosLabel()" style="accent-color:var(--azul);width:15px;height:15px;flex-shrink:0;cursor:pointer">' +
@@ -11232,7 +11228,7 @@ if (id) {
       label.style.color = 'var(--ink3)'
     } else if (checked.length === 1) {
       const m = window.miembrosCache?.find(m => m.user_id === checked[0].value)
-      const nombre = checked[0].value === currentUserId ? 'Yo' : (m?.profiles?.nombre + ' ' + m?.profiles?.apellido) || 'Miembro'
+      const nombre = (m?.profiles?.nombre + ' ' + m?.profiles?.apellido).trim() || 'Miembro'
       label.textContent = nombre
       label.style.color = 'var(--ink)'
     } else {
