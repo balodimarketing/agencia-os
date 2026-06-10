@@ -11117,6 +11117,20 @@ if (id) {
 
   // ── Modal nuevo objetivo ─────────────────────────────
 
+  function buildObjAsignadosOpts(seleccionados) {
+    return (window.miembrosCache || []).map(m => {
+      if (!m.profiles) return ''
+      const label = m.user_id === currentUserId
+        ? 'Yo (' + m.profiles.nombre + ')'
+        : m.profiles.nombre + ' ' + m.profiles.apellido
+      const checked = seleccionados.includes(m.user_id) ? 'checked' : ''
+      return '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:9px 12px;transition:background var(--t)" onmouseover="this.style.background=\'var(--celeste-dim)\'" onmouseout="this.style.background=\'transparent\'">' +
+        '<input type="checkbox" value="' + m.user_id + '" class="obj-asignado-cb" ' + checked + ' onchange="updateObjAsignadosLabel()" style="accent-color:var(--azul);width:15px;height:15px;flex-shrink:0;cursor:pointer">' +
+        '<span style="font-size:13px;color:var(--ink);font-weight:600">' + label + '</span>' +
+        '</label>'
+    }).join('')
+  }
+
   function openObjetivoModal(obj = null) {
     const isEdit = !!obj
     const hoy = new Date().toISOString().split('T')[0]
@@ -11156,15 +11170,7 @@ if (id) {
               <i class="ti ti-chevron-down" id="obj-asignados-chevron" style="font-size:13px;color:var(--ink3);transition:transform .15s"></i>
             </div>
             <div id="obj-asignados-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);z-index:100;max-height:180px;overflow-y:auto">
-              ${miembrosCache.map(m => {
-                if (!m.profiles) return ''
-                const label = m.user_id === currentUserId ? 'Yo (' + m.profiles.nombre + ')' : m.profiles.nombre + ' ' + m.profiles.apellido
-                const checked = asignadosActuales.includes(m.user_id)
-                return \`<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:9px 12px;transition:background var(--t)" onmouseover="this.style.background='var(--celeste-dim)'" onmouseout="this.style.background='transparent'">
-                  <input type="checkbox" value="\${m.user_id}" class="obj-asignado-cb" \${checked ? 'checked' : ''} onchange="updateObjAsignadosLabel()" style="accent-color:var(--azul);width:15px;height:15px;flex-shrink:0;cursor:pointer">
-                  <span style="font-size:13px;color:var(--ink);font-weight:600">\${label}</span>
-                </label>\`
-              }).join('')}
+              ${buildObjAsignadosOpts(asignadosActuales)}
             </div>
           </div>
         </div>` : ''}
