@@ -328,18 +328,26 @@
     btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Verificando código...'
 
     // Buscar invitación por código
-    const { data: invitation } = await supabase
+    const { data: invitation, error: invErr } = await supabase
       .from('invitations')
-      .select('agency_id, agencies(id, nombre)')
+      .select('agency_id')
       .eq('code', codigo)
       .eq('status', 'pending')
       .maybeSingle()
 
     if (!invitation) {
       btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Solicitar acceso'
-      errEl.textContent = 'Código de invitación inválido o vencido. Pedile uno nuevo al Owner.'; errEl.classList.add('show'); return
+      errEl.textContent = 'Código de invitación inválido. Pedile uno nuevo al Owner.'; errEl.classList.add('show'); return
     }
-    const agency = invitation.agencies
+
+    // Buscar nombre de la agencia por separado
+    const { data: agencyData } = await supabase
+      .from('agencies')
+      .select('id, nombre')
+      .eq('id', invitation.agency_id)
+      .maybeSingle()
+
+    const agency = agencyData
 
     btnText.textContent = 'Creando cuenta...'
 
