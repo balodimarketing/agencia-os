@@ -10800,8 +10800,10 @@ if (id) {
   // OBJETIVOS
   // ══════════════════════════════════════
 
-  let objetivosData = []
-  let miembrosCache = []
+  window.objetivosData = []
+  window.miembrosCache = []
+  let objetivosData = window.objetivosData
+  let miembrosCache = window.miembrosCache
 
   async function renderObjetivos() {
     // Mostrar/ocultar botón nuevo objetivo según rol
@@ -10817,6 +10819,7 @@ if (id) {
       .eq('agency_id', agencyId)
       .eq('status', 'active')
     miembrosCache = miembros || []
+    window.miembrosCache = miembrosCache
 
     const hoy = new Date().toISOString().split('T')[0]
 
@@ -10832,6 +10835,7 @@ if (id) {
 
     const { data: todos } = await q
     objetivosData = todos || []
+    window.objetivosData = objetivosData
 
     // Cerrar automáticamente los vencidos activos
     const vencidos = objetivosData.filter(o => o.estado === 'activo' && o.fecha_fin < hoy)
@@ -10852,6 +10856,24 @@ if (id) {
     const m = miembrosCache.find(m => m.user_id === userId)
     if (!m?.profiles) return 'Miembro'
     return m.profiles.nombre + ' ' + m.profiles.apellido
+  }
+
+  function getMiembrosNombres(o) {
+    const users = o.assigned_users || [o.assigned_to]
+    if (!users || users.length === 0) return ''
+    if (users.length === 1) return getMiembroNombre(users[0])
+    const nombres = users.map(uid => {
+      if (uid === currentUserId) return 'Yo'
+      const m = miembrosCache.find(m => m.user_id === uid)
+      return m?.profiles?.nombre || 'Miembro'
+    })
+    if (nombres.length === 2) return nombres.join(' y ')
+    return nombres.slice(0, 2).join(', ') + ' +' + (nombres.length - 2)
+  }
+
+  function esTodoPropio(o) {
+    const users = o.assigned_users || [o.assigned_to]
+    return users.every(uid => uid === currentUserId)
   }
 
   function getPeriodoLabel(periodo) {
@@ -10932,8 +10954,11 @@ if (id) {
       // Agrupar activos por miembro
       const porMiembro = {}
       activos.forEach(o => {
-        if (!porMiembro[o.assigned_to]) porMiembro[o.assigned_to] = []
-        porMiembro[o.assigned_to].push(o)
+        const users = o.assigned_users || [o.assigned_to]
+        users.forEach(uid => {
+          if (!porMiembro[uid]) porMiembro[uid] = []
+          if (!porMiembro[uid].find(x => x.id === o.id)) porMiembro[uid].push(o)
+        })
       })
       const miembrosConObj = Object.keys(porMiembro)
       if (miembrosConObj.length > 1) {
@@ -11006,8 +11031,8 @@ if (id) {
       html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:28px">`
       activos.forEach(o => {
         const { pct, barColor, borderColor, diasRestantes, riesgo } = getRiesgoStyle(o, hoy)
-        const nombre = getMiembroNombre(o.assigned_to)
-        const esPropio = o.assigned_to === currentUserId
+        const nombre = getMiembrosNombres(o)
+        const esPropio = esTodoPropio(o)
         const riesgoTag = riesgo === 'alto'
           ? `<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#DC2626;margin-bottom:8px"><i class="ti ti-alert-triangle" style="font-size:11px"></i> En riesgo</div>`
           : riesgo === 'medio'
@@ -11067,8 +11092,8 @@ if (id) {
         lista.forEach(o => {
           const cumplido = o.estado === 'cumplido'
           const pct = Math.min(Math.round((o.progreso / o.meta) * 100), 100)
-          const nombre = getMiembroNombre(o.assigned_to)
-          const esPropio = o.assigned_to === currentUserId
+          const nombre = getMiembrosNombres(o)
+          const esPropio = esTodoPropio(o)
           html += `<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:14px">
             <div style="width:30px;height:30px;border-radius:50%;background:${cumplido ? '#F0FDF4' : '#FEF2F2'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
               <i class="ti ${cumplido ? 'ti-check' : 'ti-x'}" style="font-size:13px;color:${cumplido ? '#16A34A' : 'var(--danger)'}"></i>
@@ -11106,15 +11131,8 @@ if (id) {
       return d.toISOString().split('T')[0]
     }
 
-    // Opciones de miembros (solo Owner/Admin pueden asignar a otros)
-    let miembrosOpts = ''
-    if (userRole !== 'MEMBER') {
-      miembrosOpts = miembrosCache.map(m => {
-        if (!m.profiles) return ''
-        const label = m.user_id === currentUserId ? 'Yo' : m.profiles.nombre + ' ' + m.profiles.apellido
-        return `<option value="${m.user_id}" ${obj?.assigned_to === m.user_id ? 'selected' : ''}>${label}</option>`
-      }).join('')
-    }
+    // Asignados actuales (para edición)
+    const asignadosActuales = obj?.assigned_users || (obj?.assigned_to ? [obj.assigned_to] : [currentUserId])
 
     const modalHTML = `<div id="modal-objetivo" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeObjetivoModal()">
       <div style="background:var(--white);border-radius:var(--r-lg);padding:28px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);animation:cardIn .2s both">
@@ -11132,7 +11150,23 @@ if (id) {
 
         ${userRole !== 'MEMBER' ? `<div style="margin-bottom:14px">
           <label style="display:block;font-size:11px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Asignar a</label>
-          <select id="obj-asignado" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--ink);outline:none;background:var(--white);cursor:pointer">${miembrosOpts}</select>
+          <div style="position:relative">
+            <div id="obj-asignados-trigger" onclick="toggleObjAsignadosDropdown()" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--ink);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">
+              <span id="obj-asignados-label" style="color:var(--ink3)">Sin asignar</span>
+              <i class="ti ti-chevron-down" id="obj-asignados-chevron" style="font-size:13px;color:var(--ink3);transition:transform .15s"></i>
+            </div>
+            <div id="obj-asignados-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);z-index:100;max-height:180px;overflow-y:auto">
+              ${miembrosCache.map(m => {
+                if (!m.profiles) return ''
+                const label = m.user_id === currentUserId ? 'Yo (' + m.profiles.nombre + ')' : m.profiles.nombre + ' ' + m.profiles.apellido
+                const checked = asignadosActuales.includes(m.user_id)
+                return \`<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:9px 12px;transition:background var(--t)" onmouseover="this.style.background='var(--celeste-dim)'" onmouseout="this.style.background='transparent'">
+                  <input type="checkbox" value="\${m.user_id}" class="obj-asignado-cb" \${checked ? 'checked' : ''} onchange="updateObjAsignadosLabel()" style="accent-color:var(--azul);width:15px;height:15px;flex-shrink:0;cursor:pointer">
+                  <span style="font-size:13px;color:var(--ink);font-weight:600">\${label}</span>
+                </label>\`
+              }).join('')}
+            </div>
+          </div>
         </div>` : ''}
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
@@ -11170,8 +11204,52 @@ if (id) {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML)
 
+    // Inicializar label de asignados
+    setTimeout(() => updateObjAsignadosLabel(), 50)
     // Calcular preview inicial
     updateFechaFin()
+  }
+
+  window.toggleObjAsignadosDropdown = function() {
+    const dd = document.getElementById('obj-asignados-dropdown')
+    const chevron = document.getElementById('obj-asignados-chevron')
+    const trigger = document.getElementById('obj-asignados-trigger')
+    if (!dd) return
+    const isOpen = dd.style.display !== 'none'
+    dd.style.display = isOpen ? 'none' : 'block'
+    chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)'
+    trigger.style.borderColor = isOpen ? 'var(--border)' : 'var(--azul)'
+    if (!isOpen) {
+      setTimeout(() => {
+        document.addEventListener('click', function handler(e) {
+          if (!document.getElementById('obj-asignados-trigger')?.contains(e.target) &&
+              !document.getElementById('obj-asignados-dropdown')?.contains(e.target)) {
+            dd.style.display = 'none'
+            chevron.style.transform = 'rotate(0deg)'
+            trigger.style.borderColor = 'var(--border)'
+            document.removeEventListener('click', handler)
+          }
+        })
+      }, 100)
+    }
+  }
+
+  window.updateObjAsignadosLabel = function() {
+    const checked = [...document.querySelectorAll('.obj-asignado-cb:checked')]
+    const label = document.getElementById('obj-asignados-label')
+    if (!label) return
+    if (checked.length === 0) {
+      label.textContent = 'Sin asignar'
+      label.style.color = 'var(--ink3)'
+    } else if (checked.length === 1) {
+      const m = window.miembrosCache?.find(m => m.user_id === checked[0].value)
+      const nombre = checked[0].value === currentUserId ? 'Yo' : (m?.profiles?.nombre + ' ' + m?.profiles?.apellido) || 'Miembro'
+      label.textContent = nombre
+      label.style.color = 'var(--ink)'
+    } else {
+      label.textContent = checked.length + ' personas'
+      label.style.color = 'var(--ink)'
+    }
   }
 
   window.updateFechaFin = function() {
@@ -11200,9 +11278,12 @@ if (id) {
     const inicio = document.getElementById('obj-inicio').value
     const finPreview = document.getElementById('obj-fin-preview')
     const fin = finPreview?.dataset.fin
-    const asignado = userRole !== 'MEMBER'
-      ? document.getElementById('obj-asignado')?.value
-      : currentUserId
+    // Obtener asignados seleccionados
+    let asignadosSeleccionados = userRole !== 'MEMBER'
+      ? [...document.querySelectorAll('.obj-asignado-cb:checked')].map(cb => cb.value)
+      : [currentUserId]
+    if (asignadosSeleccionados.length === 0) asignadosSeleccionados = [currentUserId]
+    const asignado = asignadosSeleccionados[0] // assigned_to guarda el primero para compatibilidad
 
     const errEl = document.getElementById('obj-error')
     errEl.style.display = 'none'
@@ -11221,6 +11302,7 @@ if (id) {
       fecha_inicio: inicio,
       fecha_fin: fin,
       assigned_to: asignado,
+      assigned_users: asignadosSeleccionados,
       agency_id: agencyId,
       created_by: currentUserId,
       nota: document.getElementById('obj-nota')?.value.trim() || null
