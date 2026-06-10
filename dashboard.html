@@ -10951,67 +10951,50 @@ if (id) {
 
     // ── Vista de equipo (solo Owner/Admin) ──
     if (isOwnerAdmin && activos.length > 0) {
-      // Agrupar activos por miembro
-      const porMiembro = {}
-      activos.forEach(o => {
-        const users = o.assigned_users || [o.assigned_to]
-        users.forEach(uid => {
-          if (!porMiembro[uid]) porMiembro[uid] = []
-          if (!porMiembro[uid].find(x => x.id === o.id)) porMiembro[uid].push(o)
-        })
+      html += `<div style="margin-bottom:24px">
+        <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:12px">Vista del equipo</div>
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden">`
+      activos.forEach((o, idx) => {
+        const { pct, barColor, riesgo } = getRiesgoStyle(o, hoy)
+        const users = o.assigned_users?.filter(Boolean) || (o.assigned_to ? [o.assigned_to] : [])
+        const borderBottom = idx < activos.length - 1 ? 'border-bottom:1px solid var(--border)' : ''
+        const esGrupal = users.length > 1
+        const avatares = users.slice(0,3).map((uid, i) => {
+          const nombre = getMiembroNombre(uid)
+          const ini = nombre === 'Yo' ? (document.body.dataset.userName||'YO').slice(0,2).toUpperCase() : nombre.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()
+          return `<div title="${nombre}" style="width:24px;height:24px;border-radius:50%;background:var(--celeste-dim);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;border:2px solid var(--white);margin-left:${i>0?'-6px':'0'}">${ini}</div>`
+        }).join('')
+        const nombresStr = users.length === 1
+          ? getMiembroNombre(users[0])
+          : users.slice(0,2).map(u => { const n = getMiembroNombre(u); return n === 'Yo' ? 'Yo' : n.split(' ')[0] }).join(', ') + (users.length > 2 ? ' +' + (users.length-2) : '')
+        const estadoBadge = riesgo === 'cumplido'
+          ? `<span style="font-size:10px;font-weight:800;color:#16A34A;background:#F0FDF4;padding:2px 8px;border-radius:20px;white-space:nowrap">✓ Listo</span>`
+          : riesgo === 'alto'
+          ? `<span style="font-size:10px;font-weight:800;color:#DC2626;background:#FEF2F2;padding:2px 8px;border-radius:20px;white-space:nowrap">En riesgo</span>`
+          : riesgo === 'medio'
+          ? `<span style="font-size:10px;font-weight:800;color:#D97706;background:#FFFBEB;padding:2px 8px;border-radius:20px;white-space:nowrap">Atención</span>`
+          : `<span style="font-size:10px;font-weight:800;color:var(--ink3);background:var(--bg);padding:2px 8px;border-radius:20px;white-space:nowrap">En curso</span>`
+        html += `<div style="padding:12px 16px;${borderBottom};display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;flex-shrink:0">${avatares}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <div style="font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.titulo}</div>
+              ${esGrupal ? `<span style="font-size:9px;font-weight:800;color:var(--azul);background:var(--celeste-dim);padding:1px 6px;border-radius:20px;flex-shrink:0">Grupal</span>` : ''}
+            </div>
+            <div style="font-size:10px;color:var(--ink3)">${nombresStr} · ${getPeriodoLabel(o.periodo)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+            <div style="display:flex;align-items:center;gap:6px;width:120px">
+              <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px"></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap">${o.progreso}/${o.meta}</span>
+            </div>
+            ${estadoBadge}
+          </div>
+        </div>`
       })
-      const miembrosConObj = Object.keys(porMiembro)
-      if (miembrosConObj.length > 1) {
-        html += `<div style="margin-bottom:24px">
-          <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:12px">Vista del equipo</div>
-          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr style="background:var(--bg)">
-                  <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Miembro</th>
-                  <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Objetivo</th>
-                  <th style="text-align:center;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;width:100px">Progreso</th>
-                  <th style="text-align:center;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;width:80px">Estado</th>
-                </tr>
-              </thead>
-              <tbody>`
-        miembrosConObj.forEach((uid, mi) => {
-          porMiembro[uid].forEach((o, oi) => {
-            const { pct, barColor, riesgo } = getRiesgoStyle(o, hoy)
-            const nombre = getMiembroNombre(uid)
-            const isLast = mi === miembrosConObj.length - 1 && oi === porMiembro[uid].length - 1
-            const borderBottom = isLast ? '' : 'border-bottom:1px solid var(--border)'
-            const iniciales = nombre === 'Yo' ? (document.body.dataset.userName||'YO').slice(0,2).toUpperCase() : nombre.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()
-            html += `<tr style="${borderBottom}">
-                <td style="padding:11px 16px">
-                  ${oi === 0 ? `<div style="display:flex;align-items:center;gap:8px">
-                    <div style="width:28px;height:28px;border-radius:50%;background:var(--celeste-dim);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0">${iniciales}</div>
-                    <span style="font-size:12px;font-weight:700;color:var(--ink)">${nombre}</span>
-                  </div>` : ''}
-                </td>
-                <td style="padding:11px 16px">
-                  <div style="font-size:12px;font-weight:700;color:var(--ink)">${o.titulo}</div>
-                  <div style="font-size:10px;color:var(--ink3);margin-top:1px">${getPeriodoLabel(o.periodo)}</div>
-                </td>
-                <td style="padding:11px 16px">
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden">
-                      <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px"></div>
-                    </div>
-                    <span style="font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap">${o.progreso}/${o.meta}</span>
-                  </div>
-                </td>
-                <td style="padding:11px 16px;text-align:center">
-                  ${riesgo === 'cumplido' ? `<span style="font-size:10px;font-weight:800;color:#16A34A;background:#F0FDF4;padding:2px 8px;border-radius:20px">✓ Listo</span>`
-                  : riesgo === 'alto' ? `<span style="font-size:10px;font-weight:800;color:#DC2626;background:#FEF2F2;padding:2px 8px;border-radius:20px">En riesgo</span>`
-                  : riesgo === 'medio' ? `<span style="font-size:10px;font-weight:800;color:#D97706;background:#FFFBEB;padding:2px 8px;border-radius:20px">Atención</span>`
-                  : `<span style="font-size:10px;font-weight:800;color:var(--ink3);background:var(--bg);padding:2px 8px;border-radius:20px">En curso</span>`}
-                </td>
-              </tr>`
-          })
-        })
-        html += `</tbody></table></div></div>`
-      }
+      html += `</div></div>`
     }
 
     // ── Objetivos activos cards ──
