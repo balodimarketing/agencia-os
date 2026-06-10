@@ -20,6 +20,56 @@
     .field-pass { position: relative; }
     .field-pass input { padding-right: 40px; }
     @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+    /* Toggle modo */
+    .mode-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #F1F5F9;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 24px;
+      gap: 4px;
+    }
+    .mode-btn {
+      padding: 9px 12px;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .18s;
+      color: #94A3B8;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .mode-btn.active {
+      background: #fff;
+      color: #0A2540;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    /* Código field */
+    .codigo-field {
+      position: relative;
+    }
+    .codigo-field input {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 800;
+      font-size: 16px;
+      text-align: center;
+    }
+    .codigo-field input::placeholder {
+      text-transform: none;
+      letter-spacing: normal;
+      font-weight: 400;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -39,8 +89,18 @@
       <span class="logo-name">Faro</span>
     </div>
 
-    <h1 class="card-title">Crear cuenta</h1>
-    <p class="card-sub">Configurá tu agencia en menos de un minuto.</p>
+    <!-- Toggle modo -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-modo-agencia" onclick="setModo('agencia')">
+        <i class="ti ti-building" style="font-size:14px"></i> Crear agencia
+      </button>
+      <button class="mode-btn" id="btn-modo-member" onclick="setModo('member')">
+        <i class="ti ti-users" style="font-size:14px"></i> Unirme a una agencia
+      </button>
+    </div>
+
+    <h1 class="card-title" id="card-title">Crear cuenta</h1>
+    <p class="card-sub" id="card-sub">Configurá tu agencia en menos de un minuto.</p>
 
     <div class="error-msg" id="error"></div>
 
@@ -55,14 +115,17 @@
       </div>
     </div>
 
-    <div class="field">
-      <label>Nombre de la agencia</label>
-      <input type="text" id="agencia" placeholder="Ej: Studio Creativo, Agencia Norte...">
+    <!-- Solo agencia -->
+    <div id="bloque-agencia">
+      <div class="field">
+        <label>Nombre de la agencia</label>
+        <input type="text" id="agencia" placeholder="Ej: Studio Creativo, Agencia Norte...">
+      </div>
     </div>
 
     <div class="field">
       <label>Email</label>
-      <input type="email" id="email" placeholder="tu@agencia.com" autocomplete="email">
+      <input type="email" id="email" placeholder="tu@email.com" autocomplete="email">
     </div>
 
     <div class="field">
@@ -77,10 +140,21 @@
       <div class="strength-text" id="strength-text" style="color:#94A3B8"></div>
     </div>
 
+    <!-- Solo member -->
+    <div id="bloque-member" style="display:none">
+      <div class="field" style="margin-top:4px">
+        <label>Código de invitación</label>
+        <div class="codigo-field">
+          <input type="text" id="codigo" placeholder="Ingresá el código que te dieron" maxlength="8" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:6px">El Owner de la agencia te lo envía desde el módulo Equipo.</div>
+      </div>
+    </div>
+
     <div class="terms-row">
       <input type="checkbox" id="terms">
       <label for="terms">
-        Al crear una cuenta aceptás los <a href="#" onclick="return false">Términos y Condiciones</a> y la <a href="#" onclick="return false">Política de Privacidad</a> de Faro.
+        Al crear una cuenta aceptás los <a href="terms.html">Términos y Condiciones</a> y la <a href="privacy.html">Política de Privacidad</a> de Faro.
       </label>
     </div>
 
@@ -100,6 +174,22 @@
   import { supabase, redirectIfAuth } from './supabase.js'
 
   redirectIfAuth()
+
+  let modoActual = 'agencia'
+
+  window.setModo = function(modo) {
+    modoActual = modo
+    document.getElementById('btn-modo-agencia').classList.toggle('active', modo === 'agencia')
+    document.getElementById('btn-modo-member').classList.toggle('active', modo === 'member')
+    document.getElementById('bloque-agencia').style.display = modo === 'agencia' ? 'block' : 'none'
+    document.getElementById('bloque-member').style.display = modo === 'member' ? 'block' : 'none'
+    document.getElementById('card-title').textContent = modo === 'agencia' ? 'Crear cuenta' : 'Unirme a una agencia'
+    document.getElementById('card-sub').textContent = modo === 'agencia'
+      ? 'Configurá tu agencia en menos de un minuto.'
+      : 'Ingresá tus datos y el código que te compartió el Owner.'
+    document.getElementById('btn-text').textContent = modo === 'agencia' ? 'Crear mi agencia' : 'Solicitar acceso'
+    document.getElementById('error').classList.remove('show')
+  }
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter') handleRegister()
@@ -121,14 +211,12 @@
     const fill = document.getElementById('strength-fill')
     const text = document.getElementById('strength-text')
     if (!val) { fill.style.width = '0'; text.textContent = ''; return }
-
     let score = 0
     if (val.length >= 8) score++
     if (val.length >= 12) score++
     if (/[A-Z]/.test(val)) score++
     if (/[0-9]/.test(val)) score++
     if (/[^A-Za-z0-9]/.test(val)) score++
-
     const levels = [
       { pct: '20%', color: '#EF4444', label: 'Muy débil' },
       { pct: '40%', color: '#F97316', label: 'Débil' },
@@ -146,68 +234,58 @@
   window.handleRegister = async function() {
     const nombre   = document.getElementById('nombre').value.trim()
     const apellido = document.getElementById('apellido').value.trim()
-    const agencia  = document.getElementById('agencia').value.trim()
     const email    = document.getElementById('email').value.trim()
     const password = document.getElementById('password').value
     const terms    = document.getElementById('terms').checked
-
-    const errEl   = document.getElementById('error')
-    const btn     = document.getElementById('btn-register')
-    const spinner = document.getElementById('spinner')
-    const btnText = document.getElementById('btn-text')
+    const errEl    = document.getElementById('error')
+    const btn      = document.getElementById('btn-register')
+    const spinner  = document.getElementById('spinner')
+    const btnText  = document.getElementById('btn-text')
 
     errEl.classList.remove('show')
 
+    // Validaciones comunes
     if (!nombre || !apellido) { errEl.textContent = 'Completá tu nombre y apellido.'; errEl.classList.add('show'); return }
-    if (!agencia) { errEl.textContent = 'Ingresá el nombre de tu agencia.'; errEl.classList.add('show'); return }
     if (!email) { errEl.textContent = 'Ingresá tu email.'; errEl.classList.add('show'); return }
     if (password.length < 8) { errEl.textContent = 'La contraseña debe tener al menos 8 caracteres.'; errEl.classList.add('show'); return }
     if (!terms) { errEl.textContent = 'Tenés que aceptar los términos y condiciones para continuar.'; errEl.classList.add('show'); return }
 
-    btn.disabled = true
-    spinner.style.display = 'block'
-    btnText.textContent = 'Creando cuenta...'
+    if (modoActual === 'agencia') {
+      await handleRegisterAgencia(nombre, apellido, email, password, btn, spinner, btnText, errEl)
+    } else {
+      await handleRegisterMember(nombre, apellido, email, password, btn, spinner, btnText, errEl)
+    }
+  }
 
-    // 1 — Crear usuario en Auth
+  // ── Flujo Owner: crear agencia ─────────────────────────
+
+  async function handleRegisterAgencia(nombre, apellido, email, password, btn, spinner, btnText, errEl) {
+    const agencia = document.getElementById('agencia').value.trim()
+    if (!agencia) { errEl.textContent = 'Ingresá el nombre de tu agencia.'; errEl.classList.add('show'); return }
+
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Creando cuenta...'
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { nombre, apellido }
-      }
+      email, password, options: { data: { nombre, apellido } }
     })
 
     if (authError) {
       btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
-      if (authError.message.includes('already registered')) {
-        errEl.textContent = 'Ya existe una cuenta con ese email. ¿Querés iniciar sesión?'
-      } else {
-        errEl.textContent = authError.message || 'Error al crear la cuenta.'
-      }
-      errEl.classList.add('show')
-      return
+      errEl.textContent = authError.message.includes('already registered')
+        ? 'Ya existe una cuenta con ese email. ¿Querés iniciar sesión?'
+        : authError.message || 'Error al crear la cuenta.'
+      errEl.classList.add('show'); return
     }
 
     const userId = authData.user?.id
     if (!userId) {
       btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
-      errEl.textContent = 'Error inesperado. Intentá de nuevo.'
-      errEl.classList.add('show')
-      return
+      errEl.textContent = 'Error inesperado. Intentá de nuevo.'; errEl.classList.add('show'); return
     }
 
-    // 2 — Guardar perfil
-    await supabase.from('profiles').insert({
-      id: userId,
-      nombre,
-      apellido,
-      email
-    }).then(() => {}).catch(() => {})
-
-    // Si ya existía, actualizarlo
+    await supabase.from('profiles').insert({ id: userId, nombre, apellido, email }).then(() => {}).catch(() => {})
     await supabase.from('profiles').update({ nombre, apellido, email }).eq('id', userId)
 
-    // Verificar que el perfil existe antes de crear la agencia
     let profileExists = false
     for (let i = 0; i < 5; i++) {
       const { data: p } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
@@ -217,41 +295,91 @@
 
     if (!profileExists) {
       btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
-      errEl.textContent = 'Error al configurar el perfil. Intentá de nuevo.'
-      errEl.classList.add('show')
-      return
+      errEl.textContent = 'Error al configurar el perfil. Intentá de nuevo.'; errEl.classList.add('show'); return
     }
 
-    // 3 — Crear la agencia
     const { data: agencyData, error: agencyError } = await supabase
       .from('agencies')
-      .insert({ 
-          nombre: agencia, 
-          plan: 'free', 
-          owner_id: userId,
-          slug: agencia.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Math.random().toString(36).slice(2,6)
-        })
-      .select('id')
-      .single()
+      .insert({
+        nombre: agencia, plan: 'free', owner_id: userId,
+        slug: agencia.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + Math.random().toString(36).slice(2,6)
+      })
+      .select('id').single()
 
     if (agencyError) {
       btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Crear mi agencia'
-      errEl.textContent = 'Error al crear la agencia. Intentá de nuevo.'
-      errEl.classList.add('show')
-      return
+      errEl.textContent = 'Error al crear la agencia. Intentá de nuevo.'; errEl.classList.add('show'); return
     }
 
-    // 4 — Vincular usuario como OWNER de la agencia
     await supabase.from('agency_members').insert({
-      user_id: userId,
-      agency_id: agencyData.id,
-      role: 'OWNER',
-      status: 'active'
+      user_id: userId, agency_id: agencyData.id, role: 'OWNER', status: 'active'
     })
 
-    // 5 — Ir al dashboard
     btnText.textContent = '¡Listo! Entrando a Faro...'
     window.location.href = 'dashboard.html'
+  }
+
+  // ── Flujo Member: unirse con código ────────────────────
+
+  async function handleRegisterMember(nombre, apellido, email, password, btn, spinner, btnText, errEl) {
+    const codigo = document.getElementById('codigo').value.trim().toUpperCase()
+    if (!codigo) { errEl.textContent = 'Ingresá el código de invitación.'; errEl.classList.add('show'); return }
+
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Verificando código...'
+
+    // Buscar agencia por código
+    const { data: agency } = await supabase
+      .from('agencies')
+      .select('id, nombre')
+      .eq('invite_code', codigo)
+      .maybeSingle()
+
+    if (!agency) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Solicitar acceso'
+      errEl.textContent = 'Código de invitación inválido. Pedile uno nuevo al Owner.'; errEl.classList.add('show'); return
+    }
+
+    btnText.textContent = 'Creando cuenta...'
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email, password, options: { data: { nombre, apellido } }
+    })
+
+    if (authError) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Solicitar acceso'
+      errEl.textContent = authError.message.includes('already registered')
+        ? 'Ya existe una cuenta con ese email. ¿Querés iniciar sesión?'
+        : authError.message || 'Error al crear la cuenta.'
+      errEl.classList.add('show'); return
+    }
+
+    const userId = authData.user?.id
+    if (!userId) {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Solicitar acceso'
+      errEl.textContent = 'Error inesperado. Intentá de nuevo.'; errEl.classList.add('show'); return
+    }
+
+    // Guardar perfil
+    await supabase.from('profiles').insert({ id: userId, nombre, apellido, email }).then(() => {}).catch(() => {})
+    await supabase.from('profiles').update({ nombre, apellido, email }).eq('id', userId)
+
+    // Esperar perfil
+    for (let i = 0; i < 5; i++) {
+      const { data: p } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+      if (p) break
+      await new Promise(r => setTimeout(r, 800))
+    }
+
+    // Crear membership pendiente
+    await supabase.from('agency_members').insert({
+      user_id: userId,
+      agency_id: agency.id,
+      role: 'MEMBER',
+      status: 'pending'
+    })
+
+    btnText.textContent = 'Solicitud enviada...'
+    window.location.href = 'waiting.html'
   }
 </script>
 
