@@ -278,8 +278,8 @@
     .back-btn i { font-size: 15px; }
 
     /* ── Toast ── */
-    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(70px); background: var(--ink); color: #fff; font-size: 13px; font-weight: 700; padding: 11px 20px; border-radius: 12px; box-shadow: var(--shadow-lg); transition: transform .28s cubic-bezier(.4,0,.2,1); white-space: nowrap; z-index: 200; }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink); color: #fff; font-size: 13px; font-weight: 700; padding: 12px 22px; border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.18); transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s; white-space: nowrap; z-index: 9999; opacity: 0; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
     /* ── Spinner ── */
     .spinner { width: 14px; height: 14px; border: 2px solid rgba(142,219,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
@@ -493,11 +493,25 @@
     .task-chk {
       width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
       flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      transition: all var(--t); margin-top: 1px; cursor: pointer;
+      transition: background .2s, border-color .2s, transform .15s; margin-top: 1px; cursor: pointer;
     }
-    .task-chk:hover { border-color: var(--success); }
+    .task-chk:hover { border-color: var(--success); transform: scale(1.1); }
     .task-chk.done { background: var(--success); border-color: var(--success); }
     .task-chk.done::after { content: ''; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translateY(-1px); display: block; }
+    .task-chk.animating { animation: chkPop .35s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes chkPop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.25); }
+      70%  { transform: scale(0.92); }
+      100% { transform: scale(1); }
+    }
+    .task-item.completing {
+      animation: taskFadeOut .38s cubic-bezier(.4,0,.2,1) .25s forwards;
+    }
+    @keyframes taskFadeOut {
+      0%   { opacity: 1; transform: translateX(0); }
+      100% { opacity: .45; transform: translateX(4px); }
+    }
 
     .task-body { flex: 1; min-width: 0; }
     .task-title { font-size: 14px; font-weight: 800; color: var(--ink); letter-spacing: -.2px; }
@@ -6386,7 +6400,7 @@
       const showPrio = !isDone
 
       return `<div class="task-item ${isDone ? 'done-item' : ''}" onclick="openTaskModal('${t.id}')">
-        <div class="task-chk ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}')"></div>
+        <div class="task-chk ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}',this)"></div>
         <div class="task-body">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <div class="task-title ${isDone ? 'done' : ''}">${t.titulo}</div>
@@ -6412,10 +6426,39 @@
     renderTasks()
   }
 
-  window.toggleTaskStatus = async function(id, estado) {
+  window.toggleTaskStatus = async function(id, estado, el) {
     const next = estado === 'completada' ? 'pendiente' : 'completada'
+    const completing = next === 'completada'
+
+    // Animación inmediata en el checkbox
+    if (el) {
+      el.classList.add('animating')
+      if (completing) {
+        el.classList.add('done')
+        const taskItem = el.closest('.task-item')
+        if (taskItem) {
+          setTimeout(() => taskItem.classList.add('completing'), 80)
+        }
+      } else {
+        el.classList.remove('done')
+      }
+      setTimeout(() => el.classList.remove('animating'), 400)
+    }
+
+    // Guardar en Supabase
     await supabase.from('content_tasks').update({ estado: next }).eq('id', id)
-    await loadTasks(); renderTasks(); renderContenidoPanel()
+
+    // Toast con feedback
+    if (completing) {
+      showToast('✓  Tarea completada')
+    }
+
+    // Recargar después de la animación
+    setTimeout(async () => {
+      await loadTasks()
+      renderTasks()
+      renderContenidoPanel()
+    }, completing ? 420 : 0)
   }
 
   // ── Task modal ────────────────────────────────────────
