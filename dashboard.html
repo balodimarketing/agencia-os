@@ -10940,7 +10940,7 @@ if (id) {
           </div>
           <div style="font-size:11px;color:var(--ink3);font-weight:600">
             ${diasRestantes > 0 ? `Vence en ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}` : 'Vence hoy'}
-            · hasta ${formatDate(o.fecha_fin)}
+            · hasta ${formatDate(o.fecha_fin)?.text || o.fecha_fin}
           </div>
         </div>`
       })
@@ -10962,7 +10962,7 @@ if (id) {
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.titulo}</div>
-            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${!esPropio ? nombre + ' · ' : ''}${getPeriodoLabel(o.periodo)} · ${formatDate(o.fecha_fin)}</div>
+            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${!esPropio ? nombre + ' · ' : ''}${getPeriodoLabel(o.periodo)} · ${formatDate(o.fecha_fin)?.text || o.fecha_fin}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-size:14px;font-weight:900;color:var(--ink)">${o.progreso}<span style="font-size:11px;font-weight:600;color:var(--ink3)">/${o.meta}</span></div>
