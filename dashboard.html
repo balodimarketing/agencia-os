@@ -10868,8 +10868,29 @@ if (id) {
     return { pct, barColor, diasRestantes }
   }
 
+  function getRiesgoStyle(o, hoy) {
+    const pct = Math.min(Math.round((o.progreso / o.meta) * 100), 100)
+    const totalDias = Math.ceil((new Date(o.fecha_fin) - new Date(o.fecha_inicio)) / (1000 * 60 * 60 * 24))
+    const diasPasados = Math.ceil((new Date(hoy) - new Date(o.fecha_inicio)) / (1000 * 60 * 60 * 24))
+    const diasRestantes = Math.ceil((new Date(o.fecha_fin) - new Date(hoy)) / (1000 * 60 * 60 * 24))
+    const tiempoPct = totalDias > 0 ? Math.min(Math.round((diasPasados / totalDias) * 100), 100) : 0
+    let riesgo = 'ok'
+    if (pct >= 100) riesgo = 'cumplido'
+    else if (tiempoPct >= 70 && pct < 40) riesgo = 'alto'
+    else if (tiempoPct >= 50 && pct < 30) riesgo = 'medio'
+    let barColor = 'var(--azul)'
+    if (riesgo === 'cumplido') barColor = 'var(--success)'
+    else if (riesgo === 'alto') barColor = 'var(--danger)'
+    else if (riesgo === 'medio') barColor = '#F59E0B'
+    let borderColor = 'var(--border)'
+    if (riesgo === 'alto') borderColor = '#FECACA'
+    else if (riesgo === 'medio') borderColor = '#FDE68A'
+    return { pct, barColor, borderColor, diasRestantes, riesgo, tiempoPct }
+  }
+
   function renderObjetivosHTML(activos, historial, hoy) {
     const canCreate = userRole !== 'MEMBER'
+    const isOwnerAdmin = userRole !== 'MEMBER'
 
     // Agrupar historial anual
     const anoActual = new Date().getFullYear()
@@ -10877,33 +10898,101 @@ if (id) {
     const cumplidos = historialAno.filter(o => o.estado === 'cumplido').length
     const noCumplidos = historialAno.filter(o => o.estado === 'no_cumplido').length
     const progresoAnual = historialAno.reduce((acc, o) => acc + o.progreso, 0)
+    const totalObjetivos = historialAno.length
+    const tasaCumplimiento = totalObjetivos > 0 ? Math.round((cumplidos / totalObjetivos) * 100) : 0
 
     let html = ''
 
-    // Banner resumen anual (si hay historial)
+    // Banner resumen anual
     if (historialAno.length > 0) {
       html += `<div style="background:var(--azul);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
         <div>
           <div style="font-size:11px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Resumen ${anoActual}</div>
           <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px">${progresoAnual} completadas</div>
         </div>
-        <div style="display:flex;gap:16px;margin-left:auto">
+        <div style="display:flex;gap:20px;margin-left:auto;align-items:center">
           <div style="text-align:center">
-            <div style="font-size:20px;font-weight:900;color:var(--success)">${cumplidos}</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600">Cumplidos</div>
+            <div style="font-size:20px;font-weight:900;color:#4ADE80">${cumplidos}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600">Cumplidos</div>
           </div>
           <div style="text-align:center">
             <div style="font-size:20px;font-weight:900;color:#F87171">${noCumplidos}</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600">No cumplidos</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600">No cumplidos</div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,.08);border-radius:10px;padding:8px 14px">
+            <div style="font-size:20px;font-weight:900;color:#fff">${tasaCumplimiento}%</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600">Tasa de éxito</div>
           </div>
         </div>
       </div>`
     }
 
-    // Objetivos activos
+    // ── Vista de equipo (solo Owner/Admin) ──
+    if (isOwnerAdmin && activos.length > 0) {
+      // Agrupar activos por miembro
+      const porMiembro = {}
+      activos.forEach(o => {
+        if (!porMiembro[o.assigned_to]) porMiembro[o.assigned_to] = []
+        porMiembro[o.assigned_to].push(o)
+      })
+      const miembrosConObj = Object.keys(porMiembro)
+      if (miembrosConObj.length > 1) {
+        html += `<div style="margin-bottom:24px">
+          <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:12px">Vista del equipo</div>
+          <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="background:var(--bg)">
+                  <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Miembro</th>
+                  <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Objetivo</th>
+                  <th style="text-align:center;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;width:100px">Progreso</th>
+                  <th style="text-align:center;padding:10px 16px;font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;width:80px">Estado</th>
+                </tr>
+              </thead>
+              <tbody>`
+        miembrosConObj.forEach((uid, mi) => {
+          porMiembro[uid].forEach((o, oi) => {
+            const { pct, barColor, riesgo } = getRiesgoStyle(o, hoy)
+            const nombre = getMiembroNombre(uid)
+            const isLast = mi === miembrosConObj.length - 1 && oi === porMiembro[uid].length - 1
+            const borderBottom = isLast ? '' : 'border-bottom:1px solid var(--border)'
+            const iniciales = nombre === 'Yo' ? (document.body.dataset.userName||'YO').slice(0,2).toUpperCase() : nombre.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()
+            html += `<tr style="${borderBottom}">
+                <td style="padding:11px 16px">
+                  ${oi === 0 ? `<div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--celeste-dim);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0">${iniciales}</div>
+                    <span style="font-size:12px;font-weight:700;color:var(--ink)">${nombre}</span>
+                  </div>` : ''}
+                </td>
+                <td style="padding:11px 16px">
+                  <div style="font-size:12px;font-weight:700;color:var(--ink)">${o.titulo}</div>
+                  <div style="font-size:10px;color:var(--ink3);margin-top:1px">${getPeriodoLabel(o.periodo)}</div>
+                </td>
+                <td style="padding:11px 16px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+                      <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px"></div>
+                    </div>
+                    <span style="font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap">${o.progreso}/${o.meta}</span>
+                  </div>
+                </td>
+                <td style="padding:11px 16px;text-align:center">
+                  ${riesgo === 'cumplido' ? `<span style="font-size:10px;font-weight:800;color:#16A34A;background:#F0FDF4;padding:2px 8px;border-radius:20px">✓ Listo</span>`
+                  : riesgo === 'alto' ? `<span style="font-size:10px;font-weight:800;color:#DC2626;background:#FEF2F2;padding:2px 8px;border-radius:20px">En riesgo</span>`
+                  : riesgo === 'medio' ? `<span style="font-size:10px;font-weight:800;color:#D97706;background:#FFFBEB;padding:2px 8px;border-radius:20px">Atención</span>`
+                  : `<span style="font-size:10px;font-weight:800;color:var(--ink3);background:var(--bg);padding:2px 8px;border-radius:20px">En curso</span>`}
+                </td>
+              </tr>`
+          })
+        })
+        html += `</tbody></table></div></div>`
+      }
+    }
+
+    // ── Objetivos activos cards ──
     html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Objetivos activos</div>
-      ${activos.length === 0 ? '' : `<span style="font-size:11px;font-weight:700;color:var(--ink3)">${activos.length} activo${activos.length !== 1 ? 's' : ''}</span>`}
+      ${activos.length > 0 ? `<span style="font-size:11px;font-weight:700;color:var(--ink3)">${activos.length} activo${activos.length !== 1 ? 's' : ''}</span>` : ''}
     </div>`
 
     if (activos.length === 0) {
@@ -10916,61 +11005,86 @@ if (id) {
     } else {
       html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:28px">`
       activos.forEach(o => {
-        const { pct, barColor, diasRestantes } = getEstadoStyle(o, hoy)
+        const { pct, barColor, borderColor, diasRestantes, riesgo } = getRiesgoStyle(o, hoy)
         const nombre = getMiembroNombre(o.assigned_to)
         const esPropio = o.assigned_to === currentUserId
-        html += `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;transition:box-shadow var(--t)" onmouseover="this.style.boxShadow='var(--shadow)'" onmouseout="this.style.boxShadow=''">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px">
-            <div>
-              <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:4px">${o.titulo}</div>
-              <div style="display:flex;align-items:center;gap:6px">
+        const riesgoTag = riesgo === 'alto'
+          ? `<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#DC2626;margin-bottom:8px"><i class="ti ti-alert-triangle" style="font-size:11px"></i> En riesgo</div>`
+          : riesgo === 'medio'
+          ? `<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#D97706;margin-bottom:8px"><i class="ti ti-clock-exclamation" style="font-size:11px"></i> Requiere atención</div>`
+          : ''
+        const nota = o.nota ? `<div style="font-size:11px;color:var(--ink3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-style:italic;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${o.nota}</div>` : ''
+        html += `<div style="background:var(--white);border:1.5px solid ${borderColor};border-radius:var(--r-lg);padding:18px 20px;transition:box-shadow var(--t)" onmouseover="this.style.boxShadow='var(--shadow)'" onmouseout="this.style.boxShadow=''">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:5px;line-height:1.3">${o.titulo}</div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--celeste-dim);color:var(--azul)">${getPeriodoLabel(o.periodo)}</span>
                 ${!esPropio ? `<span style="font-size:10px;font-weight:700;color:var(--ink3)">${nombre}</span>` : ''}
               </div>
             </div>
-            ${canCreate ? `<button onclick="deleteObjetivo('${o.id}')" style="background:none;border:none;cursor:pointer;color:var(--ink3);padding:2px;border-radius:6px;transition:color var(--t)" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink3)'"><i class="ti ti-trash" style="font-size:14px"></i></button>` : ''}
+            <div style="display:flex;gap:2px;flex-shrink:0">
+              ${canCreate ? `<button onclick="openObjetivoModal(objetivosData.find(x=>x.id==='${o.id}'))" style="background:none;border:none;cursor:pointer;color:var(--ink3);padding:4px;border-radius:6px;transition:color var(--t)" onmouseover="this.style.color='var(--azul)'" onmouseout="this.style.color='var(--ink3)'"><i class="ti ti-pencil" style="font-size:13px"></i></button>` : ''}
+              ${canCreate ? `<button onclick="deleteObjetivo('${o.id}')" style="background:none;border:none;cursor:pointer;color:var(--ink3);padding:4px;border-radius:6px;transition:color var(--t)" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink3)'"><i class="ti ti-trash" style="font-size:13px"></i></button>` : ''}
+            </div>
           </div>
+          ${riesgoTag}
           <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
             <span style="font-size:28px;font-weight:900;color:var(--ink);letter-spacing:-1px">${o.progreso}</span>
             <span style="font-size:14px;color:var(--ink3);font-weight:600">/ ${o.meta}</span>
             <span style="font-size:11px;color:var(--ink3);margin-left:4px">${pct}%</span>
           </div>
           <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px">
-            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;transition:width .4s"></div>
+            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)"></div>
           </div>
           <div style="font-size:11px;color:var(--ink3);font-weight:600">
-            ${diasRestantes > 0 ? `Vence en ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}` : 'Vence hoy'}
+            ${diasRestantes > 0 ? `${diasRestantes} día${diasRestantes !== 1 ? 's' : ''} restantes` : 'Vence hoy'}
             · hasta ${formatDate(o.fecha_fin)?.text || o.fecha_fin}
           </div>
+          ${nota}
         </div>`
       })
       html += '</div>'
     }
 
-    // Historial
+    // ── Historial ──
     if (historial.length > 0) {
-      html += `<div style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;margin-bottom:14px">Historial</div>
-      <div style="display:flex;flex-direction:column;gap:8px">`
+      // Agrupar por año
+      const porAno = {}
       historial.forEach(o => {
-        const cumplido = o.estado === 'cumplido'
-        const pct = Math.min(Math.round((o.progreso / o.meta) * 100), 100)
-        const nombre = getMiembroNombre(o.assigned_to)
-        const esPropio = o.assigned_to === currentUserId
-        html += `<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:16px;opacity:.8">
-          <div style="width:32px;height:32px;border-radius:50%;background:${cumplido ? 'var(--success-bg,#F0FDF4)' : '#FEF2F2'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <i class="ti ${cumplido ? 'ti-check' : 'ti-x'}" style="font-size:14px;color:${cumplido ? 'var(--success)' : 'var(--danger)'}"></i>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.titulo}</div>
-            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${!esPropio ? nombre + ' · ' : ''}${getPeriodoLabel(o.periodo)} · ${formatDate(o.fecha_fin)?.text || o.fecha_fin}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:14px;font-weight:900;color:var(--ink)">${o.progreso}<span style="font-size:11px;font-weight:600;color:var(--ink3)">/${o.meta}</span></div>
-            <div style="font-size:11px;font-weight:700;color:${cumplido ? 'var(--success)' : 'var(--danger)'}">${pct}%</div>
-          </div>
-        </div>`
+        const ano = new Date(o.fecha_fin).getFullYear()
+        if (!porAno[ano]) porAno[ano] = []
+        porAno[ano].push(o)
       })
-      html += '</div>'
+      Object.keys(porAno).sort((a,b) => b-a).forEach(ano => {
+        const lista = porAno[ano]
+        const cumplidosAno = lista.filter(o => o.estado === 'cumplido').length
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:4px">
+          <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px">Historial ${ano}</div>
+          <span style="font-size:11px;font-weight:700;color:var(--ink3)">${cumplidosAno}/${lista.length} cumplidos</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px">`
+        lista.forEach(o => {
+          const cumplido = o.estado === 'cumplido'
+          const pct = Math.min(Math.round((o.progreso / o.meta) * 100), 100)
+          const nombre = getMiembroNombre(o.assigned_to)
+          const esPropio = o.assigned_to === currentUserId
+          html += `<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:14px">
+            <div style="width:30px;height:30px;border-radius:50%;background:${cumplido ? '#F0FDF4' : '#FEF2F2'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="ti ${cumplido ? 'ti-check' : 'ti-x'}" style="font-size:13px;color:${cumplido ? '#16A34A' : 'var(--danger)'}"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.titulo}</div>
+              <div style="font-size:10px;color:var(--ink3);margin-top:2px">${!esPropio ? nombre + ' · ' : ''}${getPeriodoLabel(o.periodo)} · hasta ${formatDate(o.fecha_fin)?.text || o.fecha_fin}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:13px;font-weight:900;color:var(--ink)">${o.progreso}<span style="font-size:10px;font-weight:600;color:var(--ink3)">/${o.meta}</span></div>
+              <div style="font-size:10px;font-weight:700;color:${cumplido ? '#16A34A' : 'var(--danger)'}">${pct}%</div>
+            </div>
+          </div>`
+        })
+        html += '</div>'
+      })
     }
 
     return html
@@ -11037,10 +11151,14 @@ if (id) {
           </div>
         </div>
 
-        <div style="margin-bottom:20px">
+        <div style="margin-bottom:14px">
           <label style="display:block;font-size:11px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Fecha de inicio</label>
           <input id="obj-inicio" type="date" value="${obj?.fecha_inicio || hoy}" onchange="updateFechaFin()" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--ink);outline:none;transition:border var(--t)" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
           <div style="font-size:11px;color:var(--ink3);margin-top:5px" id="obj-fin-preview">Vence: calculando...</div>
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:11px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Nota interna <span style="font-weight:500;color:var(--ink3);text-transform:none;font-size:10px">(opcional)</span></label>
+          <textarea id="obj-nota" placeholder="Ej: Foco en videos de Primicia antes del 15..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--ink);outline:none;resize:vertical;min-height:64px;transition:border var(--t)" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">${obj?.nota || ''}</textarea>
         </div>
 
         <button onclick="saveObjetivo(${isEdit ? `'${obj.id}'` : 'null'})" style="width:100%;padding:12px;background:var(--azul);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity var(--t)" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
@@ -11105,8 +11223,9 @@ if (id) {
       assigned_to: asignado,
       agency_id: agencyId,
       created_by: currentUserId,
-      estado: 'activo'
+      nota: document.getElementById('obj-nota')?.value.trim() || null
     }
+    if (!objetivoId) payload.estado = 'activo'
 
     let error
     if (objetivoId) {
