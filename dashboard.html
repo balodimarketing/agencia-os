@@ -2105,19 +2105,43 @@
 
 
       <!-- Panel: Integraciones API -->
-      <div id="tools-integraciones" style="display:none;padding:28px 32px;max-width:860px;margin:0 auto">
+      <div id="tools-integraciones" style="display:none;padding:28px 32px;max-width:900px;margin:0 auto">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
           <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
             <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
           </button>
         </div>
-        <div style="background:var(--azul);border-radius:16px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;gap:20px">
-          <div style="width:48px;height:48px;background:rgba(142,219,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <i class="ti ti-plug-connected" style="font-size:22px;color:var(--celeste)"></i>
+
+        <!-- Hero -->
+        <div style="background:var(--azul);border-radius:16px;padding:28px 32px;margin-bottom:24px">
+          <div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:24px">
+            <div style="width:48px;height:48px;background:rgba(142,219,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="ti ti-plug-connected" style="font-size:22px;color:var(--celeste)"></i>
+            </div>
+            <div>
+              <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-.3px">Faro se conecta con tus herramientas</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;max-width:540px">Integrá Faro con cualquier plataforma que pueda hacer un request HTTP. Los leads llegan automáticamente al CRM — sin carga manual, sin fricción.</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px">Integraciones API</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.6)">Conectá Make, Zapier o cualquier herramienta. Los leads llegan solos al CRM.</div>
+
+          <!-- Plataformas compatibles -->
+          <div style="font-size:10px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Compatible con</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${[
+              { name: 'Make', icon: 'ti-circle-letter-m', color: '#6B2FF5' },
+              { name: 'Zapier', icon: 'ti-bolt', color: '#FF4A00' },
+              { name: 'n8n', icon: 'ti-topology-star', color: '#EA4B71' },
+              { name: 'Meta Ads', icon: 'ti-brand-meta', color: '#0081FB' },
+              { name: 'Google Ads', icon: 'ti-brand-google', color: '#4285F4' },
+              { name: 'TikTok Ads', icon: 'ti-brand-tiktok', color: '#010101' },
+              { name: 'Typeform', icon: 'ti-forms', color: '#262627' },
+              { name: 'Tally', icon: 'ti-layout-list', color: '#1A1A1A' },
+              { name: 'Webhooks', icon: 'ti-webhook', color: '#059669' },
+              { name: 'API propia', icon: 'ti-code', color: '#7C3AED' },
+            ].map(p => `<div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px">
+              <i class="ti ${p.icon}" style="font-size:12px;color:rgba(255,255,255,.7)"></i>
+              <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.85)">${p.name}</span>
+            </div>`).join('')}
           </div>
         </div>
         <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px">
@@ -2159,15 +2183,44 @@
           <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px">Últimos requests</div>
           <div id="integ-logs"><div style="text-align:center;padding:20px;color:var(--ink3);font-size:13px">Cargando...</div></div>
         </div>
+        <!-- Cómo conectar -->
         <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px">
-          <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:16px">Cómo conectar con Make</div>
+          <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:6px">Cómo conectarlo con cualquier herramienta</div>
+          <div style="font-size:12px;color:var(--ink3);margin-bottom:20px">El flujo es el mismo para Make, Zapier, n8n o cualquier herramienta que soporte HTTP.</div>
           <div style="display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">1</div><div style="font-size:13px;color:var(--ink2);line-height:1.5">En Make, creá un nuevo escenario y agregá el módulo <strong>HTTP → Make a request</strong>.</div></div>
-            <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">2</div><div style="font-size:13px;color:var(--ink2);line-height:1.5">En <strong>URL</strong>, pegá la URL del endpoint que aparece arriba.</div></div>
-            <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">3</div><div style="font-size:13px;color:var(--ink2);line-height:1.5">En <strong>Method</strong>, seleccioná <strong>POST</strong>.</div></div>
-            <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">4</div><div style="font-size:13px;color:var(--ink2);line-height:1.5">En <strong>Headers</strong>, agregá <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">x-api-key</code> con tu API Key como valor.</div></div>
-            <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">5</div><div style="font-size:13px;color:var(--ink2);line-height:1.5">En <strong>Body type</strong>, seleccioná <strong>Raw / JSON</strong> y mapeá los campos del lead.</div></div>
-            <div style="display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;background:#059669;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">✓</div><div style="font-size:13px;color:var(--ink2);line-height:1.5">Usá el botón <strong>Enviar lead de prueba</strong> para verificar antes de activar el escenario.</div></div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">1</div>
+              <div style="font-size:13px;color:var(--ink2);line-height:1.5">En tu herramienta, creá una acción de tipo <strong>HTTP request</strong> o <strong>Webhook</strong>. En Make es <em>HTTP → Make a request</em>. En Zapier es <em>Webhooks by Zapier → POST</em>. En n8n es el nodo <em>HTTP Request</em>.</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">2</div>
+              <div style="font-size:13px;color:var(--ink2);line-height:1.5">Configurá la URL del endpoint y el método <strong>POST</strong>.</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">3</div>
+              <div style="font-size:13px;color:var(--ink2);line-height:1.5">Agregá el header <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">x-api-key</code> con tu API Key como valor.</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">4</div>
+              <div>
+                <div style="font-size:13px;color:var(--ink2);line-height:1.5;margin-bottom:10px">Mandá un JSON con los datos del lead. Todos los campos son opcionales salvo nombre o email:</div>
+                <div style="background:var(--bg);border-radius:8px;padding:12px 14px;font-size:11px;font-family:monospace;color:var(--ink2);line-height:1.8">
+                  {<br>
+                  &nbsp;&nbsp;"nombre": "Juan García",<br>
+                  &nbsp;&nbsp;"email": "juan@empresa.com",<br>
+                  &nbsp;&nbsp;"telefono": "+54911...",<br>
+                  &nbsp;&nbsp;"empresa": "Mi empresa",<br>
+                  &nbsp;&nbsp;"origen": "Meta Ads",<br>
+                  &nbsp;&nbsp;"campana": "Nombre de campaña",<br>
+                  &nbsp;&nbsp;"mensaje": "Quiero más info..."<br>
+                  }
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:#059669;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">✓</div>
+              <div style="font-size:13px;color:var(--ink2);line-height:1.5">Usá el botón <strong>Enviar lead de prueba</strong> para verificar que todo funciona antes de activar tu automatización.</div>
+            </div>
           </div>
         </div>
       </div>
