@@ -2861,18 +2861,14 @@
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Etapa del pipeline</label>
           <select class="form-input form-select" id="crm-stage">
-            <option value="contacto_inicial">Contacto inicial</option>
-            <option value="propuesta_enviada">Propuesta enviada</option>
-            <option value="negociacion">Negociación</option>
-            <option value="cerrado_ganado">Cerrado ganado</option>
-            <option value="cerrado_perdido">Cerrado perdido</option>
+            <option value="">Cargando...</option>
           </select>
         </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
         <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Valor del deal ($)</label>
+          <label class="form-label">Valor estimado ($)</label>
           <input type="number" class="form-input" id="crm-valor" placeholder="0" min="0">
         </div>
         <div class="form-field" style="margin-bottom:0">
@@ -7075,7 +7071,7 @@
       .select('id, nombre, responsable_id, agency_members(user_id)')
       .eq('agency_id', agencyId)
       .lte('proximo_contacto', today)
-      .not('pipeline_stage', 'in', '("cerrado_ganado","cerrado_perdido")')
+      .not('estado', 'in', '("Ganado","Perdido")')
     if (!data?.length) return
     for (const c of data) {
       const uid = c.agency_members?.user_id
@@ -7394,22 +7390,34 @@
   let crmActTipo = 'llamada'
   let crmBackView = 'pipeline'
 
-  const CRM_STAGES = [
-    { id: 'contacto_inicial',  label: 'Prospecto',         color: '#6B7280' },
-    { id: 'propuesta_enviada', label: 'Propuesta enviada', color: '#3B82F6' },
-    { id: 'negociacion',       label: 'Negociación',       color: '#F59E0B' },
-    { id: 'cerrado_ganado',    label: 'Cerrado ganado',    color: '#10B981' },
-    { id: 'cerrado_perdido',   label: 'Cerrado perdido',   color: '#EF4444' },
-  ]
+  let CRM_STAGES = [] // Se carga dinámicamente desde crm_pipeline_stages
+
+  async function loadCrmStages() {
+    if (!agencyId) return
+    const { data } = await supabase
+      .from('crm_pipeline_stages')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .order('orden', { ascending: true })
+    CRM_STAGES = (data || []).map(s => ({
+      id: s.id,
+      label: s.nombre,
+      color: s.color,
+      es_ganado: s.es_ganado,
+      es_perdido: s.es_perdido,
+      orden: s.orden
+    }))
+  }
 
   const ACT_ICONS = { llamada: 'ti-phone', reunion: 'ti-video', email: 'ti-mail', whatsapp: 'ti-brand-whatsapp', nota: 'ti-note' }
   const ACT_LABELS = { llamada: 'Llamada', reunion: 'Reunión', email: 'Email', whatsapp: 'WhatsApp', nota: 'Nota' }
 
   async function loadCrmContacts() {
     if (!agencyId) return
+    await loadCrmStages()
     const { data } = await supabase
       .from('crm_contacts')
-      .select('*, clients(nombre), agency_members(profiles(nombre,apellido))')
+      .select('*, clients(nombre), profiles!crm_contacts_assigned_to_fkey(nombre,apellido)')
       .eq('agency_id', agencyId)
       .order('created_at', { ascending: false })
     crmContacts = data || []
@@ -7419,10 +7427,13 @@
     const el = document.getElementById('crm-metrics')
     if (!el) return
 
-    const activos = crmContacts.filter(c => !['cerrado_ganado','cerrado_perdido','inactivo'].includes(c.pipeline_stage))
-    const cerradosGanados = crmContacts.filter(c => c.pipeline_stage === 'cerrado_ganado')
-    const cerrados = crmContacts.filter(c => ['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage))
-    const valorTotal = activos.reduce((a, c) => a + (c.valor_deal || 0), 0)
+    const ganadoIds = CRM_STAGES.filter(s => s.es_ganado).map(s => s.id)
+    const perdidoIds = CRM_STAGES.filter(s => s.es_perdido).map(s => s.id)
+    const cerradoIds = [...ganadoIds, ...perdidoIds]
+    const activos = crmContacts.filter(c => !cerradoIds.includes(c.stage_id))
+    const cerradosGanados = crmContacts.filter(c => ganadoIds.includes(c.stage_id))
+    const cerrados = crmContacts.filter(c => cerradoIds.includes(c.stage_id))
+    const valorTotal = activos.reduce((a, c) => a + (c.valor_estimado || c.valor_deal || 0), 0)
     const tasaCierre = cerrados.length > 0 ? Math.round((cerradosGanados.length / cerrados.length) * 100) : 0
 
     // Deal más cercano a cerrar
@@ -7458,47 +7469,57 @@
     renderCrmMetrics()
     const kanban = document.getElementById('crm-kanban')
     if (!kanban) return
+
+    if (CRM_STAGES.length === 0) {
+      kanban.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink3)">Cargando pipeline...</div>'
+      return
+    }
+
+    const SCORE_LABELS = {
+      'sin_calificar': { label: 'Sin calificar', color: '#9AA5B4', bg: '#F5F7FA' },
+      'excelente':     { label: 'Excelente',      color: '#16A34A', bg: '#F0FDF4' },
+      'bueno':         { label: 'Bueno',           color: '#2563EB', bg: '#EFF6FF' },
+      'regular':       { label: 'Regular',         color: '#D97706', bg: '#FFFBEB' },
+      'malo':          { label: 'Malo',            color: '#DC2626', bg: '#FEF2F2' },
+    }
+
     kanban.innerHTML = CRM_STAGES.map(stage => {
-      const contacts = crmContacts.filter(c => c.pipeline_stage === stage.id)
-      const total = contacts.reduce((a, c) => a + (c.valor_deal || 0), 0)
+      const contacts = crmContacts.filter(c => c.stage_id === stage.id)
+      const total = contacts.reduce((a, c) => a + (c.valor_estimado || c.valor_deal || 0), 0)
       const cards = contacts.map(c => {
-        const resp = c.agency_members?.profiles
+        const resp = c.profiles
         const respName = resp ? `${resp.nombre} ${resp.apellido}` : null
         const overdue = c.proximo_contacto && new Date(c.proximo_contacto) < new Date()
-        return `<div class="crm-card" draggable="true" data-id="${c.id}" onclick="openCrmDetail('${c.id}')" style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:grab;transition:box-shadow .15s,border-color .15s,opacity .15s;margin-bottom:8px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
-          <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">${c.nombre}</div>
+        const score = SCORE_LABELS[c.score_label || 'sin_calificar']
+        const origenBadge = c.origen && c.fuente === 'api'
+          ? `<span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;background:#EFF6FF;color:#2563EB;margin-left:4px">${c.origen}</span>`
+          : ''
+        const valor = c.valor_estimado || c.valor_deal
+        return `<div class="crm-card" draggable="true" data-id="${c.id}" data-stage="${stage.id}" onclick="openCrmDetail('${c.id}')" style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:grab;transition:box-shadow .15s,border-color .15s,opacity .15s;margin-bottom:8px" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px">
+            <div style="font-size:13px;font-weight:800;color:var(--ink)">${c.nombre}</div>
+            ${origenBadge}
+          </div>
           ${c.empresa ? `<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">${c.empresa}</div>` : '<div style="margin-bottom:8px"></div>'}
-          ${c.valor_deal ? `<div style="font-size:12px;font-weight:900;color:var(--azul);margin-bottom:6px">$${Number(c.valor_deal).toLocaleString('es-AR')}</div>` : ''}
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
-            ${respName ? `<span style="font-size:10px;font-weight:700;color:var(--ink3)">${respName}</span>` : '<span></span>'}
+          ${valor ? `<div style="font-size:12px;font-weight:900;color:var(--azul);margin-bottom:6px">$${Number(valor).toLocaleString('es-AR')}</div>` : ''}
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:6px">
+            <span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;background:${score.bg};color:${score.color}">${score.label}</span>
             ${overdue ? `<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;background:#FEF2F2;color:var(--danger)">Vencido</span>` : c.proximo_contacto ? `<span style="font-size:9px;color:var(--ink3)">${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</span>` : ''}
           </div>
-          ${stage.id === 'contacto_inicial' ? `
-          <button onclick="event.stopPropagation();initBudget('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${(c.empresa||'').replace(/'/g,"\\'")}','${(c.email||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}')" style="width:100%;margin-top:10px;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-            <i class="ti ti-file-invoice" style="font-size:12px"></i> Armar presupuesto
-          </button>` : ''}
-          ${stage.id === 'propuesta_enviada' ? `
-          <button onclick="event.stopPropagation();moveToNegociacion('${c.id}')" style="width:100%;margin-top:10px;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:#F59E0B;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-            <i class="ti ti-thumb-up" style="font-size:12px"></i> Confirmaron interés
-          </button>` : ''}
-          ${stage.id === 'negociacion' ? `
-          <div style="display:flex;gap:6px;margin-top:10px">
-            <button onclick="event.stopPropagation();closeDeal('${c.id}','cerrado_ganado')" style="flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:#16a34a;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-              <i class="ti ti-check" style="font-size:12px"></i> Ganado
-            </button>
-            <button onclick="event.stopPropagation();closeDeal('${c.id}','cerrado_perdido')" style="flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:#dc2626;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-              <i class="ti ti-x" style="font-size:12px"></i> Perdido
-            </button>
-          </div>` : ''}
-          ${stage.id === 'cerrado_ganado' ? `
+          ${respName ? `<div style="font-size:10px;font-weight:700;color:var(--ink3);margin-top:6px">${respName}</div>` : ''}
+          ${stage.es_ganado ? `
           <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
-            <button onclick="event.stopPropagation();convertToClient('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${(c.empresa||'').replace(/'/g,"\\'")}','${(c.email||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}','${(c.industria||'').replace(/'/g,"\\'")}')" style="width:100%;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <button onclick="event.stopPropagation();convertToClient('${c.id}','${c.nombre.replace(/'/g,"\'")}','${(c.empresa||'').replace(/'/g,"\'")}','${(c.email||'').replace(/'/g,"\'")}','${(c.telefono||'').replace(/'/g,"\'")}','${(c.industria||'').replace(/'/g,"\'")}')" style="width:100%;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
               <i class="ti ti-user-plus" style="font-size:12px"></i> Convertir en cliente
             </button>
-            <button onclick="event.stopPropagation();initContrato('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${(c.empresa||'').replace(/'/g,"\\'")}','${(c.email||'').replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}','${(c.valor_deal||0)}')" style="width:100%;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--white);border:1.5px solid var(--border);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all var(--t)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'">
+            <button onclick="event.stopPropagation();initContrato('${c.id}','${c.nombre.replace(/'/g,"\'")}','${(c.empresa||'').replace(/'/g,"\'")}','${(c.email||'').replace(/'/g,"\'")}','${(c.telefono||'').replace(/'/g,"\'")}','${(c.valor_estimado||c.valor_deal||0)}')" style="width:100%;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--white);border:1.5px solid var(--border);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
               <i class="ti ti-file-certificate" style="font-size:12px"></i> Armar contrato
             </button>
           </div>` : ''}
+          ${stage.es_perdido ? '' : !stage.es_ganado && stage.orden === 1 ? `
+          <button onclick="event.stopPropagation();initBudget('${c.id}','${c.nombre.replace(/'/g,"\'")}','${(c.empresa||'').replace(/'/g,"\'")}','${(c.email||'').replace(/'/g,"\'")}','${(c.telefono||'').replace(/'/g,"\'")}')" style="width:100%;margin-top:10px;padding:8px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">
+            <i class="ti ti-file-invoice" style="font-size:12px"></i> Armar presupuesto
+          </button>` : ''}
         </div>`
       }).join('')
       return `<div class="crm-col" data-stage="${stage.id}" style="flex:1;min-width:160px;max-width:300px;display:flex;flex-direction:column;border-radius:12px;transition:background .15s;padding:8px">
@@ -7540,13 +7561,21 @@
       col.addEventListener('drop', async e => {
         e.preventDefault()
         col.style.background = ''
-        const newStage = col.dataset.stage
-        if (!crmDragId || !newStage) return
+        const newStageId = col.dataset.stage
+        if (!crmDragId || !newStageId) return
         const contact = crmContacts.find(c => c.id === crmDragId)
-        if (!contact || contact.pipeline_stage === newStage) return
-        contact.pipeline_stage = newStage
+        if (!contact || contact.stage_id === newStageId) return
+        const oldStageId = contact.stage_id
+        contact.stage_id = newStageId
+        const newStage = CRM_STAGES.find(s => s.id === newStageId)
+        contact.estado = newStage?.label || contact.estado
         renderCrmPipeline()
-        await supabase.from('crm_contacts').update({ pipeline_stage: newStage }).eq('id', crmDragId)
+        // Usar función central que registra evento
+        await supabase.rpc('change_lead_stage', {
+          p_lead_id: crmDragId,
+          p_new_stage_id: newStageId,
+          p_user_id: currentUserId
+        })
         crmDragId = null
         showToast('✓ Etapa actualizada')
       })
@@ -7564,7 +7593,7 @@
       return
     }
     el.innerHTML = filtered.map(c => {
-      const stage = CRM_STAGES.find(s => s.id === c.pipeline_stage)
+      const stage = CRM_STAGES.find(s => s.id === c.stage_id)
       const overdue = c.proximo_contacto && new Date(c.proximo_contacto) < new Date()
       return `<div onclick="openCrmDetail('${c.id}')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:8px;transition:box-shadow .15s,border-color .15s" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)'">
         <div style="width:38px;height:38px;border-radius:10px;background:${stage?.color}22;display:flex;align-items:center;justify-content:center;color:${stage?.color};font-size:14px;font-weight:900;flex-shrink:0">${c.nombre.charAt(0).toUpperCase()}</div>
@@ -7586,19 +7615,19 @@
   window.moveToNegociacion = async function(contactId) {
     const contact = crmContacts.find(c => c.id === contactId)
     if (!contact) return
-    contact.pipeline_stage = 'negociacion'
+    contact.stage_id = CRM_STAGES.find(s=>s.label==='Negociación')?.id || contact.stage_id
     renderCrmPipeline()
-    await supabase.from('crm_contacts').update({ pipeline_stage: 'negociacion' }).eq('id', contactId)
+    await supabase.rpc('change_lead_stage', { p_lead_id: contactId, p_new_stage_id: CRM_STAGES.find(s=>s.label==='Negociación')?.id || '', p_user_id: currentUserId })
     showToast('Movido a Negociación')
   }
 
   window.closeDeal = async function(contactId, stage) {
     const contact = crmContacts.find(c => c.id === contactId)
     if (!contact) return
-    contact.pipeline_stage = stage
+    contact.stage_id = stage
     renderCrmPipeline()
-    await supabase.from('crm_contacts').update({ pipeline_stage: stage }).eq('id', contactId)
-    showToast(stage === 'cerrado_ganado' ? 'Deal cerrado — ¡Felicitaciones!' : 'Deal marcado como perdido')
+    await supabase.rpc('change_lead_stage', { p_lead_id: contactId, p_new_stage_id: stage, p_user_id: currentUserId })
+    showToast('✓ Deal ' + (CRM_STAGES.find(s=>s.id===stage)?.es_ganado ? 'ganado — ¡Felicitaciones!' : 'marcado como perdido'))
   }
 
   window.convertToClient = async function(contactId, nombre, empresa, email, telefono, industria) {
@@ -7645,8 +7674,8 @@
   window.initBudget = async function(contactId, nombre, empresa, email, telefono) {
     // Mover contacto a Propuesta enviada
     const contact = crmContacts.find(c => c.id === contactId)
-    if (contact) contact.pipeline_stage = 'propuesta_enviada'
-    await supabase.from('crm_contacts').update({ pipeline_stage: 'propuesta_enviada' }).eq('id', contactId)
+    if (contact) contact.stage_id = CRM_STAGES.find(s=>s.label==='Propuesta enviada')?.id || contact.stage_id
+    await supabase.rpc('change_lead_stage', { p_lead_id: contactId, p_new_stage_id: CRM_STAGES.find(s=>s.label==='Propuesta enviada')?.id || '', p_user_id: currentUserId })
     renderCrmPipeline()
     showToast('Contacto movido a Propuesta enviada')
 
@@ -8456,86 +8485,151 @@
   async function renderCrmDetail() {
     const c = crmCurrentContact
     if (!c) return
-    const stage = CRM_STAGES.find(s => s.id === c.pipeline_stage)
-    const resp = c.agency_members?.profiles
+    const stage = CRM_STAGES.find(s => s.id === c.stage_id)
+    const resp = c.profiles
     const respName = resp ? `${resp.nombre} ${resp.apellido}` : '—'
     const overdue = c.proximo_contacto && new Date(c.proximo_contacto) < new Date()
 
-    // Cargar actividades
-    const { data: activities } = await supabase
-      .from('crm_activities')
-      .select('*')
-      .eq('contact_id', c.id)
-      .order('created_at', { ascending: false })
+    const SCORE_OPTS = [
+      { value: 'sin_calificar', label: 'Sin calificar', color: '#9AA5B4', bg: '#F5F7FA' },
+      { value: 'excelente',     label: 'Excelente',      color: '#16A34A', bg: '#F0FDF4' },
+      { value: 'bueno',         label: 'Bueno',           color: '#2563EB', bg: '#EFF6FF' },
+      { value: 'regular',       label: 'Regular',         color: '#D97706', bg: '#FFFBEB' },
+      { value: 'malo',          label: 'Malo',            color: '#DC2626', bg: '#FEF2F2' },
+    ]
+    const currentScore = SCORE_OPTS.find(s => s.value === (c.score_label || 'sin_calificar'))
 
-    const actHTML = (activities || []).map(a => {
-      const fecha = new Date(a.created_at).toLocaleDateString('es-AR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
-      return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
-        <div style="width:32px;height:32px;border-radius:9px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--ink3);flex-shrink:0">
-          <i class="ti ${ACT_ICONS[a.tipo]}" style="font-size:14px"></i>
-        </div>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
-            <span style="font-size:12px;font-weight:800;color:var(--ink)">${ACT_LABELS[a.tipo]}</span>
-            ${a.duracion_minutos ? `<span style="font-size:10px;color:var(--ink3)">${a.duracion_minutos} min</span>` : ''}
+    // Cargar actividades y eventos en paralelo
+    const [{ data: activities }, { data: events }] = await Promise.all([
+      supabase.from('crm_activities').select('*').eq('contact_id', c.id).order('created_at', { ascending: false }),
+      supabase.from('crm_lead_events').select('*').eq('lead_id', c.id).order('created_at', { ascending: false })
+    ])
+
+    // Merge timeline: actividades + eventos del sistema
+    const EVENT_LABELS = {
+      'lead_created': { label: 'Lead creado', icon: 'ti-user-plus', color: '#2563EB' },
+      'stage_changed': { label: 'Etapa cambiada', icon: 'ti-arrows-exchange', color: '#7C3AED' },
+      'lead_updated': { label: 'Lead actualizado', icon: 'ti-pencil', color: '#6B7280' },
+    }
+
+    const timelineItems = [
+      ...(activities || []).map(a => ({ ...a, _type: 'activity', _date: new Date(a.created_at) })),
+      ...(events || []).map(e => ({ ...e, _type: 'event', _date: new Date(e.created_at) }))
+    ].sort((a, b) => b._date - a._date)
+
+    const timelineHTML = timelineItems.map(item => {
+      const fecha = item._date.toLocaleDateString('es-AR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+      if (item._type === 'activity') {
+        return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="width:32px;height:32px;border-radius:9px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--ink3);flex-shrink:0">
+            <i class="ti ${ACT_ICONS[item.tipo]}" style="font-size:14px"></i>
           </div>
-          ${a.notas ? `<div style="font-size:12px;color:var(--ink2);line-height:1.5">${a.notas}</div>` : ''}
-          <div style="font-size:10px;color:var(--ink3);margin-top:4px">${fecha}</div>
-        </div>
-      </div>`
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+              <span style="font-size:12px;font-weight:800;color:var(--ink)">${ACT_LABELS[item.tipo]}</span>
+              ${item.duracion_minutos ? `<span style="font-size:10px;color:var(--ink3)">${item.duracion_minutos} min</span>` : ''}
+            </div>
+            ${item.notas ? `<div style="font-size:12px;color:var(--ink2);line-height:1.5">${item.notas}</div>` : ''}
+            <div style="font-size:10px;color:var(--ink3);margin-top:4px">${fecha}</div>
+          </div>
+        </div>`
+      } else {
+        const ev = EVENT_LABELS[item.type] || { label: item.type, icon: 'ti-point', color: '#6B7280' }
+        const payload = item.payload || {}
+        const detail = item.type === 'stage_changed'
+          ? `${payload.from_stage || '—'} → ${payload.to_stage || '—'}`
+          : item.type === 'lead_created'
+          ? `Fuente: ${payload.fuente || 'manual'}${payload.origen ? ' · ' + payload.origen : ''}`
+          : ''
+        return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="width:32px;height:32px;border-radius:9px;background:${ev.color}15;display:flex;align-items:center;justify-content:center;color:${ev.color};flex-shrink:0">
+            <i class="ti ${ev.icon}" style="font-size:14px"></i>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:2px">${ev.label}</div>
+            ${detail ? `<div style="font-size:11px;color:var(--ink3)">${detail}</div>` : ''}
+            <div style="font-size:10px;color:var(--ink3);margin-top:4px">${fecha}</div>
+          </div>
+        </div>`
+      }
     }).join('')
 
     document.getElementById('crm-detail-content').innerHTML = `
       <!-- Header -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:52px;height:52px;border-radius:14px;background:${stage?.color}22;display:flex;align-items:center;justify-content:center;color:${stage?.color};font-size:20px;font-weight:900;flex-shrink:0">${c.nombre.charAt(0).toUpperCase()}</div>
+          <div style="width:52px;height:52px;border-radius:14px;background:${stage?.color || '#6B728022'};display:flex;align-items:center;justify-content:center;color:${stage?.color || '#6B7280'};font-size:20px;font-weight:900;flex-shrink:0">${c.nombre.charAt(0).toUpperCase()}</div>
           <div>
             <div style="font-size:20px;font-weight:900;color:var(--ink);letter-spacing:-.4px">${c.nombre}</div>
             <div style="font-size:13px;color:var(--ink3);margin-top:2px">${c.empresa || ''}${c.cargo ? ' · '+c.cargo : ''}</div>
+            ${c.origen && c.fuente === 'api' ? `<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:#EFF6FF;color:#2563EB;margin-top:4px;display:inline-block">${c.origen}</span>` : ''}
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${c.pipeline_stage === 'cerrado_ganado' ? `<button class="tbtn primary" onclick="convertirACliente()" style="gap:6px"><i class="ti ti-building-store" style="font-size:13px"></i> Convertir a cliente</button>` : ''}
+          ${stage?.es_ganado ? `<button class="tbtn primary" onclick="convertirACliente()" style="gap:6px"><i class="ti ti-building-store" style="font-size:13px"></i> Convertir a cliente</button>` : ''}
           <button class="tbtn" onclick="editCrmContact()" style="gap:6px"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>
           <button class="tbtn danger" onclick="deleteCrmContact()"><i class="ti ti-trash" style="font-size:13px"></i></button>
         </div>
       </div>
 
-      <!-- Info -->
+      <!-- Info contacto -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
         ${c.email ? `<a href="mailto:${c.email}" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-radius:10px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:600"><i class="ti ti-mail" style="color:var(--ink3);font-size:14px"></i>${c.email}</a>` : ''}
         ${c.telefono ? `<a href="tel:${c.telefono}" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-radius:10px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:600"><i class="ti ti-phone" style="color:var(--ink3);font-size:14px"></i>${c.telefono}</a>` : ''}
       </div>
 
-      <!-- Stage + datos -->
+      <!-- Stage + Score + Valores -->
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div style="grid-column:1/-1">
-            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Cambiar etapa</div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px">
-              ${CRM_STAGES.map(s => {
-                const isActive = s.id === c.pipeline_stage
-                return `<button onclick="changeCrmStage('${c.id}','${s.id}')" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;border:${isActive ? '2px solid '+s.color : '1.5px solid var(--border)'};background:${isActive ? s.color+'15' : 'transparent'};color:${isActive ? s.color : 'var(--ink3)'};font-size:12px;font-weight:${isActive ? '800' : '600'};cursor:pointer;transition:all .15s;font-family:inherit">
-                  <div style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
-                  ${s.label}
-                </button>`
-              }).join('')}
-            </div>
+        
+        <!-- Cambiar etapa -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Etapa</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${CRM_STAGES.map(s => {
+              const isActive = s.id === c.stage_id
+              return `<button onclick="changeCrmStage('${c.id}','${s.id}')" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;border:${isActive ? '2px solid '+s.color : '1.5px solid var(--border)'};background:${isActive ? s.color+'15' : 'transparent'};color:${isActive ? s.color : 'var(--ink3)'};font-size:12px;font-weight:${isActive ? '800' : '600'};cursor:pointer;transition:all .15s;font-family:inherit">
+                <div style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+                ${s.label}
+              </button>`
+            }).join('')}
           </div>
-          ${c.valor_deal ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Valor del deal</div><div style="font-size:15px;font-weight:900;color:var(--azul)">$${Number(c.valor_deal).toLocaleString('es-AR')}</div></div>` : ''}
+        </div>
+
+        <!-- Calidad del lead -->
+        <div style="margin-bottom:16px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Calidad del lead</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${SCORE_OPTS.map(s => {
+              const isActive = (c.score_label || 'sin_calificar') === s.value
+              return `<button onclick="setCrmScore('${c.id}','${s.value}')" style="padding:6px 14px;border-radius:20px;border:${isActive ? '2px solid '+s.color : '1.5px solid var(--border)'};background:${isActive ? s.bg : 'transparent'};color:${isActive ? s.color : 'var(--ink3)'};font-size:11px;font-weight:${isActive ? '800' : '600'};cursor:pointer;font-family:inherit;transition:all .15s">${s.label}</button>`
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Valores -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:14px;border-top:1px solid var(--border)">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Valor estimado</div>
+            <div style="font-size:15px;font-weight:900;color:var(--azul)">${c.valor_estimado || c.valor_deal ? '$'+Number(c.valor_estimado||c.valor_deal).toLocaleString('es-AR') : '—'}</div>
+          </div>
+          ${stage?.es_ganado && c.valor_cerrado ? `<div>
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Valor cerrado</div>
+            <div style="font-size:15px;font-weight:900;color:#16A34A">$${Number(c.valor_cerrado).toLocaleString('es-AR')}</div>
+          </div>` : ''}
           <div>
             <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Responsable</div>
             <div style="font-size:13px;font-weight:600;color:var(--ink)">${respName}</div>
           </div>
-          ${c.proximo_contacto ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Próximo contacto</div><div style="font-size:13px;font-weight:600;color:${overdue?'var(--danger)':'var(--ink)'}">${overdue?'⚡ ':''} ${new Date(c.proximo_contacto).toLocaleDateString('es-AR',{day:'numeric',month:'long'})}</div></div>` : ''}
-          ${c.fecha_cierre_esperada ? `<div><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cierre esperado</div><div style="font-size:13px;font-weight:600;color:var(--ink)">${new Date(c.fecha_cierre_esperada).toLocaleDateString('es-AR',{day:'numeric',month:'long'})}</div></div>` : ''}
-
+          ${c.first_response_at ? `<div>
+            <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Primer contacto</div>
+            <div style="font-size:12px;font-weight:600;color:var(--ink)">${new Date(c.first_response_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}</div>
+          </div>` : ''}
         </div>
+
         ${c.notas ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Notas</div><div style="font-size:13px;color:var(--ink2);line-height:1.6">${c.notas}</div></div>` : ''}
       </div>
 
-      <!-- Actividades -->
+      <!-- Timeline -->
       <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:14px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Actividad</div>
@@ -8543,7 +8637,7 @@
             <i class="ti ti-plus" style="font-size:12px"></i> Registrar
           </button>
         </div>
-        ${actHTML || '<div style="text-align:center;padding:20px 0;color:var(--ink3);font-size:13px">Sin actividad registrada</div>'}
+        ${timelineHTML || '<div style="text-align:center;padding:20px 0;color:var(--ink3);font-size:13px">Sin actividad registrada</div>'}
       </div>`
   }
 
@@ -8551,6 +8645,19 @@
     document.getElementById('crm-modal-title').textContent = id ? 'Editar contacto' : 'Nuevo contacto'
     document.getElementById('crm-id').value = id || ''
     document.getElementById('crm-error').classList.remove('show')
+
+    // Poblar etapas dinámicamente
+    const stageSel = document.getElementById('crm-stage')
+    stageSel.innerHTML = CRM_STAGES.map(s => `<option value="${s.id}">${s.label}</option>`).join('')
+
+    // Agregar campo score si no existe
+    if (!document.getElementById('crm-score')) {
+      const scoreDiv = document.createElement('div')
+      scoreDiv.className = 'form-field'
+      scoreDiv.style.marginBottom = '0'
+      scoreDiv.innerHTML = '<label class="form-label">Calidad del lead</label><select class="form-input form-select" id="crm-score"><option value="sin_calificar">Sin calificar</option><option value="excelente">Excelente</option><option value="bueno">Bueno</option><option value="regular">Regular</option><option value="malo">Malo</option></select>'
+      document.getElementById('crm-valor').closest('.form-field').parentNode.appendChild(scoreDiv)
+    }
 
     // Poblar responsables
     const respSel = document.getElementById('crm-responsable')
@@ -8570,8 +8677,9 @@ if (id) {
         document.getElementById('crm-email').value = c.email || ''
         document.getElementById('crm-telefono').value = c.telefono || ''
         document.getElementById('crm-cargo').value = c.cargo || ''
-        document.getElementById('crm-stage').value = c.pipeline_stage || 'contacto_inicial'
-        document.getElementById('crm-valor').value = c.valor_deal || ''
+        document.getElementById('crm-stage').value = c.stage_id || (CRM_STAGES[0]?.id || '')
+        document.getElementById('crm-valor').value = c.valor_estimado || c.valor_deal || ''
+        document.getElementById('crm-score').value = c.score_label || 'sin_calificar'
         document.getElementById('crm-fecha-cierre').value = c.fecha_cierre_esperada || ''
         document.getElementById('crm-proximo-contacto').value = c.proximo_contacto || ''
         document.getElementById('crm-responsable').value = c.responsable_id || ''
@@ -8583,8 +8691,9 @@ if (id) {
       document.getElementById('crm-email').value = ''
       document.getElementById('crm-telefono').value = ''
       document.getElementById('crm-cargo').value = ''
-      document.getElementById('crm-stage').value = 'contacto_inicial'
+      document.getElementById('crm-stage').value = CRM_STAGES[0]?.id || ''
       document.getElementById('crm-valor').value = ''
+      document.getElementById('crm-score').value = 'sin_calificar'
       document.getElementById('crm-fecha-cierre').value = ''
       document.getElementById('crm-proximo-contacto').value = ''
       document.getElementById('crm-responsable').value = ''
@@ -8614,8 +8723,11 @@ if (id) {
       email: document.getElementById('crm-email').value.trim() || null,
       telefono: document.getElementById('crm-telefono').value.trim() || null,
       cargo: document.getElementById('crm-cargo').value.trim() || null,
-      pipeline_stage: document.getElementById('crm-stage').value,
+      stage_id: document.getElementById('crm-stage').value || null,
+      estado: CRM_STAGES.find(s => s.id === document.getElementById('crm-stage').value)?.label || 'Lead recibido',
+      valor_estimado: parseFloat(document.getElementById('crm-valor').value) || 0,
       valor_deal: parseFloat(document.getElementById('crm-valor').value) || 0,
+      score_label: document.getElementById('crm-score')?.value || 'sin_calificar',
       fecha_cierre_esperada: document.getElementById('crm-fecha-cierre').value || null,
       proximo_contacto: document.getElementById('crm-proximo-contacto').value || null,
       responsable_id: document.getElementById('crm-responsable').value || null,
@@ -8640,12 +8752,29 @@ if (id) {
     if (crmCurrentContact && id) { crmCurrentContact = crmContacts.find(c => c.id === id); await renderCrmDetail() }
   }
 
-  window.changeCrmStage = async function(id, stage) {
+  window.setCrmScore = async function(id, scoreLabel) {
     const contact = crmContacts.find(c => c.id === id)
-    if (!contact || contact.pipeline_stage === stage) return
-    contact.pipeline_stage = stage
-    if (crmCurrentContact?.id === id) crmCurrentContact.pipeline_stage = stage
-    await supabase.from('crm_contacts').update({ pipeline_stage: stage }).eq('id', id)
+    if (!contact) return
+    contact.score_label = scoreLabel
+    if (crmCurrentContact?.id === id) crmCurrentContact.score_label = scoreLabel
+    await supabase.from('crm_contacts').update({ score_label: scoreLabel }).eq('id', id)
+    await supabase.from('crm_lead_events').insert({
+      agency_id: agencyId, lead_id: id, type: 'lead_updated',
+      payload: { field: 'score_label', value: scoreLabel }, created_by: currentUserId
+    })
+    renderCrmPipeline()
+    if (crmCurrentContact?.id === id) await renderCrmDetail()
+    showToast('✓ Calidad actualizada')
+  }
+
+  window.changeCrmStage = async function(id, stageId) {
+    const contact = crmContacts.find(c => c.id === id)
+    if (!contact || contact.stage_id === stageId) return
+    contact.stage_id = stageId
+    const newStage = CRM_STAGES.find(s => s.id === stageId)
+    contact.estado = newStage?.label || contact.estado
+    if (crmCurrentContact?.id === id) { crmCurrentContact.stage_id = stageId; crmCurrentContact.estado = contact.estado }
+    await supabase.rpc('change_lead_stage', { p_lead_id: id, p_new_stage_id: stageId, p_user_id: currentUserId })
     showToast('✓ Etapa actualizada')
     await renderCrmDetail()
     if (crmView === 'pipeline') renderCrmPipeline()
@@ -9144,7 +9273,7 @@ if (id) {
     ] = await Promise.all([
       supabase.from('content_pieces').select('id,titulo,estado,clients(nombre)').eq('agency_id',agencyId).eq('estado','revision').limit(8),
       supabase.from('content_tasks').select('id,titulo,fecha_entrega,clients(nombre)').eq('agency_id',agencyId).neq('estado','completada').lte('fecha_entrega',todayStr).limit(8),
-      supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).not('pipeline_stage','in','("cerrado_ganado","cerrado_perdido")').limit(8),
+      supabase.from('crm_contacts').select('id,nombre,empresa,proximo_contacto').eq('agency_id',agencyId).lte('proximo_contacto',todayStr).limit(8),
       supabase.from('content_pieces').select('id').eq('agency_id',agencyId).in('estado',['publicado','programado']).gte('fecha_publicacion',monthStart).lte('fecha_publicacion',monthEnd),
       supabase.from('calendar_events').select('id,titulo,fecha_inicio,color').eq('agency_id',agencyId).gte('fecha_inicio',todayStr+'T00:00:00').order('fecha_inicio',{ascending:true}).limit(3),
       supabase.from('content_pieces').select('id,titulo,clients(nombre)').eq('agency_id',agencyId).eq('estado','aprobacion').limit(8),
@@ -9172,10 +9301,9 @@ if (id) {
 
     // Contar CRM por etapa
     const crmCount = {
-      contacto_inicial: crmContactsLocal.filter(c => c.pipeline_stage === 'contacto_inicial').length,
-      propuesta_enviada: crmContactsLocal.filter(c => c.pipeline_stage === 'propuesta_enviada').length,
-      negociacion: crmContactsLocal.filter(c => c.pipeline_stage === 'negociacion').length,
-      cerrado_ganado: crmContactsLocal.filter(c => c.pipeline_stage === 'cerrado_ganado').length,
+      lead_recibido: crmContactsLocal.filter(c => { const s = CRM_STAGES.find(x=>x.id===c.stage_id); return s && !s.es_ganado && !s.es_perdido && s.orden===1 }).length,
+      en_proceso: crmContactsLocal.filter(c => { const s = CRM_STAGES.find(x=>x.id===c.stage_id); return s && !s.es_ganado && !s.es_perdido }).length,
+      ganados: crmContactsLocal.filter(c => CRM_STAGES.find(x=>x.id===c.stage_id)?.es_ganado).length,
     }
 
     // ── Skeleton → Contenido ──
@@ -9285,12 +9413,7 @@ if (id) {
     }
 
     // Pipeline CRM + Contenido activo
-    const CRM_STAGES_LOCAL = [
-      { id:'contacto_inicial', label:'Prospecto', color:'#6B7280' },
-      { id:'propuesta_enviada', label:'Propuesta enviada', color:'#3B82F6' },
-      { id:'negociacion', label:'Negociación', color:'#F59E0B' },
-      { id:'cerrado_ganado', label:'Cerrado ganado', color:'#22C55E' },
-    ]
+    const CRM_STAGES_LOCAL = CRM_STAGES.length > 0 ? CRM_STAGES : []
     const KANBAN_SUMMARY = [
       { id:'produccion', label:'En producción', color:'#60A5FA' },
       { id:'revision', label:'Revisión interna', color:'#FBBF24' },
@@ -9416,7 +9539,7 @@ if (id) {
       supabase.from('content_pieces').select('id,estado,client_id,fecha_publicacion,clients(nombre)').eq('agency_id', agencyId).gte('fecha_publicacion', start).lte('fecha_publicacion', end),
       supabase.from('content_tasks').select('id,estado,fecha_entrega,asignado_a').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
       supabase.from('time_logs').select('duracion_segundos,user_id,piece_id,created_at').eq('agency_id', agencyId).gte('created_at', start).lte('created_at', end),
-      supabase.from('crm_contacts').select('id,pipeline_stage,valor_deal').eq('agency_id', agencyId),
+      supabase.from('crm_contacts').select('id,stage_id,valor_estimado,valor_deal').eq('agency_id', agencyId),
       supabase.from('agency_members').select('id,role,user_id,puesto,sueldo_mensual,profiles(nombre,apellido,avatar_url)').eq('agency_id', agencyId).eq('status', 'active'),
       supabase.from('agency_gastos').select('*').eq('agency_id', agencyId)
     ])
@@ -9442,10 +9565,10 @@ if (id) {
     const piezasPublicadas = piezasArr.filter(p => p.estado === 'publicado' || p.estado === 'programado').length
     const tareasCompletadas = tareasArr.filter(t => t.estado === 'completada').length
     const tareasVencidas = tareasArr.filter(t => t.estado !== 'completada' && t.fecha_entrega && new Date(t.fecha_entrega) < new Date()).length
-    const pipelineTotal = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).reduce((a, c) => a + (c.valor_deal || 0), 0)
-    const cerrados = contactsArr.filter(c => c.pipeline_stage === 'cerrado_ganado').length
+    const pipelineTotal = contactsArr.filter(c => !CRM_STAGES.find(s=>s.id===c.stage_id)?.es_ganado && !CRM_STAGES.find(s=>s.id===c.stage_id)?.es_perdido).reduce((a, c) => a + (c.valor_estimado || c.valor_deal || 0), 0)
+    const cerrados = contactsArr.filter(c => CRM_STAGES.find(s=>s.id===c.stage_id)?.es_ganado).length
     const tasaCierre = contactsArr.length > 0 ? Math.round((cerrados / contactsArr.length) * 100) : 0
-    const dealsActivos = contactsArr.filter(c => !['cerrado_ganado','cerrado_perdido'].includes(c.pipeline_stage)).length
+    const dealsActivos = contactsArr.filter(c => !CRM_STAGES.find(s=>s.id===c.stage_id)?.es_ganado && !CRM_STAGES.find(s=>s.id===c.stage_id)?.es_perdido).length
 
     // Card protagonista
     const setR = (id, v) => { const e = document.getElementById(id); if(e) e.innerHTML = v }
