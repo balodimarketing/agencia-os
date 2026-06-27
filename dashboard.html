@@ -2269,121 +2269,250 @@
 
 
       <!-- Panel: Integraciones API -->
-      <div id="tools-integraciones" style="display:none;padding:28px 32px;max-width:900px;margin:0 auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-          <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
-            <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
-          </button>
+      <div id="tools-integraciones" style="display:none;padding:32px;max-width:1400px;margin:0 auto;background:#F5F7FA;min-height:100%">
+
+        <!-- ── Nav back ── -->
+        <button onclick="closeTool()" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:#8B98A9;font-size:13px;font-weight:600;padding:0;margin-bottom:28px;transition:color .15s" onmouseover="this.style.color='#0A2540'" onmouseout="this.style.color='#8B98A9'">
+          <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
+        </button>
+
+        <!-- ── Page header ── -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px">
+          <div>
+            <div style="font-size:32px;font-weight:700;color:#0A2540;letter-spacing:-.8px;margin-bottom:8px">Integraciones API</div>
+            <div style="font-size:15px;color:#5F6B7A;max-width:560px;line-height:1.6">Conectá Faro con Make, Zapier, n8n, Meta Ads o cualquier herramienta externa para recibir leads automáticamente en tu CRM.</div>
+          </div>
+          <div style="display:flex;gap:12px;flex-shrink:0">
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:12px;padding:12px 16px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Estado</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#0A2540">
+                <div style="width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.15)"></div>
+                Activa
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:12px;padding:12px 16px;box-shadow:0 2px 8px rgba(10,37,64,.04)" id="integ-last-lead-card">
+              <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Último lead recibido</div>
+              <div style="font-size:13px;font-weight:700;color:#0A2540" id="integ-last-lead-label">—</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Hero -->
-        <div style="background:var(--azul);border-radius:16px;padding:28px 32px;margin-bottom:24px">
-          <div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:24px">
-            <div style="width:48px;height:48px;background:rgba(142,219,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <i class="ti ti-plug-connected" style="font-size:22px;color:var(--celeste)"></i>
+        <!-- ── Hero card ── -->
+        <div style="background:linear-gradient(135deg,#0A2540 0%,#0F3060 100%);border-radius:20px;padding:32px 40px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(10,37,64,.2)">
+          <svg style="position:absolute;right:0;top:0;bottom:0;pointer-events:none" width="420" height="190" viewBox="0 0 420 190">
+            <defs>
+              <radialGradient id="ig" cx="60%" cy="40%" r="50%">
+                <stop offset="0%" stop-color="#91E8FB" stop-opacity=".12"/>
+                <stop offset="100%" stop-color="#91E8FB" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="320" cy="80" r="160" fill="url(#ig)"/>
+            <!-- Nodos del flujo -->
+            <rect x="260" y="20" width="80" height="28" rx="8" fill="rgba(255,255,255,.06)" stroke="rgba(145,232,251,.2)" stroke-width="1"/>
+            <text x="300" y="38" text-anchor="middle" font-size="10" fill="rgba(145,232,251,.7)" font-family="sans-serif">Meta Ads</text>
+            <line x1="300" y1="48" x2="300" y2="68" stroke="rgba(145,232,251,.3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <rect x="260" y="68" width="80" height="28" rx="8" fill="rgba(255,255,255,.06)" stroke="rgba(145,232,251,.2)" stroke-width="1"/>
+            <text x="300" y="86" text-anchor="middle" font-size="10" fill="rgba(145,232,251,.7)" font-family="sans-serif">Webhook</text>
+            <line x1="300" y1="96" x2="300" y2="116" stroke="rgba(145,232,251,.3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <rect x="268" y="116" width="64" height="28" rx="8" fill="rgba(145,232,251,.15)" stroke="rgba(145,232,251,.4)" stroke-width="1.5"/>
+            <text x="300" y="134" text-anchor="middle" font-size="10" fill="#91E8FB" font-weight="700" font-family="sans-serif">Faro</text>
+            <line x1="300" y1="144" x2="300" y2="164" stroke="rgba(145,232,251,.3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <rect x="260" y="164" width="80" height="22" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(145,232,251,.15)" stroke-width="1"/>
+            <text x="300" y="179" text-anchor="middle" font-size="10" fill="rgba(145,232,251,.5)" font-family="sans-serif">CRM</text>
+            <!-- Círculos decorativos -->
+            <circle cx="240" cy="95" r="3" fill="#91E8FB" opacity=".3"/>
+            <circle cx="360" cy="60" r="2.5" fill="#91E8FB" opacity=".2"/>
+            <circle cx="380" cy="140" r="4" fill="#91E8FB" opacity=".15"/>
+            <circle cx="220" cy="150" r="2" fill="#91E8FB" opacity=".2"/>
+            <circle cx="390" cy="30" r="60" stroke="#91E8FB" stroke-width=".6" fill="none" opacity=".06"/>
+          </svg>
+          <div style="position:relative;z-index:1;max-width:500px">
+            <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(145,232,251,.1);border:1px solid rgba(145,232,251,.2);border-radius:999px;margin-bottom:16px">
+              <div style="width:6px;height:6px;border-radius:50%;background:#91E8FB"></div>
+              <span style="font-size:11px;font-weight:700;color:rgba(145,232,251,.8);letter-spacing:.4px;text-transform:uppercase">Webhook activo</span>
             </div>
+            <div style="font-size:24px;font-weight:700;color:#fff;letter-spacing:-.4px;line-height:1.2;margin-bottom:10px">Faro recibe leads desde<br>cualquier herramienta</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:20px">Compatible con Make, Zapier, n8n, Meta Ads, Google Ads, Typeform, Tally y cualquier plataforma capaz de enviar solicitudes HTTP.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span style="padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">Make</span>
+              <span style="padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">Zapier</span>
+              <span style="padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">n8n</span>
+              <span style="padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">Meta Ads</span>
+              <span style="padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">Google Ads</span>
+              <span style="padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">Typeform</span>
+              <span style="padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.6)">+ más</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Fila principal: credenciales + prueba ── -->
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;margin-bottom:20px">
+
+          <!-- Credenciales -->
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="font-size:18px;font-weight:700;color:#0A2540;letter-spacing:-.3px;margin-bottom:24px">Tus credenciales</div>
+
+            <!-- URL endpoint -->
+            <div style="margin-bottom:24px">
+              <div style="font-size:12px;font-weight:700;color:#0A2540;margin-bottom:8px">URL del endpoint</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                <div style="flex:1;height:48px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:12px;padding:0 16px;font-size:12px;font-family:monospace;color:#5F6B7A;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" id="integ-endpoint-url">https://trsbjjagrpvlzvcveiph.supabase.co/functions/v1/swift-function</div>
+                <button onclick="copyEndpoint()" style="height:48px;padding:0 20px;background:#0A2540;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:all .2s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'" id="btn-copy-endpoint">
+                  <i class="ti ti-copy" style="font-size:14px"></i> Copiar
+                </button>
+              </div>
+              <div style="font-size:12px;color:#8B98A9">Este es el endpoint donde tu herramienta enviará los leads.</div>
+            </div>
+
+            <div style="height:1px;background:#F0F3F7;margin-bottom:24px"></div>
+
+            <!-- API Key -->
             <div>
-              <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-.3px">Faro se conecta con tus herramientas</div>
-              <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;max-width:540px">Integrá Faro con cualquier plataforma que pueda hacer un request HTTP. Los leads llegan automáticamente al CRM — sin carga manual, sin fricción.</div>
+              <div style="font-size:12px;font-weight:700;color:#0A2540;margin-bottom:8px">API Key</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                <div style="flex:1;height:48px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:12px;padding:0 16px;font-size:12px;font-family:monospace;color:#5F6B7A;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" id="integ-api-key">Cargando...</div>
+                <button onclick="toggleApiKey()" style="height:48px;width:48px;background:#fff;color:#5F6B7A;border:1px solid #E8EDF3;border-radius:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'" id="btn-toggle-key">
+                  <i class="ti ti-eye" style="font-size:16px"></i>
+                </button>
+                <button onclick="copyApiKey()" style="height:48px;padding:0 20px;background:#0A2540;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:all .2s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'" id="btn-copy-key">
+                  <i class="ti ti-copy" style="font-size:14px"></i> Copiar
+                </button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <div style="font-size:12px;color:#8B98A9" id="integ-key-status"></div>
+                <button onclick="regenerarApiKey()" style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;color:#EF4444;font-size:12px;font-weight:600;font-family:inherit;padding:0;transition:opacity .15s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+                  <i class="ti ti-refresh" style="font-size:13px"></i> Regenerar key
+                </button>
+              </div>
+              <!-- Alerta info -->
+              <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px">
+                <i class="ti ti-info-circle" style="font-size:16px;color:#0891B2;flex-shrink:0;margin-top:1px"></i>
+                <div style="font-size:12px;color:#0C4A6E;line-height:1.5">Guardá esta API Key en un lugar seguro. Si la regenerás, las integraciones anteriores dejarán de funcionar.</div>
+              </div>
             </div>
           </div>
 
-          <!-- Plataformas compatibles -->
-          <div style="font-size:10px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Compatible con</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
-            ${[
-              { name: 'Make', icon: 'ti-circle-letter-m', color: '#6B2FF5' },
-              { name: 'Zapier', icon: 'ti-bolt', color: '#FF4A00' },
-              { name: 'n8n', icon: 'ti-topology-star', color: '#EA4B71' },
-              { name: 'Meta Ads', icon: 'ti-brand-meta', color: '#0081FB' },
-              { name: 'Google Ads', icon: 'ti-brand-google', color: '#4285F4' },
-              { name: 'TikTok Ads', icon: 'ti-brand-tiktok', color: '#010101' },
-              { name: 'Typeform', icon: 'ti-forms', color: '#262627' },
-              { name: 'Tally', icon: 'ti-layout-list', color: '#1A1A1A' },
-              { name: 'Webhooks', icon: 'ti-webhook', color: '#059669' },
-              { name: 'API propia', icon: 'ti-code', color: '#7C3AED' },
-            ].map(p => `<div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px">
-              <i class="ti ${p.icon}" style="font-size:12px;color:rgba(255,255,255,.7)"></i>
-              <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.85)">${p.name}</span>
-            </div>`).join('')}
-          </div>
-        </div>
-        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px">
-          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">URL del endpoint</div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;font-family:monospace;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="integ-endpoint-url">https://trsbjjagrpvlzvcveiph.supabase.co/functions/v1/swift-function</div>
-            <button onclick="copyEndpoint()" style="padding:10px 16px;background:var(--azul);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px" id="btn-copy-endpoint">
-              <i class="ti ti-copy" style="font-size:13px"></i> Copiar
+          <!-- Probar conexión -->
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;flex-direction:column">
+            <div style="font-size:18px;font-weight:700;color:#0A2540;letter-spacing:-.3px;margin-bottom:8px">Probar conexión</div>
+            <div style="font-size:13px;color:#5F6B7A;line-height:1.6;margin-bottom:24px">Enviá un lead de prueba para verificar que Faro esté recibiendo correctamente la información.</div>
+            <button onclick="enviarPrueba()" style="width:100%;height:48px;background:#0A2540;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin-bottom:16px" onmouseover="this.style.background='#12365C';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0A2540';this.style.transform=''" id="btn-prueba">
+              <i class="ti ti-send" style="font-size:16px"></i> Enviar lead de prueba
             </button>
-          </div>
-        </div>
-        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px">
-          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">API Key</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <div style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;font-family:monospace;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="integ-api-key">Cargando...</div>
-            <button onclick="toggleApiKey()" style="padding:10px 14px;background:var(--bg);color:var(--ink2);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px" id="btn-toggle-key">
-              <i class="ti ti-eye" style="font-size:13px"></i>
-            </button>
-            <button onclick="copyApiKey()" style="padding:10px 16px;background:var(--azul);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px" id="btn-copy-key">
-              <i class="ti ti-copy" style="font-size:13px"></i> Copiar
-            </button>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div style="font-size:11px;color:var(--ink3)" id="integ-key-status"></div>
-            <button onclick="regenerarApiKey()" style="display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;color:var(--danger);font-size:12px;font-weight:700;font-family:inherit;padding:0">
-              <i class="ti ti-refresh" style="font-size:13px"></i> Regenerar key
-            </button>
-          </div>
-        </div>
-        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px">
-          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Probar conexión</div>
-          <div style="font-size:13px;color:var(--ink2);margin-bottom:14px">Enviá un lead de prueba para verificar que todo funciona.</div>
-          <button onclick="enviarPrueba()" style="display:flex;align-items:center;gap:8px;padding:10px 20px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit" id="btn-prueba">
-            <i class="ti ti-send" style="font-size:14px"></i> Enviar lead de prueba
-          </button>
-          <div id="integ-prueba-result" style="margin-top:12px;font-size:12px;display:none"></div>
-        </div>
-        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px">
-          <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px">Últimos requests</div>
-          <div id="integ-logs"><div style="text-align:center;padding:20px;color:var(--ink3);font-size:13px">Cargando...</div></div>
-        </div>
-        <!-- Cómo conectar -->
-        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px 24px">
-          <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:6px">Cómo conectarlo con cualquier herramienta</div>
-          <div style="font-size:12px;color:var(--ink3);margin-bottom:20px">El flujo es el mismo para Make, Zapier, n8n o cualquier herramienta que soporte HTTP.</div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">1</div>
-              <div style="font-size:13px;color:var(--ink2);line-height:1.5">En tu herramienta, creá una acción de tipo <strong>HTTP request</strong> o <strong>Webhook</strong>. En Make es <em>HTTP → Make a request</em>. En Zapier es <em>Webhooks by Zapier → POST</em>. En n8n es el nodo <em>HTTP Request</em>.</div>
+            <div id="integ-prueba-result" style="display:none;border-radius:10px;padding:14px 16px;font-size:13px"></div>
+            <div style="flex:1"></div>
+            <div style="border-top:1px solid #F0F3F7;padding-top:16px;margin-top:16px">
+              <div style="font-size:11px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Plataformas compatibles</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <span style="padding:3px 9px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:999px;font-size:11px;color:#5F6B7A;font-weight:500">Make</span>
+                <span style="padding:3px 9px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:999px;font-size:11px;color:#5F6B7A;font-weight:500">Zapier</span>
+                <span style="padding:3px 9px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:999px;font-size:11px;color:#5F6B7A;font-weight:500">n8n</span>
+                <span style="padding:3px 9px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:999px;font-size:11px;color:#5F6B7A;font-weight:500">Meta Ads</span>
+                <span style="padding:3px 9px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:999px;font-size:11px;color:#5F6B7A;font-weight:500">HTTP</span>
+              </div>
             </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">2</div>
-              <div style="font-size:13px;color:var(--ink2);line-height:1.5">Configurá la URL del endpoint y el método <strong>POST</strong>.</div>
+          </div>
+        </div>
+
+        <!-- ── Segunda fila: logs + instrucciones ── -->
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px">
+
+          <!-- Logs -->
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+              <div style="font-size:18px;font-weight:700;color:#0A2540;letter-spacing:-.3px">Últimas solicitudes recibidas</div>
             </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">3</div>
-              <div style="font-size:13px;color:var(--ink2);line-height:1.5">Agregá el header <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">x-api-key</code> con tu API Key como valor.</div>
+            <!-- Cabecera tabla -->
+            <div style="display:grid;grid-template-columns:140px 100px 1fr 1fr 90px;gap:12px;padding:8px 12px;margin-bottom:4px">
+              <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px">Fecha</div>
+              <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px">Origen</div>
+              <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px">Nombre</div>
+              <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px">Email</div>
+              <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px">Estado</div>
             </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;background:var(--azul);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">4</div>
-              <div>
-                <div style="font-size:13px;color:var(--ink2);line-height:1.5;margin-bottom:10px">Mandá un JSON con los datos del lead. Todos los campos son opcionales salvo nombre o email:</div>
-                <div style="background:var(--bg);border-radius:8px;padding:12px 14px;font-size:11px;font-family:monospace;color:var(--ink2);line-height:1.8">
-                  {<br>
-                  &nbsp;&nbsp;"nombre": "Juan García",<br>
-                  &nbsp;&nbsp;"email": "juan@empresa.com",<br>
-                  &nbsp;&nbsp;"telefono": "+54911...",<br>
-                  &nbsp;&nbsp;"empresa": "Mi empresa",<br>
-                  &nbsp;&nbsp;"origen": "Meta Ads",<br>
-                  &nbsp;&nbsp;"campana": "Nombre de campaña",<br>
-                  &nbsp;&nbsp;"mensaje": "Quiero más info..."<br>
-                  }
+            <div id="integ-logs">
+              <div style="text-align:center;padding:32px 0;color:#8B98A9;font-size:13px">Cargando...</div>
+            </div>
+            <div style="border-top:1px solid #F0F3F7;padding-top:16px;margin-top:8px">
+              <button style="font-size:13px;font-weight:600;color:#0A2540;background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:5px;transition:gap .15s" onmouseover="this.style.gap='8px'" onmouseout="this.style.gap='5px'">
+                Ver todas las solicitudes <i class="ti ti-arrow-right" style="font-size:13px"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Instrucciones + JSON -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+
+            <!-- Pasos -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div style="font-size:15px;font-weight:700;color:#0A2540;letter-spacing:-.2px;margin-bottom:20px">Cómo conectarlo</div>
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;gap:14px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#EEF2FF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="ti ti-link" style="font-size:13px;color:#6366F1"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:#0A2540;margin-bottom:2px">Copiá la URL del endpoint</div>
+                    <div style="font-size:12px;color:#8B98A9;line-height:1.4">Es el destino donde tu herramienta enviará los leads.</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#ECFDF5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="ti ti-webhook" style="font-size:13px;color:#10B981"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:#0A2540;margin-bottom:2px">Creá un Webhook POST</div>
+                    <div style="font-size:12px;color:#8B98A9;line-height:1.4">En Make, Zapier, n8n o cualquier herramienta HTTP.</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#FFF5F5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="ti ti-key" style="font-size:13px;color:#EF4444"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:#0A2540;margin-bottom:2px">Agregá la API Key</div>
+                    <div style="font-size:12px;color:#8B98A9;line-height:1.4">Header: <code style="background:#F5F7FA;padding:1px 5px;border-radius:4px;font-size:11px">x-api-key</code></div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#FFFBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="ti ti-braces" style="font-size:13px;color:#F59E0B"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:#0A2540;margin-bottom:2px">Enviá el JSON del lead</div>
+                    <div style="font-size:12px;color:#8B98A9;line-height:1.4">Nombre o email es suficiente para crear el lead.</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:14px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#F0FDF4;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="ti ti-check" style="font-size:13px;color:#22C55E"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:#0A2540;margin-bottom:2px">Probá la conexión</div>
+                    <div style="font-size:12px;color:#8B98A9;line-height:1.4">Usá el botón de prueba para verificar que todo funciona.</div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:24px;height:24px;background:#059669;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">✓</div>
-              <div style="font-size:13px;color:var(--ink2);line-height:1.5">Usá el botón <strong>Enviar lead de prueba</strong> para verificar que todo funciona antes de activar tu automatización.</div>
+
+            <!-- JSON ejemplo -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:15px;font-weight:700;color:#0A2540;letter-spacing:-.2px">Ejemplo de payload</div>
+                <button onclick="navigator.clipboard.writeText('{\n  &quot;nombre&quot;: &quot;Juan García&quot;,\n  &quot;email&quot;: &quot;juan@empresa.com&quot;,\n  &quot;telefono&quot;: &quot;+54911...&quot;,\n  &quot;empresa&quot;: &quot;Mi empresa&quot;,\n  &quot;origen&quot;: &quot;Meta Ads&quot;,\n  &quot;campana&quot;: &quot;Nombre de campaña&quot;,\n  &quot;mensaje&quot;: &quot;Quiero más info...&quot;\n}').then(()=>showToast('✓ JSON copiado'))" style="display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-weight:600;color:#5F6B7A;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540';this.style.color='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#5F6B7A'">
+                  <i class="ti ti-copy" style="font-size:12px"></i> Copiar
+                </button>
+              </div>
+              <div style="background:#F8FAFC;border:1px solid #E8EDF3;border-radius:12px;padding:16px;font-size:12px;font-family:monospace;color:#5F6B7A;line-height:2">
+                {<br>
+                &nbsp;&nbsp;<span style="color:#6366F1">"nombre"</span>: <span style="color:#10B981">"Juan García"</span>,<br>
+                &nbsp;&nbsp;<span style="color:#6366F1">"email"</span>: <span style="color:#10B981">"juan@empresa.com"</span>,<br>
+                &nbsp;&nbsp;<span style="color:#6366F1">"telefono"</span>: <span style="color:#10B981">"+54911..."</span>,<br>
+                &nbsp;&nbsp;<span style="color:#6366F1">"empresa"</span>: <span style="color:#10B981">"Mi empresa"</span>,<br>
+                &nbsp;&nbsp;<span style="color:#6366F1">"origen"</span>: <span style="color:#10B981">"Meta Ads"</span>,<br>
+                &nbsp;&nbsp;<span style="color:#6366F1">"campana"</span>: <span style="color:#10B981">"Nombre campaña"</span><br>
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -11378,20 +11507,23 @@ if (id) {
       const data = await res.json()
       result.style.display = 'block'
       if (res.ok) {
-        result.style.color = '#059669'
-        result.textContent = '✓ Funcionó correctamente. Lead creado en el CRM con ID: ' + data.lead_id
+        result.style.background = '#F0FDF4'
+        result.style.border = '1px solid #BBF7D0'
+        result.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><i class="ti ti-circle-check" style="font-size:18px;color:#16A34A;flex-shrink:0"></i><div><div style="font-size:13px;font-weight:700;color:#16A34A;margin-bottom:2px">Conexión exitosa</div><div style="font-size:12px;color:#15803D">Lead recibido correctamente en el CRM.</div></div></div>'
       } else {
-        result.style.color = 'var(--danger)'
-        result.textContent = '✗ Error: ' + (data.error || 'Respuesta inesperada')
+        result.style.background = '#FEF2F2'
+        result.style.border = '1px solid #FECACA'
+        result.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><i class="ti ti-circle-x" style="font-size:18px;color:#DC2626;flex-shrink:0"></i><div><div style="font-size:13px;font-weight:700;color:#DC2626;margin-bottom:2px">Error</div><div style="font-size:12px;color:#B91C1C">' + (data.error || 'Respuesta inesperada') + '</div></div></div>'
       }
     } catch (err) {
       result.style.display = 'block'
-      result.style.color = 'var(--danger)'
-      result.textContent = '✗ Error de conexión: ' + err.message
+      result.style.background = '#FEF2F2'
+      result.style.border = '1px solid #FECACA'
+      result.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><i class="ti ti-circle-x" style="font-size:18px;color:#DC2626;flex-shrink:0"></i><div><div style="font-size:13px;font-weight:700;color:#DC2626;margin-bottom:2px">Error de conexión</div><div style="font-size:12px;color:#B91C1C">' + err.message + '</div></div></div>'
     }
-
     btn.disabled = false
-    btn.innerHTML = '<i class="ti ti-send" style="font-size:14px"></i> Enviar lead de prueba'
+    btn.innerHTML = '<i class="ti ti-send" style="font-size:16px"></i> Enviar lead de prueba'
+    await loadIntegLogs()
     await loadIntegLogs()
   }
 
@@ -11401,25 +11533,40 @@ if (id) {
 
     const { data: logs } = await supabase
       .from('integration_logs')
-      .select('*')
+      .select('*, crm_contacts(nombre, email)')
       .eq('agency_id', agencyId)
       .order('created_at', { ascending: false })
       .limit(10)
 
+    // Actualizar último lead recibido
+    const lastSuccessLog = logs?.find(l => l.success && !l.error_message?.includes('duplicado'))
+    const lastLeadLabel = document.getElementById('integ-last-lead-label')
+    if (lastLeadLabel && lastSuccessLog) {
+      lastLeadLabel.textContent = formatDate(lastSuccessLog.created_at)?.text || '—'
+    }
+
     if (!logs || logs.length === 0) {
-      logsEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink3);font-size:13px">Todavía no hubo requests.</div>'
+      logsEl.innerHTML = '<div style="text-align:center;padding:32px 0;color:#8B98A9;font-size:13px">Todavía no hubo requests.</div>'
       return
     }
 
-    logsEl.innerHTML = logs.map(log => {
+    logsEl.innerHTML = logs.map((log, i) => {
       const fecha = formatDate(log.created_at)?.text || log.created_at
-      const badge = log.success
-        ? '<span style="font-size:10px;font-weight:800;color:#059669;background:#ECFDF5;padding:2px 8px;border-radius:20px">✓ OK</span>'
-        : '<span style="font-size:10px;font-weight:800;color:var(--danger);background:#FEF2F2;padding:2px 8px;border-radius:20px">✗ Error</span>'
-      return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">' +
+      const isDuplicate = log.error_message?.includes('duplicado')
+      const badge = isDuplicate
+        ? '<span style="padding:3px 10px;border-radius:999px;background:#EEF2FF;color:#6366F1;font-size:11px;font-weight:700">Duplicado</span>'
+        : log.success
+          ? '<span style="padding:3px 10px;border-radius:999px;background:#ECFDF5;color:#16A34A;font-size:11px;font-weight:700">Recibido</span>'
+          : '<span style="padding:3px 10px;border-radius:999px;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700">Error</span>'
+      const nombre = log.crm_contacts?.nombre || '—'
+      const email = log.crm_contacts?.email || '—'
+      const borderBottom = i < logs.length - 1 ? 'border-bottom:1px solid #F0F3F7;' : ''
+      return '<div style="display:grid;grid-template-columns:140px 100px 1fr 1fr 90px;gap:12px;padding:12px 12px;align-items:center;' + borderBottom + 'transition:background .15s;border-radius:8px" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">' +
+        '<div style="font-size:12px;color:#8B98A9">' + fecha + '</div>' +
+        '<div style="font-size:12px;color:#5F6B7A;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (log.origen || '—') + '</div>' +
+        '<div style="font-size:12px;color:#0A2540;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nombre + '</div>' +
+        '<div style="font-size:12px;color:#5F6B7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + email + '</div>' +
         badge +
-        '<div style="flex:1;font-size:12px;color:var(--ink2)">' + (log.origen || 'Sin origen') + (log.error_message ? ' — ' + log.error_message : '') + '</div>' +
-        '<div style="font-size:11px;color:var(--ink3)">' + fecha + '</div>' +
         '</div>'
     }).join('')
   }
