@@ -1502,6 +1502,9 @@
             <div class="cal-view-btn" id="crm-btn-contactos" onclick="switchCrmView('contactos')">Contactos</div>
           </div>
           <div style="flex:1"></div>
+          <button class="tbtn" onclick="openPipelineEditor()" style="gap:6px">
+            <i class="ti ti-settings-2" style="font-size:14px"></i> Editar pipeline
+          </button>
           <button class="tbtn primary" onclick="openCrmModal()" style="gap:6px">
             <i class="ti ti-plus" style="font-size:14px"></i> Nuevo contacto
           </button>
@@ -2258,6 +2261,33 @@
       <div id="cal-grid" style="flex:1;overflow:auto"></div>
     </div>
 
+  </div>
+</div>
+
+
+<!-- MODAL EDITOR DE PIPELINE -->
+<div class="modal-overlay" id="modal-pipeline-editor" onclick="closeModalOutside(event)" style="z-index:500">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div class="modal-title">Editar pipeline</div>
+      <button class="modal-close" onclick="closePipelineEditor()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto">
+      <div style="font-size:12px;color:var(--ink3);margin-bottom:16px;line-height:1.5">
+        Personalizá las etapas de tu pipeline. Las herramientas (presupuesto, contrato, convertir a cliente) se asignan por el <strong>rol</strong> de cada etapa, no por su nombre.
+      </div>
+      <div id="pipeline-stages-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+      <button onclick="addPipelineStage()" style="width:100%;padding:10px;background:var(--bg);border:1.5px dashed var(--border);border-radius:10px;font-size:13px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s" onmouseover="this.style.borderColor='var(--azul)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">
+        <i class="ti ti-plus" style="font-size:14px"></i> Agregar etapa
+      </button>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closePipelineEditor()">Cancelar</button>
+      <button class="tbtn primary" onclick="savePipelineStages()" id="btn-save-pipeline">
+        <span id="btn-save-pipeline-text">Guardar cambios</span>
+        <div class="spinner" id="pipeline-spinner"></div>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -11153,6 +11183,188 @@ if (id) {
         '<div style="font-size:11px;color:var(--ink3)">' + fecha + '</div>' +
         '</div>'
     }).join('')
+  }
+
+
+  // ══════════════════════════════════════
+  // EDITOR DE PIPELINE
+  // ══════════════════════════════════════
+
+  let pipelineEditorStages = []
+
+  const STAGE_COLORS = [
+    '#6B7280','#3B82F6','#8B5CF6','#F59E0B',
+    '#EC4899','#EF4444','#22C55E','#14B8A6',
+    '#F97316','#06B6D4','#84CC16','#A855F7'
+  ]
+
+  window.openPipelineEditor = function() {
+    // Clonar stages actuales para editar sin afectar el estado real
+    pipelineEditorStages = CRM_STAGES.map(s => ({ ...s, _dirty: false, _new: false, _deleted: false }))
+    renderPipelineEditorList()
+    document.getElementById('modal-pipeline-editor').classList.add('show')
+  }
+
+  window.closePipelineEditor = function() {
+    document.getElementById('modal-pipeline-editor').classList.remove('show')
+  }
+
+  function renderPipelineEditorList() {
+    const list = document.getElementById('pipeline-stages-list')
+    if (!list) return
+
+    const visible = pipelineEditorStages.filter(s => !s._deleted)
+
+    list.innerHTML = visible.map((s, i) => {
+      const isGanada = s.es_ganado
+      const isPerdida = s.es_perdido
+      const rol = isGanada ? 'ganado' : isPerdida ? 'perdido' : 'normal'
+
+      return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px" id="stage-row-${s.id || 'new-'+i}">
+        <!-- Drag handle -->
+        <i class="ti ti-grip-vertical" style="font-size:16px;color:var(--ink3);cursor:grab;flex-shrink:0"></i>
+
+        <!-- Color picker -->
+        <div style="position:relative;flex-shrink:0">
+          <div style="width:28px;height:28px;border-radius:8px;background:${s.color};cursor:pointer;border:2px solid transparent;transition:border-color .15s" onclick="toggleColorPicker('${s.id || 'new-'+i}')" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='transparent'"></div>
+          <div id="color-picker-${s.id || 'new-'+i}" style="display:none;position:absolute;top:36px;left:0;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:8px;z-index:100;display:none;gap:6px;flex-wrap:wrap;width:160px">
+            ${STAGE_COLORS.map(c => `<div onclick="setStageColor('${s.id || 'new-'+i}','${c}')" style="width:22px;height:22px;border-radius:6px;background:${c};cursor:pointer;border:${s.color===c?'2px solid var(--azul)':'2px solid transparent'};transition:transform .1s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Nombre -->
+        <input type="text" value="${s.label}" onchange="updateStageName('${s.id || 'new-'+i}', this.value)" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;color:var(--ink);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'" placeholder="Nombre de la etapa">
+
+        <!-- Rol -->
+        <select onchange="setStageRol('${s.id || 'new-'+i}', this.value)" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;color:var(--ink2);outline:none;background:var(--white);cursor:pointer;flex-shrink:0">
+          <option value="normal" ${rol==='normal'?'selected':''}>Normal</option>
+          <option value="ganado" ${rol==='ganado'?'selected':''}>✓ Ganada</option>
+          <option value="perdido" ${rol==='perdido'?'selected':''}>✗ Perdida</option>
+        </select>
+
+        <!-- Eliminar -->
+        ${visible.length > 2 ? `<button onclick="deleteStage('${s.id || 'new-'+i}')" style="background:none;border:none;cursor:pointer;color:var(--ink3);padding:4px;flex-shrink:0;transition:color .15s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-trash" style="font-size:14px"></i>
+        </button>` : '<div style="width:26px"></div>'}
+      </div>`
+    }).join('')
+  }
+
+  window.toggleColorPicker = function(stageKey) {
+    const picker = document.getElementById('color-picker-' + stageKey)
+    if (!picker) return
+    const isOpen = picker.style.display === 'flex'
+    // Cerrar todos
+    document.querySelectorAll('[id^="color-picker-"]').forEach(p => p.style.display = 'none')
+    if (!isOpen) picker.style.display = 'flex'
+  }
+
+  // Cerrar color pickers al clickear afuera
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[id^="color-picker-"]') && !e.target.closest('[onclick*="toggleColorPicker"]')) {
+      document.querySelectorAll('[id^="color-picker-"]').forEach(p => p.style.display = 'none')
+    }
+  })
+
+  window.setStageColor = function(stageKey, color) {
+    const stage = pipelineEditorStages.find(s => (s.id || 'new-'+pipelineEditorStages.indexOf(s)) === stageKey || s.id === stageKey)
+    if (stage) { stage.color = color; stage._dirty = true }
+    document.getElementById('color-picker-' + stageKey).style.display = 'none'
+    renderPipelineEditorList()
+  }
+
+  window.updateStageName = function(stageKey, value) {
+    const stage = pipelineEditorStages.find(s => s.id === stageKey)
+    if (stage) { stage.label = value; stage._dirty = true }
+  }
+
+  window.setStageRol = function(stageKey, rol) {
+    // Solo puede haber una ganada y una perdida
+    if (rol === 'ganado') pipelineEditorStages.forEach(s => { if (s.id !== stageKey) s.es_ganado = false })
+    if (rol === 'perdido') pipelineEditorStages.forEach(s => { if (s.id !== stageKey) s.es_perdido = false })
+    const stage = pipelineEditorStages.find(s => s.id === stageKey)
+    if (stage) {
+      stage.es_ganado = rol === 'ganado'
+      stage.es_perdido = rol === 'perdido'
+      stage._dirty = true
+    }
+    renderPipelineEditorList()
+  }
+
+  window.deleteStage = function(stageKey) {
+    const stage = pipelineEditorStages.find(s => s.id === stageKey)
+    if (stage) {
+      if (stage._new) {
+        pipelineEditorStages = pipelineEditorStages.filter(s => s.id !== stageKey)
+      } else {
+        stage._deleted = true
+      }
+    }
+    renderPipelineEditorList()
+  }
+
+  window.addPipelineStage = function() {
+    const newId = 'new-' + Date.now()
+    pipelineEditorStages.push({
+      id: newId,
+      label: 'Nueva etapa',
+      color: '#6B7280',
+      es_ganado: false,
+      es_perdido: false,
+      orden: pipelineEditorStages.filter(s => !s._deleted).length + 1,
+      _new: true,
+      _dirty: true,
+      _deleted: false
+    })
+    renderPipelineEditorList()
+  }
+
+  window.savePipelineStages = async function() {
+    const btn = document.getElementById('btn-save-pipeline')
+    const spinner = document.getElementById('pipeline-spinner')
+    const btnText = document.getElementById('btn-save-pipeline-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    // Asegurarse que hay al menos una etapa ganada
+    const hayGanada = pipelineEditorStages.some(s => s.es_ganado && !s._deleted)
+    if (!hayGanada) {
+      // Asignar es_ganado a la última etapa no perdida no eliminada
+      const ultimaNormal = [...pipelineEditorStages].reverse().find(s => !s.es_perdido && !s._deleted)
+      if (ultimaNormal) ultimaNormal.es_ganado = true
+    }
+
+    const visible = pipelineEditorStages.filter(s => !s._deleted)
+
+    // Eliminar stages marcados para borrar
+    for (const s of pipelineEditorStages.filter(s => s._deleted && !s._new)) {
+      await supabase.from('crm_pipeline_stages').delete().eq('id', s.id)
+    }
+
+    // Actualizar o insertar
+    for (let i = 0; i < visible.length; i++) {
+      const s = visible[i]
+      const payload = {
+        nombre: s.label,
+        color: s.color,
+        orden: i + 1,
+        es_ganado: s.es_ganado,
+        es_perdido: s.es_perdido,
+        agency_id: agencyId
+      }
+      if (s._new) {
+        await supabase.from('crm_pipeline_stages').insert(payload)
+      } else if (s._dirty) {
+        await supabase.from('crm_pipeline_stages').update(payload).eq('id', s.id)
+      }
+    }
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
+    closePipelineEditor()
+    showToast('✓ Pipeline actualizado')
+
+    // Recargar stages y pipeline
+    await loadCrmContacts()
+    renderCrmPipeline()
   }
 
   init()
