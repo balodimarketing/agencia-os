@@ -9771,71 +9771,7 @@ if (id) {
     // Ítems manuales del mes (ya cargados en window.repItemsManuales)
     const itemsManuales = window.repItemsManuales || []
 
-    const agencyName = document.getElementById('greeting-agency')?.textContent || ''
-    const logoSVG = '<svg viewBox="0 0 100 120" width="16" height="20" fill="none" style="display:block"><path d="M28 18 Q28 10 36 10 L78 10 Q86 10 86 18 L86 30 Q86 38 78 38 L50 38 L50 50 L72 50 Q80 50 80 58 L80 68 Q80 76 72 76 L50 76 L50 102 L36 102 Q28 102 28 94 Z" fill="#8EDBFF"/><circle cx="36" cy="112" r="8" fill="#2563FF"/></svg>'
-
-    const TIPO_BG = { 'Reel':'#E8F4FF', 'Story':'#EEF2FF', 'Feed':'#F0FDF4', 'Video':'#FFF7ED', 'Carousel':'#F0FDF4', 'TikTok':'#FEF2F2' }
-    const TIPO_TX = { 'Reel':'#0C447C', 'Story':'#3730A3', 'Feed':'#166534', 'Video':'#9A3412', 'Carousel':'#166534', 'TikTok':'#991B1B' }
-
-    // HTML de piezas automáticas
-    const piezasHTML = clientPieces.map(p => {
-      const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {day:'numeric', month:'long'})
-      const stats = repStats[p.id]
-      const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
-      const tipo = p.tipo || ''
-      const bg = TIPO_BG[tipo] || '#F0F4F8'
-      const tx = TIPO_TX[tipo] || '#9AA5B4'
-      const tipoHTML = tipo ? `<span style="font-size:10px;font-weight:600;padding:2px 9px;background:${bg};color:${tx};border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${tipo}</span>` : ''
-
-      const statsHTML = hasStats ? `<div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E8ECF0;margin-top:12px">${
-        [['visitas','Visitas'],['likes','Likes'],['comentarios','Comentarios'],['compartidos','Compartidos'],['reposteos','Reposteos']]
-          .filter(([k]) => stats[k])
-          .map(([k,l]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${l}</div></div>`)
-          .join('')
-      }</div>` : ''
-
-      return `<div style="border:1.5px solid #E8ECF0;border-radius:12px;padding:18px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:5px">${p.titulo}</div>
-            ${tipoHTML}
-          </div>
-          <div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div>
-        </div>
-        ${statsHTML}
-      </div>`
-    }).join('')
-
-    // HTML de ítems manuales
-    const TIPO_LABELS = { publicacion:'Publicación', historia:'Historia', reel:'Reel', campaña:'Campaña', email:'Email', otro:'Otro' }
-    const itemsHTML = itemsManuales.map(item => {
-      const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', {day:'numeric', month:'long'}) : '—'
-      const tipo = TIPO_LABELS[item.tipo] || item.tipo || ''
-      const m = item.metricas || {}
-      const metricEntries = Object.entries(m)
-      const metricasHTML = metricEntries.length ? `<div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #E8ECF0;margin-top:12px">${
-        metricEntries.map(([k,v]) => `<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#0A2540">${v}</div><div style="font-size:9px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${k}</div></div>`).join('')
-      }</div>` : ''
-
-      return `<div style="border:1.5px solid #E8ECF0;border-left:3px solid #91E8FB;border-radius:12px;padding:18px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:5px">${item.titulo}</div>
-            <div style="display:flex;gap:6px;align-items:center">
-              <span style="font-size:10px;font-weight:600;padding:2px 9px;background:#EEF2FF;color:#6366F1;border-radius:5px;text-transform:uppercase;letter-spacing:.4px">${tipo}</span>
-              <span style="font-size:10px;font-weight:600;padding:2px 9px;background:#F0F9FF;color:#0891B2;border-radius:5px;letter-spacing:.4px">Manual</span>
-            </div>
-          </div>
-          <div style="font-size:12px;color:#9AA5B4;flex-shrink:0;margin-left:12px">${fecha}</div>
-        </div>
-        ${item.descripcion ? `<div style="font-size:12px;color:#5F6B7A;margin-top:6px;line-height:1.5">${item.descripcion}</div>` : ''}
-        ${metricasHTML}
-      </div>`
-    }).join('')
-
-    const totalItems = clientPieces.length + itemsManuales.length
-    const agencyLine = agencyName ? agencyName + ' &middot; ' : ''
-    const fechaGen = new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})
+    const agencyName = document.body.dataset.agencyName || ''
 
     // ── Preparar métricas destacadas para el PDF ──
     const todasMetricas = itemsManuales.flatMap(item => {
