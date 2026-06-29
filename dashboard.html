@@ -1452,16 +1452,121 @@
         </div>
 
       </div>
-      <!-- Vista: lista de clientes -->
-      <!-- Vista: lista de clientes con reportes -->
-      <div id="rep-home" style="padding:28px 32px;max-width:900px;margin:0 auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <div>
-            <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Reportes por cliente</div>
-            <div style="font-size:12px;color:var(--ink3);margin-top:3px">Historial de piezas publicadas y métricas por cliente</div>
+      <!-- Vista: lista de clientes con reportes — REDISEÑADA -->
+      <div id="rep-home" style="padding:32px;max-width:1400px;margin:0 auto;background:#F5F7FA;min-height:100%">
+
+        <!-- Hero -->
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:20px;padding:32px 40px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(10,37,64,.04),0 16px 40px rgba(10,37,64,.05)">
+          <svg style="position:absolute;right:0;top:0;pointer-events:none" width="320" height="170" viewBox="0 0 320 170">
+            <defs>
+              <radialGradient id="rg" cx="65%" cy="35%" r="55%">
+                <stop offset="0%" stop-color="#91E8FB" stop-opacity=".15"/>
+                <stop offset="100%" stop-color="#91E8FB" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="230" cy="60" r="130" fill="url(#rg)"/>
+            <!-- Mini gráfico de barras -->
+            <rect x="180" y="90" width="14" height="50" rx="4" fill="#E8EDF3"/>
+            <rect x="200" y="70" width="14" height="70" rx="4" fill="#E8EDF3"/>
+            <rect x="220" y="55" width="14" height="85" rx="4" fill="#91E8FB" opacity=".4"/>
+            <rect x="240" y="75" width="14" height="65" rx="4" fill="#E8EDF3"/>
+            <rect x="260" y="40" width="14" height="100" rx="4" fill="#0A2540" opacity=".15"/>
+            <!-- Línea de tendencia -->
+            <polyline points="187,90 207,70 227,55 247,75 267,40" fill="none" stroke="#91E8FB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
+            <!-- Puntos -->
+            <circle cx="187" cy="90" r="3" fill="#91E8FB" opacity=".5"/>
+            <circle cx="207" cy="70" r="3" fill="#91E8FB" opacity=".5"/>
+            <circle cx="227" cy="55" r="4" fill="#91E8FB"/>
+            <circle cx="247" cy="75" r="3" fill="#91E8FB" opacity=".5"/>
+            <circle cx="267" cy="40" r="4" fill="#0A2540" opacity=".3"/>
+            <!-- Doc -->
+            <rect x="155" y="25" width="20" height="26" rx="3" fill="none" stroke="#E8EDF3" stroke-width="1.5"/>
+            <rect x="158" y="31" width="14" height="2" rx="1" fill="#E8EDF3"/>
+            <rect x="158" y="36" width="10" height="2" rx="1" fill="#E8EDF3"/>
+            <rect x="158" y="41" width="12" height="2" rx="1" fill="#E8EDF3"/>
+          </svg>
+          <div style="position:relative;z-index:1">
+            <div style="font-size:11px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Centro de reportes</div>
+            <div style="font-size:36px;font-weight:700;color:#0A2540;letter-spacing:-1px;line-height:1.1;margin-bottom:8px">Reportes</div>
+            <div style="font-size:15px;color:#5F6B7A;line-height:1.6;margin-bottom:24px;max-width:480px">Analizá qué se publicó, cómo rindió y qué decisiones tomar para el próximo mes.</div>
+            <div style="display:flex;gap:10px">
+              <button onclick="exportReportesPDF()" style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 18px;background:#fff;color:#0A2540;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
+                <i class="ti ti-download" style="font-size:14px"></i> Exportar PDF
+              </button>
+              <button onclick="openCrearInformeModal()" style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 18px;background:#0A2540;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
+                <i class="ti ti-plus" style="font-size:14px"></i> Crear informe
+              </button>
+            </div>
           </div>
         </div>
-        <div id="rep-clients-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
+
+        <!-- KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px" id="rep-home-kpis">
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px 22px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="width:36px;height:36px;border-radius:10px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <i class="ti ti-building" style="font-size:18px;color:#6366F1"></i>
+            </div>
+            <div style="font-size:28px;font-weight:700;color:#0A2540;letter-spacing:-.8px;line-height:1;margin-bottom:5px" id="rep-kpi-clientes">—</div>
+            <div style="font-size:12px;color:#8B98A9;font-weight:500">Clientes con reportes</div>
+          </div>
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px 22px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="width:36px;height:36px;border-radius:10px;background:#ECFDF5;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <i class="ti ti-photo" style="font-size:18px;color:#10B981"></i>
+            </div>
+            <div style="font-size:28px;font-weight:700;color:#0A2540;letter-spacing:-.8px;line-height:1;margin-bottom:5px" id="rep-kpi-piezas">—</div>
+            <div style="font-size:12px;color:#8B98A9;font-weight:500">Piezas publicadas</div>
+          </div>
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px 22px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="width:36px;height:36px;border-radius:10px;background:#FFFBEB;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <i class="ti ti-file-analytics" style="font-size:18px;color:#F59E0B"></i>
+            </div>
+            <div style="font-size:28px;font-weight:700;color:#0A2540;letter-spacing:-.8px;line-height:1;margin-bottom:5px" id="rep-kpi-informes">—</div>
+            <div style="font-size:12px;color:#8B98A9;font-weight:500">Reportes generados</div>
+          </div>
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px 22px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="width:36px;height:36px;border-radius:10px;background:#FFF5F5;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <i class="ti ti-clock" style="font-size:18px;color:#EF4444"></i>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#0A2540;line-height:1.2;margin-bottom:5px" id="rep-kpi-ultimo">—</div>
+            <div style="font-size:12px;color:#8B98A9;font-weight:500">Último reporte</div>
+          </div>
+        </div>
+
+        <!-- Clientes con reportes -->
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04);margin-bottom:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#0A2540;letter-spacing:-.2px">Clientes</div>
+              <div style="font-size:13px;color:#8B98A9;margin-top:2px">Historial de piezas publicadas y métricas por cliente</div>
+            </div>
+          </div>
+          <div id="rep-clients-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
+        </div>
+
+        <!-- Informes manuales recientes -->
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)" id="rep-manuales-section">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#0A2540;letter-spacing:-.2px">Informes recientes</div>
+              <div style="font-size:13px;color:#8B98A9;margin-top:2px">Informes manuales y automáticos</div>
+            </div>
+            <button onclick="openCrearInformeModal()" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;background:#0A2540;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
+              <i class="ti ti-plus" style="font-size:13px"></i> Crear informe
+            </button>
+          </div>
+          <!-- Header tabla -->
+          <div style="display:grid;grid-template-columns:1fr 120px 120px 90px 100px 80px;gap:12px;padding:8px 12px;margin-bottom:2px">
+            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Título</div>
+            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Cliente</div>
+            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Tipo</div>
+            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Mes</div>
+            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Estado</div>
+            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Origen</div>
+          </div>
+          <div id="rep-informes-list">
+            <div style="text-align:center;padding:32px 0;color:#8B98A9;font-size:13px">No hay informes todavía.</div>
+          </div>
+        </div>
       </div>
 
       <!-- Vista: detalle cliente con selector de mes y piezas -->
@@ -2551,6 +2656,88 @@
   </div>
 </div>
 
+
+
+<!-- MODAL CREAR INFORME -->
+<div class="modal-overlay" id="modal-crear-informe" onclick="if(event.target===this)closeCrearInformeModal()" style="z-index:500">
+  <div class="modal" style="max-width:660px;border-radius:20px">
+    <div class="modal-head">
+      <div class="modal-title">Crear informe</div>
+      <button class="modal-close" onclick="closeCrearInformeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;padding:24px 28px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <!-- Cliente -->
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Cliente *</label>
+          <select id="inf-cliente" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+            <option value="">Seleccionar cliente...</option>
+          </select>
+        </div>
+        <!-- Tipo -->
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Tipo de informe *</label>
+          <select id="inf-tipo" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+            <option value="mensual">Reporte mensual</option>
+            <option value="campaña">Reporte de campaña</option>
+            <option value="meta_ads">Meta Ads</option>
+            <option value="google_ads">Google Ads</option>
+            <option value="redes">Redes sociales</option>
+            <option value="auditoria">Auditoría</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </div>
+        <!-- Mes -->
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Mes</label>
+          <input type="month" id="inf-mes" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+        </div>
+        <!-- Estado -->
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Estado</label>
+          <select id="inf-estado" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+            <option value="borrador">Borrador</option>
+            <option value="listo">Listo</option>
+            <option value="publicado">Publicado</option>
+          </select>
+        </div>
+      </div>
+      <!-- Título -->
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Título *</label>
+        <input type="text" id="inf-titulo" placeholder="Ej: Reporte mensual — Junio 2026" style="width:100%;height:44px;padding:0 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+      </div>
+      <!-- Descripción -->
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Descripción</label>
+        <textarea id="inf-descripcion" placeholder="Resumen del período, logros y próximos pasos..." rows="3" style="width:100%;padding:12px 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;resize:vertical;box-sizing:border-box;transition:border-color .15s;line-height:1.5" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'"></textarea>
+      </div>
+      <!-- PDF -->
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Archivo PDF <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+        <div style="border:1px dashed #E8EDF3;border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s;background:#F8FAFC" onclick="document.getElementById('inf-pdf').click()" onmouseover="this.style.borderColor='#91E8FB'" onmouseout="this.style.borderColor='#E8EDF3'">
+          <i class="ti ti-upload" style="font-size:20px;color:#8B98A9;margin-bottom:6px;display:block"></i>
+          <div style="font-size:13px;color:#8B98A9" id="inf-pdf-label">Subir PDF</div>
+        </div>
+        <input type="file" id="inf-pdf" accept=".pdf" style="display:none" onchange="document.getElementById('inf-pdf-label').textContent=this.files[0]?.name||'Subir PDF'">
+      </div>
+      <!-- Campos personalizados -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:#0A2540">Campos personalizados</label>
+          <button onclick="agregarCampoInforme()" style="display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-weight:600;color:#0A2540;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
+            <i class="ti ti-plus" style="font-size:12px"></i> Agregar campo
+          </button>
+        </div>
+        <div id="inf-campos-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closeCrearInformeModal()">Cancelar</button>
+      <button class="tbtn primary" onclick="saveInforme()" id="btn-save-informe">Crear informe</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL EDITOR DE PIPELINE -->
 <div class="modal-overlay" id="modal-pipeline-editor" onclick="closeModalOutside(event)" style="z-index:500">
@@ -9286,6 +9473,64 @@ if (id) {
       return
     }
 
+    // ── KPIs ──
+    const kpiClientes = document.getElementById('rep-kpi-clientes')
+    const kpiPiezas = document.getElementById('rep-kpi-piezas')
+    const kpiInformes = document.getElementById('rep-kpi-informes')
+    const kpiUltimo = document.getElementById('rep-kpi-ultimo')
+    const totalClientes = Object.keys(byClient).length
+    const totalPiezas = repPieces.length
+    if (kpiClientes) kpiClientes.textContent = totalClientes
+    if (kpiPiezas) kpiPiezas.textContent = totalPiezas
+
+    const allSorted = [...repPieces].sort((a,b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion))
+    if (kpiUltimo && allSorted.length) {
+      const d = new Date(allSorted[0].fecha_publicacion)
+      kpiUltimo.textContent = `${MESES[d.getMonth()]} ${d.getFullYear()}`
+    }
+
+    // Cargar informes manuales
+    const { data: informesManuales } = await supabase
+      .from('informes')
+      .select('*, clients(nombre)')
+      .eq('agency_id', agencyId)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (kpiInformes) kpiInformes.textContent = totalClientes + (informesManuales?.length || 0)
+
+    // Renderizar informes
+    const infEl = document.getElementById('rep-informes-list')
+    if (infEl) {
+      if (!informesManuales?.length) {
+        infEl.innerHTML = '<div style="text-align:center;padding:32px 0;color:#8B98A9;font-size:13px">No hay informes todavía. Creá el primero con el botón de arriba.</div>'
+      } else {
+        const ESTADO_BADGE = {
+          borrador: { bg: '#F5F7FA', color: '#8B98A9', label: 'Borrador' },
+          listo:    { bg: '#ECFDF5', color: '#16A34A', label: 'Listo' },
+          publicado:{ bg: '#EEF2FF', color: '#6366F1', label: 'Publicado' },
+        }
+        const TIPO_LABELS = {
+          mensual:'Mensual', campaña:'Campaña', meta_ads:'Meta Ads',
+          google_ads:'Google Ads', redes:'Redes', auditoria:'Auditoría', personalizado:'Personalizado'
+        }
+        infEl.innerHTML = informesManuales.map((inf, i) => {
+          const est = ESTADO_BADGE[inf.estado] || ESTADO_BADGE.borrador
+          const borderBottom = i < informesManuales.length - 1 ? 'border-bottom:1px solid #F0F3F7;' : ''
+          const mes = inf.mes ? new Date(inf.mes + '-01').toLocaleDateString('es-AR', { month: 'short', year: 'numeric' }) : '—'
+          return `<div style="display:grid;grid-template-columns:1fr 120px 120px 90px 100px 80px;gap:12px;padding:12px;align-items:center;${borderBottom}border-radius:8px;transition:background .15s" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+            <div style="font-size:13px;font-weight:600;color:#0A2540;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${inf.titulo}</div>
+            <div style="font-size:12px;color:#5F6B7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${inf.clients?.nombre || '—'}</div>
+            <div style="font-size:12px;color:#5F6B7A">${TIPO_LABELS[inf.tipo] || inf.tipo}</div>
+            <div style="font-size:12px;color:#8B98A9">${mes}</div>
+            <span style="padding:3px 10px;border-radius:999px;background:${est.bg};color:${est.color};font-size:11px;font-weight:700;width:fit-content">${est.label}</span>
+            <span style="padding:3px 10px;border-radius:999px;background:#F5F7FA;color:#8B98A9;font-size:11px;font-weight:700;width:fit-content">Manual</span>
+          </div>`
+        }).join('')
+      }
+    }
+
+    // ── Cards de clientes ──
     el.innerHTML = Object.entries(byClient).map(([clientId, { client, pieces }]) => {
       const now = new Date()
       const thisMonth = pieces.filter(p => {
@@ -9299,29 +9544,29 @@ if (id) {
       const col = getAvColor(client?.nombre || '?')
       const ini = initials(client?.nombre || '?')
 
-      return `<div onclick="repOpenClient('${clientId}')" style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:box-shadow var(--t),border-color var(--t),transform var(--t)" onmouseover="this.style.boxShadow='var(--shadow)';this.style.borderColor='#D0DCE8';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='';this.style.borderColor='var(--border)';this.style.transform=''">
-        <div style="background:var(--azul);padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
+      return `<div onclick="repOpenClient('${clientId}')" style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(10,37,64,.04)" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(10,37,64,.1)';this.style.borderColor='#D1D9E6'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(10,37,64,.04)';this.style.borderColor='#E8EDF3'">
+        <div style="background:linear-gradient(135deg,#0A2540,#0F3060);padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:38px;height:38px;border-radius:10px;background:${col.bg};color:${col.color};font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+            <div style="width:38px;height:38px;border-radius:10px;background:${col.bg};color:${col.color};font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
             <div>
-              <div style="font-size:14px;font-weight:900;color:#fff;letter-spacing:-.2px">${client?.nombre || 'Cliente'}</div>
-              <div style="font-size:11px;color:rgba(142,219,255,.6);margin-top:1px">${client?.industria || ''}</div>
+              <div style="font-size:14px;font-weight:700;color:#fff;letter-spacing:-.2px">${client?.nombre || 'Cliente'}</div>
+              <div style="font-size:11px;color:rgba(145,232,251,.5);margin-top:1px">${client?.industria || ''}</div>
             </div>
           </div>
-          ${thisMonth.length > 0 ? `<span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(142,219,255,.15);color:var(--celeste)">Este mes ✓</span>` : ''}
+          ${thisMonth.length > 0 ? '<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(145,232,251,.15);color:#91E8FB">Este mes ✓</span>' : ''}
         </div>
-        <div style="padding:14px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
+        <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
           <div style="text-align:center;padding:8px 0">
-            <div style="font-size:20px;font-weight:900;color:var(--ink);letter-spacing:-.5px">${pieces.length}</div>
-            <div style="font-size:10px;color:var(--ink3);margin-top:2px">Piezas</div>
+            <div style="font-size:22px;font-weight:700;color:#0A2540;letter-spacing:-.5px">${pieces.length}</div>
+            <div style="font-size:10px;color:#8B98A9;margin-top:2px;font-weight:500">Piezas</div>
           </div>
-          <div style="text-align:center;padding:8px 0;border-left:1px solid var(--border);border-right:1px solid var(--border)">
-            <div style="font-size:20px;font-weight:900;color:var(--ink);letter-spacing:-.5px">${meses}</div>
-            <div style="font-size:10px;color:var(--ink3);margin-top:2px">Meses</div>
+          <div style="text-align:center;padding:8px 0;border-left:1px solid #E8EDF3;border-right:1px solid #E8EDF3">
+            <div style="font-size:22px;font-weight:700;color:#0A2540;letter-spacing:-.5px">${meses}</div>
+            <div style="font-size:10px;color:#8B98A9;margin-top:2px;font-weight:500">Meses</div>
           </div>
           <div style="text-align:center;padding:8px 0">
-            <div style="font-size:12px;font-weight:800;color:var(--ink)">${lastLabel}</div>
-            <div style="font-size:10px;color:var(--ink3);margin-top:2px">Último</div>
+            <div style="font-size:12px;font-weight:700;color:#0A2540">${lastLabel}</div>
+            <div style="font-size:10px;color:#8B98A9;margin-top:2px;font-weight:500">Último</div>
           </div>
         </div>
       </div>`
@@ -11749,6 +11994,101 @@ if (id) {
     // Recargar stages y pipeline
     await loadCrmContacts()
     renderCrmPipeline()
+  }
+
+
+  // ══════════════════════════════════════
+  // CREAR INFORME MANUAL
+  // ══════════════════════════════════════
+
+  window.openCrearInformeModal = async function(presets = {}) {
+    // Poblar clientes
+    const sel = document.getElementById('inf-cliente')
+    if (sel && sel.options.length <= 1) {
+      const { data: clientes } = await supabase
+        .from('clients')
+        .select('id, nombre')
+        .eq('agency_id', agencyId)
+        .order('nombre')
+      if (clientes) {
+        clientes.forEach(c => {
+          const opt = document.createElement('option')
+          opt.value = c.id
+          opt.textContent = c.nombre
+          sel.appendChild(opt)
+        })
+      }
+    }
+    // Presets desde plantillas
+    if (presets.tipo) document.getElementById('inf-tipo').value = presets.tipo
+    if (presets.titulo) document.getElementById('inf-titulo').value = presets.titulo
+    // Mes por defecto = mes actual
+    const now = new Date()
+    document.getElementById('inf-mes').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
+    // Limpiar campos
+    document.getElementById('inf-descripcion').value = ''
+    document.getElementById('inf-campos-list').innerHTML = ''
+    document.getElementById('inf-pdf-label').textContent = 'Subir PDF'
+    document.getElementById('modal-crear-informe').classList.add('show')
+  }
+
+  window.closeCrearInformeModal = function() {
+    document.getElementById('modal-crear-informe').classList.remove('show')
+  }
+
+  window.agregarCampoInforme = function() {
+    const list = document.getElementById('inf-campos-list')
+    const idx = list.children.length
+    const row = document.createElement('div')
+    row.style.cssText = 'display:flex;gap:8px;align-items:center'
+    row.innerHTML = `<input type="text" placeholder="Nombre (ej: ROAS)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="inf-campo-nombre">
+      <input type="text" placeholder="Valor (ej: 4.8)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="inf-campo-valor">
+      <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+    list.appendChild(row)
+  }
+
+  window.saveInforme = async function() {
+    const titulo = document.getElementById('inf-titulo').value.trim()
+    const clienteId = document.getElementById('inf-cliente').value
+    const tipo = document.getElementById('inf-tipo').value
+    if (!titulo) { showToast('El título es requerido'); return }
+    if (!clienteId) { showToast('Seleccioná un cliente'); return }
+
+    const btn = document.getElementById('btn-save-informe')
+    btn.disabled = true; btn.textContent = 'Creando...'
+
+    // Campos personalizados
+    const campos = {}
+    document.querySelectorAll('#inf-campos-list > div').forEach(row => {
+      const nombre = row.querySelector('.inf-campo-nombre')?.value.trim()
+      const valor = row.querySelector('.inf-campo-valor')?.value.trim()
+      if (nombre) campos[nombre] = valor || ''
+    })
+
+    const { error } = await supabase.from('informes').insert({
+      agency_id: agencyId,
+      client_id: clienteId,
+      titulo,
+      tipo,
+      mes: document.getElementById('inf-mes').value || null,
+      descripcion: document.getElementById('inf-descripcion').value.trim() || null,
+      estado: document.getElementById('inf-estado').value,
+      campos_personalizados: Object.keys(campos).length ? campos : null,
+      created_by: currentUserId,
+      origen: 'manual'
+    })
+
+    btn.disabled = false; btn.textContent = 'Crear informe'
+
+    if (error) { showToast('Error al crear el informe: ' + error.message); return }
+
+    closeCrearInformeModal()
+    showToast('✓ Informe creado correctamente')
+    renderReportes()
+  }
+
+  window.exportReportesPDF = function() {
+    showToast('Función de exportación próximamente')
   }
 
   init()
