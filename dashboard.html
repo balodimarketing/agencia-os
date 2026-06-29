@@ -2667,30 +2667,16 @@
         <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Descripción</label>
         <textarea id="item-descripcion" placeholder="Descripción breve del ítem..." rows="2" style="width:100%;padding:12px 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;resize:vertical;box-sizing:border-box;transition:border-color .15s;line-height:1.5" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'"></textarea>
       </div>
-      <!-- Métricas -->
+      <!-- Métricas / campos personalizados -->
       <div>
-        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:10px">Métricas <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
-          <div>
-            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Alcance</div>
-            <input type="number" id="item-visitas" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-          </div>
-          <div>
-            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Likes</div>
-            <input type="number" id="item-likes" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-          </div>
-          <div>
-            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Comentarios</div>
-            <input type="number" id="item-comentarios" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-          </div>
-          <div>
-            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Compartidos</div>
-            <input type="number" id="item-compartidos" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-          </div>
-          <div>
-            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Reposteos</div>
-            <input type="number" id="item-reposteos" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-          </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <label style="font-size:12px;font-weight:700;color:#0A2540">Métricas <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+          <button onclick="agregarMetricaItem()" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:7px;font-size:11px;font-weight:600;color:#0A2540;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
+            <i class="ti ti-plus" style="font-size:11px"></i> Agregar métrica
+          </button>
+        </div>
+        <div id="item-metricas-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:#8B98A9;padding:8px 0">Agregá las métricas que necesites: ROAS, CAC, Alcance, Likes, Conversiones, etc.</div>
         </div>
       </div>
     </div>
@@ -9412,17 +9398,28 @@ if (id) {
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
   async function renderReportes() {
-    const { data: piezas } = await supabase
-      .from('content_pieces')
-      .select('*, clients(nombre, industria)')
-      .eq('agency_id', agencyId)
-      .in('estado', ['publicado', 'programado'])
-      .not('fecha_publicacion', 'is', null)
-      .order('fecha_publicacion', { ascending: false })
+    // Cargar TODOS los clientes y las piezas en paralelo
+    const [{ data: piezas }, { data: todosClientes }] = await Promise.all([
+      supabase.from('content_pieces')
+        .select('*, clients(nombre, industria)')
+        .eq('agency_id', agencyId)
+        .in('estado', ['publicado', 'programado'])
+        .not('fecha_publicacion', 'is', null)
+        .order('fecha_publicacion', { ascending: false }),
+      supabase.from('clients')
+        .select('id, nombre, industria')
+        .eq('agency_id', agencyId)
+        .order('nombre', { ascending: true })
+    ])
 
     repPieces = piezas || []
 
+    // Construir byClient desde TODOS los clientes, no solo los con piezas
     const byClient = {}
+    ;(todosClientes || []).forEach(c => {
+      byClient[c.id] = { client: c, pieces: [] }
+    })
+    // Agregar piezas a los clientes correspondientes
     repPieces.forEach(p => {
       if (!p.client_id) return
       if (!byClient[p.client_id]) byClient[p.client_id] = { client: p.clients, pieces: [] }
@@ -9433,7 +9430,7 @@ if (id) {
     if (!el) return
 
     if (!Object.keys(byClient).length) {
-      el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 0;color:var(--ink3);font-size:13px">No hay piezas publicadas con fecha asignada todavía.</div>'
+      el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 0;color:#8B98A9;font-size:13px">No hay clientes todavía. Creá uno en Cuentas para empezar.</div>'
       return
     }
 
@@ -9455,6 +9452,9 @@ if (id) {
 
     if (kpiInformes) kpiInformes.textContent = totalClientes
 
+    // Guardar referencia global para repOpenClient
+    window._repByClient = byClient
+
     // ── Cards de clientes ──
     el.innerHTML = Object.entries(byClient).map(([clientId, { client, pieces }]) => {
       const now = new Date()
@@ -9462,10 +9462,11 @@ if (id) {
         const d = new Date(p.fecha_publicacion)
         return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
       })
-      const sorted = [...pieces].sort((a,b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion))
-      const lastDate = new Date(sorted[0].fecha_publicacion)
-      const lastLabel = `${MESES[lastDate.getMonth()]} ${lastDate.getFullYear()}`
-      const meses = [...new Set(pieces.map(p => { const d = new Date(p.fecha_publicacion); return `${d.getFullYear()}-${d.getMonth()}` }))].length
+      const hasPieces = pieces.length > 0
+      const sorted = hasPieces ? [...pieces].sort((a,b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion)) : []
+      const lastDate = hasPieces ? new Date(sorted[0].fecha_publicacion) : null
+      const lastLabel = lastDate ? `${MESES[lastDate.getMonth()]} ${lastDate.getFullYear()}` : '—'
+      const meses = hasPieces ? [...new Set(pieces.map(p => { const d = new Date(p.fecha_publicacion); return `${d.getFullYear()}-${d.getMonth()}` }))].length : 0
       const col = getAvColor(client?.nombre || '?')
       const ini = initials(client?.nombre || '?')
 
@@ -9478,7 +9479,7 @@ if (id) {
               <div style="font-size:11px;color:rgba(145,232,251,.5);margin-top:1px">${client?.industria || ''}</div>
             </div>
           </div>
-          ${thisMonth.length > 0 ? '<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(145,232,251,.15);color:#91E8FB">Este mes ✓</span>' : ''}
+          ${thisMonth.length > 0 ? '<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(145,232,251,.15);color:#91E8FB">Este mes ✓</span>' : !hasPieces ? '<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.4)">Sin reportes</span>' : ''}
         </div>
         <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
           <div style="text-align:center;padding:8px 0">
@@ -9490,7 +9491,7 @@ if (id) {
             <div style="font-size:10px;color:#8B98A9;margin-top:2px;font-weight:500">Meses</div>
           </div>
           <div style="text-align:center;padding:8px 0">
-            <div style="font-size:12px;font-weight:700;color:#0A2540">${lastLabel}</div>
+            <div style="font-size:12px;font-weight:700;color:${hasPieces ? '#0A2540' : '#8B98A9'}">${lastLabel}</div>
             <div style="font-size:10px;color:#8B98A9;margin-top:2px;font-weight:500">Último</div>
           </div>
         </div>
@@ -9500,22 +9501,31 @@ if (id) {
 
   window.repOpenClient = function(clientId) {
     const clientPieces = repPieces.filter(p => p.client_id === clientId)
-    repCurrentClient = { ...clientPieces[0]?.clients, id: clientId }
+
+    // Buscar datos del cliente desde byClient o desde las piezas
+    const clientData = clientPieces[0]?.clients ||
+      Object.values(window._repByClient || {}).find(v => v.client?.id === clientId)?.client ||
+      { id: clientId, nombre: 'Cliente', industria: '' }
+    repCurrentClient = { ...clientData, id: clientId }
 
     const col = getAvColor(repCurrentClient?.nombre || '?')
     const ini = initials(repCurrentClient?.nombre || '?')
 
     document.getElementById('rep-client-header').innerHTML = `
-      <div style="background:var(--azul);border-radius:var(--r-lg);padding:20px 24px;display:flex;align-items:center;gap:14px">
-        <div style="width:44px;height:44px;border-radius:12px;background:${col.bg};color:${col.color};font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+      <div style="background:linear-gradient(135deg,#0A2540,#0F3060);border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;border-radius:12px;background:${col.bg};color:${col.color};font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
         <div>
-          <div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:-.3px">${repCurrentClient?.nombre || 'Cliente'}</div>
-          <div style="font-size:12px;color:rgba(142,219,255,.6);margin-top:2px">${clientPieces.length} piezas · ${repCurrentClient?.industria || ''}</div>
+          <div style="font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px">${repCurrentClient?.nombre || 'Cliente'}</div>
+          <div style="font-size:12px;color:rgba(145,232,251,.5);margin-top:2px">${clientPieces.length} piezas automáticas · ${repCurrentClient?.industria || ''}</div>
         </div>
       </div>`
 
-    // Agrupar por mes
+    // Agrupar por mes — incluir siempre el mes actual
     const byMonth = {}
+    const now = new Date()
+    const currentKey = `${now.getFullYear()}-${now.getMonth()}`
+    byMonth[currentKey] = { year: now.getFullYear(), month: now.getMonth(), pieces: [] }
+
     clientPieces.forEach(p => {
       const d = new Date(p.fecha_publicacion)
       const key = `${d.getFullYear()}-${d.getMonth()}`
@@ -9531,13 +9541,12 @@ if (id) {
       const { year, month } = byMonth[key]
       const label = `${MESES[month]} ${year}`
       const isActive = key === firstKey
-      return `<button onclick="repSelectMonth('${key}')" id="rep-month-btn-${key}" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:all var(--t);border:1.5px solid ${isActive ? 'var(--azul)' : 'var(--border)'};background:${isActive ? 'var(--azul)' : 'transparent'};color:${isActive ? '#fff' : 'var(--ink3)'}">${label}</button>`
+      return `<button onclick="repSelectMonth('${key}')" id="rep-month-btn-${key}" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all var(--t);border:1.5px solid ${isActive ? 'var(--azul)' : 'var(--border)'};background:${isActive ? 'var(--azul)' : 'transparent'};color:${isActive ? '#fff' : 'var(--ink3)'}">${label}</button>`
     }).join('')
 
     document.getElementById('rep-home').style.display = 'none'
     document.getElementById('rep-months').style.display = 'block'
 
-    // Cargar el mes más reciente por defecto
     repSelectMonth(firstKey)
   }
 
@@ -9623,13 +9632,10 @@ if (id) {
     const itemsHTML = repItemsManuales.map(item => {
       const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : '—'
       const m = item.metricas || {}
-      const hasStats = m.visitas || m.likes || m.comentarios || m.compartidos || m.reposteos
+      const metricEntries = Object.entries(m)
+      const hasStats = metricEntries.length > 0
       const statsRow = hasStats ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-        ${m.visitas ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-eye" style="font-size:13px;color:var(--ink3)"></i>${Number(m.visitas).toLocaleString('es-AR')}</div>` : ''}
-        ${m.likes ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-heart" style="font-size:13px;color:var(--danger)"></i>${Number(m.likes).toLocaleString('es-AR')}</div>` : ''}
-        ${m.comentarios ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-message" style="font-size:13px;color:var(--ink3)"></i>${Number(m.comentarios).toLocaleString('es-AR')}</div>` : ''}
-        ${m.compartidos ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-share" style="font-size:13px;color:var(--ink3)"></i>${Number(m.compartidos).toLocaleString('es-AR')}</div>` : ''}
-        ${m.reposteos ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-repeat" style="font-size:13px;color:var(--ink3)"></i>${Number(m.reposteos).toLocaleString('es-AR')}</div>` : ''}
+        ${metricEntries.map(([k,v]) => `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2);background:var(--bg);padding:3px 8px;border-radius:6px"><span style="color:var(--ink3);font-weight:500">${k}:</span>${v}</div>`).join('')}
       </div>` : ''
       return `<div style="background:var(--white);border:1.5px solid #E8EDF3;border-left:4px solid #91E8FB;border-radius:var(--r-lg);overflow:hidden;display:flex">
         <div style="width:80px;flex-shrink:0;background:#F5F7FA;display:flex;align-items:center;justify-content:center">
@@ -11797,20 +11803,28 @@ if (id) {
   // ÍTEMS MANUALES DE REPORTE
   // ══════════════════════════════════════
 
+  window.agregarMetricaItem = function() {
+    const list = document.getElementById('item-metricas-list')
+    // Quitar el texto placeholder si existe
+    const placeholder = list.querySelector('[data-placeholder]')
+    if (placeholder) placeholder.remove()
+    const row = document.createElement('div')
+    row.style.cssText = 'display:flex;gap:8px;align-items:center'
+    row.innerHTML = `<input type="text" placeholder="Nombre (ej: ROAS)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
+      <input type="text" placeholder="Valor (ej: 4.8)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
+      <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+    list.appendChild(row)
+  }
+
   window.openAgregarItemModal = function() {
     document.getElementById('modal-item-title').textContent = 'Agregar ítem al reporte'
     document.getElementById('item-edit-id').value = ''
     document.getElementById('item-tipo').value = 'publicacion'
     document.getElementById('item-titulo').value = ''
     document.getElementById('item-descripcion').value = ''
-    document.getElementById('item-visitas').value = ''
-    document.getElementById('item-likes').value = ''
-    document.getElementById('item-comentarios').value = ''
-    document.getElementById('item-compartidos').value = ''
-    document.getElementById('item-reposteos').value = ''
-    // Fecha por defecto = hoy
     const now = new Date()
     document.getElementById('item-fecha').value = now.toISOString().slice(0,10)
+    document.getElementById('item-metricas-list').innerHTML = '<div style="font-size:12px;color:#8B98A9;padding:8px 0" data-placeholder>Agregá las métricas que necesites: ROAS, CAC, Alcance, Likes, Conversiones, etc.</div>'
     document.getElementById('btn-delete-item').style.display = 'none'
     document.getElementById('modal-agregar-item').classList.add('show')
   }
@@ -11824,12 +11838,23 @@ if (id) {
     document.getElementById('item-titulo').value = item.titulo || ''
     document.getElementById('item-descripcion').value = item.descripcion || ''
     document.getElementById('item-fecha').value = item.fecha || ''
+    // Cargar métricas personalizadas
+    const list = document.getElementById('item-metricas-list')
+    list.innerHTML = ''
     const m = item.metricas || {}
-    document.getElementById('item-visitas').value = m.visitas || ''
-    document.getElementById('item-likes').value = m.likes || ''
-    document.getElementById('item-comentarios').value = m.comentarios || ''
-    document.getElementById('item-compartidos').value = m.compartidos || ''
-    document.getElementById('item-reposteos').value = m.reposteos || ''
+    const entries = Object.entries(m)
+    if (entries.length) {
+      entries.forEach(([nombre, valor]) => {
+        const row = document.createElement('div')
+        row.style.cssText = 'display:flex;gap:8px;align-items:center'
+        row.innerHTML = `<input type="text" value="${nombre}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
+          <input type="text" value="${valor}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
+          <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+        list.appendChild(row)
+      })
+    } else {
+      list.innerHTML = '<div style="font-size:12px;color:#8B98A9;padding:8px 0" data-placeholder>Agregá las métricas que necesites.</div>'
+    }
     document.getElementById('btn-delete-item').style.display = 'block'
     document.getElementById('modal-agregar-item').classList.add('show')
   }
@@ -11846,15 +11871,13 @@ if (id) {
     const btn = document.getElementById('btn-save-item')
     btn.disabled = true; btn.textContent = 'Guardando...'
 
-    const metricas = {
-      visitas:     parseInt(document.getElementById('item-visitas').value) || 0,
-      likes:       parseInt(document.getElementById('item-likes').value) || 0,
-      comentarios: parseInt(document.getElementById('item-comentarios').value) || 0,
-      compartidos: parseInt(document.getElementById('item-compartidos').value) || 0,
-      reposteos:   parseInt(document.getElementById('item-reposteos').value) || 0,
-    }
-    // Solo guardar métricas con valor
-    const metricasFiltradas = Object.fromEntries(Object.entries(metricas).filter(([,v]) => v > 0))
+    // Leer métricas personalizadas
+    const metricasFiltradas = {}
+    document.querySelectorAll('#item-metricas-list > div:not([data-placeholder])').forEach(row => {
+      const nombre = row.querySelector('.item-metrica-nombre')?.value.trim()
+      const valor = row.querySelector('.item-metrica-valor')?.value.trim()
+      if (nombre && valor) metricasFiltradas[nombre] = valor
+    })
 
     const payload = {
       agency_id: agencyId,
@@ -12096,20 +12119,28 @@ if (id) {
   // ÍTEMS MANUALES DE REPORTE
   // ══════════════════════════════════════
 
+  window.agregarMetricaItem = function() {
+    const list = document.getElementById('item-metricas-list')
+    // Quitar el texto placeholder si existe
+    const placeholder = list.querySelector('[data-placeholder]')
+    if (placeholder) placeholder.remove()
+    const row = document.createElement('div')
+    row.style.cssText = 'display:flex;gap:8px;align-items:center'
+    row.innerHTML = `<input type="text" placeholder="Nombre (ej: ROAS)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
+      <input type="text" placeholder="Valor (ej: 4.8)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
+      <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+    list.appendChild(row)
+  }
+
   window.openAgregarItemModal = function() {
     document.getElementById('modal-item-title').textContent = 'Agregar ítem al reporte'
     document.getElementById('item-edit-id').value = ''
     document.getElementById('item-tipo').value = 'publicacion'
     document.getElementById('item-titulo').value = ''
     document.getElementById('item-descripcion').value = ''
-    document.getElementById('item-visitas').value = ''
-    document.getElementById('item-likes').value = ''
-    document.getElementById('item-comentarios').value = ''
-    document.getElementById('item-compartidos').value = ''
-    document.getElementById('item-reposteos').value = ''
-    // Fecha por defecto = hoy
     const now = new Date()
     document.getElementById('item-fecha').value = now.toISOString().slice(0,10)
+    document.getElementById('item-metricas-list').innerHTML = '<div style="font-size:12px;color:#8B98A9;padding:8px 0" data-placeholder>Agregá las métricas que necesites: ROAS, CAC, Alcance, Likes, Conversiones, etc.</div>'
     document.getElementById('btn-delete-item').style.display = 'none'
     document.getElementById('modal-agregar-item').classList.add('show')
   }
@@ -12123,12 +12154,23 @@ if (id) {
     document.getElementById('item-titulo').value = item.titulo || ''
     document.getElementById('item-descripcion').value = item.descripcion || ''
     document.getElementById('item-fecha').value = item.fecha || ''
+    // Cargar métricas personalizadas
+    const list = document.getElementById('item-metricas-list')
+    list.innerHTML = ''
     const m = item.metricas || {}
-    document.getElementById('item-visitas').value = m.visitas || ''
-    document.getElementById('item-likes').value = m.likes || ''
-    document.getElementById('item-comentarios').value = m.comentarios || ''
-    document.getElementById('item-compartidos').value = m.compartidos || ''
-    document.getElementById('item-reposteos').value = m.reposteos || ''
+    const entries = Object.entries(m)
+    if (entries.length) {
+      entries.forEach(([nombre, valor]) => {
+        const row = document.createElement('div')
+        row.style.cssText = 'display:flex;gap:8px;align-items:center'
+        row.innerHTML = `<input type="text" value="${nombre}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
+          <input type="text" value="${valor}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
+          <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+        list.appendChild(row)
+      })
+    } else {
+      list.innerHTML = '<div style="font-size:12px;color:#8B98A9;padding:8px 0" data-placeholder>Agregá las métricas que necesites.</div>'
+    }
     document.getElementById('btn-delete-item').style.display = 'block'
     document.getElementById('modal-agregar-item').classList.add('show')
   }
@@ -12145,15 +12187,13 @@ if (id) {
     const btn = document.getElementById('btn-save-item')
     btn.disabled = true; btn.textContent = 'Guardando...'
 
-    const metricas = {
-      visitas:     parseInt(document.getElementById('item-visitas').value) || 0,
-      likes:       parseInt(document.getElementById('item-likes').value) || 0,
-      comentarios: parseInt(document.getElementById('item-comentarios').value) || 0,
-      compartidos: parseInt(document.getElementById('item-compartidos').value) || 0,
-      reposteos:   parseInt(document.getElementById('item-reposteos').value) || 0,
-    }
-    // Solo guardar métricas con valor
-    const metricasFiltradas = Object.fromEntries(Object.entries(metricas).filter(([,v]) => v > 0))
+    // Leer métricas personalizadas
+    const metricasFiltradas = {}
+    document.querySelectorAll('#item-metricas-list > div:not([data-placeholder])').forEach(row => {
+      const nombre = row.querySelector('.item-metrica-nombre')?.value.trim()
+      const valor = row.querySelector('.item-metrica-valor')?.value.trim()
+      if (nombre && valor) metricasFiltradas[nombre] = valor
+    })
 
     const payload = {
       agency_id: agencyId,
