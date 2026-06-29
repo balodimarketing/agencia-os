@@ -9645,8 +9645,12 @@ if (id) {
     const [year, month] = monthKey.split('-').map(Number)
     repCurrentMonth = { year, month, label: `${MESES[month]} ${year}` }
 
+    // Usar el id del cliente actual — capturado en el momento de la llamada
+    const activeClientId = repCurrentClient?.id
+    if (!activeClientId) return
+
     const clientPieces = repPieces.filter(p => {
-      if (p.client_id !== repCurrentClient.id) return false
+      if (p.client_id !== activeClientId) return false
       const d = new Date(p.fecha_publicacion)
       return d.getFullYear() === year && d.getMonth() === month
     }).sort((a,b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
@@ -9695,7 +9699,7 @@ if (id) {
         </div>
       </div>`
 
-    await renderRepPieces(clientPieces)
+    await renderRepPieces(clientPieces, activeClientId)
   }
 
   window.repGoHome = function() {
@@ -9707,16 +9711,19 @@ if (id) {
 
   window.repGoMonths = function() { repGoHome() }
 
-  async function renderRepPieces(pieces) {
+  async function renderRepPieces(pieces, clientIdOverride) {
     const el = document.getElementById('rep-pieces-list')
     if (!el) return
+    // Siempre usar el clientId pasado explícitamente — nunca confiar en la variable global
+    const clientIdToUse = clientIdOverride || repCurrentClient?.id
+    if (!clientIdToUse) return
 
-    // Cargar ítems manuales del mes actual
+    // Cargar ítems manuales del mes actual — filtrado estricto por clientIdToUse
     const { data: itemsManuales } = await supabase
       .from('reporte_items')
       .select('*')
       .eq('agency_id', agencyId)
-      .eq('client_id', repCurrentClient?.id)
+      .eq('client_id', clientIdToUse)
       .eq('mes_year', repCurrentMonth?.year)
       .eq('mes_month', repCurrentMonth?.month)
       .order('fecha', { ascending: true })
@@ -9961,7 +9968,7 @@ if (id) {
       const d = new Date(p.fecha_publicacion)
       return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
-    renderRepPieces(clientPieces)
+    renderRepPieces(clientPieces, repCurrentClient?.id)
   }
 
   window.downloadReport = async function() {
@@ -12152,7 +12159,7 @@ if (id) {
       const d = new Date(p.fecha_publicacion)
       return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
-    await renderRepPieces(clientPieces)
+    await renderRepPieces(clientPieces, repCurrentClient?.id)
   }
 
   // ══════════════════════════════════════
@@ -12275,7 +12282,7 @@ if (id) {
       const d = new Date(p.fecha_publicacion)
       return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
-    await renderRepPieces(clientPieces)
+    await renderRepPieces(clientPieces, repCurrentClient?.id)
   }
 
   window.deleteReporteItem = async function() {
@@ -12290,7 +12297,7 @@ if (id) {
       const d = new Date(p.fecha_publicacion)
       return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
-    await renderRepPieces(clientPieces)
+    await renderRepPieces(clientPieces, repCurrentClient?.id)
   }
 
   // ══════════════════════════════════════
@@ -12523,7 +12530,7 @@ if (id) {
       const d = new Date(p.fecha_publicacion)
       return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
     }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
-    await renderRepPieces(clientPieces)
+    await renderRepPieces(clientPieces, repCurrentClient?.id)
   }
 
   // ══════════════════════════════════════
