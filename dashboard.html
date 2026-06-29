@@ -1550,9 +1550,12 @@
         <div id="rep-client-header" style="margin-bottom:20px"></div>
 
         <!-- Selector de mes -->
-        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:16px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
-          <div style="font-size:13px;font-weight:600;color:#5F6B7A;flex-shrink:0">Mes:</div>
-          <div id="rep-month-selector" style="display:flex;gap:8px;flex-wrap:wrap;flex:1"></div>
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:14px 24px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <i class="ti ti-calendar" style="font-size:16px;color:#8B98A9"></i>
+            <span style="font-size:13px;font-weight:600;color:#5F6B7A">Mes:</span>
+          </div>
+          <select id="rep-month-selector" onchange="repSelectMonth(this.value)" style="height:40px;padding:0 36px 0 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;color:#0A2540;background:#F5F7FA;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B98A9' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;transition:border-color .15s" onfocus="this.style.borderColor='#0A2540'" onblur="this.style.borderColor='#E8EDF3'"></select>
         </div>
 
         <!-- KPIs -->
@@ -9637,12 +9640,12 @@ if (id) {
     const monthKeys = Object.keys(byMonth).sort((a,b) => b.localeCompare(a))
     const firstKey = monthKeys[0]
 
-    // Renderizar selector de meses
-    document.getElementById('rep-month-selector').innerHTML = monthKeys.map(key => {
+    // Renderizar selector de meses como dropdown
+    const selectorEl = document.getElementById('rep-month-selector')
+    selectorEl.innerHTML = monthKeys.map(key => {
       const { year, month } = byMonth[key]
       const label = `${MESES[month]} ${year}`
-      const isActive = key === firstKey
-      return `<button onclick="repSelectMonth('${key}')" id="rep-month-btn-${key}" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all var(--t);border:1.5px solid ${isActive ? 'var(--azul)' : 'var(--border)'};background:${isActive ? 'var(--azul)' : 'transparent'};color:${isActive ? '#fff' : 'var(--ink3)'}">${label}</button>`
+      return `<option value="${key}" ${key === firstKey ? 'selected' : ''}>${label}</option>`
     }).join('')
 
     document.getElementById('rep-home').style.display = 'none'
@@ -9652,13 +9655,9 @@ if (id) {
   }
 
   window.repSelectMonth = async function(monthKey) {
-    // Actualizar pills
-    document.querySelectorAll('[id^="rep-month-btn-"]').forEach(btn => {
-      const active = btn.id === `rep-month-btn-${monthKey}`
-      btn.style.border = active ? '1.5px solid var(--azul)' : '1.5px solid var(--border)'
-      btn.style.background = active ? 'var(--azul)' : 'transparent'
-      btn.style.color = active ? '#fff' : 'var(--ink3)'
-    })
+    // Sincronizar el dropdown con el mes seleccionado
+    const sel = document.getElementById('rep-month-selector')
+    if (sel) sel.value = monthKey
 
     const [year, month] = monthKey.split('-').map(Number)
     repCurrentMonth = { year, month, label: `${MESES[month]} ${year}` }
