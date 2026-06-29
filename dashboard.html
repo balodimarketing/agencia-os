@@ -9610,7 +9610,7 @@ if (id) {
         </div>
       </div>`
 
-    // Agrupar por mes — incluir siempre el mes actual
+    // Agrupar por mes — incluir mes actual + meses de piezas + meses de ítems manuales
     const byMonth = {}
     const now = new Date()
     const currentKey = `${now.getFullYear()}-${now.getMonth()}`
@@ -9621,6 +9621,17 @@ if (id) {
       const key = `${d.getFullYear()}-${d.getMonth()}`
       if (!byMonth[key]) byMonth[key] = { year: d.getFullYear(), month: d.getMonth(), pieces: [] }
       byMonth[key].pieces.push(p)
+    })
+
+    // Agregar meses de ítems manuales existentes para este cliente
+    const { data: mesesManuales } = await supabase
+      .from('reporte_items')
+      .select('mes_year, mes_month')
+      .eq('agency_id', agencyId)
+      .eq('client_id', clientId)
+    ;(mesesManuales || []).forEach(item => {
+      const key = `${item.mes_year}-${item.mes_month}`
+      if (!byMonth[key]) byMonth[key] = { year: item.mes_year, month: item.mes_month, pieces: [] }
     })
 
     const monthKeys = Object.keys(byMonth).sort((a,b) => b.localeCompare(a))
@@ -12260,15 +12271,25 @@ if (id) {
       if (nombre && valor) metricasFiltradas.push({ nombre, valor, destacado })
     })
 
+    // Usar la fecha del ítem para determinar el mes — si no hay fecha, usar el mes activo
+    const itemFecha = document.getElementById('item-fecha').value
+    let itemMesYear = repCurrentMonth.year
+    let itemMesMonth = repCurrentMonth.month
+    if (itemFecha) {
+      const d = new Date(itemFecha + 'T12:00:00')
+      itemMesYear = d.getFullYear()
+      itemMesMonth = d.getMonth()
+    }
+
     const payload = {
       agency_id: agencyId,
       client_id: repCurrentClient.id,
-      mes_year: repCurrentMonth.year,
-      mes_month: repCurrentMonth.month,
+      mes_year: itemMesYear,
+      mes_month: itemMesMonth,
       tipo: document.getElementById('item-tipo').value,
       titulo,
       descripcion: document.getElementById('item-descripcion').value.trim() || null,
-      fecha: document.getElementById('item-fecha').value || null,
+      fecha: itemFecha || null,
       metricas: metricasFiltradas.length ? metricasFiltradas : null,
     }
 
@@ -12289,7 +12310,19 @@ if (id) {
     closeAgregarItemModal()
     showToast('✓ Ítem guardado')
 
-    // Re-renderizar piezas del mes
+    // Si el ítem es de un mes diferente al actual, navegar a ese mes
+    const nuevoMesKey = `${itemMesYear}-${itemMesMonth}`
+    const mesActualKey = `${repCurrentMonth?.year}-${repCurrentMonth?.month}`
+
+    if (nuevoMesKey !== mesActualKey) {
+      // Recargar el cliente para que aparezca el nuevo mes en el selector
+      const clientId = repCurrentClient?.id
+      repGoHome()
+      setTimeout(() => repOpenClient(clientId), 100)
+      return
+    }
+
+    // Re-renderizar piezas del mes actual
     const clientPieces = repPieces.filter(p => {
       if (p.client_id !== repCurrentClient?.id) return false
       const d = new Date(p.fecha_publicacion)
