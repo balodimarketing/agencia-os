@@ -9660,8 +9660,8 @@ if (id) {
     const sinCambios = clientPieces.filter(p => !p.aprobacion_comentario).length
     const tasaAprobacion = clientPieces.length > 0 ? Math.round((sinCambios / clientPieces.length) * 100) : 0
     const tiposCount = {}
-    clientPieces.forEach(p => { tiposCount[p.tipo] = (tiposCount[p.tipo] || 0) + 1 })
-    const tipoTop = Object.entries(tiposCount).sort((a,b) => b[1]-a[1])[0]
+    clientPieces.forEach(p => { if (p.tipo) tiposCount[p.tipo] = (tiposCount[p.tipo] || 0) + 1 })
+    const tipoTop = Object.entries(tiposCount).sort((a,b) => b[1]-a[1])[0] || null
 
     document.getElementById('rep-month-stats').innerHTML = `
       <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:22px 24px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:flex-start;gap:14px">
@@ -9890,9 +9890,25 @@ if (id) {
               </div>
               ${statsHTML}
             </div>
-            <button onclick="openStatsModal('${p.id}','${p.titulo.replace(/'/g,"\'")}')" style="display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-weight:600;color:#5F6B7A;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0;white-space:nowrap" onmouseover="this.style.borderColor='#0A2540';this.style.color='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#5F6B7A'">
-              <i class="ti ti-chart-bar" style="font-size:12px"></i> ${hasStats ? 'Editar stats' : 'Cargar stats'}
-            </button>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button onclick="openStatsModal('${p.id}','${p.titulo.replace(/'/g,"\'")}')" style="display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-weight:600;color:#5F6B7A;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='#0A2540';this.style.color='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#5F6B7A'">
+                <i class="ti ti-chart-bar" style="font-size:12px"></i> ${hasStats ? 'Editar stats' : 'Cargar stats'}
+              </button>
+              <div style="position:relative;display:inline-block">
+                <button onclick="togglePieceMenu('${p.id}')" style="width:32px;height:32px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
+                  <i class="ti ti-dots-vertical" style="font-size:14px;color:#5F6B7A"></i>
+                </button>
+                <div id="piece-menu-${p.id}" style="display:none;position:absolute;right:0;top:36px;background:#fff;border:1px solid #E8EDF3;border-radius:10px;box-shadow:0 8px 24px rgba(10,37,64,.12);z-index:100;min-width:150px;overflow:hidden">
+                  <button onclick="editPieza('${p.id}');togglePieceMenu('${p.id}')" style="width:100%;padding:10px 14px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:500;color:#0A2540;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:background .15s" onmouseover="this.style.background='#F5F7FA'" onmouseout="this.style.background='none'">
+                    <i class="ti ti-pencil" style="font-size:14px;color:#5F6B7A"></i> Editar pieza
+                  </button>
+                  <div style="height:1px;background:#F0F3F7"></div>
+                  <button onclick="deletePieza('${p.id}','${p.titulo.replace(/'/g,"\'")}');togglePieceMenu('${p.id}')" style="width:100%;padding:10px 14px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:500;color:#EF4444;text-align:left;font-family:inherit;display:flex;align-items:center;gap:8px;transition:background .15s" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='none'">
+                    <i class="ti ti-trash" style="font-size:14px"></i> Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>`
         }).join('')
       }
@@ -12089,6 +12105,56 @@ if (id) {
 
 
 
+
+  // ══════════════════════════════════════
+  // EDITAR / ELIMINAR PIEZAS AUTOMÁTICAS
+  // ══════════════════════════════════════
+
+  window.togglePieceMenu = function(id) {
+    const menu = document.getElementById('piece-menu-' + id)
+    if (!menu) return
+    const isOpen = menu.style.display === 'block'
+    // Cerrar todos
+    document.querySelectorAll('[id^="piece-menu-"]').forEach(m => m.style.display = 'none')
+    if (!isOpen) menu.style.display = 'block'
+  }
+
+  // Cerrar menús al clickear afuera
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[id^="piece-menu-"]') && !e.target.closest('[onclick*="togglePieceMenu"]')) {
+      document.querySelectorAll('[id^="piece-menu-"]').forEach(m => m.style.display = 'none')
+    }
+  })
+
+  window.editPieza = function(pieceId) {
+    // Redirigir al módulo de contenido y abrir la pieza
+    const piece = repPieces.find(p => p.id === pieceId)
+    if (!piece) return
+    showToast('Abriendo pieza en Contenido...')
+    setTimeout(() => {
+      switchModule(document.querySelector('.rail-btn[data-module=contenido]'))
+      setTimeout(() => {
+        if (typeof openPieceDetail === 'function') openPieceDetail(pieceId)
+      }, 600)
+    }, 300)
+  }
+
+  window.deletePieza = async function(pieceId, titulo) {
+    if (!confirm(`¿Eliminar "${titulo}"? Esta acción no se puede deshacer.`)) return
+    const { error } = await supabase.from('content_pieces').delete().eq('id', pieceId)
+    if (error) { showToast('Error al eliminar: ' + error.message); return }
+    // Actualizar lista local
+    repPieces = repPieces.filter(p => p.id !== pieceId)
+    showToast('✓ Pieza eliminada')
+    // Re-renderizar
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient?.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+    await renderRepPieces(clientPieces)
+  }
+
   // ══════════════════════════════════════
   // ÍTEMS MANUALES DE REPORTE
   // ══════════════════════════════════════
@@ -12409,6 +12475,56 @@ if (id) {
   }
 
 
+
+
+  // ══════════════════════════════════════
+  // EDITAR / ELIMINAR PIEZAS AUTOMÁTICAS
+  // ══════════════════════════════════════
+
+  window.togglePieceMenu = function(id) {
+    const menu = document.getElementById('piece-menu-' + id)
+    if (!menu) return
+    const isOpen = menu.style.display === 'block'
+    // Cerrar todos
+    document.querySelectorAll('[id^="piece-menu-"]').forEach(m => m.style.display = 'none')
+    if (!isOpen) menu.style.display = 'block'
+  }
+
+  // Cerrar menús al clickear afuera
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[id^="piece-menu-"]') && !e.target.closest('[onclick*="togglePieceMenu"]')) {
+      document.querySelectorAll('[id^="piece-menu-"]').forEach(m => m.style.display = 'none')
+    }
+  })
+
+  window.editPieza = function(pieceId) {
+    // Redirigir al módulo de contenido y abrir la pieza
+    const piece = repPieces.find(p => p.id === pieceId)
+    if (!piece) return
+    showToast('Abriendo pieza en Contenido...')
+    setTimeout(() => {
+      switchModule(document.querySelector('.rail-btn[data-module=contenido]'))
+      setTimeout(() => {
+        if (typeof openPieceDetail === 'function') openPieceDetail(pieceId)
+      }, 600)
+    }, 300)
+  }
+
+  window.deletePieza = async function(pieceId, titulo) {
+    if (!confirm(`¿Eliminar "${titulo}"? Esta acción no se puede deshacer.`)) return
+    const { error } = await supabase.from('content_pieces').delete().eq('id', pieceId)
+    if (error) { showToast('Error al eliminar: ' + error.message); return }
+    // Actualizar lista local
+    repPieces = repPieces.filter(p => p.id !== pieceId)
+    showToast('✓ Pieza eliminada')
+    // Re-renderizar
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient?.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+    await renderRepPieces(clientPieces)
+  }
 
   // ══════════════════════════════════════
   // ÍTEMS MANUALES DE REPORTE
