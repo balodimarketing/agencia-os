@@ -9772,6 +9772,7 @@ if (id) {
     const itemsManuales = window.repItemsManuales || []
 
     const agencyName = document.body.dataset.agencyName || ''
+    const totalItems = clientPieces.length + itemsManuales.length
 
     // ── Preparar métricas destacadas para el PDF ──
     const todasMetricas = itemsManuales.flatMap(item => {
