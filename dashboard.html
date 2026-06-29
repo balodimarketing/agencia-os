@@ -1539,28 +1539,56 @@
       </div>
 
       <!-- Vista: detalle cliente con selector de mes y piezas -->
-      <div id="rep-months" style="display:none;padding:28px 32px;max-width:900px;margin:0 auto">
-        <button onclick="repGoHome()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;margin-bottom:20px;padding:0;transition:color var(--t)" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+      <div id="rep-months" style="display:none;padding:32px;max-width:1400px;margin:0 auto;background:#F5F7FA;min-height:100%">
+
+        <!-- Nav back -->
+        <button onclick="repGoHome()" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:#8B98A9;font-size:13px;font-weight:600;margin-bottom:24px;padding:0;transition:color .15s" onmouseover="this.style.color='#0A2540'" onmouseout="this.style.color='#8B98A9'">
           <i class="ti ti-arrow-left" style="font-size:15px"></i> Reportes
         </button>
+
+        <!-- Hero del cliente -->
         <div id="rep-client-header" style="margin-bottom:20px"></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap">
-          <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-right:4px;flex-shrink:0">Mes</div>
-          <div id="rep-month-selector" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-          <div style="margin-left:auto">
-            <button onclick="downloadReport()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--azul);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-              <i class="ti ti-download" style="font-size:13px"></i> Descargar reporte
-            </button>
-          </div>
+
+        <!-- Selector de mes -->
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:16px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+          <div style="font-size:13px;font-weight:600;color:#5F6B7A;flex-shrink:0">Mes:</div>
+          <div id="rep-month-selector" style="display:flex;gap:8px;flex-wrap:wrap;flex:1"></div>
         </div>
-        <div id="rep-month-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px" id="rep-pieces-title">Publicaciones</div>
-          <button onclick="openAgregarItemModal()" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;background:#0A2540;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
-            <i class="ti ti-plus" style="font-size:13px"></i> Agregar ítem
+
+        <!-- KPIs -->
+        <div id="rep-month-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px"></div>
+
+        <!-- Barra de acciones -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+          <button onclick="openAgregarItemModal()" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;background:#0A2540;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
+            <i class="ti ti-plus" style="font-size:15px"></i> Agregar ítem
+          </button>
+          <button onclick="downloadReport()" style="display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;background:#fff;color:#0A2540;border:1px solid #E8EDF3;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
+            <i class="ti ti-download" style="font-size:15px"></i> Descargar PDF
           </button>
         </div>
-        <div id="rep-pieces-list" style="display:flex;flex-direction:column;gap:10px"></div>
+
+        <!-- Contenido en 2 columnas -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div style="margin-bottom:16px">
+              <div style="font-size:15px;font-weight:700;color:#0A2540;margin-bottom:4px">Ítems manuales</div>
+              <div style="font-size:13px;color:#8B98A9">Campañas, métricas e informes cargados por el equipo.</div>
+            </div>
+            <div id="rep-items-manuales-list" style="display:flex;flex-direction:column;gap:12px"></div>
+          </div>
+          <div>
+            <div style="margin-bottom:16px">
+              <div style="font-size:15px;font-weight:700;color:#0A2540;margin-bottom:4px">Publicaciones automáticas</div>
+              <div style="font-size:13px;color:#8B98A9">Contenido generado desde el módulo de contenido.</div>
+            </div>
+            <div id="rep-pieces-automaticas-list" style="display:flex;flex-direction:column;gap:12px"></div>
+          </div>
+        </div>
+
+        <!-- Ocultos para compatibilidad -->
+        <div id="rep-pieces-list" style="display:none"></div>
+        <div id="rep-pieces-title" style="display:none">Publicaciones</div>
       </div>
 
     </div><!-- fin v-reportes -->
@@ -9514,12 +9542,64 @@ if (id) {
     const col = getAvColor(repCurrentClient?.nombre || '?')
     const ini = initials(repCurrentClient?.nombre || '?')
 
+    // Contar ítems del mes para el hero (se actualiza en renderRepPieces)
     document.getElementById('rep-client-header').innerHTML = `
-      <div style="background:linear-gradient(135deg,#0A2540,#0F3060);border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:14px">
-        <div style="width:44px;height:44px;border-radius:12px;background:${col.bg};color:${col.color};font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
-        <div>
-          <div style="font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px">${repCurrentClient?.nombre || 'Cliente'}</div>
-          <div style="font-size:12px;color:rgba(145,232,251,.5);margin-top:2px">${clientPieces.length} piezas automáticas · ${repCurrentClient?.industria || ''}</div>
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:20px;padding:28px 32px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(10,37,64,.04),0 16px 40px rgba(10,37,64,.05)">
+        <!-- Decoración vectorial -->
+        <svg style="position:absolute;right:0;top:0;pointer-events:none;opacity:.5" width="280" height="160" viewBox="0 0 280 160">
+          <defs><radialGradient id="rhg" cx="70%" cy="30%" r="60%"><stop offset="0%" stop-color="#91E8FB" stop-opacity=".2"/><stop offset="100%" stop-color="#91E8FB" stop-opacity="0"/></radialGradient></defs>
+          <circle cx="220" cy="50" r="130" fill="url(#rhg)"/>
+          <circle cx="240" cy="130" r="4" fill="#91E8FB" opacity=".3"/>
+          <circle cx="200" cy="40" r="2.5" fill="#0A2540" opacity=".08"/>
+          <circle cx="260" cy="80" r="3" fill="#91E8FB" opacity=".2"/>
+          <line x1="190" y1="30" x2="255" y2="75" stroke="#91E8FB" stroke-width="1" opacity=".15" stroke-dasharray="4 3"/>
+          <line x1="220" y1="60" x2="265" y2="125" stroke="#E8EDF3" stroke-width="1" opacity=".5"/>
+        </svg>
+        <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between">
+          <div style="display:flex;align-items:flex-start;gap:18px">
+            <!-- Avatar -->
+            <div style="width:52px;height:52px;border-radius:14px;background:${col.bg};color:${col.color};font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(10,37,64,.08)">${ini}</div>
+            <div>
+              <div style="font-size:26px;font-weight:700;color:#0A2540;letter-spacing:-.5px;line-height:1.1;margin-bottom:6px">${repCurrentClient?.nombre || 'Cliente'}</div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+                ${repCurrentClient?.industria ? `<span style="font-size:13px;color:#5F6B7A;font-weight:500">${repCurrentClient.industria}</span><span style="width:4px;height:4px;border-radius:50%;background:#E8EDF3"></span>` : ''}
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 10px;border-radius:999px;border:1px solid #BBF7D0"><div style="width:6px;height:6px;border-radius:50%;background:#22C55E"></div>Cliente activo</span>
+              </div>
+              <!-- Indicadores rápidos -->
+              <div style="display:flex;align-items:center;gap:20px">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:28px;height:28px;border-radius:8px;background:#F5F7FA;display:flex;align-items:center;justify-content:center"><i class="ti ti-sparkles" style="font-size:13px;color:#6366F1"></i></div>
+                  <div>
+                    <div style="font-size:14px;font-weight:700;color:#0A2540">${clientPieces.length}</div>
+                    <div style="font-size:10px;color:#8B98A9;font-weight:500">publicación${clientPieces.length!==1?'es':''} automática${clientPieces.length!==1?'s':''}</div>
+                  </div>
+                </div>
+                <div style="width:1px;height:28px;background:#E8EDF3"></div>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:28px;height:28px;border-radius:8px;background:#F5F7FA;display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil-plus" style="font-size:13px;color:#F59E0B"></i></div>
+                  <div>
+                    <div style="font-size:14px;font-weight:700;color:#0A2540" id="rep-hero-manuales">—</div>
+                    <div style="font-size:10px;color:#8B98A9;font-weight:500">ítem${1!==1?'s':''} manual${1!==1?'es':''}</div>
+                  </div>
+                </div>
+                <div style="width:1px;height:28px;background:#E8EDF3"></div>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:28px;height:28px;border-radius:8px;background:#F5F7FA;display:flex;align-items:center;justify-content:center"><i class="ti ti-layout-list" style="font-size:13px;color:#0A2540"></i></div>
+                  <div>
+                    <div style="font-size:14px;font-weight:700;color:#0A2540" id="rep-hero-total">—</div>
+                    <div style="font-size:10px;color:#8B98A9;font-weight:500">ítems en el reporte</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Botón descargar -->
+          <div style="text-align:right;flex-shrink:0">
+            <button onclick="downloadReport()" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 24px;background:#0A2540;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;margin-bottom:8px" onmouseover="this.style.background='#12365C';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0A2540';this.style.transform=''">
+              <i class="ti ti-download" style="font-size:16px"></i> Descargar reporte
+            </button>
+            <div style="font-size:11px;color:#8B98A9;text-align:center">PDF · Generado automáticamente</div>
+          </div>
         </div>
       </div>`
 
@@ -9584,21 +9664,38 @@ if (id) {
     const tipoTop = Object.entries(tiposCount).sort((a,b) => b[1]-a[1])[0]
 
     document.getElementById('rep-month-stats').innerHTML = `
-      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px">
-        <div style="font-size:24px;font-weight:900;color:var(--azul);letter-spacing:-.5px">${clientPieces.length}</div>
-        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Publicaciones</div>
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:22px 24px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:flex-start;gap:14px">
+        <div style="width:40px;height:40px;border-radius:12px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-file-text" style="font-size:20px;color:#6366F1"></i>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Publicaciones</div>
+          <div style="font-size:30px;font-weight:700;color:#0A2540;letter-spacing:-.8px;line-height:1;margin-bottom:4px">${clientPieces.length}</div>
+          <div style="font-size:12px;color:#8B98A9">Piezas automáticas publicadas</div>
+        </div>
       </div>
-      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px">
-        <div style="font-size:24px;font-weight:900;color:${tasaAprobacion >= 80 ? '#166534' : tasaAprobacion >= 50 ? '#92400E' : '#991B1B'};letter-spacing:-.5px">${tasaAprobacion}%</div>
-        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Aprobación directa</div>
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:22px 24px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:flex-start;gap:14px">
+        <div style="width:40px;height:40px;border-radius:12px;background:#ECFDF5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-shield-check" style="font-size:20px;color:#10B981"></i>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Aprobación directa</div>
+          <div style="font-size:30px;font-weight:700;color:${tasaAprobacion >= 80 ? '#16A34A' : tasaAprobacion >= 50 ? '#D97706' : '#DC2626'};letter-spacing:-.8px;line-height:1;margin-bottom:4px">${tasaAprobacion}%</div>
+          <div style="font-size:12px;color:#8B98A9">Sin necesidad de revisión</div>
+        </div>
       </div>
-      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px">
-        <div style="font-size:24px;font-weight:900;color:var(--ink);letter-spacing:-.5px">${tipoTop ? tipoTop[0] : '—'}</div>
-        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Formato top</div>
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:22px 24px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:flex-start;gap:14px">
+        <div style="width:40px;height:40px;border-radius:12px;background:#FFF5F5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-crown" style="font-size:20px;color:#EF4444"></i>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Formato top</div>
+          <div style="font-size:${tipoTop ? '28' : '20'}px;font-weight:700;color:${tipoTop ? '#0A2540' : '#8B98A9'};letter-spacing:-.5px;line-height:1;margin-bottom:4px">${tipoTop ? tipoTop[0] : 'Sin datos'}</div>
+          <div style="font-size:12px;color:#8B98A9">${tipoTop ? `${tipoTop[1]} publicación${tipoTop[1]!==1?'es':''}` : 'Aún no hay formato destacado'}</div>
+        </div>
       </div>`
 
-    document.getElementById('rep-pieces-title').textContent = `Publicaciones — ${repCurrentMonth.label}`
-    renderRepPieces(clientPieces)
+    await renderRepPieces(clientPieces)
   }
 
   window.repGoHome = function() {
@@ -9706,7 +9803,100 @@ if (id) {
       </div>`
     }).join('')
 
-    el.innerHTML = itemsHTML + el.innerHTML
+    // Renderizar en dos columnas separadas
+    const manualesEl = document.getElementById('rep-items-manuales-list')
+    const automaticasEl = document.getElementById('rep-pieces-automaticas-list')
+
+    // Actualizar contadores del hero
+    const heroManuales = document.getElementById('rep-hero-manuales')
+    const heroTotal = document.getElementById('rep-hero-total')
+    if (heroManuales) heroManuales.textContent = repItemsManuales.length
+    if (heroTotal) heroTotal.textContent = pieces.length + repItemsManuales.length
+
+    // ── Ítems manuales ──
+    if (manualesEl) {
+      if (!repItemsManuales.length) {
+        manualesEl.innerHTML = `<div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:32px;text-align:center;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+          <div style="width:44px;height:44px;border-radius:12px;background:#F5F7FA;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+            <i class="ti ti-pencil-plus" style="font-size:20px;color:#8B98A9"></i>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:#0A2540;margin-bottom:4px">Sin ítems manuales</div>
+          <div style="font-size:12px;color:#8B98A9;margin-bottom:16px">Agregá campañas, métricas o informes manualmente.</div>
+          <button onclick="openAgregarItemModal()" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;background:#0A2540;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+            <i class="ti ti-plus" style="font-size:13px"></i> Agregar ítem
+          </button>
+        </div>`
+      } else {
+        manualesEl.innerHTML = repItemsManuales.map(item => {
+          const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'long'}) : '—'
+          const m = item.metricas || []
+          const metricEntries = Array.isArray(m) ? m.map(x => [x.nombre, x.valor]) : Object.entries(m)
+          const hasStats = metricEntries.length > 0
+          const TIPO_LABELS_M = { publicacion:'Publicación',historia:'Historia',reel:'Reel',campaña:'Campaña',email:'Email',otro:'Otro' }
+          const tipoLabel = TIPO_LABELS_M[item.tipo] || item.tipo || ''
+          const metricasHTML = hasStats ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+            ${metricEntries.map(([k,v]) => `<div style="background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;padding:5px 10px"><div style="font-size:12px;font-weight:700;color:#0A2540">${v}</div><div style="font-size:9px;color:#8B98A9;text-transform:uppercase;letter-spacing:.4px;margin-top:1px">${k}</div></div>`).join('')}
+          </div>` : ''
+          return `<div style="background:#fff;border:1px solid #E8EDF3;border-left:4px solid #91E8FB;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.titulo}</div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  ${tipoLabel ? `<span style="padding:3px 9px;background:#EEF2FF;color:#6366F1;border-radius:999px;font-size:11px;font-weight:700">${tipoLabel}</span>` : ''}
+                  <span style="padding:3px 9px;background:#F0F9FF;color:#0891B2;border-radius:999px;font-size:11px;font-weight:700">Manual</span>
+                  <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#8B98A9"><i class="ti ti-calendar" style="font-size:11px"></i>${fecha}</span>
+                </div>
+              </div>
+              <button onclick="openEditarItemModal('${item.id}')" style="display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-weight:600;color:#5F6B7A;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0" onmouseover="this.style.borderColor='#0A2540';this.style.color='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#5F6B7A'">
+                <i class="ti ti-pencil" style="font-size:12px"></i> Editar
+              </button>
+            </div>
+            ${item.descripcion ? `<div style="font-size:12px;color:#5F6B7A;margin-bottom:10px;line-height:1.5">${item.descripcion}</div>` : ''}
+            ${metricasHTML}
+          </div>`
+        }).join('')
+      }
+    }
+
+    // ── Publicaciones automáticas ──
+    if (automaticasEl) {
+      if (!pieces.length) {
+        automaticasEl.innerHTML = `<div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:32px;text-align:center;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+          <div style="width:44px;height:44px;border-radius:12px;background:#F5F7FA;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+            <i class="ti ti-photo" style="font-size:20px;color:#8B98A9"></i>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:#0A2540;margin-bottom:4px">Sin publicaciones automáticas</div>
+          <div style="font-size:12px;color:#8B98A9">Las piezas publicadas en el módulo de Contenido aparecen aquí.</div>
+        </div>`
+      } else {
+        automaticasEl.innerHTML = pieces.map(p => {
+          const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'long'})
+          const stats = repStats[p.id]
+          const hasStats = stats && (stats.visitas || stats.likes || stats.comentarios || stats.compartidos || stats.reposteos)
+          const tipo = p.tipo || ''
+          const statsHTML = hasStats ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+            ${[['visitas','Alcance'],['likes','Likes'],['comentarios','Coments'],['compartidos','Comparts'],['reposteos','Repos']].filter(([k])=>stats[k]).map(([k,l])=>`<div style="background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;padding:5px 10px"><div style="font-size:12px;font-weight:700;color:#0A2540">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#8B98A9;text-transform:uppercase;letter-spacing:.4px;margin-top:1px">${l}</div></div>`).join('')}
+          </div>` : ''
+          return `<div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:16px 20px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:flex-start;gap:12px">
+            <div style="width:40px;height:40px;border-radius:10px;background:#F5F7FA;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="ti ti-photo" style="font-size:18px;color:#8B98A9"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#0A2540;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.titulo}</div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${hasStats?'0':'4px'}">
+                ${tipo ? `<span style="padding:2px 8px;background:#F5F7FA;color:#5F6B7A;border-radius:999px;font-size:11px;font-weight:600;border:1px solid #E8EDF3">${tipo}</span>` : ''}
+                <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#8B98A9"><i class="ti ti-calendar" style="font-size:11px"></i>${fecha}</span>
+                ${!hasStats ? '<span style="padding:2px 8px;background:#F5F7FA;color:#8B98A9;border-radius:999px;font-size:11px;border:1px solid #E8EDF3">Sin métricas cargadas</span>' : ''}
+              </div>
+              ${statsHTML}
+            </div>
+            <button onclick="openStatsModal('${p.id}','${p.titulo.replace(/'/g,"\'")}')" style="display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-weight:600;color:#5F6B7A;cursor:pointer;font-family:inherit;transition:all .15s;flex-shrink:0;white-space:nowrap" onmouseover="this.style.borderColor='#0A2540';this.style.color='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#5F6B7A'">
+              <i class="ti ti-chart-bar" style="font-size:12px"></i> ${hasStats ? 'Editar stats' : 'Cargar stats'}
+            </button>
+          </div>`
+        }).join('')
+      }
+    }
   }
 
   window.openStatsModal = function(pieceId, titulo) {
