@@ -9531,6 +9531,13 @@ if (id) {
   }
 
   window.repOpenClient = function(clientId) {
+    // Limpiar datos del cliente anterior inmediatamente
+    window.repItemsManuales = []
+    const ml = document.getElementById('rep-items-manuales-list')
+    const al = document.getElementById('rep-pieces-automaticas-list')
+    if (ml) ml.innerHTML = ''
+    if (al) al.innerHTML = ''
+
     const clientPieces = repPieces.filter(p => p.client_id === clientId)
 
     // Buscar datos del cliente desde byClient o desde las piezas
@@ -9705,8 +9712,14 @@ if (id) {
   window.repGoHome = function() {
     repCurrentClient = null
     repCurrentMonth = null
+    window.repItemsManuales = []
     document.getElementById('rep-home').style.display = 'block'
     document.getElementById('rep-months').style.display = 'none'
+    // Limpiar listas para que no se vean datos del cliente anterior
+    const ml = document.getElementById('rep-items-manuales-list')
+    const al = document.getElementById('rep-pieces-automaticas-list')
+    if (ml) ml.innerHTML = ''
+    if (al) al.innerHTML = ''
   }
 
   window.repGoMonths = function() { repGoHome() }
