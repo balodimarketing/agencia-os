@@ -9760,7 +9760,7 @@ if (id) {
 
     // Renderizar ítems manuales
     const itemsHTML = repItemsManuales.map(item => {
-      const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : '—'
+      const fecha = item.fecha ? new Date(item.fecha + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : '—'
       const m = item.metricas || []
       // Retrocompatible: soporta array nuevo y objeto viejo
       const metricEntries = Array.isArray(m) ? m.map(x => [x.nombre, x.valor]) : Object.entries(m)
@@ -9858,7 +9858,7 @@ if (id) {
         </div>`
       } else {
         manualesEl.innerHTML = repItemsManuales.map(item => {
-          const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'long'}) : '—'
+          const fecha = item.fecha ? new Date(item.fecha + 'T12:00:00').toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'long'}) : '—'
           const m = item.metricas || []
           const metricEntries = Array.isArray(m) ? m.map(x => [x.nombre, x.valor]) : Object.entries(m)
           const hasStats = metricEntries.length > 0
@@ -10072,7 +10072,7 @@ if (id) {
       <div style="margin-bottom:28px">
         <div style="font-size:9px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #E8EDF3">Ítems manuales</div>
         ${itemsManuales.map(item => {
-          const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', {day:'numeric', month:'long'}) : '—'
+          const fecha = item.fecha ? new Date(item.fecha + 'T12:00:00').toLocaleDateString('es-AR', {day:'numeric', month:'long'}) : '—'
           const tipo2 = TIPO_LABELS2[item.tipo] || item.tipo || ''
           const m2 = item.metricas || []
           const metricsArr = Array.isArray(m2) ? m2 : Object.entries(m2).map(([nombre, valor]) => ({ nombre, valor, destacado: false }))
