@@ -1489,14 +1489,7 @@
             <div style="font-size:11px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Centro de reportes</div>
             <div style="font-size:36px;font-weight:700;color:#0A2540;letter-spacing:-1px;line-height:1.1;margin-bottom:8px">Reportes</div>
             <div style="font-size:15px;color:#5F6B7A;line-height:1.6;margin-bottom:24px;max-width:480px">Analizá qué se publicó, cómo rindió y qué decisiones tomar para el próximo mes.</div>
-            <div style="display:flex;gap:10px">
-              <button onclick="exportReportesPDF()" style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 18px;background:#fff;color:#0A2540;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
-                <i class="ti ti-download" style="font-size:14px"></i> Exportar PDF
-              </button>
-              <button onclick="openCrearInformeModal()" style="display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 18px;background:#0A2540;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
-                <i class="ti ti-plus" style="font-size:14px"></i> Crear informe
-              </button>
-            </div>
+
           </div>
         </div>
 
@@ -1543,30 +1536,6 @@
           <div id="rep-clients-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
         </div>
 
-        <!-- Informes manuales recientes -->
-        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)" id="rep-manuales-section">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-            <div>
-              <div style="font-size:16px;font-weight:700;color:#0A2540;letter-spacing:-.2px">Informes recientes</div>
-              <div style="font-size:13px;color:#8B98A9;margin-top:2px">Informes manuales y automáticos</div>
-            </div>
-            <button onclick="openCrearInformeModal()" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;background:#0A2540;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
-              <i class="ti ti-plus" style="font-size:13px"></i> Crear informe
-            </button>
-          </div>
-          <!-- Header tabla -->
-          <div style="display:grid;grid-template-columns:1fr 120px 120px 90px 100px 80px;gap:12px;padding:8px 12px;margin-bottom:2px">
-            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Título</div>
-            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Cliente</div>
-            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Tipo</div>
-            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Mes</div>
-            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Estado</div>
-            <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Origen</div>
-          </div>
-          <div id="rep-informes-list">
-            <div style="text-align:center;padding:32px 0;color:#8B98A9;font-size:13px">No hay informes todavía.</div>
-          </div>
-        </div>
       </div>
 
       <!-- Vista: detalle cliente con selector de mes y piezas -->
@@ -1585,7 +1554,12 @@
           </div>
         </div>
         <div id="rep-month-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px"></div>
-        <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px;margin-bottom:14px" id="rep-pieces-title">Publicaciones</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:900;color:var(--ink);letter-spacing:-.2px" id="rep-pieces-title">Publicaciones</div>
+          <button onclick="openAgregarItemModal()" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;background:#0A2540;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
+            <i class="ti ti-plus" style="font-size:13px"></i> Agregar ítem
+          </button>
+        </div>
         <div id="rep-pieces-list" style="display:flex;flex-direction:column;gap:10px"></div>
       </div>
 
@@ -2658,83 +2632,73 @@
 
 
 
-<!-- MODAL CREAR INFORME -->
-<div class="modal-overlay" id="modal-crear-informe" onclick="if(event.target===this)closeCrearInformeModal()" style="z-index:500">
-  <div class="modal" style="max-width:660px;border-radius:20px">
+
+<!-- MODAL AGREGAR ÍTEM AL REPORTE -->
+<div class="modal-overlay" id="modal-agregar-item" onclick="if(event.target===this)closeAgregarItemModal()" style="z-index:500">
+  <div class="modal" style="max-width:560px">
     <div class="modal-head">
-      <div class="modal-title">Crear informe</div>
-      <button class="modal-close" onclick="closeCrearInformeModal()"><i class="ti ti-x"></i></button>
+      <div class="modal-title" id="modal-item-title">Agregar ítem al reporte</div>
+      <button class="modal-close" onclick="closeAgregarItemModal()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="modal-body" style="max-height:70vh;overflow-y:auto;padding:24px 28px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-        <!-- Cliente -->
+    <div class="modal-body" style="padding:24px 28px">
+      <input type="hidden" id="item-edit-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
         <div>
-          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Cliente *</label>
-          <select id="inf-cliente" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-            <option value="">Seleccionar cliente...</option>
+          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Tipo</label>
+          <select id="item-tipo" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+            <option value="publicacion">Publicación</option>
+            <option value="historia">Historia</option>
+            <option value="reel">Reel</option>
+            <option value="campaña">Campaña</option>
+            <option value="email">Email</option>
+            <option value="otro">Otro</option>
           </select>
         </div>
-        <!-- Tipo -->
         <div>
-          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Tipo de informe *</label>
-          <select id="inf-tipo" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-            <option value="mensual">Reporte mensual</option>
-            <option value="campaña">Reporte de campaña</option>
-            <option value="meta_ads">Meta Ads</option>
-            <option value="google_ads">Google Ads</option>
-            <option value="redes">Redes sociales</option>
-            <option value="auditoria">Auditoría</option>
-            <option value="personalizado">Personalizado</option>
-          </select>
-        </div>
-        <!-- Mes -->
-        <div>
-          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Mes</label>
-          <input type="month" id="inf-mes" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-        </div>
-        <!-- Estado -->
-        <div>
-          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Estado</label>
-          <select id="inf-estado" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
-            <option value="borrador">Borrador</option>
-            <option value="listo">Listo</option>
-            <option value="publicado">Publicado</option>
-          </select>
+          <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Fecha</label>
+          <input type="date" id="item-fecha" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
         </div>
       </div>
-      <!-- Título -->
-      <div style="margin-bottom:16px">
+      <div style="margin-bottom:14px">
         <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Título *</label>
-        <input type="text" id="inf-titulo" placeholder="Ej: Reporte mensual — Junio 2026" style="width:100%;height:44px;padding:0 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+        <input type="text" id="item-titulo" placeholder="Ej: Post lanzamiento producto X" style="width:100%;height:44px;padding:0 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
       </div>
-      <!-- Descripción -->
-      <div style="margin-bottom:16px">
+      <div style="margin-bottom:14px">
         <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Descripción</label>
-        <textarea id="inf-descripcion" placeholder="Resumen del período, logros y próximos pasos..." rows="3" style="width:100%;padding:12px 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;resize:vertical;box-sizing:border-box;transition:border-color .15s;line-height:1.5" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'"></textarea>
+        <textarea id="item-descripcion" placeholder="Descripción breve del ítem..." rows="2" style="width:100%;padding:12px 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;resize:vertical;box-sizing:border-box;transition:border-color .15s;line-height:1.5" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'"></textarea>
       </div>
-      <!-- PDF -->
-      <div style="margin-bottom:20px">
-        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Archivo PDF <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
-        <div style="border:1px dashed #E8EDF3;border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s;background:#F8FAFC" onclick="document.getElementById('inf-pdf').click()" onmouseover="this.style.borderColor='#91E8FB'" onmouseout="this.style.borderColor='#E8EDF3'">
-          <i class="ti ti-upload" style="font-size:20px;color:#8B98A9;margin-bottom:6px;display:block"></i>
-          <div style="font-size:13px;color:#8B98A9" id="inf-pdf-label">Subir PDF</div>
-        </div>
-        <input type="file" id="inf-pdf" accept=".pdf" style="display:none" onchange="document.getElementById('inf-pdf-label').textContent=this.files[0]?.name||'Subir PDF'">
-      </div>
-      <!-- Campos personalizados -->
+      <!-- Métricas -->
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <label style="font-size:12px;font-weight:700;color:#0A2540">Campos personalizados</label>
-          <button onclick="agregarCampoInforme()" style="display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-weight:600;color:#0A2540;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
-            <i class="ti ti-plus" style="font-size:12px"></i> Agregar campo
-          </button>
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:10px">Métricas <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+          <div>
+            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Alcance</div>
+            <input type="number" id="item-visitas" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Likes</div>
+            <input type="number" id="item-likes" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Comentarios</div>
+            <input type="number" id="item-comentarios" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Compartidos</div>
+            <input type="number" id="item-compartidos" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#8B98A9;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Reposteos</div>
+            <input type="number" id="item-reposteos" placeholder="0" style="width:100%;height:38px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+          </div>
         </div>
-        <div id="inf-campos-list" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="tbtn" onclick="closeCrearInformeModal()">Cancelar</button>
-      <button class="tbtn primary" onclick="saveInforme()" id="btn-save-informe">Crear informe</button>
+      <button class="tbtn danger" id="btn-delete-item" onclick="deleteReporteItem()" style="display:none">Eliminar</button>
+      <div style="flex:1"></div>
+      <button class="tbtn" onclick="closeAgregarItemModal()">Cancelar</button>
+      <button class="tbtn primary" onclick="saveReporteItem()" id="btn-save-item">Guardar</button>
     </div>
   </div>
 </div>
@@ -9489,46 +9453,7 @@ if (id) {
       kpiUltimo.textContent = `${MESES[d.getMonth()]} ${d.getFullYear()}`
     }
 
-    // Cargar informes manuales
-    const { data: informesManuales } = await supabase
-      .from('informes')
-      .select('*, clients(nombre)')
-      .eq('agency_id', agencyId)
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    if (kpiInformes) kpiInformes.textContent = totalClientes + (informesManuales?.length || 0)
-
-    // Renderizar informes
-    const infEl = document.getElementById('rep-informes-list')
-    if (infEl) {
-      if (!informesManuales?.length) {
-        infEl.innerHTML = '<div style="text-align:center;padding:32px 0;color:#8B98A9;font-size:13px">No hay informes todavía. Creá el primero con el botón de arriba.</div>'
-      } else {
-        const ESTADO_BADGE = {
-          borrador: { bg: '#F5F7FA', color: '#8B98A9', label: 'Borrador' },
-          listo:    { bg: '#ECFDF5', color: '#16A34A', label: 'Listo' },
-          publicado:{ bg: '#EEF2FF', color: '#6366F1', label: 'Publicado' },
-        }
-        const TIPO_LABELS = {
-          mensual:'Mensual', campaña:'Campaña', meta_ads:'Meta Ads',
-          google_ads:'Google Ads', redes:'Redes', auditoria:'Auditoría', personalizado:'Personalizado'
-        }
-        infEl.innerHTML = informesManuales.map((inf, i) => {
-          const est = ESTADO_BADGE[inf.estado] || ESTADO_BADGE.borrador
-          const borderBottom = i < informesManuales.length - 1 ? 'border-bottom:1px solid #F0F3F7;' : ''
-          const mes = inf.mes ? new Date(inf.mes + '-01').toLocaleDateString('es-AR', { month: 'short', year: 'numeric' }) : '—'
-          return `<div style="display:grid;grid-template-columns:1fr 120px 120px 90px 100px 80px;gap:12px;padding:12px;align-items:center;${borderBottom}border-radius:8px;transition:background .15s" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
-            <div style="font-size:13px;font-weight:600;color:#0A2540;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${inf.titulo}</div>
-            <div style="font-size:12px;color:#5F6B7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${inf.clients?.nombre || '—'}</div>
-            <div style="font-size:12px;color:#5F6B7A">${TIPO_LABELS[inf.tipo] || inf.tipo}</div>
-            <div style="font-size:12px;color:#8B98A9">${mes}</div>
-            <span style="padding:3px 10px;border-radius:999px;background:${est.bg};color:${est.color};font-size:11px;font-weight:700;width:fit-content">${est.label}</span>
-            <span style="padding:3px 10px;border-radius:999px;background:#F5F7FA;color:#8B98A9;font-size:11px;font-weight:700;width:fit-content">Manual</span>
-          </div>`
-        }).join('')
-      }
-    }
+    if (kpiInformes) kpiInformes.textContent = totalClientes
 
     // ── Cards de clientes ──
     el.innerHTML = Object.entries(byClient).map(([clientId, { client, pieces }]) => {
@@ -9673,14 +9598,64 @@ if (id) {
 
   window.repGoMonths = function() { repGoHome() }
 
-  function renderRepPieces(pieces) {
+  async function renderRepPieces(pieces) {
     const el = document.getElementById('rep-pieces-list')
     if (!el) return
 
-    if (!pieces.length) {
-      el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--ink3);font-size:13px">Sin piezas este mes.</div>'
+    // Cargar ítems manuales del mes actual
+    const { data: itemsManuales } = await supabase
+      .from('reporte_items')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('client_id', repCurrentClient?.id)
+      .eq('mes_year', repCurrentMonth?.year)
+      .eq('mes_month', repCurrentMonth?.month)
+      .order('fecha', { ascending: true })
+
+    window.repItemsManuales = itemsManuales || []
+
+    if (!pieces.length && !repItemsManuales.length) {
+      el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--ink3);font-size:13px">Sin publicaciones este mes. Usá "+ Agregar ítem" para agregar una manualmente.</div>'
       return
     }
+
+    // Renderizar ítems manuales
+    const itemsHTML = repItemsManuales.map(item => {
+      const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : '—'
+      const m = item.metricas || {}
+      const hasStats = m.visitas || m.likes || m.comentarios || m.compartidos || m.reposteos
+      const statsRow = hasStats ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        ${m.visitas ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-eye" style="font-size:13px;color:var(--ink3)"></i>${Number(m.visitas).toLocaleString('es-AR')}</div>` : ''}
+        ${m.likes ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-heart" style="font-size:13px;color:var(--danger)"></i>${Number(m.likes).toLocaleString('es-AR')}</div>` : ''}
+        ${m.comentarios ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-message" style="font-size:13px;color:var(--ink3)"></i>${Number(m.comentarios).toLocaleString('es-AR')}</div>` : ''}
+        ${m.compartidos ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-share" style="font-size:13px;color:var(--ink3)"></i>${Number(m.compartidos).toLocaleString('es-AR')}</div>` : ''}
+        ${m.reposteos ? `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2)"><i class="ti ti-repeat" style="font-size:13px;color:var(--ink3)"></i>${Number(m.reposteos).toLocaleString('es-AR')}</div>` : ''}
+      </div>` : ''
+      return `<div style="background:var(--white);border:1.5px solid #E8EDF3;border-left:4px solid #91E8FB;border-radius:var(--r-lg);overflow:hidden;display:flex">
+        <div style="width:80px;flex-shrink:0;background:#F5F7FA;display:flex;align-items:center;justify-content:center">
+          <i class="ti ti-pencil-plus" style="font-size:24px;color:#8B98A9"></i>
+        </div>
+        <div style="flex:1;min-width:0;padding:14px 16px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.titulo}</div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;padding:2px 8px;background:#EEF2FF;color:#6366F1;border-radius:6px">${item.tipo || '—'}</span>
+                <span style="font-size:10px;font-weight:700;padding:2px 7px;background:#F0F9FF;color:#0891B2;border-radius:6px">Manual</span>
+                <span style="font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:3px"><i class="ti ti-calendar" style="font-size:10px"></i> ${fecha}</span>
+              </div>
+              ${item.descripcion ? `<div style="font-size:12px;color:var(--ink3);margin-top:6px;line-height:1.4">${item.descripcion}</div>` : ''}
+              ${statsRow}
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button onclick="openEditarItemModal('${item.id}')" style="display:flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--ink3);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all var(--t)" onmouseover="this.style.borderColor='var(--azul)';this.style.color='var(--azul)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--ink3)'">
+                <i class="ti ti-pencil" style="font-size:12px"></i> Editar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>`
+    }).join('')
 
     el.innerHTML = pieces.map(p => {
       const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -9720,6 +9695,8 @@ if (id) {
         </div>
       </div>`
     }).join('')
+
+    el.innerHTML = itemsHTML + el.innerHTML
   }
 
   window.openStatsModal = function(pieceId, titulo) {
@@ -11814,6 +11791,422 @@ if (id) {
     }).join('')
   }
 
+
+
+  // ══════════════════════════════════════
+  // ÍTEMS MANUALES DE REPORTE
+  // ══════════════════════════════════════
+
+  window.openAgregarItemModal = function() {
+    document.getElementById('modal-item-title').textContent = 'Agregar ítem al reporte'
+    document.getElementById('item-edit-id').value = ''
+    document.getElementById('item-tipo').value = 'publicacion'
+    document.getElementById('item-titulo').value = ''
+    document.getElementById('item-descripcion').value = ''
+    document.getElementById('item-visitas').value = ''
+    document.getElementById('item-likes').value = ''
+    document.getElementById('item-comentarios').value = ''
+    document.getElementById('item-compartidos').value = ''
+    document.getElementById('item-reposteos').value = ''
+    // Fecha por defecto = hoy
+    const now = new Date()
+    document.getElementById('item-fecha').value = now.toISOString().slice(0,10)
+    document.getElementById('btn-delete-item').style.display = 'none'
+    document.getElementById('modal-agregar-item').classList.add('show')
+  }
+
+  window.openEditarItemModal = function(itemId) {
+    const item = (window.repItemsManuales || []).find(i => i.id === itemId)
+    if (!item) return
+    document.getElementById('modal-item-title').textContent = 'Editar ítem'
+    document.getElementById('item-edit-id').value = itemId
+    document.getElementById('item-tipo').value = item.tipo || 'publicacion'
+    document.getElementById('item-titulo').value = item.titulo || ''
+    document.getElementById('item-descripcion').value = item.descripcion || ''
+    document.getElementById('item-fecha').value = item.fecha || ''
+    const m = item.metricas || {}
+    document.getElementById('item-visitas').value = m.visitas || ''
+    document.getElementById('item-likes').value = m.likes || ''
+    document.getElementById('item-comentarios').value = m.comentarios || ''
+    document.getElementById('item-compartidos').value = m.compartidos || ''
+    document.getElementById('item-reposteos').value = m.reposteos || ''
+    document.getElementById('btn-delete-item').style.display = 'block'
+    document.getElementById('modal-agregar-item').classList.add('show')
+  }
+
+  window.closeAgregarItemModal = function() {
+    document.getElementById('modal-agregar-item').classList.remove('show')
+  }
+
+  window.saveReporteItem = async function() {
+    const titulo = document.getElementById('item-titulo').value.trim()
+    if (!titulo) { showToast('El título es requerido'); return }
+    if (!repCurrentClient || !repCurrentMonth) { showToast('Error: no hay mes seleccionado'); return }
+
+    const btn = document.getElementById('btn-save-item')
+    btn.disabled = true; btn.textContent = 'Guardando...'
+
+    const metricas = {
+      visitas:     parseInt(document.getElementById('item-visitas').value) || 0,
+      likes:       parseInt(document.getElementById('item-likes').value) || 0,
+      comentarios: parseInt(document.getElementById('item-comentarios').value) || 0,
+      compartidos: parseInt(document.getElementById('item-compartidos').value) || 0,
+      reposteos:   parseInt(document.getElementById('item-reposteos').value) || 0,
+    }
+    // Solo guardar métricas con valor
+    const metricasFiltradas = Object.fromEntries(Object.entries(metricas).filter(([,v]) => v > 0))
+
+    const payload = {
+      agency_id: agencyId,
+      client_id: repCurrentClient.id,
+      mes_year: repCurrentMonth.year,
+      mes_month: repCurrentMonth.month,
+      tipo: document.getElementById('item-tipo').value,
+      titulo,
+      descripcion: document.getElementById('item-descripcion').value.trim() || null,
+      fecha: document.getElementById('item-fecha').value || null,
+      metricas: Object.keys(metricasFiltradas).length ? metricasFiltradas : null,
+    }
+
+    const editId = document.getElementById('item-edit-id').value
+    let error
+    if (editId) {
+      const res = await supabase.from('reporte_items').update(payload).eq('id', editId)
+      error = res.error
+    } else {
+      const res = await supabase.from('reporte_items').insert(payload)
+      error = res.error
+    }
+
+    btn.disabled = false; btn.textContent = 'Guardar'
+
+    if (error) { showToast('Error: ' + error.message); return }
+
+    closeAgregarItemModal()
+    showToast('✓ Ítem guardado')
+
+    // Re-renderizar piezas del mes
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient?.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+    await renderRepPieces(clientPieces)
+  }
+
+  window.deleteReporteItem = async function() {
+    const editId = document.getElementById('item-edit-id').value
+    if (!editId) return
+    if (!confirm('¿Eliminar este ítem?')) return
+    await supabase.from('reporte_items').delete().eq('id', editId)
+    closeAgregarItemModal()
+    showToast('✓ Ítem eliminado')
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient?.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+    await renderRepPieces(clientPieces)
+  }
+
+  // ══════════════════════════════════════
+  // EDITOR DE PIPELINE
+  // ══════════════════════════════════════
+
+  let pipelineEditorStages = []
+
+  const STAGE_COLORS = [
+    '#6B7280','#3B82F6','#8B5CF6','#F59E0B',
+    '#EC4899','#EF4444','#22C55E','#14B8A6',
+    '#F97316','#06B6D4','#84CC16','#A855F7'
+  ]
+
+  window.openPipelineEditor = function() {
+    // Clonar stages actuales para editar sin afectar el estado real
+    pipelineEditorStages = CRM_STAGES.map(s => ({ ...s, _dirty: false, _new: false, _deleted: false }))
+    renderPipelineEditorList()
+    document.getElementById('modal-pipeline-editor').classList.add('show')
+  }
+
+  window.closePipelineEditor = function() {
+    document.getElementById('modal-pipeline-editor').classList.remove('show')
+  }
+
+  function renderPipelineEditorList() {
+    const list = document.getElementById('pipeline-stages-list')
+    if (!list) return
+
+    const visible = pipelineEditorStages.filter(s => !s._deleted)
+
+    list.innerHTML = visible.map((s, i) => {
+      const isGanada = s.es_ganado
+      const isPerdida = s.es_perdido
+      const rol = isGanada ? 'ganado' : isPerdida ? 'perdido' : 'normal'
+
+      return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px" id="stage-row-${s.id || 'new-'+i}">
+        <!-- Drag handle -->
+        <i class="ti ti-grip-vertical" style="font-size:16px;color:var(--ink3);cursor:grab;flex-shrink:0"></i>
+
+        <!-- Color picker -->
+        <div style="position:relative;flex-shrink:0">
+          <div style="width:28px;height:28px;border-radius:8px;background:${s.color};cursor:pointer;border:2px solid transparent;transition:border-color .15s" onclick="toggleColorPicker('${s.id || 'new-'+i}')" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='transparent'"></div>
+          <div id="color-picker-${s.id || 'new-'+i}" style="display:none;position:absolute;top:36px;left:0;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:8px;z-index:100;display:none;gap:6px;flex-wrap:wrap;width:160px">
+            ${STAGE_COLORS.map(c => `<div onclick="setStageColor('${s.id || 'new-'+i}','${c}')" style="width:22px;height:22px;border-radius:6px;background:${c};cursor:pointer;border:${s.color===c?'2px solid var(--azul)':'2px solid transparent'};transition:transform .1s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Nombre -->
+        <input type="text" value="${s.label}" onchange="updateStageName('${s.id || 'new-'+i}', this.value)" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;color:var(--ink);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'" placeholder="Nombre de la etapa">
+
+        <!-- Rol -->
+        <select onchange="setStageRol('${s.id || 'new-'+i}', this.value)" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;color:var(--ink2);outline:none;background:var(--white);cursor:pointer;flex-shrink:0">
+          <option value="normal" ${rol==='normal'?'selected':''}>Normal</option>
+          <option value="ganado" ${rol==='ganado'?'selected':''}>✓ Ganada</option>
+          <option value="perdido" ${rol==='perdido'?'selected':''}>✗ Perdida</option>
+        </select>
+
+        <!-- Eliminar -->
+        ${visible.length > 2 ? `<button onclick="deleteStage('${s.id || 'new-'+i}')" style="background:none;border:none;cursor:pointer;color:var(--ink3);padding:4px;flex-shrink:0;transition:color .15s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink3)'">
+          <i class="ti ti-trash" style="font-size:14px"></i>
+        </button>` : '<div style="width:26px"></div>'}
+      </div>`
+    }).join('')
+  }
+
+  window.toggleColorPicker = function(stageKey) {
+    const picker = document.getElementById('color-picker-' + stageKey)
+    if (!picker) return
+    const isOpen = picker.style.display === 'flex'
+    // Cerrar todos
+    document.querySelectorAll('[id^="color-picker-"]').forEach(p => p.style.display = 'none')
+    if (!isOpen) picker.style.display = 'flex'
+  }
+
+  // Cerrar color pickers al clickear afuera
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[id^="color-picker-"]') && !e.target.closest('[onclick*="toggleColorPicker"]')) {
+      document.querySelectorAll('[id^="color-picker-"]').forEach(p => p.style.display = 'none')
+    }
+  })
+
+  window.setStageColor = function(stageKey, color) {
+    const stage = pipelineEditorStages.find(s => (s.id || 'new-'+pipelineEditorStages.indexOf(s)) === stageKey || s.id === stageKey)
+    if (stage) { stage.color = color; stage._dirty = true }
+    document.getElementById('color-picker-' + stageKey).style.display = 'none'
+    renderPipelineEditorList()
+  }
+
+  window.updateStageName = function(stageKey, value) {
+    const stage = pipelineEditorStages.find(s => s.id === stageKey)
+    if (stage) { stage.label = value; stage._dirty = true }
+  }
+
+  window.setStageRol = function(stageKey, rol) {
+    // Solo puede haber una ganada y una perdida
+    if (rol === 'ganado') pipelineEditorStages.forEach(s => { if (s.id !== stageKey) s.es_ganado = false })
+    if (rol === 'perdido') pipelineEditorStages.forEach(s => { if (s.id !== stageKey) s.es_perdido = false })
+    const stage = pipelineEditorStages.find(s => s.id === stageKey)
+    if (stage) {
+      stage.es_ganado = rol === 'ganado'
+      stage.es_perdido = rol === 'perdido'
+      stage._dirty = true
+    }
+    renderPipelineEditorList()
+  }
+
+  window.deleteStage = function(stageKey) {
+    const stage = pipelineEditorStages.find(s => s.id === stageKey)
+    if (stage) {
+      if (stage._new) {
+        pipelineEditorStages = pipelineEditorStages.filter(s => s.id !== stageKey)
+      } else {
+        stage._deleted = true
+      }
+    }
+    renderPipelineEditorList()
+  }
+
+  window.addPipelineStage = function() {
+    const newId = 'new-' + Date.now()
+    pipelineEditorStages.push({
+      id: newId,
+      label: 'Nueva etapa',
+      color: '#6B7280',
+      es_ganado: false,
+      es_perdido: false,
+      orden: pipelineEditorStages.filter(s => !s._deleted).length + 1,
+      _new: true,
+      _dirty: true,
+      _deleted: false
+    })
+    renderPipelineEditorList()
+  }
+
+  window.savePipelineStages = async function() {
+    const btn = document.getElementById('btn-save-pipeline')
+    const spinner = document.getElementById('pipeline-spinner')
+    const btnText = document.getElementById('btn-save-pipeline-text')
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
+
+    // Asegurarse que hay al menos una etapa ganada
+    const hayGanada = pipelineEditorStages.some(s => s.es_ganado && !s._deleted)
+    if (!hayGanada) {
+      // Asignar es_ganado a la última etapa no perdida no eliminada
+      const ultimaNormal = [...pipelineEditorStages].reverse().find(s => !s.es_perdido && !s._deleted)
+      if (ultimaNormal) ultimaNormal.es_ganado = true
+    }
+
+    const visible = pipelineEditorStages.filter(s => !s._deleted)
+
+    // Eliminar stages marcados para borrar
+    for (const s of pipelineEditorStages.filter(s => s._deleted && !s._new)) {
+      await supabase.from('crm_pipeline_stages').delete().eq('id', s.id)
+    }
+
+    // Actualizar o insertar
+    for (let i = 0; i < visible.length; i++) {
+      const s = visible[i]
+      const payload = {
+        nombre: s.label,
+        color: s.color,
+        orden: i + 1,
+        es_ganado: s.es_ganado,
+        es_perdido: s.es_perdido,
+        agency_id: agencyId
+      }
+      if (s._new) {
+        await supabase.from('crm_pipeline_stages').insert(payload)
+      } else if (s._dirty) {
+        await supabase.from('crm_pipeline_stages').update(payload).eq('id', s.id)
+      }
+    }
+
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Guardar cambios'
+    closePipelineEditor()
+    showToast('✓ Pipeline actualizado')
+
+    // Recargar stages y pipeline
+    await loadCrmContacts()
+    renderCrmPipeline()
+  }
+
+
+
+  // ══════════════════════════════════════
+  // ÍTEMS MANUALES DE REPORTE
+  // ══════════════════════════════════════
+
+  window.openAgregarItemModal = function() {
+    document.getElementById('modal-item-title').textContent = 'Agregar ítem al reporte'
+    document.getElementById('item-edit-id').value = ''
+    document.getElementById('item-tipo').value = 'publicacion'
+    document.getElementById('item-titulo').value = ''
+    document.getElementById('item-descripcion').value = ''
+    document.getElementById('item-visitas').value = ''
+    document.getElementById('item-likes').value = ''
+    document.getElementById('item-comentarios').value = ''
+    document.getElementById('item-compartidos').value = ''
+    document.getElementById('item-reposteos').value = ''
+    // Fecha por defecto = hoy
+    const now = new Date()
+    document.getElementById('item-fecha').value = now.toISOString().slice(0,10)
+    document.getElementById('btn-delete-item').style.display = 'none'
+    document.getElementById('modal-agregar-item').classList.add('show')
+  }
+
+  window.openEditarItemModal = function(itemId) {
+    const item = (window.repItemsManuales || []).find(i => i.id === itemId)
+    if (!item) return
+    document.getElementById('modal-item-title').textContent = 'Editar ítem'
+    document.getElementById('item-edit-id').value = itemId
+    document.getElementById('item-tipo').value = item.tipo || 'publicacion'
+    document.getElementById('item-titulo').value = item.titulo || ''
+    document.getElementById('item-descripcion').value = item.descripcion || ''
+    document.getElementById('item-fecha').value = item.fecha || ''
+    const m = item.metricas || {}
+    document.getElementById('item-visitas').value = m.visitas || ''
+    document.getElementById('item-likes').value = m.likes || ''
+    document.getElementById('item-comentarios').value = m.comentarios || ''
+    document.getElementById('item-compartidos').value = m.compartidos || ''
+    document.getElementById('item-reposteos').value = m.reposteos || ''
+    document.getElementById('btn-delete-item').style.display = 'block'
+    document.getElementById('modal-agregar-item').classList.add('show')
+  }
+
+  window.closeAgregarItemModal = function() {
+    document.getElementById('modal-agregar-item').classList.remove('show')
+  }
+
+  window.saveReporteItem = async function() {
+    const titulo = document.getElementById('item-titulo').value.trim()
+    if (!titulo) { showToast('El título es requerido'); return }
+    if (!repCurrentClient || !repCurrentMonth) { showToast('Error: no hay mes seleccionado'); return }
+
+    const btn = document.getElementById('btn-save-item')
+    btn.disabled = true; btn.textContent = 'Guardando...'
+
+    const metricas = {
+      visitas:     parseInt(document.getElementById('item-visitas').value) || 0,
+      likes:       parseInt(document.getElementById('item-likes').value) || 0,
+      comentarios: parseInt(document.getElementById('item-comentarios').value) || 0,
+      compartidos: parseInt(document.getElementById('item-compartidos').value) || 0,
+      reposteos:   parseInt(document.getElementById('item-reposteos').value) || 0,
+    }
+    // Solo guardar métricas con valor
+    const metricasFiltradas = Object.fromEntries(Object.entries(metricas).filter(([,v]) => v > 0))
+
+    const payload = {
+      agency_id: agencyId,
+      client_id: repCurrentClient.id,
+      mes_year: repCurrentMonth.year,
+      mes_month: repCurrentMonth.month,
+      tipo: document.getElementById('item-tipo').value,
+      titulo,
+      descripcion: document.getElementById('item-descripcion').value.trim() || null,
+      fecha: document.getElementById('item-fecha').value || null,
+      metricas: Object.keys(metricasFiltradas).length ? metricasFiltradas : null,
+    }
+
+    const editId = document.getElementById('item-edit-id').value
+    let error
+    if (editId) {
+      const res = await supabase.from('reporte_items').update(payload).eq('id', editId)
+      error = res.error
+    } else {
+      const res = await supabase.from('reporte_items').insert(payload)
+      error = res.error
+    }
+
+    btn.disabled = false; btn.textContent = 'Guardar'
+
+    if (error) { showToast('Error: ' + error.message); return }
+
+    closeAgregarItemModal()
+    showToast('✓ Ítem guardado')
+
+    // Re-renderizar piezas del mes
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient?.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+    await renderRepPieces(clientPieces)
+  }
+
+  window.deleteReporteItem = async function() {
+    const editId = document.getElementById('item-edit-id').value
+    if (!editId) return
+    if (!confirm('¿Eliminar este ítem?')) return
+    await supabase.from('reporte_items').delete().eq('id', editId)
+    closeAgregarItemModal()
+    showToast('✓ Ítem eliminado')
+    const clientPieces = repPieces.filter(p => {
+      if (p.client_id !== repCurrentClient?.id) return false
+      const d = new Date(p.fecha_publicacion)
+      return d.getFullYear() === repCurrentMonth?.year && d.getMonth() === repCurrentMonth?.month
+    }).sort((a, b) => new Date(a.fecha_publicacion) - new Date(b.fecha_publicacion))
+    await renderRepPieces(clientPieces)
+  }
 
   // ══════════════════════════════════════
   // EDITOR DE PIPELINE
