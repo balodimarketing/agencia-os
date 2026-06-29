@@ -9530,7 +9530,7 @@ if (id) {
     }).join('')
   }
 
-  window.repOpenClient = function(clientId) {
+  window.repOpenClient = async function(clientId) {
     // Limpiar datos del cliente anterior inmediatamente
     window.repItemsManuales = []
     const ml = document.getElementById('rep-items-manuales-list')
