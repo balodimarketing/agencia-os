@@ -2670,13 +2670,16 @@
       <!-- Métricas / campos personalizados -->
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <label style="font-size:12px;font-weight:700;color:#0A2540">Métricas <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:#0A2540">Métricas <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+            <div style="font-size:11px;color:#8B98A9;margin-top:2px">Las métricas marcadas como ★ aparecen destacadas en el PDF.</div>
+          </div>
           <button onclick="agregarMetricaItem()" style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:7px;font-size:11px;font-weight:600;color:#0A2540;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
             <i class="ti ti-plus" style="font-size:11px"></i> Agregar métrica
           </button>
         </div>
         <div id="item-metricas-list" style="display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:12px;color:#8B98A9;padding:8px 0">Agregá las métricas que necesites: ROAS, CAC, Alcance, Likes, Conversiones, etc.</div>
+          <div style="font-size:12px;color:#8B98A9;padding:8px 0" data-placeholder>Agregá las métricas que necesites: ROAS, CAC, Alcance, Likes, Conversiones, etc.</div>
         </div>
       </div>
     </div>
@@ -9631,8 +9634,9 @@ if (id) {
     // Renderizar ítems manuales
     const itemsHTML = repItemsManuales.map(item => {
       const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : '—'
-      const m = item.metricas || {}
-      const metricEntries = Object.entries(m)
+      const m = item.metricas || []
+      // Retrocompatible: soporta array nuevo y objeto viejo
+      const metricEntries = Array.isArray(m) ? m.map(x => [x.nombre, x.valor]) : Object.entries(m)
       const hasStats = metricEntries.length > 0
       const statsRow = hasStats ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
         ${metricEntries.map(([k,v]) => `<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink2);background:var(--bg);padding:3px 8px;border-radius:6px"><span style="color:var(--ink3);font-weight:500">${k}:</span>${v}</div>`).join('')}
@@ -9833,46 +9837,159 @@ if (id) {
     const agencyLine = agencyName ? agencyName + ' &middot; ' : ''
     const fechaGen = new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})
 
+    // ── Preparar métricas destacadas para el PDF ──
+    const todasMetricas = itemsManuales.flatMap(item => {
+      const m = item.metricas || []
+      return Array.isArray(m)
+        ? m.map(x => ({ ...x, _itemTitulo: item.titulo }))
+        : Object.entries(m).map(([nombre, valor]) => ({ nombre, valor, destacado: false, _itemTitulo: item.titulo }))
+    })
+    const destacadas = todasMetricas.filter(m => m.destacado).slice(0, 6)
+    const COLORES_ROT = ['#0A2540','#6366F1','#10B981','#F59E0B','#EF4444','#8B5CF6']
+    const gridCols = destacadas.length <= 2 ? 2 : destacadas.length <= 4 ? 2 : 3
+
+    const destacadasHTML = destacadas.length ? `
+      <div style="margin:0 0 28px;padding:24px;background:#F8FAFC;border-radius:16px;border:1px solid #E8EDF3">
+        <div style="font-size:9px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">Indicadores principales</div>
+        <div style="display:grid;grid-template-columns:repeat(${gridCols},1fr);gap:14px">
+          ${destacadas.map((m, i) => {
+            const color = COLORES_ROT[i % COLORES_ROT.length]
+            return `<div style="background:#fff;border:1px solid #E8EDF3;border-radius:12px;padding:18px 16px;border-top:3px solid ${color}">
+              <div style="font-size:9px;font-weight:600;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">${m.nombre}</div>
+              <div style="font-size:28px;font-weight:700;color:${color};letter-spacing:-.5px;line-height:1">${m.valor}</div>
+            </div>`
+          }).join('')}
+        </div>
+      </div>` : ''
+
+    // HTML piezas automáticas
+    const TIPO_BG2 = { 'Reel':'#E8F4FF','Story':'#EEF2FF','Feed':'#F0FDF4','Video':'#FFF7ED','Carousel':'#F0FDF4','TikTok':'#FEF2F2' }
+    const TIPO_TX2 = { 'Reel':'#0C447C','Story':'#3730A3','Feed':'#166534','Video':'#9A3412','Carousel':'#166534','TikTok':'#991B1B' }
+
+    const piezasPDFHTML = clientPieces.length ? `
+      <div style="margin-bottom:28px">
+        <div style="font-size:9px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #E8EDF3">Publicaciones</div>
+        ${clientPieces.map(p => {
+          const fecha = new Date(p.fecha_publicacion).toLocaleDateString('es-AR', {day:'numeric', month:'long'})
+          const stats = repStats[p.id]
+          const tipo = p.tipo || ''
+          const bg2 = TIPO_BG2[tipo] || '#F5F7FA'
+          const tx2 = TIPO_TX2[tipo] || '#8B98A9'
+          const tipoHTML = tipo ? `<span style="font-size:9px;font-weight:600;padding:2px 8px;background:${bg2};color:${tx2};border-radius:4px;text-transform:uppercase;letter-spacing:.4px">${tipo}</span>` : ''
+          const statsHTML = stats && (stats.visitas||stats.likes||stats.comentarios||stats.compartidos||stats.reposteos) ? `
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #F0F3F7">
+              ${[['visitas','Alcance'],['likes','Likes'],['comentarios','Comentarios'],['compartidos','Compartidos'],['reposteos','Reposteos']].filter(([k])=>stats[k]).map(([k,l])=>`
+                <div><div style="font-size:16px;font-weight:700;color:#0A2540">${Number(stats[k]).toLocaleString('es-AR')}</div><div style="font-size:9px;color:#8B98A9;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${l}</div></div>`).join('')}
+            </div>` : ''
+          return `<div style="border:1px solid #E8EDF3;border-radius:12px;padding:20px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div style="flex:1;min-width:0;padding-right:16px">
+                <div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:8px">${p.titulo}</div>
+                ${tipoHTML}
+              </div>
+              <div style="font-size:12px;color:#8B98A9;flex-shrink:0;white-space:nowrap">${fecha}</div>
+            </div>${statsHTML}
+          </div>`
+        }).join('')}
+      </div>` : ''
+
+    // HTML ítems manuales
+    const TIPO_LABELS2 = { publicacion:'Publicación',historia:'Historia',reel:'Reel',campaña:'Campaña',email:'Email',otro:'Otro' }
+    const itemsPDFHTML = itemsManuales.length ? `
+      <div style="margin-bottom:28px">
+        <div style="font-size:9px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #E8EDF3">Ítems manuales</div>
+        ${itemsManuales.map(item => {
+          const fecha = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', {day:'numeric', month:'long'}) : '—'
+          const tipo2 = TIPO_LABELS2[item.tipo] || item.tipo || ''
+          const m2 = item.metricas || []
+          const metricsArr = Array.isArray(m2) ? m2 : Object.entries(m2).map(([nombre, valor]) => ({ nombre, valor, destacado: false }))
+          const noDestacadas = metricsArr.filter(x => !x.destacado)
+          const metricasHTML = noDestacadas.length ? `
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid #F0F3F7">
+              ${noDestacadas.map(x => `<div style="background:#F8FAFC;border:1px solid #E8EDF3;border-radius:6px;padding:8px 12px"><div style="font-size:14px;font-weight:700;color:#0A2540">${x.valor}</div><div style="font-size:9px;color:#8B98A9;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">${x.nombre}</div></div>`).join('')}
+            </div>` : ''
+          return `<div style="border:1px solid #E8EDF3;border-left:3px solid #91E8FB;border-radius:12px;padding:20px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div style="flex:1;min-width:0;padding-right:16px">
+                <div style="font-size:14px;font-weight:600;color:#0A2540;margin-bottom:8px">${item.titulo}</div>
+                <div style="display:flex;gap:6px">
+                  ${tipo2 ? `<span style="font-size:9px;font-weight:600;padding:2px 8px;background:#EEF2FF;color:#6366F1;border-radius:4px;text-transform:uppercase;letter-spacing:.4px">${tipo2}</span>` : ''}
+                  <span style="font-size:9px;font-weight:600;padding:2px 8px;background:#F0F9FF;color:#0891B2;border-radius:4px;letter-spacing:.4px">Manual</span>
+                </div>
+                ${item.descripcion ? `<div style="font-size:12px;color:#5F6B7A;margin-top:10px;line-height:1.6">${item.descripcion}</div>` : ''}
+              </div>
+              <div style="font-size:12px;color:#8B98A9;flex-shrink:0;white-space:nowrap">${fecha}</div>
+            </div>${metricasHTML}
+          </div>`
+        }).join('')}
+      </div>` : ''
+
+    const agencyLine = agencyName ? agencyName + ' · ' : ''
+    const fechaGen = new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})
+    const logoSVG = '<svg viewBox="0 0 100 120" width="16" height="20" fill="none"><path d="M28 18 Q28 10 36 10 L78 10 Q86 10 86 18 L86 30 Q86 38 78 38 L50 38 L50 50 L72 50 Q80 50 80 58 L80 68 Q80 76 72 76 L50 76 L50 102 L36 102 Q28 102 28 94 Z" fill="#8EDBFF"/><circle cx="36" cy="112" r="8" fill="#2563FF"/></svg>'
+
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <title>Reporte ${repCurrentClient.nombre} — ${repCurrentMonth.label}</title>
-<style>* { box-sizing: border-box; margin: 0; padding: 0; } body { font-family: -apple-system,'Segoe UI',sans-serif; background: #F5F7FA; padding: 40px; } @media print { body { background: #fff; padding: 0; } @page { margin: 15mm; } }</style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box;margin:0;padding:0 }
+  body { font-family:'Plus Jakarta Sans',-apple-system,sans-serif;background:#F5F7FA;padding:40px;color:#0A2540;-webkit-print-color-adjust:exact;print-color-adjust:exact }
+  @media print { body { background:#fff;padding:0 } @page { margin:12mm 14mm;size:A4 } }
+</style>
 </head>
 <body>
-<div style="background:#fff;max-width:680px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #0A2540">
-  <div style="padding:36px 40px 28px;border-bottom:2px solid #0A2540">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
-      <div style="width:26px;height:26px;background:#0A2540;border-radius:6px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
-      <span style="font-size:11px;font-weight:600;color:#9AA5B4;letter-spacing:.6px;text-transform:uppercase">Faro &middot; Reporte de contenido</span>
-    </div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-between">
-      <div>
-        <div style="font-size:11px;font-weight:600;color:#0A2540;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Cliente</div>
-        <div style="font-size:32px;font-weight:700;color:#0A2540;letter-spacing:-.5px;line-height:1.1">${repCurrentClient.nombre}</div>
-        <div style="font-size:13px;color:#9AA5B4;margin-top:5px">${agencyLine}${repCurrentMonth.label}</div>
+<div style="background:#fff;max-width:720px;margin:0 auto;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(10,37,64,.08)">
+
+  <!-- HEADER -->
+  <div style="background:#0A2540;padding:36px 40px;position:relative;overflow:hidden">
+    <svg style="position:absolute;right:0;top:0;opacity:.07;pointer-events:none" width="280" height="160" viewBox="0 0 280 160">
+      <circle cx="220" cy="30" r="110" fill="#91E8FB"/>
+      <circle cx="260" cy="130" r="55" fill="#91E8FB"/>
+    </svg>
+    <div style="position:relative;z-index:1">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;background:rgba(145,232,251,.15);border-radius:7px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+          <span style="font-size:10px;font-weight:600;color:rgba(145,232,251,.65);letter-spacing:.8px;text-transform:uppercase">Faro · Reporte de contenido</span>
+        </div>
+        <span style="font-size:11px;color:rgba(255,255,255,.3)">${fechaGen}</span>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:44px;font-weight:700;color:#0A2540;line-height:1">${totalItems}</div>
-        <div style="font-size:10px;color:#9AA5B4;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">ítems en el reporte</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:rgba(145,232,251,.55);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Cliente</div>
+          <div style="font-size:34px;font-weight:700;color:#fff;letter-spacing:-.8px;line-height:1">${repCurrentClient.nombre}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:8px">${agencyLine}${repCurrentMonth.label}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:48px;font-weight:700;color:#91E8FB;line-height:1;letter-spacing:-2px">${totalItems}</div>
+          <div style="font-size:9px;font-weight:600;color:rgba(145,232,251,.45);text-transform:uppercase;letter-spacing:.6px;margin-top:4px">ítems en el reporte</div>
+        </div>
       </div>
     </div>
   </div>
-  <div style="padding:28px 40px">
-    ${clientPieces.length > 0 ? `<div style="font-size:11px;font-weight:600;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Publicaciones automáticas</div>${piezasHTML}` : ''}
-    ${itemsManuales.length > 0 ? `<div style="font-size:11px;font-weight:600;color:#9AA5B4;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px;${clientPieces.length > 0 ? 'margin-top:24px;' : ''}">Ítems manuales</div>${itemsHTML}` : ''}
-    ${totalItems === 0 ? '<div style="text-align:center;padding:40px 0;color:#9AA5B4;font-size:14px">Sin ítems en este reporte.</div>' : ''}
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #E8ECF0;display:flex;align-items:center;justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:6px">
-        <div style="width:18px;height:18px;background:#0A2540;border-radius:4px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
-        <span style="font-size:11px;font-weight:600;color:#0A2540">Generado con Faro</span>
-      </div>
-      <span style="font-size:11px;color:#9AA5B4">${fechaGen}</span>
-    </div>
+
+  <!-- BODY -->
+  <div style="padding:36px 40px">
+    ${destacadasHTML}
+    ${piezasPDFHTML}
+    ${itemsPDFHTML}
+    ${totalItems === 0 ? '<div style="text-align:center;padding:48px 0;color:#8B98A9;font-size:14px">Sin ítems en este reporte.</div>' : ''}
   </div>
+
+  <!-- FOOTER -->
+  <div style="padding:18px 40px;border-top:1px solid #E8EDF3;display:flex;align-items:center;justify-content:space-between;background:#F8FAFC">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:20px;height:20px;background:#0A2540;border-radius:5px;display:flex;align-items:center;justify-content:center">${logoSVG}</div>
+      <span style="font-size:10px;font-weight:600;color:#0A2540">Generado con Faro</span>
+    </div>
+    <span style="font-size:10px;color:#8B98A9">${agencyLine}${repCurrentMonth.label} · ${fechaGen}</span>
+  </div>
+
 </div>
-<script>window.onload = () => window.print()<\/script>
+<` + `script>window.onload = () => window.print()<` + `/script>
 </body>
 </html>`
 
@@ -11849,16 +11966,23 @@ if (id) {
   // ÍTEMS MANUALES DE REPORTE
   // ══════════════════════════════════════
 
-  window.agregarMetricaItem = function() {
+  window.agregarMetricaItem = function(nombre='', valor='', destacado=false) {
     const list = document.getElementById('item-metricas-list')
-    // Quitar el texto placeholder si existe
     const placeholder = list.querySelector('[data-placeholder]')
     if (placeholder) placeholder.remove()
     const row = document.createElement('div')
     row.style.cssText = 'display:flex;gap:8px;align-items:center'
-    row.innerHTML = `<input type="text" placeholder="Nombre (ej: ROAS)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
-      <input type="text" placeholder="Valor (ej: 4.8)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
-      <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+    row.innerHTML = `<input type="text" placeholder="Nombre (ej: ROAS)" value="${nombre}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
+      <input type="text" placeholder="Valor (ej: 4.8)" value="${valor}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
+      <label title="Destacar en PDF" style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;cursor:pointer;flex-shrink:0;border:1px solid #E8EDF3;border-radius:8px;transition:all .15s;font-size:16px" onmouseover="this.style.borderColor='#F59E0B'" onmouseout="this.style.borderColor='#E8EDF3'">
+        <input type="checkbox" class="item-metrica-destacado" ${destacado ? 'checked' : ''} style="display:none" onchange="this.parentElement.style.background=this.checked?'#FFFBEB':'';this.parentElement.style.borderColor=this.checked?'#F59E0B':'#E8EDF3'">
+        <span style="line-height:1">★</span>
+      </label>
+      <button onclick="this.parentElement.remove()" style="width:40px;height:40px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+    // Aplicar estilo inicial si ya está marcado
+    const checkbox = row.querySelector('.item-metrica-destacado')
+    const label = row.querySelector('label')
+    if (destacado) { label.style.background = '#FFFBEB'; label.style.borderColor = '#F59E0B' }
     list.appendChild(row)
   }
 
@@ -11889,14 +12013,11 @@ if (id) {
     list.innerHTML = ''
     const m = item.metricas || {}
     const entries = Object.entries(m)
-    if (entries.length) {
-      entries.forEach(([nombre, valor]) => {
-        const row = document.createElement('div')
-        row.style.cssText = 'display:flex;gap:8px;align-items:center'
-        row.innerHTML = `<input type="text" value="${nombre}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
-          <input type="text" value="${valor}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
-          <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
-        list.appendChild(row)
+    // Soportar tanto formato array nuevo como objeto viejo
+    const metricsArray = Array.isArray(m) ? m : Object.entries(m).map(([nombre, valor]) => ({ nombre, valor, destacado: false }))
+    if (metricsArray.length) {
+      metricsArray.forEach(met => {
+        agregarMetricaItem(met.nombre, met.valor, met.destacado || false)
       })
     } else {
       list.innerHTML = '<div style="font-size:12px;color:#8B98A9;padding:8px 0" data-placeholder>Agregá las métricas que necesites.</div>'
@@ -11917,12 +12038,13 @@ if (id) {
     const btn = document.getElementById('btn-save-item')
     btn.disabled = true; btn.textContent = 'Guardando...'
 
-    // Leer métricas personalizadas
-    const metricasFiltradas = {}
+    // Leer métricas personalizadas — array con flag destacado
+    const metricasFiltradas = []
     document.querySelectorAll('#item-metricas-list > div:not([data-placeholder])').forEach(row => {
       const nombre = row.querySelector('.item-metrica-nombre')?.value.trim()
       const valor = row.querySelector('.item-metrica-valor')?.value.trim()
-      if (nombre && valor) metricasFiltradas[nombre] = valor
+      const destacado = row.querySelector('.item-metrica-destacado')?.checked || false
+      if (nombre && valor) metricasFiltradas.push({ nombre, valor, destacado })
     })
 
     const payload = {
@@ -11934,7 +12056,7 @@ if (id) {
       titulo,
       descripcion: document.getElementById('item-descripcion').value.trim() || null,
       fecha: document.getElementById('item-fecha').value || null,
-      metricas: Object.keys(metricasFiltradas).length ? metricasFiltradas : null,
+      metricas: metricasFiltradas.length ? metricasFiltradas : null,
     }
 
     const editId = document.getElementById('item-edit-id').value
@@ -12165,16 +12287,23 @@ if (id) {
   // ÍTEMS MANUALES DE REPORTE
   // ══════════════════════════════════════
 
-  window.agregarMetricaItem = function() {
+  window.agregarMetricaItem = function(nombre='', valor='', destacado=false) {
     const list = document.getElementById('item-metricas-list')
-    // Quitar el texto placeholder si existe
     const placeholder = list.querySelector('[data-placeholder]')
     if (placeholder) placeholder.remove()
     const row = document.createElement('div')
     row.style.cssText = 'display:flex;gap:8px;align-items:center'
-    row.innerHTML = `<input type="text" placeholder="Nombre (ej: ROAS)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
-      <input type="text" placeholder="Valor (ej: 4.8)" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
-      <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+    row.innerHTML = `<input type="text" placeholder="Nombre (ej: ROAS)" value="${nombre}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
+      <input type="text" placeholder="Valor (ej: 4.8)" value="${valor}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
+      <label title="Destacar en PDF" style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;cursor:pointer;flex-shrink:0;border:1px solid #E8EDF3;border-radius:8px;transition:all .15s;font-size:16px" onmouseover="this.style.borderColor='#F59E0B'" onmouseout="this.style.borderColor='#E8EDF3'">
+        <input type="checkbox" class="item-metrica-destacado" ${destacado ? 'checked' : ''} style="display:none" onchange="this.parentElement.style.background=this.checked?'#FFFBEB':'';this.parentElement.style.borderColor=this.checked?'#F59E0B':'#E8EDF3'">
+        <span style="line-height:1">★</span>
+      </label>
+      <button onclick="this.parentElement.remove()" style="width:40px;height:40px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
+    // Aplicar estilo inicial si ya está marcado
+    const checkbox = row.querySelector('.item-metrica-destacado')
+    const label = row.querySelector('label')
+    if (destacado) { label.style.background = '#FFFBEB'; label.style.borderColor = '#F59E0B' }
     list.appendChild(row)
   }
 
@@ -12205,14 +12334,11 @@ if (id) {
     list.innerHTML = ''
     const m = item.metricas || {}
     const entries = Object.entries(m)
-    if (entries.length) {
-      entries.forEach(([nombre, valor]) => {
-        const row = document.createElement('div')
-        row.style.cssText = 'display:flex;gap:8px;align-items:center'
-        row.innerHTML = `<input type="text" value="${nombre}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-nombre">
-          <input type="text" value="${valor}" style="flex:1;height:40px;padding:0 12px;border:1px solid #E8EDF3;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'" class="item-metrica-valor">
-          <button onclick="this.parentElement.remove()" style="width:36px;height:36px;background:none;border:1px solid #E8EDF3;border-radius:8px;cursor:pointer;color:#8B98A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'"><i class="ti ti-trash" style="font-size:14px"></i></button>`
-        list.appendChild(row)
+    // Soportar tanto formato array nuevo como objeto viejo
+    const metricsArray = Array.isArray(m) ? m : Object.entries(m).map(([nombre, valor]) => ({ nombre, valor, destacado: false }))
+    if (metricsArray.length) {
+      metricsArray.forEach(met => {
+        agregarMetricaItem(met.nombre, met.valor, met.destacado || false)
       })
     } else {
       list.innerHTML = '<div style="font-size:12px;color:#8B98A9;padding:8px 0" data-placeholder>Agregá las métricas que necesites.</div>'
@@ -12233,12 +12359,13 @@ if (id) {
     const btn = document.getElementById('btn-save-item')
     btn.disabled = true; btn.textContent = 'Guardando...'
 
-    // Leer métricas personalizadas
-    const metricasFiltradas = {}
+    // Leer métricas personalizadas — array con flag destacado
+    const metricasFiltradas = []
     document.querySelectorAll('#item-metricas-list > div:not([data-placeholder])').forEach(row => {
       const nombre = row.querySelector('.item-metrica-nombre')?.value.trim()
       const valor = row.querySelector('.item-metrica-valor')?.value.trim()
-      if (nombre && valor) metricasFiltradas[nombre] = valor
+      const destacado = row.querySelector('.item-metrica-destacado')?.checked || false
+      if (nombre && valor) metricasFiltradas.push({ nombre, valor, destacado })
     })
 
     const payload = {
@@ -12250,7 +12377,7 @@ if (id) {
       titulo,
       descripcion: document.getElementById('item-descripcion').value.trim() || null,
       fecha: document.getElementById('item-fecha').value || null,
-      metricas: Object.keys(metricasFiltradas).length ? metricasFiltradas : null,
+      metricas: metricasFiltradas.length ? metricasFiltradas : null,
     }
 
     const editId = document.getElementById('item-edit-id').value
