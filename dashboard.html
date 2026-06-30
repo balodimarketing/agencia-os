@@ -10189,6 +10189,14 @@ if (id) {
     const btnText = document.getElementById('btn-save-crm-text')
     btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Guardando...'
 
+    // El campo "estado" es una clasificación general (lead/prospecto/activo/inactivo/perdido),
+    // independiente del nombre de la etapa del pipeline — nunca debe copiar el label de la etapa.
+    const stageSeleccionada = CRM_STAGES.find(s => s.id === document.getElementById('crm-stage').value)
+    let estadoGeneral = 'lead'
+    if (stageSeleccionada?.es_perdido) estadoGeneral = 'perdido'
+    else if (stageSeleccionada?.es_ganado) estadoGeneral = 'activo'
+    else if (stageSeleccionada) estadoGeneral = 'prospecto'
+
     const payload = {
       nombre,
       empresa: document.getElementById('crm-empresa').value.trim() || null,
@@ -10196,7 +10204,7 @@ if (id) {
       telefono: document.getElementById('crm-telefono').value.trim() || null,
       cargo: document.getElementById('crm-cargo').value.trim() || null,
       stage_id: document.getElementById('crm-stage').value || null,
-      estado: CRM_STAGES.find(s => s.id === document.getElementById('crm-stage').value)?.label || 'Lead recibido',
+      estado: estadoGeneral,
       valor_estimado: parseFloat(document.getElementById('crm-valor').value) || 0,
       valor_deal: parseFloat(document.getElementById('crm-valor').value) || 0,
       score_label: document.getElementById('crm-score')?.value || 'sin_calificar',
