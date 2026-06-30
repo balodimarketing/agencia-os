@@ -1707,31 +1707,124 @@
     </div><!-- fin v-reportes -->
 
     <!-- CRM -->
-    <div class="view flex-view" id="v-crm" style="padding:0;flex-direction:column;height:calc(100vh - 52px);overflow:hidden">
+    <div class="view flex-view" id="v-crm" style="padding:0;flex-direction:column;height:calc(100vh - 52px);overflow:hidden;background:#F5F7FA">
 
       <!-- CRM: Vista Pipeline (default) -->
       <div id="crm-pipeline-view" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
-        <!-- Toolbar -->
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
-          <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="crm-tabs">
+
+        <!-- Toolbar superior -->
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 32px;border-bottom:1px solid #E8EDF3;background:#fff;flex-shrink:0">
+          <div style="font-size:22px;font-weight:700;color:#0A2540;letter-spacing:-.4px;flex-shrink:0">CRM</div>
+
+          <!-- Selector de pipeline -->
+          <div style="position:relative;flex-shrink:0">
+            <button onclick="togglePipelineDropdown()" id="pipeline-selector-btn" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 16px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:12px;font-size:13px;font-weight:600;color:#0A2540;cursor:pointer;font-family:inherit;transition:border-color .15s;min-width:200px" onmouseover="this.style.borderColor='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3'">
+              <span id="pipeline-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Pipeline Comercial</span>
+              <i class="ti ti-chevron-down" style="font-size:14px;color:#8B98A9;flex-shrink:0"></i>
+            </button>
+            <!-- Dropdown -->
+            <div id="pipeline-dropdown" style="display:none;position:absolute;top:50px;left:0;width:280px;background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:12px;box-shadow:0 12px 32px rgba(10,37,64,.1);z-index:200;max-height:400px;overflow-y:auto">
+              <div id="pipeline-dropdown-list"></div>
+              <div style="height:1px;background:#F0F3F7;margin:8px 0"></div>
+              <button onclick="openCreatePipelineModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;background:none;border:none;cursor:pointer;border-radius:10px;font-size:13px;font-weight:600;color:#0A2540;font-family:inherit;transition:background .15s" onmouseover="this.style.background='#F5F7FA'" onmouseout="this.style.background='none'">
+                <i class="ti ti-plus" style="font-size:15px;color:#6366F1"></i> Crear nuevo pipeline
+              </button>
+            </div>
+          </div>
+
+          <div style="flex:1"></div>
+
+          <!-- Buscador -->
+          <div style="position:relative;width:240px;flex-shrink:0">
+            <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:#8B98A9"></i>
+            <input type="text" id="crm-pipeline-search" placeholder="Buscar contactos, empresas..." oninput="filterCrmPipelineSearch(this.value)" style="width:100%;height:40px;padding:0 12px 0 34px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:#F5F7FA;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#0A2540'" onblur="this.style.borderColor='#E8EDF3'">
+          </div>
+
+          <div style="display:flex;gap:2px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:10px;padding:3px;position:relative;flex-shrink:0" id="crm-tabs">
             <div class="pill-slider" id="crm-pill"></div>
             <div class="cal-view-btn active" id="crm-btn-pipeline" onclick="switchCrmView('pipeline')">Pipeline</div>
             <div class="cal-view-btn" id="crm-btn-contactos" onclick="switchCrmView('contactos')">Contactos</div>
           </div>
-          <div style="flex:1"></div>
-          <button class="tbtn" onclick="openPipelineEditor()" style="gap:6px">
-            <i class="ti ti-settings-2" style="font-size:14px"></i> Editar pipeline
+          <button class="tbtn" onclick="openPipelineEditor()" style="gap:6px;flex-shrink:0">
+            <i class="ti ti-settings-2" style="font-size:14px"></i>
           </button>
-          <button class="tbtn primary" onclick="openCrmModal()" style="gap:6px">
+          <button onclick="openCrmModal()" style="display:flex;align-items:center;gap:7px;height:44px;padding:0 18px;background:#0A2540;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;flex-shrink:0" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
             <i class="ti ti-plus" style="font-size:14px"></i> Nuevo contacto
           </button>
         </div>
 
-        <!-- Métricas -->
-        <div id="crm-metrics" style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0"></div>
+        <!-- Contenido scrolleable -->
+        <div style="flex:1;overflow-y:auto;padding:24px 32px">
 
-        <!-- Kanban pipeline -->
-        <div id="crm-kanban" style="display:flex;overflow-x:auto;flex:1;padding:20px;gap:14px;align-items:flex-start"></div>
+          <!-- Hero + KPIs -->
+          <div style="background:linear-gradient(135deg,#FFFFFF,#F7FCFF);border:1px solid #E8EDF3;border-radius:20px;padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <svg style="position:absolute;right:0;top:0;pointer-events:none;opacity:.5" width="280" height="150" viewBox="0 0 280 150">
+              <defs><radialGradient id="cg" cx="65%" cy="30%" r="55%"><stop offset="0%" stop-color="#91E8FB" stop-opacity=".18"/><stop offset="100%" stop-color="#91E8FB" stop-opacity="0"/></radialGradient></defs>
+              <circle cx="220" cy="40" r="120" fill="url(#cg)"/>
+              <path d="M30,90 Q90,50 150,70 T260,40" fill="none" stroke="#E8EDF3" stroke-width="1.5"/>
+              <circle cx="30" cy="90" r="3" fill="#91E8FB" opacity=".5"/>
+              <circle cx="150" cy="70" r="3" fill="#91E8FB" opacity=".4"/>
+              <circle cx="260" cy="40" r="3" fill="#0A2540" opacity=".2"/>
+              <circle cx="95" cy="62" r="2" fill="#91E8FB" opacity=".3"/>
+              <circle cx="205" cy="48" r="2" fill="#91E8FB" opacity=".3"/>
+            </svg>
+            <div style="position:relative;z-index:1;margin-bottom:20px">
+              <div id="crm-hero-greeting" style="font-size:24px;font-weight:700;color:#0A2540;letter-spacing:-.5px;margin-bottom:4px">¡Buen día!</div>
+              <div id="crm-hero-sub" style="font-size:14px;color:#5F6B7A">Gestioná oportunidades y cerrá más clientes.</div>
+            </div>
+            <div id="crm-metrics" style="position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px"></div>
+          </div>
+
+          <!-- Filtros -->
+          <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:18px 24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <select id="crm-filter-responsable" onchange="renderCrmPipeline()" style="height:36px;padding:0 28px 0 12px;border:1px solid #E8EDF3;border-radius:9px;font-size:12px;font-weight:500;font-family:inherit;color:#0A2540;background:#F5F7FA url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238B98A9' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;outline:none;cursor:pointer;appearance:none">
+                <option value="">Responsable: todos</option>
+              </select>
+              <select id="crm-filter-origen" onchange="renderCrmPipeline()" style="height:36px;padding:0 28px 0 12px;border:1px solid #E8EDF3;border-radius:9px;font-size:12px;font-weight:500;font-family:inherit;color:#0A2540;background:#F5F7FA url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238B98A9' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;outline:none;cursor:pointer;appearance:none">
+                <option value="">Origen: todos</option>
+              </select>
+              <button onclick="clearCrmFilters()" style="display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 12px;background:none;border:none;cursor:pointer;color:#8B98A9;font-size:12px;font-weight:600;font-family:inherit;transition:color .15s" onmouseover="this.style.color='#0A2540'" onmouseout="this.style.color='#8B98A9'">
+                <i class="ti ti-x" style="font-size:13px"></i> Limpiar filtros
+              </button>
+            </div>
+          </div>
+
+          <!-- Layout: Kanban + panel lateral -->
+          <div style="display:flex;gap:20px;align-items:flex-start">
+            <!-- Kanban pipeline -->
+            <div id="crm-kanban" style="display:flex;overflow-x:auto;gap:16px;align-items:flex-start;padding-bottom:8px;flex:1;min-width:0"></div>
+
+            <!-- Panel lateral -->
+            <div style="width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:16px">
+
+              <!-- Actividad reciente -->
+              <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+                <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:14px">Actividad reciente</div>
+                <div id="crm-activity-list" style="display:flex;flex-direction:column;gap:14px"></div>
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid #F0F3F7">
+                  <button style="font-size:12px;font-weight:600;color:#0A2540;background:none;border:none;cursor:pointer;padding:0">Ver toda la actividad</button>
+                </div>
+              </div>
+
+              <!-- Objetivo del mes -->
+              <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)" id="crm-objetivo-card">
+                <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:14px">Objetivo del mes</div>
+                <div id="crm-objetivo-content">
+                  <div style="font-size:12px;color:#8B98A9;text-align:center;padding:8px 0">Sin objetivo configurado para este mes.</div>
+                </div>
+              </div>
+
+              <!-- Próximos seguimientos -->
+              <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+                <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:14px">Próximos seguimientos</div>
+                <div id="crm-seguimientos-list" style="display:flex;flex-direction:column;gap:10px"></div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
       </div>
 
       <!-- CRM: Vista Lista Contactos -->
@@ -2829,6 +2922,42 @@
       <div style="flex:1"></div>
       <button class="tbtn" onclick="closeAgregarItemModal()">Cancelar</button>
       <button class="tbtn primary" onclick="saveReporteItem()" id="btn-save-item">Guardar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL CREAR PIPELINE -->
+<div class="modal-overlay" id="modal-crear-pipeline" onclick="if(event.target===this)closeCreatePipelineModal()" style="z-index:500">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title">Crear nuevo pipeline</div>
+      <button class="modal-close" onclick="closeCreatePipelineModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:24px 28px">
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Nombre del pipeline *</label>
+        <input type="text" id="new-pipeline-nombre" placeholder="Ej: Campañas Primicia" style="width:100%;height:44px;padding:0 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Tipo</label>
+        <select id="new-pipeline-tipo" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff">
+          <option value="comercial">Comercial</option>
+          <option value="operativo">Operativo</option>
+          <option value="interno">Interno</option>
+        </select>
+        <div style="font-size:11px;color:#8B98A9;margin-top:6px">Comercial trae etapas de ventas. Operativo trae etapas de proceso (Ideas → Finalizado).</div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Cliente asociado <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+        <select id="new-pipeline-cliente" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff">
+          <option value="">Sin cliente asociado</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closeCreatePipelineModal()">Cancelar</button>
+      <button class="tbtn primary" onclick="saveNewPipeline()" id="btn-save-pipeline">Crear pipeline</button>
     </div>
   </div>
 </div>
@@ -8338,14 +8467,139 @@
   let crmActTipo = 'llamada'
   let crmBackView = 'pipeline'
 
-  let CRM_STAGES = [] // Se carga dinámicamente desde crm_pipeline_stages
+  let CRM_STAGES = [] // Se carga dinámicamente desde crm_pipeline_stages, filtrado por currentPipelineId
+  let CRM_PIPELINES = [] // Lista de pipelines de la agencia
+  let currentPipelineId = null // Pipeline activo actualmente seleccionado
+
+  // ══════════════════════════════════════
+  // PIPELINES — selector, carga, creación
+  // ══════════════════════════════════════
+
+  async function loadCrmPipelines() {
+    if (!agencyId) return
+    const { data } = await supabase
+      .from('crm_pipelines')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('archived', false)
+      .order('orden', { ascending: true })
+    CRM_PIPELINES = data || []
+    // Si no hay pipeline activo todavía, usar el default
+    if (!currentPipelineId) {
+      const def = CRM_PIPELINES.find(p => p.es_default) || CRM_PIPELINES[0]
+      currentPipelineId = def?.id || null
+    }
+    renderPipelineDropdown()
+    renderPipelineSelectorLabel()
+  }
+
+  function renderPipelineSelectorLabel() {
+    const label = document.getElementById('pipeline-selector-label')
+    if (!label) return
+    const active = CRM_PIPELINES.find(p => p.id === currentPipelineId)
+    label.textContent = active?.nombre || 'Pipeline Comercial'
+  }
+
+  function renderPipelineDropdown() {
+    const list = document.getElementById('pipeline-dropdown-list')
+    if (!list) return
+    const comerciales = CRM_PIPELINES.filter(p => p.tipo === 'comercial')
+    const operativos = CRM_PIPELINES.filter(p => p.tipo !== 'comercial')
+
+    const renderGroup = (label, items) => {
+      if (!items.length) return ''
+      return `<div style="margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.6px;padding:6px 10px">${label}</div>
+        ${items.map(p => {
+          const isActive = p.id === currentPipelineId
+          const icon = p.tipo === 'comercial' ? 'ti-chart-line' : p.tipo === 'interno' ? 'ti-building' : 'ti-rocket'
+          const iconColor = p.tipo === 'comercial' ? '#3B82F6' : p.tipo === 'interno' ? '#F59E0B' : '#7C5CFC'
+          return `<button onclick="selectPipeline('${p.id}')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;background:${isActive?'#EEF7FF':'none'};border:none;cursor:pointer;border-radius:10px;font-family:inherit;text-align:left;transition:background .15s" onmouseover="this.style.background='#F5F7FA'" onmouseout="this.style.background='${isActive?'#EEF7FF':'none'}'">
+            <i class="ti ${icon}" style="font-size:15px;color:${iconColor};flex-shrink:0"></i>
+            <span style="flex:1;font-size:13px;font-weight:${isActive?'700':'500'};color:#0A2540;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nombre}</span>
+            ${isActive ? '<i class="ti ti-check" style="font-size:14px;color:#0A2540;flex-shrink:0"></i>' : ''}
+          </button>`
+        }).join('')}
+      </div>`
+    }
+
+    list.innerHTML = renderGroup('VENTAS', comerciales) + renderGroup('OPERATIVOS', operativos)
+  }
+
+  window.togglePipelineDropdown = function() {
+    const dd = document.getElementById('pipeline-dropdown')
+    if (!dd) return
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none'
+  }
+
+  document.addEventListener('click', e => {
+    const dd = document.getElementById('pipeline-dropdown')
+    const btn = document.getElementById('pipeline-selector-btn')
+    if (dd && dd.style.display === 'block' && !dd.contains(e.target) && !btn?.contains(e.target)) {
+      dd.style.display = 'none'
+    }
+  })
+
+  window.selectPipeline = async function(pipelineId) {
+    currentPipelineId = pipelineId
+    document.getElementById('pipeline-dropdown').style.display = 'none'
+    renderPipelineSelectorLabel()
+    renderPipelineDropdown()
+    await loadCrmContacts()
+    renderCrmMetrics()
+    renderCrmKanban()
+    renderCrmSidePanel()
+  }
+
+  window.openCreatePipelineModal = async function() {
+    document.getElementById('pipeline-dropdown').style.display = 'none'
+    document.getElementById('new-pipeline-nombre').value = ''
+    document.getElementById('new-pipeline-tipo').value = 'comercial'
+    const sel = document.getElementById('new-pipeline-cliente')
+    if (sel.options.length <= 1) {
+      sel.innerHTML = '<option value="">Sin cliente asociado</option>' +
+        clients.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
+    }
+    document.getElementById('modal-crear-pipeline').classList.add('show')
+  }
+
+  window.closeCreatePipelineModal = function() {
+    document.getElementById('modal-crear-pipeline').classList.remove('show')
+  }
+
+  window.saveNewPipeline = async function() {
+    const nombre = document.getElementById('new-pipeline-nombre').value.trim()
+    if (!nombre) { showToast('El nombre es requerido'); return }
+    const tipo = document.getElementById('new-pipeline-tipo').value
+    const clienteId = document.getElementById('new-pipeline-cliente').value || null
+
+    const btn = document.getElementById('btn-save-pipeline')
+    btn.disabled = true; btn.textContent = 'Creando...'
+
+    const { data: newPipelineId, error } = await supabase.rpc('create_pipeline_with_stages', {
+      p_agency_id: agencyId,
+      p_nombre: nombre,
+      p_tipo: tipo,
+      p_client_id: clienteId
+    })
+
+    btn.disabled = false; btn.textContent = 'Crear pipeline'
+
+    if (error) { showToast('Error: ' + error.message); return }
+
+    closeCreatePipelineModal()
+    showToast('✓ Pipeline creado')
+    await loadCrmPipelines()
+    await selectPipeline(newPipelineId)
+  }
 
   async function loadCrmStages() {
-    if (!agencyId) return
+    if (!agencyId || !currentPipelineId) return
     const { data } = await supabase
       .from('crm_pipeline_stages')
       .select('*')
       .eq('agency_id', agencyId)
+      .eq('pipeline_id', currentPipelineId)
       .order('orden', { ascending: true })
     CRM_STAGES = (data || []).map(s => ({
       id: s.id,
@@ -8362,11 +8616,13 @@
 
   async function loadCrmContacts() {
     if (!agencyId) return
+    if (!currentPipelineId) await loadCrmPipelines()
     await loadCrmStages()
     const { data } = await supabase
       .from('crm_contacts')
       .select('*, clients(nombre), profiles!crm_contacts_assigned_to_fkey(nombre,apellido)')
       .eq('agency_id', agencyId)
+      .eq('pipeline_id', currentPipelineId)
       .order('created_at', { ascending: false })
     crmContacts = data || []
   }
@@ -8374,6 +8630,22 @@
   function renderCrmMetrics() {
     const el = document.getElementById('crm-metrics')
     if (!el) return
+
+    // Saludo dinámico en el hero
+    const greetEl = document.getElementById('crm-hero-greeting')
+    if (greetEl) {
+      const hour = new Date().getHours()
+      const saludo = hour < 12 ? 'Buen día' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
+      const userName = document.body.dataset.userName || ''
+      greetEl.textContent = `¡${saludo}${userName ? ', ' + userName : ''}!`
+    }
+    const activePipeline = CRM_PIPELINES.find(p => p.id === currentPipelineId)
+    const subEl = document.getElementById('crm-hero-sub')
+    if (subEl) {
+      subEl.textContent = activePipeline?.tipo === 'comercial'
+        ? 'Gestioná oportunidades y cerrá más clientes.'
+        : 'Seguimiento de procesos e ítems operativos.'
+    }
 
     const ganadoIds = CRM_STAGES.filter(s => s.es_ganado).map(s => s.id)
     const perdidoIds = CRM_STAGES.filter(s => s.es_perdido).map(s => s.id)
@@ -8384,37 +8656,139 @@
     const valorTotal = activos.reduce((a, c) => a + (c.valor_estimado || c.valor_deal || 0), 0)
     const tasaCierre = cerrados.length > 0 ? Math.round((cerradosGanados.length / cerrados.length) * 100) : 0
 
-    // Deal más cercano a cerrar
-    const hoy = new Date()
-    const proximosDeal = activos
-      .filter(c => c.fecha_cierre_esperada)
-      .sort((a, b) => new Date(a.fecha_cierre_esperada) - new Date(b.fecha_cierre_esperada))
-    const proximoDeal = proximosDeal[0]
-    const proximoLabel = proximoDeal
-      ? `${proximoDeal.nombre} · ${new Date(proximoDeal.fecha_cierre_esperada).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}`
-      : '—'
-
-    const metric = (icon, label, value, sub = '') => `
-      <div style="flex:1;min-width:140px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <i class="ti ${icon}" style="font-size:13px;color:var(--ink3)"></i>
-          <span style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">${label}</span>
+    const kpi = (icon, color, bg, label, value, sub) => `
+      <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="width:34px;height:34px;border-radius:10px;background:${bg};display:flex;align-items:center;justify-content:center">
+            <i class="ti ${icon}" style="font-size:16px;color:${color}"></i>
+          </div>
+          <span style="font-size:12px;font-weight:600;color:#5F6B7A">${label}</span>
         </div>
-        <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${value}</div>
-        ${sub ? `<div style="font-size:10px;color:var(--ink3);margin-top:2px">${sub}</div>` : ''}
+        <div style="font-size:24px;font-weight:700;color:#0A2540;letter-spacing:-.5px;margin-bottom:3px">${value}</div>
+        <div style="font-size:11px;color:#8B98A9">${sub}</div>
       </div>`
 
-    el.innerHTML =
-      metric('ti-currency-dollar', 'Pipeline', valorTotal > 0 ? `$${Number(valorTotal).toLocaleString('es-AR')}` : '—', 'valor total activo') +
-      metric('ti-briefcase', 'Deals activos', activos.length, 'en progreso') +
-      metric('ti-trophy', 'Tasa de cierre', cerrados.length > 0 ? `${tasaCierre}%` : '—', `${cerradosGanados.length} de ${cerrados.length} cerrados`) +
-      metric('ti-clock', 'Cierre más próximo', proximoLabel, proximoDeal?.empresa || '')
+    if (activePipeline?.tipo === 'comercial') {
+      el.innerHTML =
+        kpi('ti-chart-line', '#3B82F6', '#EFF6FF', 'Pipeline', valorTotal > 0 ? `$${Number(valorTotal).toLocaleString('es-AR')}` : '$0', 'valor total activo') +
+        kpi('ti-briefcase', '#F59E0B', '#FFFBEB', 'Deals activos', activos.length, 'en progreso') +
+        kpi('ti-trophy', '#7C5CFC', '#F5F3FF', 'Tasa de cierre', cerrados.length > 0 ? `${tasaCierre}%` : '—', `de los deals activos`) +
+        kpi('ti-currency-dollar', '#22C55E', '#ECFDF5', 'Ingresos estimados', cerradosGanados.length > 0 ? `$${Number(cerradosGanados.reduce((a,c)=>a+(c.valor_estimado||c.valor_deal||0),0)).toLocaleString('es-AR')}` : '$0', 'potenciales')
+    } else {
+      const finalizadosMes = (() => {
+        const now = new Date()
+        return cerradosGanados.filter(c => {
+          if (!c.updated_at) return false
+          const d = new Date(c.updated_at)
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+        }).length
+      })()
+      const enRevision = crmContacts.filter(c => {
+        const s = CRM_STAGES.find(st => st.id === c.stage_id)
+        return s?.label?.toLowerCase().includes('revis')
+      }).length
+      el.innerHTML =
+        kpi('ti-list-check', '#3B82F6', '#EFF6FF', 'Ítems activos', activos.length, 'en curso') +
+        kpi('ti-circle-check', '#22C55E', '#ECFDF5', 'Finalizados este mes', finalizadosMes, 'completados') +
+        kpi('ti-eye', '#F59E0B', '#FFFBEB', 'En revisión', enRevision, 'pendientes de aprobación') +
+        kpi('ti-calendar-due', '#EF4444', '#FFF5F5', 'Próximo vencimiento', '—', 'sin fecha configurada')
+    }
+  }
+
+  function renderCrmSidePanel() {
+    // Actividad reciente — usar contactos recién creados/actualizados como proxy
+    const activityEl = document.getElementById('crm-activity-list')
+    if (activityEl) {
+      const recientes = [...crmContacts]
+        .sort((a,b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
+        .slice(0, 4)
+      if (!recientes.length) {
+        activityEl.innerHTML = '<div style="font-size:12px;color:#8B98A9;text-align:center;padding:8px 0">Sin actividad reciente.</div>'
+      } else {
+        activityEl.innerHTML = recientes.map(c => {
+          const fecha = formatDate(c.updated_at || c.created_at)
+          const stage = CRM_STAGES.find(s => s.id === c.stage_id)
+          return `<div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:8px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="ti ti-user" style="font-size:13px;color:#6366F1"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;color:#0A2540;line-height:1.4"><strong>${c.nombre}</strong> está en <span style="color:#5F6B7A">${stage?.label || '—'}</span></div>
+              <div style="font-size:11px;color:#8B98A9;margin-top:2px">${fecha?.text || ''}</div>
+            </div>
+          </div>`
+        }).join('')
+      }
+    }
+
+    // Próximos seguimientos — agrupar por fecha_cierre_esperada
+    const segEl = document.getElementById('crm-seguimientos-list')
+    if (segEl) {
+      const today = new Date(); today.setHours(0,0,0,0)
+      const conFecha = crmContacts.filter(c => c.fecha_cierre_esperada)
+      const grupos = { hoy: 0, mañana: 0, semana: 0 }
+      conFecha.forEach(c => {
+        const d = new Date(c.fecha_cierre_esperada); d.setHours(0,0,0,0)
+        const diff = Math.round((d - today) / 86400000)
+        if (diff === 0) grupos.hoy++
+        else if (diff === 1) grupos.mañana++
+        else if (diff > 1 && diff <= 7) grupos.semana++
+      })
+      const labels = { hoy: 'Hoy', mañana: 'Mañana', semana: 'Esta semana' }
+      const colors = { hoy: '#EF4444', mañana: '#F59E0B', semana: '#6366F1' }
+      const rows = Object.entries(grupos).filter(([,n]) => n > 0).map(([key, n]) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F3F7">
+          <span style="font-size:13px;color:#0A2540">${labels[key]}</span>
+          <span style="font-size:12px;font-weight:700;color:${colors[key]};background:${colors[key]}15;padding:2px 9px;border-radius:999px">${n}</span>
+        </div>`).join('')
+      segEl.innerHTML = rows || '<div style="font-size:12px;color:#8B98A9;text-align:center;padding:8px 0">Sin seguimientos próximos.</div>'
+    }
   }
 
   let crmDragId = null
 
-  function renderCrmPipeline() {
+  function populateCrmFilterOptions() {
+    const respSel = document.getElementById('crm-filter-responsable')
+    const origenSel = document.getElementById('crm-filter-origen')
+    if (!respSel || !origenSel) return
+
+    const respMap = {}
+    crmContacts.forEach(c => {
+      const p = c.profiles
+      if (p && c.assigned_to) respMap[c.assigned_to] = (p.nombre + ' ' + (p.apellido||'')).trim()
+    })
+    const respActual = respSel.value
+    respSel.innerHTML = '<option value="">Responsable: todos</option>' +
+      Object.entries(respMap).sort((a,b) => a[1].localeCompare(b[1])).map(([id,n]) => `<option value="${id}">${n}</option>`).join('')
+    if (respMap[respActual] || respActual === '') respSel.value = respActual
+    else respSel.value = ''
+
+    const origenes = [...new Set(crmContacts.map(c => c.origen).filter(Boolean))]
+    const origenActual = origenSel.value
+    origenSel.innerHTML = '<option value="">Origen: todos</option>' +
+      origenes.sort().map(o => `<option value="${o}">${o}</option>`).join('')
+    if (origenes.includes(origenActual) || origenActual === '') origenSel.value = origenActual
+    else origenSel.value = ''
+  }
+
+  window.clearCrmFilters = function() {
+    const r = document.getElementById('crm-filter-responsable')
+    const o = document.getElementById('crm-filter-origen')
+    const s = document.getElementById('crm-pipeline-search')
+    if (r) r.value = ''
+    if (o) o.value = ''
+    if (s) s.value = ''
+    renderCrmPipeline()
+  }
+
+  window.filterCrmPipelineSearch = function(query) {
+    renderCrmPipeline(query)
+  }
+
+  function renderCrmPipeline(searchOverride) {
     renderCrmMetrics()
+    renderCrmSidePanel()
+    populateCrmFilterOptions()
     const kanban = document.getElementById('crm-kanban')
     if (!kanban) return
 
@@ -8422,6 +8796,18 @@
       kanban.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink3)">Cargando pipeline...</div>'
       return
     }
+
+    // Filtros: responsable, origen, búsqueda
+    const fResp = document.getElementById('crm-filter-responsable')?.value
+    const fOrigen = document.getElementById('crm-filter-origen')?.value
+    const fSearch = (searchOverride !== undefined ? searchOverride : document.getElementById('crm-pipeline-search')?.value || '').toLowerCase().trim()
+
+    let contactosFiltrados = crmContacts
+    if (fResp) contactosFiltrados = contactosFiltrados.filter(c => c.assigned_to === fResp)
+    if (fOrigen) contactosFiltrados = contactosFiltrados.filter(c => c.origen === fOrigen)
+    if (fSearch) contactosFiltrados = contactosFiltrados.filter(c =>
+      c.nombre?.toLowerCase().includes(fSearch) || c.empresa?.toLowerCase().includes(fSearch) || c.email?.toLowerCase().includes(fSearch)
+    )
 
     const SCORE_LABELS = {
       'sin_calificar': { label: 'Sin calificar', color: '#9AA5B4', bg: '#F5F7FA' },
@@ -8432,7 +8818,7 @@
     }
 
     kanban.innerHTML = CRM_STAGES.map(stage => {
-      const contacts = crmContacts.filter(c => c.stage_id === stage.id)
+      const contacts = contactosFiltrados.filter(c => c.stage_id === stage.id)
       const total = contacts.reduce((a, c) => a + (c.valor_estimado || c.valor_deal || 0), 0)
       const cards = contacts.map(c => {
         const resp = c.profiles
