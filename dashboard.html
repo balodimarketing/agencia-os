@@ -7072,7 +7072,9 @@
       const mesesOrdenados = Object.entries(mesesMap).sort((a,b) => b[0].localeCompare(a[0]))
       mesSel.innerHTML = '<option value="">Mes: todos</option>' +
         mesesOrdenados.map(([key,label]) => `<option value="${key}">${label.charAt(0).toUpperCase()+label.slice(1)}</option>`).join('')
-      mesSel.value = mesActual
+      // Solo restaurar el valor si la opción todavía existe
+      if (mesesMap[mesActual] || mesActual === '') mesSel.value = mesActual
+      else mesSel.value = ''
     }
 
     // Clientes únicos presentes en las tareas
@@ -7269,12 +7271,16 @@
     // ── Agrupar por fecha (o por mes específico si hay filtro de mes activo) ──
     let grupos, SECTION_LABELS, SECTION_ORDER
 
-    if (fMes) {
+    const mesParts = fMes ? fMes.split('-').map(Number) : null
+    const mesValido = mesParts && mesParts.length === 2 && !isNaN(mesParts[0]) && !isNaN(mesParts[1]) && MESES_FILTRO[mesParts[1]]
+
+    if (mesValido) {
       // Vista de mes específico: una sola sección con todas las tareas de ese mes
       const activas = filtered.filter(t => t.estado !== 'completada').sort((a,b) => PRIO_ORDEN[a.prioridad||'normal'] - PRIO_ORDEN[b.prioridad||'normal'])
       const completadas = filtered.filter(t => t.estado === 'completada')
-      const [y, m] = fMes.split('-').map(Number)
-      const mesLabel = `${MESES_FILTRO[m].charAt(0).toUpperCase()+MESES_FILTRO[m].slice(1)} ${y}`
+      const [y, m] = mesParts
+      const nombreMes = MESES_FILTRO[m]
+      const mesLabel = `${nombreMes.charAt(0).toUpperCase()+nombreMes.slice(1)} ${y}`
       grupos = { mesEspecifico: [...activas, ...completadas] }
       SECTION_LABELS = { mesEspecifico: mesLabel }
       SECTION_ORDER = ['mesEspecifico']
