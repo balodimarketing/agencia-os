@@ -7065,6 +7065,7 @@
       tasks.forEach(t => {
         if (!t.fecha_entrega) return
         const d = new Date(t.fecha_entrega + 'T12:00:00')
+        if (isNaN(d.getTime())) return
         const key = `${d.getFullYear()}-${d.getMonth()}`
         mesesMap[key] = `${MESES_FILTRO[d.getMonth()]} ${d.getFullYear()}`
       })
