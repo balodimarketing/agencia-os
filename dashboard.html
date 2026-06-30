@@ -1198,6 +1198,9 @@
                   <option value="normal">Media</option>
                   <option value="baja">Baja</option>
                 </select>
+                <select id="task-filter-mes" onchange="renderTasks()" style="height:34px;padding:0 28px 0 12px;border:1px solid #E8EDF3;border-radius:9px;font-size:12px;font-weight:500;font-family:inherit;color:#0A2540;background:#F5F7FA url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238B98A9' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;outline:none;cursor:pointer;appearance:none">
+                  <option value="">Mes: todos</option>
+                </select>
                 <button onclick="clearTaskFilters()" style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;background:none;border:none;cursor:pointer;color:#8B98A9;font-size:12px;font-weight:600;font-family:inherit;transition:color .15s" onmouseover="this.style.color='#0A2540'" onmouseout="this.style.color='#8B98A9'">
                   <i class="ti ti-x" style="font-size:13px"></i> Limpiar filtros
                 </button>
@@ -7040,16 +7043,37 @@
     const c = document.getElementById('task-filter-cliente')
     const r = document.getElementById('task-filter-responsable')
     const p = document.getElementById('task-filter-prioridad')
+    const m = document.getElementById('task-filter-mes')
     if (c) c.value = ''
     if (r) r.value = ''
     if (p) p.value = ''
+    if (m) m.value = ''
     renderTasks()
   }
+
+  const MESES_FILTRO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
   function populateTaskFilterOptions() {
     const clienteSel = document.getElementById('task-filter-cliente')
     const respSel = document.getElementById('task-filter-responsable')
+    const mesSel = document.getElementById('task-filter-mes')
     if (!clienteSel || !respSel) return
+
+    // Meses únicos presentes en las tareas (con fecha_entrega)
+    if (mesSel) {
+      const mesesMap = {}
+      tasks.forEach(t => {
+        if (!t.fecha_entrega) return
+        const d = new Date(t.fecha_entrega + 'T12:00:00')
+        const key = `${d.getFullYear()}-${d.getMonth()}`
+        mesesMap[key] = `${MESES_FILTRO[d.getMonth()]} ${d.getFullYear()}`
+      })
+      const mesActual = mesSel.value
+      const mesesOrdenados = Object.entries(mesesMap).sort((a,b) => b[0].localeCompare(a[0]))
+      mesSel.innerHTML = '<option value="">Mes: todos</option>' +
+        mesesOrdenados.map(([key,label]) => `<option value="${key}">${label.charAt(0).toUpperCase()+label.slice(1)}</option>`).join('')
+      mesSel.value = mesActual
+    }
 
     // Clientes únicos presentes en las tareas
     const clientesMap = {}
@@ -7078,13 +7102,21 @@
 
     let filtered = currentTaskFilter === 'todas' ? tasks : tasks.filter(t => t.estado === currentTaskFilter)
 
-    // Filtros adicionales: cliente, responsable, prioridad
+    // Filtros adicionales: cliente, responsable, prioridad, mes
     const fCliente = document.getElementById('task-filter-cliente')?.value
     const fResp = document.getElementById('task-filter-responsable')?.value
     const fPrio = document.getElementById('task-filter-prioridad')?.value
+    const fMes = document.getElementById('task-filter-mes')?.value
     if (fCliente) filtered = filtered.filter(t => t.client_id === fCliente)
     if (fResp) filtered = filtered.filter(t => t.asignado_a === fResp)
     if (fPrio) filtered = filtered.filter(t => (t.prioridad || 'normal') === fPrio)
+    if (fMes) {
+      filtered = filtered.filter(t => {
+        if (!t.fecha_entrega) return false
+        const d = new Date(t.fecha_entrega + 'T12:00:00')
+        return `${d.getFullYear()}-${d.getMonth()}` === fMes
+      })
+    }
 
     // ── Greeting ──
     const greetEl = document.getElementById('tasks-greeting')
@@ -7234,18 +7266,32 @@
       return
     }
 
-    // ── Agrupar por fecha ──
-    const grupos = { hoy: [], semana: [], mes: [], anteriores: [], sinfecha: [] }
-    filtered.forEach(t => grupos[taskDateKey(t)].push(t))
-    // Ordenar cada grupo: activas por prioridad, completadas al fondo
-    Object.keys(grupos).forEach(key => {
-      const activas = grupos[key].filter(t => t.estado !== 'completada').sort((a,b) => PRIO_ORDEN[a.prioridad||'normal'] - PRIO_ORDEN[b.prioridad||'normal'])
-      const completadas = grupos[key].filter(t => t.estado === 'completada')
-      grupos[key] = [...activas, ...completadas]
-    })
+    // ── Agrupar por fecha (o por mes específico si hay filtro de mes activo) ──
+    let grupos, SECTION_LABELS, SECTION_ORDER
 
-    const SECTION_LABELS = { hoy: 'Hoy', semana: 'Esta semana', mes: 'Este mes', anteriores: 'Meses anteriores', sinfecha: 'Sin fecha' }
-    const SECTION_ORDER = ['hoy', 'semana', 'mes', 'anteriores', 'sinfecha']
+    if (fMes) {
+      // Vista de mes específico: una sola sección con todas las tareas de ese mes
+      const activas = filtered.filter(t => t.estado !== 'completada').sort((a,b) => PRIO_ORDEN[a.prioridad||'normal'] - PRIO_ORDEN[b.prioridad||'normal'])
+      const completadas = filtered.filter(t => t.estado === 'completada')
+      const [y, m] = fMes.split('-').map(Number)
+      const mesLabel = `${MESES_FILTRO[m].charAt(0).toUpperCase()+MESES_FILTRO[m].slice(1)} ${y}`
+      grupos = { mesEspecifico: [...activas, ...completadas] }
+      SECTION_LABELS = { mesEspecifico: mesLabel }
+      SECTION_ORDER = ['mesEspecifico']
+      taskSectionsOpen.mesEspecifico = true
+      if (!taskSectionLimits.mesEspecifico) taskSectionLimits.mesEspecifico = 10
+    } else {
+      grupos = { hoy: [], semana: [], mes: [], anteriores: [], sinfecha: [] }
+      filtered.forEach(t => grupos[taskDateKey(t)].push(t))
+      // Ordenar cada grupo: activas por prioridad, completadas al fondo
+      Object.keys(grupos).forEach(key => {
+        const activas = grupos[key].filter(t => t.estado !== 'completada').sort((a,b) => PRIO_ORDEN[a.prioridad||'normal'] - PRIO_ORDEN[b.prioridad||'normal'])
+        const completadas = grupos[key].filter(t => t.estado === 'completada')
+        grupos[key] = [...activas, ...completadas]
+      })
+      SECTION_LABELS = { hoy: 'Hoy', semana: 'Esta semana', mes: 'Este mes', anteriores: 'Meses anteriores', sinfecha: 'Sin fecha' }
+      SECTION_ORDER = ['hoy', 'semana', 'mes', 'anteriores', 'sinfecha']
+    }
 
     list.innerHTML = SECTION_ORDER.filter(key => grupos[key].length > 0).map(key => {
       const items = grupos[key]
