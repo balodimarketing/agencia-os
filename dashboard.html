@@ -7071,7 +7071,7 @@
     respSel.value = respActual
   }
 
-  function renderTasks() {
+  window.renderTasks = function() {
     const list = document.getElementById('task-sections')
     if (!list) return
     populateTaskFilterOptions()
