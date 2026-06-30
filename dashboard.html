@@ -7027,7 +7027,7 @@
 
   function taskDateKey(t) {
     if (!t.fecha_entrega) return 'sinfecha'
-    const d = new Date(t.fecha_entrega + 'T12:00:00')
+    const d = new Date(t.fecha_entrega.slice(0,10) + 'T12:00:00')
     const today = new Date(); today.setHours(0,0,0,0)
     const dd = new Date(d); dd.setHours(0,0,0,0)
     const diffDays = Math.round((dd - today) / 86400000)
@@ -7064,7 +7064,8 @@
       const mesesMap = {}
       tasks.forEach(t => {
         if (!t.fecha_entrega) return
-        const d = new Date(t.fecha_entrega + 'T12:00:00')
+        const fechaBase = t.fecha_entrega.slice(0, 10) // siempre tomar solo YYYY-MM-DD
+        const d = new Date(fechaBase + 'T12:00:00')
         if (isNaN(d.getTime())) return
         const key = `${d.getFullYear()}-${d.getMonth()}`
         mesesMap[key] = `${MESES_FILTRO[d.getMonth()]} ${d.getFullYear()}`
@@ -7116,7 +7117,9 @@
     if (fMes) {
       filtered = filtered.filter(t => {
         if (!t.fecha_entrega) return false
-        const d = new Date(t.fecha_entrega + 'T12:00:00')
+        const fechaBase = t.fecha_entrega.slice(0, 10)
+        const d = new Date(fechaBase + 'T12:00:00')
+        if (isNaN(d.getTime())) return false
         return `${d.getFullYear()}-${d.getMonth()}` === fMes
       })
     }
@@ -7136,7 +7139,7 @@
       const pendientes = tasks.filter(t => t.estado === 'pendiente').length
       const enProgreso = tasks.filter(t => t.estado === 'en-progreso').length
       const completadas = tasks.filter(t => t.estado === 'completada').length
-      const vencidas = tasks.filter(t => t.fecha_entrega && new Date(t.fecha_entrega + 'T12:00:00') < new Date() && t.estado !== 'completada').length
+      const vencidas = tasks.filter(t => t.fecha_entrega && new Date(t.fecha_entrega.slice(0,10) + 'T12:00:00') < new Date() && t.estado !== 'completada').length
       // Tiempo promedio de finalización (días entre created_at y updated_at para completadas)
       const completadasConFechas = tasks.filter(t => t.estado === 'completada' && t.created_at && t.updated_at)
       let promedioStr = '—'
@@ -7197,7 +7200,7 @@
         .sort((a,b) => new Date(a.fecha_entrega) - new Date(b.fecha_entrega))
       const grupos = { hoy: [], mañana: [], semana: [] }
       pendientesConFecha.forEach(t => {
-        const d = new Date(t.fecha_entrega + 'T12:00:00'); d.setHours(0,0,0,0)
+        const d = new Date(t.fecha_entrega.slice(0,10) + 'T12:00:00'); d.setHours(0,0,0,0)
         const diff = Math.round((d - today) / 86400000)
         if (diff === 0) grupos.hoy.push(t)
         else if (diff === 1) grupos.mañana.push(t)
