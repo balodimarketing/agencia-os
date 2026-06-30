@@ -1745,6 +1745,9 @@
             <div class="cal-view-btn active" id="crm-btn-pipeline" onclick="switchCrmView('pipeline')">Pipeline</div>
             <div class="cal-view-btn" id="crm-btn-contactos" onclick="switchCrmView('contactos')">Contactos</div>
           </div>
+          <button class="tbtn" onclick="exportGanadosCSV()" title="Exportar ganados (CSV para Meta Ads)" style="gap:6px;flex-shrink:0">
+            <i class="ti ti-download" style="font-size:14px"></i>
+          </button>
           <button class="tbtn" onclick="openPipelineEditor()" style="gap:6px;flex-shrink:0">
             <i class="ti ti-settings-2" style="font-size:14px"></i>
           </button>
@@ -2711,6 +2714,22 @@
               <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:8px">
                 <i class="ti ti-info-circle" style="font-size:15px;color:#0891B2;flex-shrink:0;margin-top:1px"></i>
                 <div style="font-size:12px;color:#0C4A6E;line-height:1.5">Guardá esta key en un lugar seguro. Si la regenerás, las integraciones anteriores dejarán de funcionar.</div>
+              </div>
+            </div>
+
+            <!-- Conexiones por pipeline -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px">
+                <div style="width:32px;height:32px;border-radius:10px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <i class="ti ti-route" style="font-size:15px;color:#7C5CFC"></i>
+                </div>
+                <div>
+                  <div style="font-size:15px;font-weight:700;color:#0A2540;margin-bottom:3px">Conexiones por pipeline</div>
+                  <div style="font-size:13px;color:#5F6B7A">Cada pipeline tiene su propio link. Conectá cada campaña de Make/Zapier al pipeline correspondiente sin tocar JSON.</div>
+                </div>
+              </div>
+              <div id="integ-pipeline-links" style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="text-align:center;padding:20px;color:#8B98A9;font-size:13px">Cargando pipelines...</div>
               </div>
             </div>
 
@@ -8540,6 +8559,41 @@
     }
   })
 
+  window.exportGanadosCSV = function() {
+    const ganadoIds = CRM_STAGES.filter(s => s.es_ganado).map(s => s.id)
+    const ganados = crmContacts.filter(c => ganadoIds.includes(c.stage_id))
+
+    if (!ganados.length) {
+      showToast('No hay contactos en etapa "Ganado" en este pipeline todavía')
+      return
+    }
+
+    const pipeline = CRM_PIPELINES.find(p => p.id === currentPipelineId)
+
+    // Formato compatible con Meta Ads Custom Audience (Customer List)
+    // Columnas: email, phone, fn (first name), ln (last name) — headers que Meta reconoce
+    const headers = ['email', 'phone', 'fn', 'ln', 'company']
+    const rows = ganados.map(c => {
+      const partes = (c.nombre || '').trim().split(' ')
+      const fn = partes[0] || ''
+      const ln = partes.slice(1).join(' ') || ''
+      const phone = (c.telefono || '').replace(/[^\d+]/g, '') // Meta prefiere solo dígitos y +
+      return [c.email || '', phone, fn, ln, c.empresa || '']
+        .map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')
+    })
+
+    const csv = [headers.join(','), ...rows].join('\n')
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }) // BOM para acentos
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Ganados_${(pipeline?.nombre || 'Pipeline').replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+
+    showToast(`✓ ${ganados.length} contacto${ganados.length!==1?'s':''} exportado${ganados.length!==1?'s':''}. Subilo en Meta Business Manager → Audiences → Customer List.`)
+  }
+
   window.toggleCardToolsMenu = function(contactId) {
     const menu = document.getElementById('card-tools-menu-' + contactId)
     if (!menu) return
@@ -12733,6 +12787,7 @@ if (id) {
     integKeyVisible = false
     await loadApiKey()
     await loadIntegLogs()
+    await loadIntegPipelineLinks()
   }
 
   async function loadApiKey() {
@@ -12896,6 +12951,45 @@ if (id) {
     btn.innerHTML = '<i class="ti ti-send" style="font-size:16px"></i> Enviar lead de prueba'
     await loadIntegLogs()
     await loadIntegLogs()
+  }
+
+  async function loadIntegPipelineLinks() {
+    const el = document.getElementById('integ-pipeline-links')
+    if (!el) return
+
+    if (CRM_PIPELINES.length === 0) await loadCrmPipelines()
+
+    const endpointBase = document.getElementById('integ-endpoint-url')?.textContent?.trim()
+      || 'https://trsbjjagrpvlzvcveiph.supabase.co/functions/v1/swift-function'
+
+    if (!CRM_PIPELINES.length) {
+      el.innerHTML = '<div style="text-align:center;padding:16px;color:#8B98A9;font-size:13px">No hay pipelines configurados todavía.</div>'
+      return
+    }
+
+    el.innerHTML = CRM_PIPELINES.map(p => {
+      const url = `${endpointBase}?pipeline=${p.id}`
+      const icon = p.tipo === 'comercial' ? 'ti-chart-line' : p.tipo === 'interno' ? 'ti-building' : 'ti-rocket'
+      const iconColor = p.tipo === 'comercial' ? '#3B82F6' : p.tipo === 'interno' ? '#F59E0B' : '#7C5CFC'
+      const isDefault = p.es_default
+      return `<div style="border:1px solid #E8EDF3;border-radius:12px;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <i class="ti ${icon}" style="font-size:14px;color:${iconColor}"></i>
+          <span style="font-size:13px;font-weight:700;color:#0A2540">${p.nombre}</span>
+          ${isDefault ? '<span style="font-size:9px;font-weight:700;padding:2px 8px;background:#F5F7FA;color:#8B98A9;border-radius:999px">Default</span>' : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:36px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;padding:0 12px;font-size:11px;font-family:monospace;color:#5F6B7A;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${url}</div>
+          <button onclick="copyPipelineLink('${url.replace(/'/g,"\'")}')" style="height:36px;padding:0 14px;background:#0A2540;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
+            <i class="ti ti-copy" style="font-size:12px"></i> Copiar
+          </button>
+        </div>
+      </div>`
+    }).join('')
+  }
+
+  window.copyPipelineLink = function(url) {
+    navigator.clipboard.writeText(url).then(() => showToast('✓ Link copiado — pegalo en tu Make/Zapier scenario'))
   }
 
   async function loadIntegLogs() {
