@@ -2754,11 +2754,12 @@
             <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
               <div style="font-size:15px;font-weight:700;color:#0A2540;margin-bottom:16px">Últimas solicitudes recibidas</div>
               <!-- Header tabla -->
-              <div style="display:grid;grid-template-columns:130px 110px 1fr 1fr 90px 24px;gap:10px;padding:6px 10px;margin-bottom:2px">
+              <div style="display:grid;grid-template-columns:110px 100px 1fr 1fr 130px 90px 24px;gap:10px;padding:6px 10px;margin-bottom:2px">
                 <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Fecha</div>
                 <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Origen</div>
                 <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Nombre</div>
                 <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Email</div>
+                <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Pipeline destino</div>
                 <div style="font-size:10px;font-weight:700;color:#8B98A9;text-transform:uppercase;letter-spacing:.5px">Estado</div>
                 <div></div>
               </div>
@@ -8629,11 +8630,23 @@
       .select('id', { count: 'exact', head: true })
       .eq('pipeline_id', pipelineId)
 
+    // Verificar si tuvo actividad de integraciones (leads automáticos) en los últimos 30 días
+    const hace30dias = new Date(); hace30dias.setDate(hace30dias.getDate() - 30)
+    const { count: actividadCount } = await supabase
+      .from('integration_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('pipeline_id', pipelineId)
+      .gte('created_at', hace30dias.toISOString())
+
     const contactosMsg = count > 0
       ? `Este pipeline tiene ${count} contacto${count!==1?'s':''}. NO se eliminarán los contactos, pero quedarán sin pipeline asignado hasta que los muevas manualmente.\n\n`
       : ''
 
-    if (!confirm(`${contactosMsg}¿Eliminar el pipeline "${pipelineNombre}"?\n\nEsta acción se puede revertir contactando soporte, pero el pipeline dejará de estar visible.`)) return
+    const actividadMsg = actividadCount > 0
+      ? `⚠️ ATENCIÓN: Este pipeline recibió ${actividadCount} lead${actividadCount!==1?'s':''} automático${actividadCount!==1?'s':''} en los últimos 30 días. Si tenés una campaña de Make/Zapier apuntando a este pipeline, esos leads futuros caerán al pipeline default en lugar de perderse, pero dejarán de ir a donde esperás.\n\n`
+      : ''
+
+    if (!confirm(`${actividadMsg}${contactosMsg}¿Eliminar el pipeline "${pipelineNombre}"?\n\nEsta acción se puede revertir contactando soporte, pero el pipeline dejará de estar visible.`)) return
 
     // Archivar en lugar de borrar físicamente — más seguro, reversible
     const { error } = await supabase
@@ -13016,16 +13029,31 @@ if (id) {
       return
     }
 
+    // Chequear actividad de los últimos 30 días por pipeline (todo en una sola query)
+    const hace30dias = new Date(); hace30dias.setDate(hace30dias.getDate() - 30)
+    const { data: actividadLogs } = await supabase
+      .from('integration_logs')
+      .select('pipeline_id')
+      .eq('agency_id', agencyId)
+      .gte('created_at', hace30dias.toISOString())
+      .not('pipeline_id', 'is', null)
+    const pipelinesConActividad = new Set((actividadLogs || []).map(l => l.pipeline_id))
+
     el.innerHTML = CRM_PIPELINES.map(p => {
       const url = `${endpointBase}?pipeline=${p.id}`
       const icon = p.tipo === 'comercial' ? 'ti-chart-line' : p.tipo === 'interno' ? 'ti-building' : 'ti-rocket'
       const iconColor = p.tipo === 'comercial' ? '#3B82F6' : p.tipo === 'interno' ? '#F59E0B' : '#7C5CFC'
       const isDefault = p.es_default
+      const hasActivity = pipelinesConActividad.has(p.id)
+      const activityBadge = hasActivity
+        ? '<span style="font-size:9px;font-weight:700;padding:2px 8px;background:#ECFDF5;color:#16A34A;border-radius:999px;display:flex;align-items:center;gap:3px"><div style="width:5px;height:5px;border-radius:50%;background:#22C55E"></div>Activo</span>'
+        : '<span style="font-size:9px;font-weight:700;padding:2px 8px;background:#F5F7FA;color:#8B98A9;border-radius:999px">Sin actividad</span>'
       return `<div style="border:1px solid #E8EDF3;border-radius:12px;padding:14px 16px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <i class="ti ${icon}" style="font-size:14px;color:${iconColor}"></i>
           <span style="font-size:13px;font-weight:700;color:#0A2540">${p.nombre}</span>
           ${isDefault ? '<span style="font-size:9px;font-weight:700;padding:2px 8px;background:#F5F7FA;color:#8B98A9;border-radius:999px">Default</span>' : ''}
+          <div style="margin-left:auto">${activityBadge}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="flex:1;height:36px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:8px;padding:0 12px;font-size:11px;font-family:monospace;color:#5F6B7A;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${url}</div>
@@ -13047,7 +13075,7 @@ if (id) {
 
     const { data: logs } = await supabase
       .from('integration_logs')
-      .select('*, crm_contacts(nombre, email)')
+      .select('*, crm_contacts(nombre, email), crm_pipelines(nombre)')
       .eq('agency_id', agencyId)
       .order('created_at', { ascending: false })
       .limit(10)
@@ -13074,12 +13102,18 @@ if (id) {
           : '<span style="padding:3px 10px;border-radius:999px;background:#FEF2F2;color:#DC2626;font-size:11px;font-weight:700">Error</span>'
       const nombre = log.crm_contacts?.nombre || '—'
       const email = log.crm_contacts?.email || '—'
+      const pipelineNombre = log.crm_pipelines?.nombre || null
+      const pipelineHTML = pipelineNombre
+        ? `<span style="font-size:11px;color:#5F6B7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pipelineNombre}</span>`
+        : `<span style="font-size:11px;color:#C4CDD9">${log.fallback_used ? 'sin pipeline' : '—'}</span>`
       const borderBottom = i < logs.length - 1 ? 'border-bottom:1px solid #F0F3F7;' : ''
-      return '<div style="display:grid;grid-template-columns:130px 110px 1fr 1fr 90px 24px;gap:10px;padding:11px 10px;align-items:center;' + borderBottom + 'border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'#F9FAFB\'" onmouseout="this.style.background=\'\'">' +
+      const titleAttr = log.fallback_reason ? ` title="${log.fallback_reason.replace(/"/g,'&quot;')}"` : ''
+      return '<div' + titleAttr + ' style="display:grid;grid-template-columns:110px 100px 1fr 1fr 130px 90px 24px;gap:10px;padding:11px 10px;align-items:center;' + borderBottom + 'border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'#F9FAFB\'" onmouseout="this.style.background=\'\'">' +
         '<div style="font-size:12px;color:#8B98A9">' + fecha + '</div>' +
         '<div style="font-size:12px;color:#5F6B7A;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (log.origen || '—') + '</div>' +
         '<div style="font-size:12px;color:#0A2540;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nombre + '</div>' +
         '<div style="font-size:12px;color:#5F6B7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + email + '</div>' +
+        pipelineHTML +
         badge +
         '<i class="ti ti-chevron-right" style="font-size:12px;color:#8B98A9"></i>' +
         '</div>'
