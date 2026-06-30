@@ -1147,18 +1147,102 @@
       </div>
 
       <!-- TAREAS -->
-      <div class="content-subview" id="sv-tareas" style="padding:20px;overflow-y:auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <div style="display:flex;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:3px;position:relative" id="task-filter-tabs">
-            <div class="pill-slider" id="task-filter-pill"></div>
-            <button id="task-btn-todas" class="filter-btn active" data-filter="todas" onclick="filterTasks(this)" style="padding:6px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--celeste);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Todas</button>
-            <button id="task-btn-pendiente" class="filter-btn" data-filter="pendiente" onclick="filterTasks(this)" style="padding:6px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Pendientes</button>
-            <button id="task-btn-en-progreso" class="filter-btn" data-filter="en-progreso" onclick="filterTasks(this)" style="padding:6px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">En progreso</button>
-            <button id="task-btn-completada" class="filter-btn" data-filter="completada" onclick="filterTasks(this)" style="padding:6px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Completadas</button>
+      <div class="content-subview" id="sv-tareas" style="padding:32px;overflow-y:auto;background:#F5F7FA;max-width:1400px;margin:0 auto;width:100%">
+
+        <!-- Hero -->
+        <div style="background:linear-gradient(135deg,#FFFFFF,#F7FCFF);border:1px solid #E8EDF3;border-radius:20px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;min-height:126px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+          <svg style="position:absolute;right:0;top:0;pointer-events:none;opacity:.6" width="320" height="170" viewBox="0 0 320 170">
+            <defs><radialGradient id="tg" cx="65%" cy="35%" r="55%"><stop offset="0%" stop-color="#91E8FB" stop-opacity=".18"/><stop offset="100%" stop-color="#91E8FB" stop-opacity="0"/></radialGradient></defs>
+            <circle cx="240" cy="60" r="140" fill="url(#tg)"/>
+            <rect x="200" y="30" width="56" height="14" rx="4" fill="none" stroke="#E8EDF3" stroke-width="1.5"/>
+            <circle cx="210" cy="37" r="3" fill="#91E8FB" opacity=".5"/>
+            <rect x="220" y="34" width="28" height="3" rx="1.5" fill="#E8EDF3"/>
+            <rect x="200" y="52" width="70" height="14" rx="4" fill="none" stroke="#E8EDF3" stroke-width="1.5"/>
+            <circle cx="210" cy="59" r="3" fill="#22C55E" opacity=".5"/>
+            <rect x="220" y="56" width="36" height="3" rx="1.5" fill="#E8EDF3"/>
+            <rect x="200" y="74" width="48" height="14" rx="4" fill="none" stroke="#E8EDF3" stroke-width="1.5"/>
+            <circle cx="210" cy="81" r="3" fill="#F59E0B" opacity=".5"/>
+            <rect x="220" y="78" width="20" height="3" rx="1.5" fill="#E8EDF3"/>
+            <circle cx="285" cy="115" r="3" fill="#91E8FB" opacity=".4"/>
+            <circle cx="265" cy="135" r="2" fill="#0A2540" opacity=".08"/>
+            <line x1="180" y1="100" x2="240" y2="100" stroke="#E8EDF3" stroke-width="1" opacity=".5" stroke-dasharray="3 3"/>
+          </svg>
+          <div style="position:relative;z-index:1;max-width:560px">
+            <div id="tasks-greeting" style="font-size:32px;font-weight:700;color:#0A2540;letter-spacing:-.7px;line-height:1.15;margin-bottom:8px">¡Buen día!</div>
+            <div style="font-size:14px;color:#5F6B7A;line-height:1.5">Este es el estado actual de tus tareas y del progreso del equipo.</div>
           </div>
-          <div id="task-stats-row" style="display:flex;gap:6px"></div>
         </div>
-        <div class="task-list" id="task-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+        <!-- Layout principal: contenido + panel lateral -->
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+
+          <!-- ═══ Columna principal ═══ -->
+          <div>
+
+            <!-- KPIs -->
+            <div id="task-kpis" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px"></div>
+
+            <!-- Barra de filtros -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:18px 24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div style="display:flex;gap:6px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:10px;padding:3px;position:relative" id="task-filter-tabs">
+                  <div class="pill-slider" id="task-filter-pill"></div>
+                  <button id="task-btn-todas" class="filter-btn active" data-filter="todas" onclick="filterTasks(this)" style="padding:7px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--celeste);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Todas</button>
+                  <button id="task-btn-pendiente" class="filter-btn" data-filter="pendiente" onclick="filterTasks(this)" style="padding:7px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Pendientes</button>
+                  <button id="task-btn-en-progreso" class="filter-btn" data-filter="en-progreso" onclick="filterTasks(this)" style="padding:7px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">En progreso</button>
+                  <button id="task-btn-completada" class="filter-btn" data-filter="completada" onclick="filterTasks(this)" style="padding:7px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Completadas</button>
+                </div>
+                <div style="width:1px;height:24px;background:#E8EDF3;margin:0 2px"></div>
+                <!-- Selector de vistas -->
+                <div style="display:flex;gap:4px">
+                  <button style="height:32px;width:32px;border-radius:8px;border:1.5px solid #0A2540;background:#0A2540;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Vista de lista">
+                    <i class="ti ti-list" style="font-size:15px"></i>
+                  </button>
+                  <button disabled style="height:32px;width:32px;border-radius:8px;border:1px solid #E8EDF3;background:#fff;color:#C4CDD9;cursor:not-allowed;display:flex;align-items:center;justify-content:center" title="Kanban — Próximamente">
+                    <i class="ti ti-layout-kanban" style="font-size:15px"></i>
+                  </button>
+                  <button disabled style="height:32px;width:32px;border-radius:8px;border:1px solid #E8EDF3;background:#fff;color:#C4CDD9;cursor:not-allowed;display:flex;align-items:center;justify-content:center" title="Calendario — Próximamente">
+                    <i class="ti ti-calendar" style="font-size:15px"></i>
+                  </button>
+                </div>
+                <div style="margin-left:auto" id="task-stats-row"></div>
+              </div>
+            </div>
+
+            <!-- Secciones agrupadas -->
+            <div id="task-sections"></div>
+
+          </div>
+
+          <!-- ═══ Panel lateral ═══ -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+
+            <!-- Progreso general -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:16px">Progreso general</div>
+              <div id="task-progress-donut" style="display:flex;align-items:center;justify-content:center"></div>
+            </div>
+
+            <!-- Próximas a vencer -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:14px">Próximas a vencer</div>
+              <div id="task-upcoming-list" style="display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+
+            <!-- Actividad reciente -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)" id="task-activity-card">
+              <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:14px">Actividad reciente</div>
+              <div id="task-activity-list" style="display:flex;flex-direction:column;gap:12px"></div>
+            </div>
+
+            <!-- Etiquetas populares (oculta si no hay) -->
+            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:none" id="task-tags-card">
+              <div style="font-size:14px;font-weight:700;color:#0A2540;margin-bottom:14px">Etiquetas populares</div>
+              <div id="task-tags-list" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
 
@@ -6898,22 +6982,179 @@
     }
   }
 
+  let taskSectionsOpen = { hoy: true, semana: true, mes: true, anteriores: false, sinfecha: false }
+  let taskSectionLimits = { hoy: 10, semana: 10, mes: 10, anteriores: 10, sinfecha: 10 }
+
+  const PRIO_ORDEN = { urgente: 0, alta: 1, normal: 2, baja: 3 }
+  const PRIO_CONFIG = {
+    urgente: { label: 'Crítica', color: '#DC2626', bg: '#FEF2F2', dot: '#EF4444' },
+    alta:    { label: 'Alta',    color: '#C2410C', bg: '#FFF7ED', dot: '#F97316' },
+    normal:  { label: 'Media',   color: '#92400E', bg: '#FFFBEB', dot: '#F59E0B' },
+    baja:    { label: 'Baja',    color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
+  }
+  const ESTADO_CONFIG = {
+    'pendiente':    { label: 'Pendiente',    color: '#5F6B7A', bg: '#F5F7FA' },
+    'en-progreso':  { label: 'En progreso',  color: '#92400E', bg: '#FFFBEB' },
+    'revision':     { label: 'Revisión',     color: '#6366F1', bg: '#EEF2FF' },
+    'completada':   { label: 'Completada',   color: '#16A34A', bg: '#ECFDF5' },
+  }
+
+  function taskDateKey(t) {
+    if (!t.fecha_entrega) return 'sinfecha'
+    const d = new Date(t.fecha_entrega + 'T12:00:00')
+    const today = new Date(); today.setHours(0,0,0,0)
+    const dd = new Date(d); dd.setHours(0,0,0,0)
+    const diffDays = Math.round((dd - today) / 86400000)
+    if (diffDays < 0) return 'anteriores'
+    if (diffDays === 0) return 'hoy'
+    if (diffDays <= 7) return 'semana'
+    if (dd.getMonth() === today.getMonth() && dd.getFullYear() === today.getFullYear()) return 'mes'
+    if (dd < today) return 'anteriores'
+    return 'mes'
+  }
+
   function renderTasks() {
-    const list = document.getElementById('task-list')
+    const list = document.getElementById('task-sections')
+    if (!list) return
     let filtered = currentTaskFilter === 'todas' ? tasks : tasks.filter(t => t.estado === currentTaskFilter)
 
-    // Stats badges
+    // ── Greeting ──
+    const greetEl = document.getElementById('tasks-greeting')
+    if (greetEl) {
+      const hour = new Date().getHours()
+      const saludo = hour < 12 ? 'Buen día' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
+      const userName = document.body.dataset.userName || ''
+      greetEl.textContent = `¡${saludo}${userName ? ', ' + userName : ''}!`
+    }
+
+    // ── KPIs ──
+    const kpisEl = document.getElementById('task-kpis')
+    if (kpisEl) {
+      const pendientes = tasks.filter(t => t.estado === 'pendiente').length
+      const enProgreso = tasks.filter(t => t.estado === 'en-progreso').length
+      const completadas = tasks.filter(t => t.estado === 'completada').length
+      const vencidas = tasks.filter(t => t.fecha_entrega && new Date(t.fecha_entrega + 'T12:00:00') < new Date() && t.estado !== 'completada').length
+      // Tiempo promedio de finalización (días entre created_at y updated_at para completadas)
+      const completadasConFechas = tasks.filter(t => t.estado === 'completada' && t.created_at && t.updated_at)
+      let promedioStr = '—'
+      if (completadasConFechas.length) {
+        const totalDias = completadasConFechas.reduce((sum, t) => {
+          const diff = (new Date(t.updated_at) - new Date(t.created_at)) / 86400000
+          return sum + Math.max(diff, 0)
+        }, 0)
+        const avg = totalDias / completadasConFechas.length
+        promedioStr = avg < 1 ? '< 1 día' : `${avg.toFixed(1)} días`
+      }
+
+      const kpiData = [
+        { icon:'ti-circle-dashed', color:'#8B98A9', bg:'#F5F7FA', num: pendientes, label:'Pendientes', desc:'Sin iniciar' },
+        { icon:'ti-progress', color:'#F59E0B', bg:'#FFFBEB', num: enProgreso, label:'En progreso', desc:'En curso ahora' },
+        { icon:'ti-circle-check', color:'#22C55E', bg:'#ECFDF5', num: completadas, label:'Completadas', desc:'Finalizadas' },
+        { icon:'ti-alert-triangle', color:'#EF4444', bg:'#FFF5F5', num: vencidas, label:'Vencidas', desc:'Requieren atención' },
+        { icon:'ti-clock-hour-4', color:'#7C5CFC', bg:'#F5F3FF', num: promedioStr, label:'Tiempo prom.', desc:'De finalización' },
+      ]
+      kpisEl.innerHTML = kpiData.map(k => `
+        <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:18px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+          <div style="width:32px;height:32px;border-radius:9px;background:${k.bg};display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+            <i class="ti ${k.icon}" style="font-size:16px;color:${k.color}"></i>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#0A2540;letter-spacing:-.5px;line-height:1;margin-bottom:4px">${k.num}</div>
+          <div style="font-size:11px;font-weight:600;color:#5F6B7A;margin-bottom:1px">${k.label}</div>
+          <div style="font-size:10px;color:#8B98A9">${k.desc}</div>
+        </div>`).join('')
+    }
+
+    // ── Donut de progreso ──
+    const donutEl = document.getElementById('task-progress-donut')
+    if (donutEl) {
+      const total = tasks.length
+      const done = tasks.filter(t => t.estado === 'completada').length
+      const pct = total ? Math.round((done / total) * 100) : 0
+      const radius = 54, circumference = 2 * Math.PI * radius
+      const offset = circumference - (pct / 100) * circumference
+      donutEl.innerHTML = `
+        <div style="position:relative;width:140px;height:140px">
+          <svg width="140" height="140" viewBox="0 0 140 140" style="transform:rotate(-90deg)">
+            <circle cx="70" cy="70" r="${radius}" fill="none" stroke="#F0F3F7" stroke-width="14"/>
+            <circle cx="70" cy="70" r="${radius}" fill="none" stroke="#0A2540" stroke-width="14" stroke-linecap="round"
+              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" style="transition:stroke-dashoffset .6s ease"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:26px;font-weight:700;color:#0A2540;letter-spacing:-.5px">${pct}%</div>
+            <div style="font-size:10px;color:#8B98A9;font-weight:500">completado</div>
+          </div>
+        </div>`
+    }
+
+    // ── Próximas a vencer ──
+    const upcomingEl = document.getElementById('task-upcoming-list')
+    if (upcomingEl) {
+      const today = new Date(); today.setHours(0,0,0,0)
+      const pendientesConFecha = tasks.filter(t => t.estado !== 'completada' && t.fecha_entrega)
+        .sort((a,b) => new Date(a.fecha_entrega) - new Date(b.fecha_entrega))
+      const grupos = { hoy: [], mañana: [], semana: [] }
+      pendientesConFecha.forEach(t => {
+        const d = new Date(t.fecha_entrega + 'T12:00:00'); d.setHours(0,0,0,0)
+        const diff = Math.round((d - today) / 86400000)
+        if (diff === 0) grupos.hoy.push(t)
+        else if (diff === 1) grupos.mañana.push(t)
+        else if (diff > 1 && diff <= 7) grupos.semana.push(t)
+      })
+      const labels = { hoy: 'Hoy', mañana: 'Mañana', semana: 'Esta semana' }
+      const dotColors = { hoy: '#EF4444', mañana: '#F59E0B', semana: '#6366F1' }
+      const rows = Object.entries(grupos).filter(([,arr]) => arr.length).map(([key, arr]) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0F3F7">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:7px;height:7px;border-radius:50%;background:${dotColors[key]}"></div>
+            <span style="font-size:13px;color:#0A2540;font-weight:500">${labels[key]}</span>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:#0A2540">${arr.length}</span>
+        </div>`).join('')
+      upcomingEl.innerHTML = rows || '<div style="font-size:12px;color:#8B98A9;text-align:center;padding:8px 0">Sin tareas próximas a vencer.</div>'
+    }
+
+    // ── Actividad reciente ──
+    const activityEl = document.getElementById('task-activity-list')
+    const activityCard = document.getElementById('task-activity-card')
+    if (activityEl) {
+      // Usar tareas completadas o creadas recientemente como proxy de actividad
+      const recientes = [...tasks]
+        .filter(t => t.updated_at || t.created_at)
+        .sort((a,b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
+        .slice(0, 5)
+      if (!recientes.length) {
+        if (activityCard) activityCard.style.display = 'none'
+      } else {
+        if (activityCard) activityCard.style.display = 'block'
+        activityEl.innerHTML = recientes.map(t => {
+          const isDone = t.estado === 'completada'
+          const fecha = formatDate(t.updated_at || t.created_at)
+          const icon = isDone ? 'ti-circle-check' : 'ti-plus'
+          const color = isDone ? '#22C55E' : '#6366F1'
+          const verbo = isDone ? 'completó' : 'creó'
+          const assignee = t.agency_members?.profiles
+          const who = assignee ? assignee.nombre : 'Alguien'
+          return `<div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:26px;height:26px;border-radius:8px;background:${color}15;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="ti ${icon}" style="font-size:13px;color:${color}"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;color:#0A2540;line-height:1.4"><strong>${who}</strong> ${verbo} <span style="color:#5F6B7A">"${t.titulo}"</span></div>
+              <div style="font-size:11px;color:#8B98A9;margin-top:2px">${fecha?.text || ''}</div>
+            </div>
+          </div>`
+        }).join('')
+      }
+    }
+
+    // ── Stats badges en la barra de filtros ──
     const statsEl = document.getElementById('task-stats-row')
     if (statsEl) {
-      const pendiente = tasks.filter(t => t.estado === 'pendiente').length
-      const enProgreso = tasks.filter(t => t.estado === 'en-progreso').length
-      const vencidas = tasks.filter(t => t.fecha_entrega && new Date(t.fecha_entrega) < new Date() && t.estado !== 'completada').length
       const urgentes = tasks.filter(t => t.prioridad === 'urgente' && t.estado !== 'completada').length
+      const vencidas = tasks.filter(t => t.fecha_entrega && new Date(t.fecha_entrega) < new Date() && t.estado !== 'completada').length
       statsEl.innerHTML = [
-        urgentes > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#FEF2F2;color:var(--danger)">${urgentes} urgente${urgentes !== 1 ? 's' : ''}</span>` : '',
-        pendiente > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--bg);color:var(--ink3)">${pendiente} pendiente${pendiente !== 1 ? 's' : ''}</span>` : '',
-        enProgreso > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#E6F1FB;color:#0C447C">${enProgreso} en progreso</span>` : '',
-        vencidas > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#FEF2F2;color:var(--danger)">${vencidas} vencida${vencidas !== 1 ? 's' : ''}</span>` : ''
+        urgentes > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#FEF2F2;color:#DC2626">${urgentes} crítica${urgentes !== 1 ? 's' : ''}</span>` : '',
+        vencidas > 0 ? `<span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#FEF2F2;color:#DC2626;margin-left:6px">${vencidas} vencida${vencidas !== 1 ? 's' : ''}</span>` : ''
       ].join('')
     }
 
@@ -6923,70 +7164,110 @@
     }, 50)
 
     if (filtered.length === 0) {
-      list.innerHTML = `<div style="text-align:center;padding:48px 0;color:var(--ink3)">
-        <i class="ti ti-circle-check" style="font-size:32px;opacity:.4;display:block;margin-bottom:10px"></i>
-        <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:4px">Sin tareas</div>
-        <div style="font-size:13px">Creá una tarea y asignala a un miembro del equipo.</div>
+      list.innerHTML = `<div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;text-align:center;padding:64px 0;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+        <i class="ti ti-circle-check" style="font-size:32px;color:#C4CDD9;display:block;margin-bottom:10px"></i>
+        <div style="font-size:14px;font-weight:700;color:#5F6B7A;margin-bottom:4px">Sin tareas</div>
+        <div style="font-size:13px;color:#8B98A9">Creá una tarea y asignala a un miembro del equipo.</div>
       </div>`
       return
     }
 
-    // Orden de prioridad
-    const prioOrden = { urgente: 0, alta: 1, normal: 2, baja: 3 }
-    const prioConfig = {
-      urgente: { label: 'Urgente', color: '#DC2626', bg: '#FEF2F2', dot: '#EF4444' },
-      alta:    { label: 'Alta',    color: '#C2410C', bg: '#FFF7ED', dot: '#F97316' },
-      normal:  { label: 'Normal',  color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
-      baja:    { label: 'Baja',    color: '#9CA3AF', bg: '#F9FAFB', dot: '#D1D5DB' },
-    }
+    // ── Agrupar por fecha ──
+    const grupos = { hoy: [], semana: [], mes: [], anteriores: [], sinfecha: [] }
+    filtered.forEach(t => grupos[taskDateKey(t)].push(t))
+    // Ordenar cada grupo: activas por prioridad, completadas al fondo
+    Object.keys(grupos).forEach(key => {
+      const activas = grupos[key].filter(t => t.estado !== 'completada').sort((a,b) => PRIO_ORDEN[a.prioridad||'normal'] - PRIO_ORDEN[b.prioridad||'normal'])
+      const completadas = grupos[key].filter(t => t.estado === 'completada')
+      grupos[key] = [...activas, ...completadas]
+    })
 
-    // Activas ordenadas por prioridad, completadas al fondo
-    const activas = filtered
-      .filter(t => t.estado !== 'completada')
-      .sort((a, b) => (prioOrden[a.prioridad||'normal'] - prioOrden[b.prioridad||'normal']))
-    const completadas = filtered.filter(t => t.estado === 'completada')
-    const ordenadas = [...activas, ...completadas]
+    const SECTION_LABELS = { hoy: 'Hoy', semana: 'Esta semana', mes: 'Este mes', anteriores: 'Meses anteriores', sinfecha: 'Sin fecha' }
+    const SECTION_ORDER = ['hoy', 'semana', 'mes', 'anteriores', 'sinfecha']
 
-    const statusLabel = { 'pendiente': 'Pendiente', 'en-progreso': 'En progreso', 'revision': 'Revisión', 'completada': 'Completada' }
+    list.innerHTML = SECTION_ORDER.filter(key => grupos[key].length > 0).map(key => {
+      const items = grupos[key]
+      const isOpen = taskSectionsOpen[key]
+      const limit = taskSectionLimits[key]
+      const visible = items.slice(0, limit)
+      const remaining = items.length - visible.length
 
-    list.innerHTML = ordenadas.map(t => {
-      const due = formatDate(t.fecha_entrega)
-      const assignee = t.agency_members?.profiles
-      const assigneeName = assignee ? (assignee.nombre + ' ' + assignee.apellido).trim() : null
-      // También mostrar asignados de task_assignees si están en cache
-      const extraAssignees = t._assignees ? t._assignees.map(a => {
-        const p = a.agency_members?.profiles
-        return p ? (p.nombre + ' ' + p.apellido).trim() : null
-      }).filter(Boolean) : []
-      const allAssigneeNames = assigneeName
-        ? [assigneeName, ...extraAssignees.filter(n => n !== assigneeName)]
-        : extraAssignees
-      const assigneeDisplay = allAssigneeNames.length > 0 ? allAssigneeNames.join(', ') : null
-      const isDone = t.estado === 'completada'
-      const isOverdue = t.fecha_entrega && new Date(t.fecha_entrega) < new Date() && !isDone
-      const prio = prioConfig[t.prioridad || 'normal']
-      const showPrio = !isDone
+      const itemsHTML = visible.map(t => renderTaskCard(t)).join('')
 
-      return `<div class="task-item ${isDone ? 'done-item' : ''}" onclick="openTaskModal('${t.id}')">
-        <div class="task-chk ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}')"></div>
-        <div class="task-body">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <div class="task-title ${isDone ? 'done' : ''}">${t.titulo}</div>
-            ${showPrio ? `<span style="font-size:9px;font-weight:900;padding:2px 7px;border-radius:20px;background:${prio.bg};color:${prio.color};text-transform:uppercase;letter-spacing:.4px">${prio.label}</span>` : ''}
-          </div>
-          <div class="task-meta-row">
-            ${t.clients ? `<span class="task-client" style="background:${clientColor(t.client_id,'bg')};color:${clientColor(t.client_id,'text')}">${t.clients.nombre}</span>` : ''}
-            ${assigneeDisplay ? `<span class="task-assignee"><i class="ti ti-user" style="font-size:10px"></i> ${assigneeDisplay}</span>` : ''}
-            ${due ? `<span class="task-due ${isOverdue ? 'overdue' : ''}"><i class="ti ti-calendar" style="font-size:10px"></i> ${due.text}${isOverdue ? ' · Vencida' : ''}</span>` : ''}
-          </div>
-        </div>
-        <span class="task-status-badge ts-${t.estado}">${statusLabel[t.estado] || t.estado}</span>
-        <div onclick="event.stopPropagation();startTimerFromTask('${t.id}','${t.titulo.replace(/'/g,"\\'")}')" title="Iniciar timer" style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink3);cursor:pointer;transition:background var(--t),color var(--t);flex-shrink:0" onmouseover="this.style.background='var(--celeste-dim)';this.style.color='var(--azul)'" onmouseout="this.style.background='';this.style.color='var(--ink3)'">
-          <i class="ti ti-player-play" style="font-size:14px"></i>
-        </div>
+      return `<div style="margin-bottom:14px">
+        <button onclick="toggleTaskSection('${key}')" style="width:100%;display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:8px 4px;font-family:inherit;text-align:left">
+          <i class="ti ti-chevron-${isOpen ? 'down' : 'right'}" style="font-size:14px;color:#8B98A9;transition:transform .15s"></i>
+          <span style="font-size:13px;font-weight:700;color:#0A2540;text-transform:uppercase;letter-spacing:.5px">${SECTION_LABELS[key]}</span>
+          <span style="font-size:12px;font-weight:600;color:#8B98A9;background:#F5F7FA;padding:1px 8px;border-radius:999px">${items.length}</span>
+        </button>
+        ${isOpen ? `<div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          ${itemsHTML}
+          ${remaining > 0 ? `<button onclick="expandTaskSection('${key}')" style="text-align:center;padding:10px;background:#fff;border:1px dashed #E8EDF3;border-radius:12px;font-size:12px;font-weight:600;color:#5F6B7A;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='#0A2540';this.style.color='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#5F6B7A'">Ver ${Math.min(remaining,10)} tarea${Math.min(remaining,10)!==1?'s':''} más</button>` : ''}
+        </div>` : ''}
       </div>`
     }).join('')
   }
+
+  window.toggleTaskSection = function(key) {
+    taskSectionsOpen[key] = !taskSectionsOpen[key]
+    renderTasks()
+  }
+
+  window.expandTaskSection = function(key) {
+    taskSectionLimits[key] += 10
+    renderTasks()
+  }
+
+  function renderTaskCard(t) {
+    const due = formatDate(t.fecha_entrega)
+    const assignee = t.agency_members?.profiles
+    const assigneeName = assignee ? (assignee.nombre + ' ' + assignee.apellido).trim() : null
+    const extraAssignees = t._assignees ? t._assignees.map(a => {
+      const p = a.agency_members?.profiles
+      return p ? (p.nombre + ' ' + p.apellido).trim() : null
+    }).filter(Boolean) : []
+    const allAssigneeNames = assigneeName
+      ? [assigneeName, ...extraAssignees.filter(n => n !== assigneeName)]
+      : extraAssignees
+    const assigneeDisplay = allAssigneeNames.length > 0 ? allAssigneeNames[0] : null
+    const isDone = t.estado === 'completada'
+    const isOverdue = t.fecha_entrega && new Date(t.fecha_entrega) < new Date() && !isDone
+    const prio = PRIO_CONFIG[t.prioridad || 'normal']
+    const estado = ESTADO_CONFIG[t.estado] || ESTADO_CONFIG.pendiente
+    const showPrio = !isDone
+
+    // Avatar iniciales
+    const col = assigneeDisplay ? getAvColor(assigneeDisplay) : { bg: '#F5F7FA', color: '#8B98A9' }
+    const ini = assigneeDisplay ? initials(assigneeDisplay) : null
+
+    // Indicadores opcionales (solo si existen los datos)
+    const commentCount = t._commentCount || 0
+    const attachCount = t._attachCount || 0
+    const checklistInfo = t._checklistDone != null && t._checklistTotal ? `${t._checklistDone}/${t._checklistTotal}` : null
+
+    return `<div onclick="openTaskModal('${t.id}')" style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:16px 20px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;${isDone?'opacity:.6;':''}" onmouseover="this.style.borderColor='#D1D9E6';this.style.boxShadow='0 6px 18px rgba(10,37,64,.08)'" onmouseout="this.style.borderColor='#E8EDF3';this.style.boxShadow='0 2px 8px rgba(10,37,64,.04)'">
+      <div class="task-chk ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}')" style="flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          <div style="font-size:14px;font-weight:600;color:#0A2540;${isDone?'text-decoration:line-through;color:#8B98A9;':''}">${t.titulo}</div>
+          ${showPrio ? `<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:999px;background:${prio.bg};color:${prio.color};text-transform:uppercase;letter-spacing:.4px">${prio.label}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          ${t.clients ? `<span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:${clientColor(t.client_id,'bg')};color:${clientColor(t.client_id,'text')}">${t.clients.nombre}</span>` : ''}
+          ${assigneeDisplay ? `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#5F6B7A"><div style="width:18px;height:18px;border-radius:50%;background:${col.bg};color:${col.color};font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center">${ini}</div>${assigneeDisplay}</span>` : ''}
+          ${due ? `<span style="display:flex;align-items:center;gap:4px;font-size:12px;color:${isOverdue?'#DC2626':'#8B98A9'}"><i class="ti ti-calendar" style="font-size:11px"></i>${due.text}${isOverdue ? ' · Vencida' : ''}</span>` : ''}
+          ${commentCount > 0 ? `<span style="display:flex;align-items:center;gap:3px;font-size:11px;color:#8B98A9"><i class="ti ti-message-circle" style="font-size:12px"></i>${commentCount}</span>` : ''}
+          ${attachCount > 0 ? `<span style="display:flex;align-items:center;gap:3px;font-size:11px;color:#8B98A9"><i class="ti ti-paperclip" style="font-size:12px"></i>${attachCount}</span>` : ''}
+          ${checklistInfo ? `<span style="display:flex;align-items:center;gap:3px;font-size:11px;color:#8B98A9"><i class="ti ti-list-check" style="font-size:12px"></i>${checklistInfo}</span>` : ''}
+        </div>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:${estado.bg};color:${estado.color};flex-shrink:0;white-space:nowrap">${estado.label}</span>
+      <div onclick="event.stopPropagation();startTimerFromTask('${t.id}','${t.titulo.replace(/'/g,"\\'")}')" title="Iniciar timer" style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#8B98A9;cursor:pointer;transition:background .15s,color .15s;flex-shrink:0" onmouseover="this.style.background='#EEF7FF';this.style.color='#0A2540'" onmouseout="this.style.background='';this.style.color='#8B98A9'">
+        <i class="ti ti-player-play" style="font-size:15px"></i>
+      </div>
+    </div>`
+  }
+
   window.filterTasks = function(el) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
     el.classList.add('active')
