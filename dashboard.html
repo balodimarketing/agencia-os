@@ -8533,11 +8533,15 @@
           const isActive = p.id === currentPipelineId
           const icon = p.tipo === 'comercial' ? 'ti-chart-line' : p.tipo === 'interno' ? 'ti-building' : 'ti-rocket'
           const iconColor = p.tipo === 'comercial' ? '#3B82F6' : p.tipo === 'interno' ? '#F59E0B' : '#7C5CFC'
-          return `<button onclick="selectPipeline('${p.id}')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;background:${isActive?'#EEF7FF':'none'};border:none;cursor:pointer;border-radius:10px;font-family:inherit;text-align:left;transition:background .15s" onmouseover="this.style.background='#F5F7FA'" onmouseout="this.style.background='${isActive?'#EEF7FF':'none'}'">
-            <i class="ti ${icon}" style="font-size:15px;color:${iconColor};flex-shrink:0"></i>
-            <span style="flex:1;font-size:13px;font-weight:${isActive?'700':'500'};color:#0A2540;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nombre}</span>
-            ${isActive ? '<i class="ti ti-check" style="font-size:14px;color:#0A2540;flex-shrink:0"></i>' : ''}
-          </button>`
+          const canDelete = !p.es_default
+          return `<div style="display:flex;align-items:center;gap:2px;border-radius:10px;transition:background .15s" onmouseover="this.style.background='#F5F7FA';this.querySelector('.pipeline-del-btn')?.style.setProperty('opacity','1')" onmouseout="this.style.background='${isActive?'#EEF7FF':'none'}';this.querySelector('.pipeline-del-btn')?.style.setProperty('opacity','0')">
+            <button onclick="selectPipeline('${p.id}')" style="flex:1;display:flex;align-items:center;gap:10px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:10px;font-family:inherit;text-align:left;min-width:0">
+              <i class="ti ${icon}" style="font-size:15px;color:${iconColor};flex-shrink:0"></i>
+              <span style="flex:1;font-size:13px;font-weight:${isActive?'700':'500'};color:#0A2540;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nombre}</span>
+              ${isActive ? '<i class="ti ti-check" style="font-size:14px;color:#0A2540;flex-shrink:0"></i>' : ''}
+            </button>
+            ${canDelete ? `<button class="pipeline-del-btn" onclick="event.stopPropagation();deletePipelineConfirm('${p.id}','${p.nombre.replace(/'/g,"\'")}')" style="width:28px;height:28px;border-radius:8px;background:none;border:none;cursor:pointer;color:#C4CDD9;opacity:0;transition:opacity .15s,color .15s,background .15s;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-right:6px" onmouseover="this.style.background='#FEF2F2';this.style.color='#EF4444'" onmouseout="this.style.background='none';this.style.color='#C4CDD9'"><i class="ti ti-trash" style="font-size:13px"></i></button>` : '<div style="width:34px;flex-shrink:0"></div>'}
+          </div>`
         }).join('')}
       </div>`
     }
@@ -8561,10 +8565,17 @@
 
   window.exportGanadosCSV = function() {
     const ganadoIds = CRM_STAGES.filter(s => s.es_ganado).map(s => s.id)
-    const ganados = crmContacts.filter(c => ganadoIds.includes(c.stage_id))
+    const ganadosTotal = crmContacts.filter(c => ganadoIds.includes(c.stage_id))
+    // Solo incluir contactos con al menos un identificador (email o teléfono) — Meta no puede matchear sin eso
+    const ganados = ganadosTotal.filter(c => (c.email && c.email.trim()) || (c.telefono && c.telefono.trim()))
+    const descartados = ganadosTotal.length - ganados.length
 
-    if (!ganados.length) {
+    if (!ganadosTotal.length) {
       showToast('No hay contactos en etapa "Ganado" en este pipeline todavía')
+      return
+    }
+    if (!ganados.length) {
+      showToast('Los contactos ganados no tienen email ni teléfono — no se puede exportar para Meta')
       return
     }
 
@@ -8591,7 +8602,8 @@
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 30000)
 
-    showToast(`✓ ${ganados.length} contacto${ganados.length!==1?'s':''} exportado${ganados.length!==1?'s':''}. Subilo en Meta Business Manager → Audiences → Customer List.`)
+    const descartadosMsg = descartados > 0 ? ` (${descartados} sin email/teléfono fueron excluidos)` : ''
+    showToast(`✓ ${ganados.length} contacto${ganados.length!==1?'s':''} exportado${ganados.length!==1?'s':''}${descartadosMsg}. Subilo en Meta Business Manager → Audiences → Customer List.`)
   }
 
   window.toggleCardToolsMenu = function(contactId) {
@@ -8607,6 +8619,43 @@
       document.querySelectorAll('[id^="card-tools-menu-"]').forEach(m => m.style.display = 'none')
     }
   })
+
+  window.deletePipelineConfirm = async function(pipelineId, pipelineNombre) {
+    document.getElementById('pipeline-dropdown').style.display = 'none'
+
+    // Contar contactos que tiene este pipeline para advertir antes de archivarlo
+    const { count } = await supabase
+      .from('crm_contacts')
+      .select('id', { count: 'exact', head: true })
+      .eq('pipeline_id', pipelineId)
+
+    const contactosMsg = count > 0
+      ? `Este pipeline tiene ${count} contacto${count!==1?'s':''}. NO se eliminarán los contactos, pero quedarán sin pipeline asignado hasta que los muevas manualmente.\n\n`
+      : ''
+
+    if (!confirm(`${contactosMsg}¿Eliminar el pipeline "${pipelineNombre}"?\n\nEsta acción se puede revertir contactando soporte, pero el pipeline dejará de estar visible.`)) return
+
+    // Archivar en lugar de borrar físicamente — más seguro, reversible
+    const { error } = await supabase
+      .from('crm_pipelines')
+      .update({ archived: true })
+      .eq('id', pipelineId)
+
+    if (error) { showToast('Error al eliminar: ' + error.message); return }
+
+    showToast('✓ Pipeline eliminado')
+
+    // Si el pipeline eliminado era el activo, volver al default
+    if (currentPipelineId === pipelineId) {
+      currentPipelineId = null
+    }
+    await loadCrmPipelines()
+    if (!currentPipelineId) {
+      const def = CRM_PIPELINES.find(p => p.es_default) || CRM_PIPELINES[0]
+      currentPipelineId = def?.id || null
+    }
+    await selectPipeline(currentPipelineId)
+  }
 
   window.selectPipeline = async function(pipelineId) {
     currentPipelineId = pipelineId
