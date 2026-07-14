@@ -191,6 +191,14 @@
     document.getElementById('error').classList.remove('show')
   }
 
+  // Si viene un ?code=XXXX en el link (invitación de equipo), precargar modo member
+  const urlParams = new URLSearchParams(window.location.search)
+  const codigoUrl = urlParams.get('code')
+  if (codigoUrl) {
+    setModo('member')
+    document.getElementById('codigo').value = codigoUrl.toUpperCase()
+  }
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter') handleRegister()
   })
