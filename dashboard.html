@@ -5510,15 +5510,24 @@
         id: e.id, titulo: e.titulo, fecha: e.fecha_inicio,
         tipoLabel: e.tipo === 'reunion' ? 'Reunión' : 'Evento',
         color: e.color || accentColor, archivo_url: e.archivo_url || null,
-        descripcion: e.descripcion || null,
+        descripcion: e.descripcion || null, link: e.link || null,
       })),
       ...calPublishedPieces.filter(p => p.fecha_publicacion && inMonth(p.fecha_publicacion)).map(p => ({
         id: 'piece-' + p.id, titulo: p.titulo, fecha: p.fecha_publicacion,
         tipoLabel: p.tipo || 'Publicación',
         color: TIPO_COLORS[p.tipo] || '#34C759', archivo_url: p.archivo_url || null,
-        descripcion: p.descripcion || null,
+        descripcion: p.descripcion || null, link: null,
       })),
     ].sort((a,b) => new Date(a.fecha) - new Date(b.fecha))
+
+    // Convierte URLs sueltas dentro de un texto en links clickeables (escapando HTML primero por seguridad)
+    function linkify(text) {
+      if (!text) return ''
+      const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      return esc.replace(/(https?:\/\/[^\s<]+)/g, url =>
+        `<a href="${url}" target="_blank" rel="noopener noreferrer" class="pdfcal-link">${url}</a>`
+      )
+    }
 
     // ── Grid tipo calendario de pared (Lun-Dom, 6 semanas) ──
     const firstDay = new Date(year, month, 1)
@@ -5563,7 +5572,8 @@
           ${camara}
           <div class="pdfcal-row-badge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
         </div>
-        ${it.descripcion ? `<div class="pdfcal-row-desc">${it.descripcion}</div>` : ''}
+        ${it.descripcion ? `<div class="pdfcal-row-desc">${linkify(it.descripcion)}</div>` : ''}
+        ${it.link ? `<div class="pdfcal-row-link-wrap"><a href="${it.link}" target="_blank" rel="noopener noreferrer" class="pdfcal-link">🔗 ${it.link}</a></div>` : ''}
       </div>`
     }).join('')
 
@@ -5583,7 +5593,7 @@
           <div class="pdfcal-dbadge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
           <div class="pdfcal-dtitle">${it.titulo}</div>
           <div class="pdfcal-ddate">${fechaStr} · ${horaStr}</div>
-          ${it.descripcion ? `<div class="pdfcal-ddesc">${it.descripcion}</div>` : ''}
+          ${it.descripcion ? `<div class="pdfcal-ddesc">${linkify(it.descripcion)}</div>` : ''}
         </div>
       </div>`
     }).join('')
@@ -5622,6 +5632,8 @@
       '#calendario-pdf-content .pdfcal-row-cam { font-style: normal; font-size: 12px; flex-shrink: 0; }',
       '#calendario-pdf-content .pdfcal-row-badge { flex-shrink: 0; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }',
       '#calendario-pdf-content .pdfcal-row-desc { font-size: 12px; color: #4A5568; line-height: 1.6; margin-top: 6px; padding-left: 88px; white-space: pre-wrap; }',
+      '#calendario-pdf-content .pdfcal-row-link-wrap { padding-left: 88px; margin-top: 4px; }',
+      '#calendario-pdf-content .pdfcal-link { color: ' + accentColor + '; font-weight: 700; text-decoration: underline; word-break: break-all; }',
       '#calendario-pdf-content .pdfcal-detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }',
       '#calendario-pdf-content .pdfcal-dcard { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }',
       '#calendario-pdf-content .pdfcal-dmedia { width: 100%; height: 200px; object-fit: cover; display: block; background: #F5F7FA; }',
