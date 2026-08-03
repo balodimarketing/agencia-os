@@ -4016,6 +4016,20 @@
         <label class="form-label">Descripción</label>
         <textarea class="form-input form-textarea" id="event-descripcion" style="min-height:80px" placeholder="Agenda, notas, contexto..."></textarea>
       </div>
+
+      <div class="form-field">
+        <label class="form-label">Foto o video <span style="font-weight:400;color:var(--ink3);text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <div id="event-upload-area" onclick="document.getElementById('event-file').click()" style="border:1.5px dashed var(--border);border-radius:var(--r);padding:20px 16px;text-align:center;cursor:pointer;transition:all var(--t);background:var(--bg)" onmouseover="this.style.borderColor='var(--celeste)';this.style.background='var(--celeste-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
+          <i class="ti ti-cloud-upload" style="font-size:22px;color:var(--ink3);display:block;margin-bottom:6px"></i>
+          <div style="font-size:12px;font-weight:700;color:var(--ink2)" id="event-upload-label">Hacé click para subir una imagen o video</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:3px">JPG · PNG · MP4 · Máx. 50MB</div>
+        </div>
+        <input type="file" id="event-file" accept="image/*,video/*" style="display:none" onchange="updateEventUploadLabel(this)">
+        <div id="event-file-preview" style="display:none;margin-top:10px;position:relative">
+          <div id="event-file-preview-content"></div>
+          <button type="button" onclick="removeEventFile()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:13px"></i></button>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="tbtn" style="flex:1" onclick="closeEventModal()">Cancelar</button>
@@ -5638,7 +5652,7 @@
         const height = Math.max((durMins / 60) * HOUR_H, 44)
         const timeStr = start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
         bodyHTML += `<div class="cal-event" style="top:${top}px;height:${height}px;background:${e.color}22;border-left:3px solid ${e.color};color:${e.color}" onclick="openEventDetail('${e.id}')">
-          <div class="cal-event-title">${e.titulo}</div>
+          <div class="cal-event-title">${e.archivo_url ? '<i class="ti ti-photo" style="font-size:11px;margin-right:3px"></i>' : ''}${e.titulo}</div>
           <div class="cal-event-time">${timeStr}</div>
         </div>`
       })
@@ -5699,7 +5713,7 @@
 
       const dayEvents = allEvents.filter(e => new Date(e.fecha_inicio).toDateString() === cellDate.toDateString())
       const eventsHTML = dayEvents.slice(0,3).map(e =>
-        `<div class="cal-month-event" style="background:${e.color}22;color:${e.color}" onclick="openEventDetail('${e.id}')">${e.titulo}</div>`
+        `<div class="cal-month-event" style="background:${e.color}22;color:${e.color}" onclick="openEventDetail('${e.id}')">${e.archivo_url ? '<i class="ti ti-photo" style="font-size:9px;margin-right:2px"></i>' : ''}${e.titulo}</div>`
       ).join('')
       const more = dayEvents.length > 3 ? `<div class="cal-day-num-click" data-iso="${isoStr}" style="font-size:9px;color:var(--ink3);font-weight:700;cursor:pointer;padding:2px 4px">+${dayEvents.length-3} más</div>` : ''
 
@@ -5826,6 +5840,7 @@
         <div style="font-size:12px;color:var(--ink3);margin-top:2px">${start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}${end?' – '+end.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):''}</div>
       </div>
       ${ev.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:10px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.6">${ev.descripcion}</div></div>` : ''}
+      ${ev.archivo_url ? `<div style="margin-bottom:10px">${isVideoFile(ev.archivo_url) ? `<video src="${ev.archivo_url}" controls style="width:100%;max-height:280px;border-radius:var(--r);display:block"></video>` : `<img src="${ev.archivo_url}" style="width:100%;max-height:280px;object-fit:cover;border-radius:var(--r);display:block">`}</div>` : ''}
       ${ev.link ? `<a href="${ev.link}" target="_blank" style="display:flex;align-items:center;gap:8px;background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--azul);font-size:13px;font-weight:700"><i class="ti ti-link" style="font-size:16px"></i>${ev.link}</a>` : ''}`
     document.getElementById('event-detail-edit').style.display = 'flex'
     document.getElementById('event-detail-delete').style.display = 'flex'
@@ -5854,6 +5869,8 @@
   // ── Event modal ───────────────────────────────────────────
   let calSelectedColor = '#0A2540'
   let selectedParticipantes = [] // [{id, nombre}]
+  let eventFileRemoved = false
+  let eventExistingFileUrl = null
 
   async function loadPartDrop() {
     const drop = document.getElementById('event-participantes-drop')
@@ -5921,6 +5938,51 @@
     el.style.boxShadow = `0 0 0 2px ${color}`
   }
 
+  function isVideoFile(nameOrUrl) {
+    return /\.(mp4|mov|webm|avi)$/i.test(nameOrUrl || '')
+  }
+
+  window.updateEventUploadLabel = function(input) {
+    const file = input.files[0]
+    if (!file) return
+    eventFileRemoved = false
+    document.getElementById('event-upload-label').textContent = file.name
+    const preview = document.getElementById('event-file-preview')
+    const content = document.getElementById('event-file-preview-content')
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file)
+      content.innerHTML = `<img src="${url}" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--r);display:block">`
+    } else if (file.type.startsWith('video/')) {
+      const url = URL.createObjectURL(file)
+      content.innerHTML = `<video src="${url}" controls style="width:100%;max-height:180px;border-radius:var(--r);display:block"></video>`
+    } else {
+      content.innerHTML = `<div style="font-size:12px;color:var(--ink2);padding:10px">${file.name}</div>`
+    }
+    preview.style.display = 'block'
+  }
+
+  window.removeEventFile = function() {
+    eventFileRemoved = true
+    eventExistingFileUrl = null
+    document.getElementById('event-file').value = ''
+    document.getElementById('event-upload-label').textContent = 'Hacé click para subir una imagen o video'
+    document.getElementById('event-file-preview').style.display = 'none'
+    document.getElementById('event-file-preview-content').innerHTML = ''
+  }
+
+  function showExistingEventFile(url) {
+    eventExistingFileUrl = url
+    eventFileRemoved = false
+    const preview = document.getElementById('event-file-preview')
+    const content = document.getElementById('event-file-preview-content')
+    if (!url) { preview.style.display = 'none'; content.innerHTML = ''; return }
+    document.getElementById('event-upload-label').textContent = 'Reemplazar archivo actual'
+    content.innerHTML = isVideoFile(url)
+      ? `<video src="${url}" controls style="width:100%;max-height:180px;border-radius:var(--r);display:block"></video>`
+      : `<img src="${url}" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--r);display:block">`
+    preview.style.display = 'block'
+  }
+
   window.openEventModal = function(defaultDate) {
     calEditingEventId = null
     document.getElementById('modal-event-title').textContent = 'Nuevo evento'
@@ -5937,6 +5999,7 @@
     selectedParticipantes = []
     renderPartTags()
     loadPartDrop()
+    removeEventFile()
 
     const now = defaultDate ? new Date(defaultDate) : new Date()
     document.getElementById('event-date').value = now.toISOString().slice(0,10)
@@ -5984,6 +6047,7 @@
       selectEventColor(ev.color, document.querySelector(`#event-colors div[style*="${ev.color}"]`) || document.querySelectorAll('#event-colors div')[0])
       renderPartTags()
       loadPartDrop()
+      showExistingEventFile(ev.archivo_url || null)
       document.getElementById('modal-event').classList.add('show')
     }, 150)
   }
@@ -6032,6 +6096,26 @@
       agency_id: agencyId,
       calendario_id: currentCalendarioId,
     }
+
+    // Foto o video del evento
+    const eventFile = document.getElementById('event-file').files[0]
+    if (eventFile) {
+      btnText.textContent = 'Subiendo archivo...'
+      const ext = eventFile.name.split('.').pop()
+      const path = `${agencyId}/cal-${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage.from('pieces').upload(path, eventFile, { upsert: true })
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
+        payload.archivo_url = urlData.publicUrl
+        payload.archivo_nombre = eventFile.name
+      } else {
+        showToast('No se pudo subir el archivo, se guardó el evento sin él')
+      }
+    } else if (eventFileRemoved) {
+      payload.archivo_url = null
+      payload.archivo_nombre = null
+    }
+    // Si no hay archivo nuevo y no se quitó el existente, no tocamos estas columnas
 
     let error, savedId
     if (id) {
