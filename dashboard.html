@@ -5467,6 +5467,8 @@
     const monthLabel = `${MONTHS_ES[month]} ${year}`
     const cliente = activo?.client_id ? (clients.find(c => c.id === activo.client_id)?.nombre || '') : ''
     const nombreCalendario = activo?.nombre || 'General'
+    // Evitar "Cliente — Cliente" cuando el calendario se llama igual que el cliente
+    const mostrarClienteEnTitulo = cliente && cliente.trim().toLowerCase() !== nombreCalendario.trim().toLowerCase()
     const accentColor = activo?.color || '#0A2540'
     const agencyName = document.body.dataset.agencyName || 'Mi agencia'
     const today = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -5505,11 +5507,13 @@
       cellDate.setDate(startDay.getDate() + i)
       const isOther = cellDate.getMonth() !== month
       const dayItems = itemsDelMes.filter(it => new Date(it.fecha).toDateString() === cellDate.toDateString())
-      const chips = dayItems.slice(0,3).map(it => {
+      const MAX_CHIPS = 2
+      const chips = dayItems.slice(0,MAX_CHIPS).map(it => {
         const hora = new Date(it.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
-        return `<div class="g-chip"><span class="g-dot" style="background:${it.color}"></span>${it.archivo_url ? '<span class="g-cam">&#128247;</span>' : ''}<span class="g-chip-text">${hora} ${it.titulo}</span></div>`
+        const camara = it.archivo_url ? '📷 ' : ''
+        return `<div class="g-chip" style="background:${it.color}22;color:${it.color}">${camara}${hora} ${it.titulo}</div>`
       }).join('')
-      const more = dayItems.length > 3 ? `<div class="g-more">+${dayItems.length - 3} más</div>` : ''
+      const more = dayItems.length > MAX_CHIPS ? `<div class="g-more">+${dayItems.length - MAX_CHIPS} más</div>` : ''
       gridHTML += `<div class="g-cell ${isOther?'g-other':''}"><div class="g-num">${cellDate.getDate()}</div>${chips}${more}</div>`
     }
 
@@ -5543,6 +5547,9 @@
     const pdfCSS = [
       '* { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }',
       "body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #111; background: #fff; }",
+      '.print-bar { position: sticky; top: 0; z-index: 10; background: #F5F7FA; border-bottom: 1px solid #E8ECF0; padding: 10px 16px; display: flex; justify-content: center; }',
+      '.print-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: #0A2540; color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; }',
+      '.print-btn:hover { opacity: .88; }',
       '.page { max-width: 900px; margin: 0 auto; padding: 40px; }',
       '.header { background: ' + accentColor + '; border-radius: 16px; padding: 32px 36px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }',
       '.header-left .kicker { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }',
@@ -5552,17 +5559,14 @@
       '.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }',
       '.legend-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #4A5568; }',
       '.legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }',
-      '.month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #E8ECF0; border: 1px solid #E8ECF0; border-radius: 12px; overflow: hidden; margin-bottom: 32px; }',
+      '.month-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 92px; gap: 1px; background: #E8ECF0; border: 1px solid #E8ECF0; border-radius: 12px; overflow: hidden; margin-bottom: 32px; }',
       '.g-head { background: #F5F7FA; font-size: 10px; font-weight: 800; color: #9AA5B4; text-transform: uppercase; letter-spacing: .5px; padding: 8px; text-align: center; }',
-      '.g-cell { background: #fff; min-height: 78px; padding: 6px; display: flex; flex-direction: column; gap: 3px; }',
+      '.g-cell { background: #fff; height: 92px; padding: 6px; overflow: hidden; }',
       '.g-other { background: #FAFBFC; }',
       '.g-other .g-num { color: #C4CDD9; }',
-      '.g-num { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 2px; }',
-      '.g-chip { display: flex; align-items: center; gap: 3px; font-size: 8.5px; font-weight: 600; color: #4A5568; line-height: 1.3; }',
-      '.g-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }',
-      '.g-cam { font-size: 8px; }',
-      '.g-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
-      '.g-more { font-size: 8px; color: #9AA5B4; font-weight: 700; }',
+      '.g-num { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 4px; }',
+      '.g-chip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+      '.g-more { font-size: 8px; color: #9AA5B4; font-weight: 700; padding-left: 2px; }',
       '.section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; }',
       '.section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; }',
       '.detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }',
@@ -5579,11 +5583,13 @@
       '.footer { border-top: 1px solid #eee; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }',
       '.footer-agency { font-size: 12px; font-weight: 700; color: #4A5568; }',
       '.footer-faro { font-size: 10px; color: #C0CAD4; }',
-      '@media print { .header{background:' + accentColor + ' !important} .d-video-placeholder{background:#0A2540 !important} .g-head{background:#F5F7FA !important} .g-other{background:#FAFBFC !important} .d-card{break-inside:avoid} }',
+      '@media print { .print-bar{display:none !important} .header{background:' + accentColor + ' !important} .d-video-placeholder{background:#0A2540 !important} .g-head{background:#F5F7FA !important} .g-other{background:#FAFBFC !important} .d-card{break-inside:avoid} }',
     ].join('\n')
 
-    const htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>' + pdfCSS + '</style></head><body><div class="page">' +
-      '<div class="header"><div class="header-left"><div class="kicker">Calendario de contenido</div><h1>' + nombreCalendario + (cliente ? ' — ' + cliente : '') + '</h1><p>' + monthLabel + ' · Generado el ' + today + '</p></div>' +
+    const htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>' + pdfCSS + '</style></head><body>' +
+      '<div class="print-bar"><button class="print-btn" onclick="window.print()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Descargar / Imprimir PDF</button></div>' +
+      '<div class="page">' +
+      '<div class="header"><div class="header-left"><div class="kicker">Calendario de contenido</div><h1>' + nombreCalendario + (mostrarClienteEnTitulo ? ' — ' + cliente : '') + '</h1><p>' + monthLabel + ' · Generado el ' + today + '</p></div>' +
       '<div class="header-logo-placeholder">' + agencyName.substring(0,2).toUpperCase() + '</div></div>' +
       (legendHTML ? '<div class="legend">' + legendHTML + '</div>' : '') +
       '<div class="month-grid">' + gridHTML + '</div>' +
@@ -5593,10 +5599,9 @@
 
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
-    const win = window.open(url, '_blank')
-    if (win) { win.onload = () => { win.focus(); win.print() } }
+    window.open(url, '_blank')
     setTimeout(() => URL.revokeObjectURL(url), 60000)
-    showToast('PDF listo para descargar')
+    showToast('Se abrió en una pestaña nueva — hacé click en "Descargar / Imprimir PDF" cuando quieras guardarlo')
   }
 
   function renderCalPanel() {
