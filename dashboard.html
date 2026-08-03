@@ -12079,6 +12079,19 @@ if (id) {
     return best
   }
 
+  // Camino recto en ángulo (tipo Figma): sale perpendicular al lado de origen,
+  // dobla en el punto medio y entra al destino en línea recta.
+  function buildMbElbowPath(p1, fromSide, p2) {
+    const exitVertical = (fromSide === 'top' || fromSide === 'bottom')
+    if (exitVertical) {
+      const midY = (p1.y + p2.y) / 2
+      return `M ${p1.x} ${p1.y} L ${p1.x} ${midY} L ${p2.x} ${midY} L ${p2.x} ${p2.y}`
+    } else {
+      const midX = (p1.x + p2.x) / 2
+      return `M ${p1.x} ${p1.y} L ${midX} ${p1.y} L ${midX} ${p2.y} L ${p2.x} ${p2.y}`
+    }
+  }
+
   function renderMbConnections() {
     const svg = document.getElementById('mb-connections-svg')
     if (!svg) return
@@ -12088,7 +12101,9 @@ if (id) {
       if (!fromItem || !toItem) return ''
       const p1 = getMbAnchorPoint(fromItem, conn.from_side)
       const p2 = getMbAnchorPoint(toItem, conn.to_side)
-      return `<line class="mb-conn-line" data-id="${conn.id}" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#8B5CF6" stroke-width="2.5" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();deleteMbConnectionClick('${conn.id}')"></line>`
+      const d = buildMbElbowPath(p1, conn.from_side, p2)
+      const color = conn.color || '#8B5CF6'
+      return `<path class="mb-conn-line" data-id="${conn.id}" d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();deleteMbConnectionClick('${conn.id}')" ondblclick="event.stopPropagation();openMbConnColorPicker('${conn.id}')"></path>`
     }).join('')
   }
 
@@ -12099,10 +12114,29 @@ if (id) {
     showToast('Conexión eliminada')
   }
 
+  window.openMbConnColorPicker = function(id) {
+    let input = document.getElementById('mb-conn-color-input')
+    if (!input) {
+      input = document.createElement('input')
+      input.type = 'color'
+      input.id = 'mb-conn-color-input'
+      input.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;opacity:0;pointer-events:none'
+      document.body.appendChild(input)
+    }
+    const conn = mbConnections.find(c => c.id === id)
+    input.value = conn?.color || '#8B5CF6'
+    input.onchange = async () => {
+      if (conn) conn.color = input.value
+      renderMbConnections()
+      await supabase.from('moodboard_connections').update({ color: input.value }).eq('id', id)
+    }
+    input.click()
+  }
+
   async function createMbConnection(fromItemId, fromSide, toItemId, toSide) {
     const { data, error } = await supabase.from('moodboard_connections').insert({
       moodboard_id: currentMoodboardId, agency_id: agencyId,
-      from_item_id: fromItemId, from_side: fromSide, to_item_id: toItemId, to_side: toSide,
+      from_item_id: fromItemId, from_side: fromSide, to_item_id: toItemId, to_side: toSide, color: '#8B5CF6',
     }).select('*').single()
     if (error) { showToast('Error: ' + error.message); return }
     mbConnections.push(data)
