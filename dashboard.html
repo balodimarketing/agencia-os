@@ -5556,11 +5556,14 @@
       const horaStr = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
       const camara = it.archivo_url ? '<i class="pdfcal-row-cam">📷</i>' : ''
       return `<div class="pdfcal-row">
-        <div class="pdfcal-row-date">${diaStr}<span>${horaStr}</span></div>
-        <div class="pdfcal-row-dot" style="background:${it.color}"></div>
-        <div class="pdfcal-row-title">${it.titulo}</div>
-        ${camara}
-        <div class="pdfcal-row-badge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
+        <div class="pdfcal-row-top">
+          <div class="pdfcal-row-date">${diaStr}<span>${horaStr}</span></div>
+          <div class="pdfcal-row-dot" style="background:${it.color}"></div>
+          <div class="pdfcal-row-title">${it.titulo}</div>
+          ${camara}
+          <div class="pdfcal-row-badge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
+        </div>
+        ${it.descripcion ? `<div class="pdfcal-row-desc">${it.descripcion}</div>` : ''}
       </div>`
     }).join('')
 
@@ -5609,14 +5612,16 @@
       '#calendario-pdf-content .pdfcal-section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; }',
       '#calendario-pdf-content .pdfcal-section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; }',
       '#calendario-pdf-content .pdfcal-resumen { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; margin-bottom: 32px; }',
-      '#calendario-pdf-content .pdfcal-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #F0F3F7; break-inside: avoid; page-break-inside: avoid; }',
+      '#calendario-pdf-content .pdfcal-row { padding: 10px 16px; border-bottom: 1px solid #F0F3F7; break-inside: avoid; page-break-inside: avoid; }',
       '#calendario-pdf-content .pdfcal-row:last-child { border-bottom: none; }',
+      '#calendario-pdf-content .pdfcal-row-top { display: flex; align-items: center; gap: 10px; }',
       '#calendario-pdf-content .pdfcal-row-date { width: 78px; flex-shrink: 0; font-size: 11px; font-weight: 800; color: #4A5568; text-transform: capitalize; }',
       '#calendario-pdf-content .pdfcal-row-date span { display: block; font-size: 10px; font-weight: 600; color: #9AA5B4; margin-top: 1px; }',
       '#calendario-pdf-content .pdfcal-row-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }',
       '#calendario-pdf-content .pdfcal-row-title { flex: 1; font-size: 12.5px; font-weight: 700; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
       '#calendario-pdf-content .pdfcal-row-cam { font-style: normal; font-size: 12px; flex-shrink: 0; }',
       '#calendario-pdf-content .pdfcal-row-badge { flex-shrink: 0; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }',
+      '#calendario-pdf-content .pdfcal-row-desc { font-size: 12px; color: #4A5568; line-height: 1.6; margin-top: 6px; padding-left: 88px; white-space: pre-wrap; }',
       '#calendario-pdf-content .pdfcal-detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }',
       '#calendario-pdf-content .pdfcal-dcard { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }',
       '#calendario-pdf-content .pdfcal-dmedia { width: 100%; height: 200px; object-fit: cover; display: block; background: #F5F7FA; }',
