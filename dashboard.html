@@ -931,6 +931,14 @@
     *::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.22); }
     *::-webkit-scrollbar-corner { background: transparent; }
 
+    /* ── Impresión: al exportar el calendario en PDF, ocultar todo el dashboard y mostrar solo el overlay ── */
+    @media print {
+      body > *:not(#calendario-pdf-overlay) { display: none !important; }
+      #calendario-pdf-overlay { position: static !important; overflow: visible !important; background: #fff !important; }
+      #calendario-pdf-topbar { display: none !important; }
+      #calendario-pdf-content { padding: 0 !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -4217,6 +4225,18 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- OVERLAY: Vista previa PDF del calendario (misma pestaña, sin abrir nada nuevo) -->
+<div id="calendario-pdf-overlay" style="display:none;position:fixed;inset:0;background:#EEF1F5;z-index:900;overflow-y:auto">
+  <div id="calendario-pdf-topbar" style="position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:13px;font-weight:800;color:var(--azul)">Vista previa — Calendario de contenido</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="window.print()" class="tbtn primary" style="gap:6px"><i class="ti ti-download" style="font-size:14px"></i> Descargar / Imprimir PDF</button>
+      <button onclick="closeCalendarioPdfPreview()" class="tbtn" style="gap:6px"><i class="ti ti-x" style="font-size:14px"></i> Cerrar</button>
+    </div>
+  </div>
+  <div id="calendario-pdf-content" style="padding:32px 20px"></div>
+</div>
+
 <script type="module">
   import { supabase, requireAuth, signOut } from './supabase.js'
 
@@ -5460,6 +5480,11 @@
     'Feed': '#10B981', 'Banner': '#F97316', 'Copy': '#64748B', 'Video': '#EF4444',
   }
 
+  window.closeCalendarioPdfPreview = function() {
+    document.getElementById('calendario-pdf-overlay').style.display = 'none'
+    document.getElementById('calendario-pdf-content').innerHTML = ''
+  }
+
   window.generateCalendarioPDF = function() {
     const activo = CALENDARS.find(c => c.id === currentCalendarioId)
     const year = calDate.getFullYear()
@@ -5501,7 +5526,7 @@
     startDay.setDate(startDay.getDate() - (dow === 0 ? 6 : dow - 1))
     const WEEK_DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
 
-    let gridHTML = WEEK_DAYS.map(d => `<div class="g-head">${d}</div>`).join('')
+    let gridHTML = WEEK_DAYS.map(d => `<div class="pdfcal-ghead">${d}</div>`).join('')
     for (let i = 0; i < 42; i++) {
       const cellDate = new Date(startDay)
       cellDate.setDate(startDay.getDate() + i)
@@ -5511,16 +5536,16 @@
       const chips = dayItems.slice(0,MAX_CHIPS).map(it => {
         const hora = new Date(it.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
         const camara = it.archivo_url ? '📷 ' : ''
-        return `<div class="g-chip" style="background:${it.color}22;color:${it.color}">${camara}${hora} ${it.titulo}</div>`
+        return `<div class="pdfcal-gchip" style="background:${it.color}22;color:${it.color}">${camara}${hora} ${it.titulo}</div>`
       }).join('')
-      const more = dayItems.length > MAX_CHIPS ? `<div class="g-more">+${dayItems.length - MAX_CHIPS} más</div>` : ''
-      gridHTML += `<div class="g-cell ${isOther?'g-other':''}"><div class="g-num">${cellDate.getDate()}</div>${chips}${more}</div>`
+      const more = dayItems.length > MAX_CHIPS ? `<div class="pdfcal-gmore">+${dayItems.length - MAX_CHIPS} más</div>` : ''
+      gridHTML += `<div class="pdfcal-gcell ${isOther?'pdfcal-gother':''}"><div class="pdfcal-gnum">${cellDate.getDate()}</div>${chips}${more}</div>`
     }
 
     // ── Leyenda de tipos presentes ──
     const tiposPresentes = [...new Map(itemsDelMes.map(it => [it.tipoLabel, it.color])).entries()]
     const legendHTML = tiposPresentes.map(([label,color]) =>
-      `<div class="legend-chip"><span class="legend-dot" style="background:${color}"></span>${label}</div>`
+      `<div class="pdfcal-legend-chip"><span class="pdfcal-legend-dot" style="background:${color}"></span>${label}</div>`
     ).join('')
 
     // ── Detalle visual: cards grandes para todo lo que tenga foto/video ──
@@ -5531,77 +5556,72 @@
       const horaStr = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
       const esVideo = isVideoFile(it.archivo_url)
       const mediaHTML = esVideo
-        ? `<div class="d-media d-video-placeholder"><div class="d-video-icon">&#9654;</div><div class="d-video-label">Video</div></div>`
-        : `<img class="d-media" src="${it.archivo_url}">`
-      return `<div class="d-card">
+        ? `<div class="pdfcal-dmedia pdfcal-dvideo"><div class="pdfcal-dvideo-icon">&#9654;</div><div class="pdfcal-dvideo-label">Video</div></div>`
+        : `<img class="pdfcal-dmedia" src="${it.archivo_url}">`
+      return `<div class="pdfcal-dcard">
         ${mediaHTML}
-        <div class="d-body">
-          <div class="d-badge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
-          <div class="d-title">${it.titulo}</div>
-          <div class="d-date">${fechaStr} · ${horaStr}</div>
-          ${it.descripcion ? `<div class="d-desc">${it.descripcion}</div>` : ''}
+        <div class="pdfcal-dbody">
+          <div class="pdfcal-dbadge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
+          <div class="pdfcal-dtitle">${it.titulo}</div>
+          <div class="pdfcal-ddate">${fechaStr} · ${horaStr}</div>
+          ${it.descripcion ? `<div class="pdfcal-ddesc">${it.descripcion}</div>` : ''}
         </div>
       </div>`
     }).join('')
 
+    // Todo prefijado con "pdfcal-" y escopado bajo #calendario-pdf-content para no chocar
+    // con ninguna clase existente del dashboard (.header, .page, .footer, etc. ya se usan en otro lado).
     const pdfCSS = [
-      '* { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }',
-      "body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #111; background: #fff; }",
-      '.print-bar { position: sticky; top: 0; z-index: 10; background: #F5F7FA; border-bottom: 1px solid #E8ECF0; padding: 10px 16px; display: flex; justify-content: center; }',
-      '.print-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: #0A2540; color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; }',
-      '.print-btn:hover { opacity: .88; }',
-      '.page { max-width: 900px; margin: 0 auto; padding: 40px; }',
-      '.header { background: ' + accentColor + '; border-radius: 16px; padding: 32px 36px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }',
-      '.header-left .kicker { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }',
-      '.header-left h1 { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -.6px; margin-bottom: 4px; }',
-      '.header-left p { font-size: 12px; color: rgba(255,255,255,.65); }',
-      '.header-logo-placeholder { font-size: 18px; font-weight: 900; color: rgba(255,255,255,.5); border: 1.5px solid rgba(255,255,255,.3); border-radius: 10px; padding: 10px 16px; }',
-      '.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }',
-      '.legend-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #4A5568; }',
-      '.legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }',
-      '.month-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 92px; gap: 1px; background: #E8ECF0; border: 1px solid #E8ECF0; border-radius: 12px; overflow: hidden; margin-bottom: 32px; }',
-      '.g-head { background: #F5F7FA; font-size: 10px; font-weight: 800; color: #9AA5B4; text-transform: uppercase; letter-spacing: .5px; padding: 8px; text-align: center; }',
-      '.g-cell { background: #fff; height: 92px; padding: 6px; overflow: hidden; }',
-      '.g-other { background: #FAFBFC; }',
-      '.g-other .g-num { color: #C4CDD9; }',
-      '.g-num { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 4px; }',
-      '.g-chip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
-      '.g-more { font-size: 8px; color: #9AA5B4; font-weight: 700; padding-left: 2px; }',
-      '.section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; }',
-      '.section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; }',
-      '.detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }',
-      '.d-card { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }',
-      '.d-media { width: 100%; height: 200px; object-fit: cover; display: block; background: #F5F7FA; }',
-      '.d-video-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #0A2540; color: #fff; }',
-      '.d-video-icon { font-size: 22px; }',
-      '.d-video-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; }',
-      '.d-body { padding: 14px 16px; }',
-      '.d-badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }',
-      '.d-title { font-size: 14px; font-weight: 800; color: #111; margin-bottom: 4px; }',
-      '.d-date { font-size: 11px; color: #9AA5B4; font-weight: 600; margin-bottom: 6px; text-transform: capitalize; }',
-      '.d-desc { font-size: 12px; color: #4A5568; line-height: 1.6; }',
-      '.footer { border-top: 1px solid #eee; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }',
-      '.footer-agency { font-size: 12px; font-weight: 700; color: #4A5568; }',
-      '.footer-faro { font-size: 10px; color: #C0CAD4; }',
-      '@media print { .print-bar{display:none !important} .header{background:' + accentColor + ' !important} .d-video-placeholder{background:#0A2540 !important} .g-head{background:#F5F7FA !important} .g-other{background:#FAFBFC !important} .d-card{break-inside:avoid} }',
+      '#calendario-pdf-content { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #111; }',
+      '#calendario-pdf-content .pdfcal-page { max-width: 900px; margin: 0 auto; background: #fff; }',
+      '#calendario-pdf-content .pdfcal-header { background: ' + accentColor + '; border-radius: 16px; padding: 32px 36px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }',
+      '#calendario-pdf-content .pdfcal-kicker { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }',
+      '#calendario-pdf-content .pdfcal-h1 { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -.6px; margin-bottom: 4px; }',
+      '#calendario-pdf-content .pdfcal-header-sub { font-size: 12px; color: rgba(255,255,255,.65); }',
+      '#calendario-pdf-content .pdfcal-logo { font-size: 18px; font-weight: 900; color: rgba(255,255,255,.5); border: 1.5px solid rgba(255,255,255,.3); border-radius: 10px; padding: 10px 16px; }',
+      '#calendario-pdf-content .pdfcal-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }',
+      '#calendario-pdf-content .pdfcal-legend-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #4A5568; }',
+      '#calendario-pdf-content .pdfcal-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }',
+      '#calendario-pdf-content .pdfcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 92px; gap: 1px; background: #E8ECF0; border: 1px solid #E8ECF0; border-radius: 12px; overflow: hidden; margin-bottom: 32px; }',
+      '#calendario-pdf-content .pdfcal-ghead { background: #F5F7FA; font-size: 10px; font-weight: 800; color: #9AA5B4; text-transform: uppercase; letter-spacing: .5px; padding: 8px; text-align: center; }',
+      '#calendario-pdf-content .pdfcal-gcell { background: #fff; height: 92px; padding: 6px; overflow: hidden; }',
+      '#calendario-pdf-content .pdfcal-gother { background: #FAFBFC; }',
+      '#calendario-pdf-content .pdfcal-gother .pdfcal-gnum { color: #C4CDD9; }',
+      '#calendario-pdf-content .pdfcal-gnum { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 4px; }',
+      '#calendario-pdf-content .pdfcal-gchip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+      '#calendario-pdf-content .pdfcal-gmore { font-size: 8px; color: #9AA5B4; font-weight: 700; padding-left: 2px; }',
+      '#calendario-pdf-content .pdfcal-section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; }',
+      '#calendario-pdf-content .pdfcal-section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; }',
+      '#calendario-pdf-content .pdfcal-detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }',
+      '#calendario-pdf-content .pdfcal-dcard { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }',
+      '#calendario-pdf-content .pdfcal-dmedia { width: 100%; height: 200px; object-fit: cover; display: block; background: #F5F7FA; }',
+      '#calendario-pdf-content .pdfcal-dvideo { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #0A2540; color: #fff; }',
+      '#calendario-pdf-content .pdfcal-dvideo-icon { font-size: 22px; }',
+      '#calendario-pdf-content .pdfcal-dvideo-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; }',
+      '#calendario-pdf-content .pdfcal-dbody { padding: 14px 16px; }',
+      '#calendario-pdf-content .pdfcal-dbadge { display: inline-block; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }',
+      '#calendario-pdf-content .pdfcal-dtitle { font-size: 14px; font-weight: 800; color: #111; margin-bottom: 4px; }',
+      '#calendario-pdf-content .pdfcal-ddate { font-size: 11px; color: #9AA5B4; font-weight: 600; margin-bottom: 6px; text-transform: capitalize; }',
+      '#calendario-pdf-content .pdfcal-ddesc { font-size: 12px; color: #4A5568; line-height: 1.6; }',
+      '#calendario-pdf-content .pdfcal-footer { border-top: 1px solid #eee; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }',
+      '#calendario-pdf-content .pdfcal-footer-agency { font-size: 12px; font-weight: 700; color: #4A5568; }',
+      '#calendario-pdf-content .pdfcal-footer-faro { font-size: 10px; color: #C0CAD4; }',
+      '@media print { #calendario-pdf-content * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } #calendario-pdf-content .pdfcal-header{background:' + accentColor + ' !important} #calendario-pdf-content .pdfcal-dvideo{background:#0A2540 !important} #calendario-pdf-content .pdfcal-ghead{background:#F5F7FA !important} #calendario-pdf-content .pdfcal-gother{background:#FAFBFC !important} #calendario-pdf-content .pdfcal-dcard{break-inside:avoid} }',
     ].join('\n')
 
-    const htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>' + pdfCSS + '</style></head><body>' +
-      '<div class="print-bar"><button class="print-btn" onclick="window.print()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Descargar / Imprimir PDF</button></div>' +
-      '<div class="page">' +
-      '<div class="header"><div class="header-left"><div class="kicker">Calendario de contenido</div><h1>' + nombreCalendario + (mostrarClienteEnTitulo ? ' — ' + cliente : '') + '</h1><p>' + monthLabel + ' · Generado el ' + today + '</p></div>' +
-      '<div class="header-logo-placeholder">' + agencyName.substring(0,2).toUpperCase() + '</div></div>' +
-      (legendHTML ? '<div class="legend">' + legendHTML + '</div>' : '') +
-      '<div class="month-grid">' + gridHTML + '</div>' +
-      (detalleHTML ? '<div class="section-title">Detalle de publicaciones</div><div class="section-sub">Vista previa del contenido programado para ' + monthLabel + '</div><div class="detalle-grid">' + detalleHTML + '</div>' : '') +
-      '<div class="footer"><div class="footer-agency">' + agencyName + '</div><div class="footer-faro">Calendario generado con Faro</div></div>' +
-      '</div></body></html>'
+    const contentHTML = '<style>' + pdfCSS + '</style>' +
+      '<div class="pdfcal-page">' +
+      '<div class="pdfcal-header"><div><div class="pdfcal-kicker">Calendario de contenido</div><div class="pdfcal-h1">' + nombreCalendario + (mostrarClienteEnTitulo ? ' — ' + cliente : '') + '</div><div class="pdfcal-header-sub">' + monthLabel + ' · Generado el ' + today + '</div></div>' +
+      '<div class="pdfcal-logo">' + agencyName.substring(0,2).toUpperCase() + '</div></div>' +
+      (legendHTML ? '<div class="pdfcal-legend">' + legendHTML + '</div>' : '') +
+      '<div class="pdfcal-grid">' + gridHTML + '</div>' +
+      (detalleHTML ? '<div class="pdfcal-section-title">Detalle de publicaciones</div><div class="pdfcal-section-sub">Vista previa del contenido programado para ' + monthLabel + '</div><div class="pdfcal-detalle-grid">' + detalleHTML + '</div>' : '') +
+      '<div class="pdfcal-footer"><div class="pdfcal-footer-agency">' + agencyName + '</div><div class="pdfcal-footer-faro">Calendario generado con Faro</div></div>' +
+      '</div>'
 
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    window.open(url, '_blank')
-    setTimeout(() => URL.revokeObjectURL(url), 60000)
-    showToast('Se abrió en una pestaña nueva — hacé click en "Descargar / Imprimir PDF" cuando quieras guardarlo')
+    document.getElementById('calendario-pdf-content').innerHTML = contentHTML
+    document.getElementById('calendario-pdf-overlay').style.display = 'block'
+    document.getElementById('calendario-pdf-overlay').scrollTop = 0
   }
 
   function renderCalPanel() {
