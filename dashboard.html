@@ -435,19 +435,30 @@
     #mb-canvas-viewport { cursor: grab; }
     #mb-canvas-viewport.panning { cursor: grabbing; }
     #mb-canvas-viewport.tool-active { cursor: crosshair; }
+    #mb-canvas-viewport.connecting { cursor: crosshair; }
 
     .mb-item {
       position: absolute; box-sizing: border-box; user-select: none;
-      box-shadow: 0 2px 10px rgba(10,37,64,.08); border-radius: 10px; overflow: hidden;
-      background: #fff; border: 2px solid transparent;
+      box-shadow: 0 2px 10px rgba(10,37,64,.08); border-radius: 10px; overflow: visible;
+      background: #fff; border: 2px solid transparent; cursor: grab;
     }
     .mb-item.selected { border-color: var(--celeste); box-shadow: 0 0 0 3px rgba(142,219,255,.35); }
-    .mb-item img, .mb-item video, .mb-item iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: none; pointer-events: none; }
-    .mb-item.dragging { opacity: .85; }
+    .mb-item.dragging { opacity: .85; cursor: grabbing; }
+    .mb-item-clip { position: absolute; inset: 0; border-radius: 8px; overflow: hidden; }
+    .mb-item img, .mb-item video, .mb-item iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
+
+    /* Botón eliminar: siempre visible, arriba a la derecha */
+    .mb-item-delete {
+      position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%;
+      background: #fff; border: 1.5px solid var(--border); color: var(--danger); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 20;
+      box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    }
+    .mb-item-delete:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
     .mb-item-toolbar {
       position: absolute; top: -34px; left: 0; display: none; gap: 4px;
-      background: var(--azul); border-radius: 8px; padding: 4px; z-index: 5000;
+      background: var(--azul); border-radius: 8px; padding: 4px; z-index: 20;
     }
     .mb-item.selected .mb-item-toolbar { display: flex; }
     .mb-item-toolbar button {
@@ -459,16 +470,52 @@
     .mb-resize-handle {
       position: absolute; bottom: -5px; right: -5px; width: 14px; height: 14px;
       background: var(--azul); border: 2px solid #fff; border-radius: 50%;
-      cursor: nwse-resize; display: none; z-index: 10;
+      cursor: nwse-resize; display: none; z-index: 20;
     }
     .mb-item.selected .mb-resize-handle { display: block; }
 
+    /* Anclas de conexión: aparecen al pasar el mouse o si está seleccionado */
+    .mb-anchor {
+      position: absolute; width: 12px; height: 12px; border-radius: 50%;
+      background: var(--celeste); border: 2px solid var(--azul); cursor: crosshair;
+      opacity: 0; transition: opacity .12s; z-index: 25;
+    }
+    .mb-item:hover .mb-anchor, .mb-item.selected .mb-anchor { opacity: 1; }
+    .mb-anchor:hover { transform: scale(1.3); }
+    .mb-anchor.top    { top: -6px; left: calc(50% - 6px); }
+    .mb-anchor.bottom { bottom: -6px; left: calc(50% - 6px); }
+    .mb-anchor.left   { left: -6px; top: calc(50% - 6px); }
+    .mb-anchor.right  { right: -6px; top: calc(50% - 6px); }
+
     .mb-nota { padding: 14px; font-size: 13px; line-height: 1.5; color: #4A3B00; overflow-y: auto; height: 100%; box-sizing: border-box; cursor: text; outline: none; }
+    .mb-texto { padding: 8px; font-size: 20px; font-weight: 800; line-height: 1.3; color: var(--ink); overflow-y: auto; height: 100%; box-sizing: border-box; cursor: text; outline: none; background: transparent; }
     .mb-marco { background: transparent !important; box-shadow: none !important; border: 2px dashed var(--ink3) !important; }
     .mb-marco-label { position: absolute; top: -22px; left: 0; font-size: 11px; font-weight: 800; color: var(--ink2); background: #EEF1F5; padding: 1px 8px; border-radius: 6px; }
     .mb-link-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; padding: 16px; text-align: center; background: var(--bg); }
     .mb-link-card i { font-size: 26px; color: var(--ink3); }
     .mb-link-card .mb-link-domain { font-size: 11px; font-weight: 700; color: var(--ink2); word-break: break-all; }
+
+    #mb-connections-svg { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; overflow: visible; }
+    #mb-connections-svg .mb-conn-line { pointer-events: stroke; cursor: pointer; }
+    #mb-connections-svg .mb-conn-line:hover { stroke: var(--danger) !important; }
+
+    /* ── Moodboard: modo pantalla completa ── */
+    #mb-floating-tabs {
+      display: none; position: fixed; top: 16px; left: 16px; z-index: 1000;
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 5px;
+      box-shadow: var(--shadow-lg); gap: 3px;
+    }
+    .mb-floating-tab-btn {
+      display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: none; background: none;
+      border-radius: 10px; font-size: 12px; font-weight: 700; color: var(--ink2); cursor: pointer; font-family: inherit;
+    }
+    .mb-floating-tab-btn:hover { background: var(--bg); }
+    .mb-floating-tab-btn.active { background: var(--azul); color: var(--celeste); }
+    body.mb-fullscreen .rail { display: none !important; }
+    body.mb-fullscreen .panel { display: none !important; }
+    body.mb-fullscreen .topbar { display: none !important; }
+    body.mb-fullscreen #v-contenido { height: 100vh !important; }
+    body.mb-fullscreen .contenido-toolbar { display: none !important; }
 
     /* Kanban */
     .kanban { display: flex; gap: 14px; overflow-x: auto; height: calc(100vh - 200px); padding-bottom: 12px; }
@@ -1277,6 +1324,7 @@
           <button class="mb-tool-btn active" data-tool="select" onclick="setMbTool('select')" title="Seleccionar / mover"><i class="ti ti-pointer"></i></button>
           <button class="mb-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Agregar imagen"><i class="ti ti-photo"></i></button>
           <button class="mb-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Agregar link o video"><i class="ti ti-link"></i></button>
+          <button class="mb-tool-btn" data-tool="texto" onclick="setMbTool('texto')" title="Agregar texto libre"><i class="ti ti-typography"></i></button>
           <button class="mb-tool-btn" data-tool="nota" onclick="setMbTool('nota')" title="Agregar nota"><i class="ti ti-note"></i></button>
           <button class="mb-tool-btn" data-tool="marco" onclick="setMbTool('marco')" title="Agregar marco"><i class="ti ti-frame"></i></button>
           <div style="width:1px;height:20px;background:var(--border);margin:0 6px"></div>
@@ -1298,7 +1346,10 @@
 
         <!-- Lienzo -->
         <div id="mb-canvas-viewport" style="display:none;flex:1;overflow:hidden;position:relative;background:#EEF1F5">
-          <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:3000px;height:3000px;transform-origin:0 0;background-image:radial-gradient(circle,#D7DEE6 1.5px,transparent 1.5px);background-size:26px 26px"></div>
+          <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:3000px;height:3000px;transform-origin:0 0;background-image:radial-gradient(circle,#D7DEE6 1.5px,transparent 1.5px);background-size:26px 26px">
+            <svg id="mb-connections-svg" width="3000" height="3000"></svg>
+            <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
+          </div>
         </div>
        </div>
       </div>
@@ -4512,6 +4563,12 @@
 <div class="toast" id="toast"></div>
 
 <!-- OVERLAY: Vista previa PDF del calendario (misma pestaña, sin abrir nada nuevo) -->
+<div id="mb-floating-tabs">
+  <button class="mb-floating-tab-btn" data-tab="tareas" onclick="switchContentTab('tareas')"><i class="ti ti-check"></i> Tareas</button>
+  <button class="mb-floating-tab-btn" data-tab="tableros" onclick="switchContentTab('tableros')"><i class="ti ti-stack-2"></i> Tableros</button>
+  <button class="mb-floating-tab-btn active" data-tab="moodboard" onclick="switchContentTab('moodboard')"><i class="ti ti-palette"></i> Moodboard</button>
+</div>
+
 <div id="calendario-pdf-overlay" style="display:none;position:fixed;inset:0;background:#EEF1F5;z-index:900;overflow-y:auto">
   <div id="calendario-pdf-topbar" style="position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between">
     <div style="font-size:13px;font-weight:800;color:var(--azul)">Vista previa — Calendario de contenido</div>
@@ -8639,6 +8696,18 @@
     // En Tareas, Tableros y Moodboard, la creación vive dentro de la propia subvista
     const ctaBtn = document.getElementById('contenido-cta')
     if (ctaBtn) ctaBtn.style.display = (tab === 'tareas' || tab === 'tableros' || tab === 'moodboard') ? 'none' : ''
+
+    // Moodboard toma toda la pantalla: se esconde el rail/topbar y aparece el cluster flotante
+    const floatingTabs = document.getElementById('mb-floating-tabs')
+    if (tab === 'moodboard') {
+      document.body.classList.add('mb-fullscreen')
+      if (floatingTabs) floatingTabs.style.display = 'flex'
+    } else {
+      document.body.classList.remove('mb-fullscreen')
+      if (floatingTabs) floatingTabs.style.display = 'none'
+    }
+    document.querySelectorAll('.mb-floating-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab))
+
     if (tab === 'tableros') renderTableros()
     if (tab === 'moodboard') renderMoodboardTab()
   }
@@ -11775,6 +11844,7 @@ if (id) {
   let MOODBOARDS = []
   let currentMoodboardId = null
   let moodboardItems = []
+  let mbConnections = []
   let mbActiveTool = 'select'
   let mbZoom = 1
   let mbPanX = 40
@@ -11865,7 +11935,7 @@ if (id) {
     viewport.style.display = 'block'
     toolbar.style.display = 'flex'
 
-    await loadMoodboardItems()
+    await Promise.all([loadMoodboardItems(), loadMoodboardConnections()])
     renderMbCanvas()
     initMbCanvasEvents()
     setMbTool('select')
@@ -11878,6 +11948,14 @@ if (id) {
       .eq('moodboard_id', currentMoodboardId)
       .order('z_index', { ascending: true })
     moodboardItems = data || []
+  }
+
+  async function loadMoodboardConnections() {
+    const { data } = await supabase
+      .from('moodboard_connections')
+      .select('*')
+      .eq('moodboard_id', currentMoodboardId)
+    mbConnections = data || []
   }
 
   // ── Crear / eliminar moodboard ─────────────────────────
@@ -11945,7 +12023,7 @@ if (id) {
     const viewport = document.getElementById('mb-canvas-viewport')
     viewport.classList.toggle('tool-active', tool !== 'select')
     const hint = document.getElementById('mb-hint')
-    const hints = { select: 'Arrastrá el fondo para moverte, rueda del mouse para zoom', imagen: 'Clickeá el lienzo para subir una imagen', link: 'Clickeá el lienzo y pegá un link o video', nota: 'Clickeá el lienzo para agregar una nota', marco: 'Clickeá el lienzo para agregar un marco' }
+    const hints = { select: 'Arrastrá cualquier elemento para moverlo · doble click para editar texto · rueda del mouse para zoom', imagen: 'Clickeá el lienzo para subir una imagen', link: 'Clickeá el lienzo y pegá un link o video', texto: 'Clickeá el lienzo para agregar texto libre', nota: 'Clickeá el lienzo para agregar una nota', marco: 'Clickeá el lienzo para agregar un marco' }
     if (hint) hint.textContent = hints[tool] || ''
   }
 
@@ -11974,37 +12052,101 @@ if (id) {
     if (label) label.textContent = Math.round(mbZoom * 100) + '%'
   }
 
-  // ── Interacción del lienzo (pan, crear, arrastrar, resize) ──
+  // ── Conexiones: helpers de posición ──────────────────────
+  function getMbAnchorPoint(item, side) {
+    const cx = item.x + item.width / 2, cy = item.y + item.height / 2
+    if (side === 'top') return { x: cx, y: item.y }
+    if (side === 'bottom') return { x: cx, y: item.y + item.height }
+    if (side === 'left') return { x: item.x, y: cy }
+    return { x: item.x + item.width, y: cy } // right
+  }
+
+  function pickMbNearestSide(item, x, y) {
+    let best = 'top', bestDist = Infinity
+    ;['top','right','bottom','left'].forEach(side => {
+      const p = getMbAnchorPoint(item, side)
+      const d = (p.x - x) ** 2 + (p.y - y) ** 2
+      if (d < bestDist) { bestDist = d; best = side }
+    })
+    return best
+  }
+
+  function renderMbConnections() {
+    const svg = document.getElementById('mb-connections-svg')
+    if (!svg) return
+    svg.innerHTML = mbConnections.map(conn => {
+      const fromItem = moodboardItems.find(i => i.id === conn.from_item_id)
+      const toItem = moodboardItems.find(i => i.id === conn.to_item_id)
+      if (!fromItem || !toItem) return ''
+      const p1 = getMbAnchorPoint(fromItem, conn.from_side)
+      const p2 = getMbAnchorPoint(toItem, conn.to_side)
+      return `<line class="mb-conn-line" data-id="${conn.id}" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#8B5CF6" stroke-width="2.5" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();deleteMbConnectionClick('${conn.id}')"></line>`
+    }).join('')
+  }
+
+  window.deleteMbConnectionClick = async function(id) {
+    await supabase.from('moodboard_connections').delete().eq('id', id)
+    mbConnections = mbConnections.filter(c => c.id !== id)
+    renderMbConnections()
+    showToast('Conexión eliminada')
+  }
+
+  async function createMbConnection(fromItemId, fromSide, toItemId, toSide) {
+    const { data, error } = await supabase.from('moodboard_connections').insert({
+      moodboard_id: currentMoodboardId, agency_id: agencyId,
+      from_item_id: fromItemId, from_side: fromSide, to_item_id: toItemId, to_side: toSide,
+    }).select('*').single()
+    if (error) { showToast('Error: ' + error.message); return }
+    mbConnections.push(data)
+    renderMbConnections()
+  }
+
+  // ── Interacción del lienzo (pan, crear, arrastrar, resize, conectar) ──
   let mbEventsInit = false
   function initMbCanvasEvents() {
     applyMbTransform()
     if (mbEventsInit) return
     mbEventsInit = true
     const viewport = document.getElementById('mb-canvas-viewport')
-    const inner = document.getElementById('mb-canvas-inner')
+    const layer = document.getElementById('mb-items-layer')
+    const DRAG_THRESHOLD = 5
 
     let panning = false, panStartX = 0, panStartY = 0, panOrigX = 0, panOrigY = 0
-    let draggingId = null, dragStartX = 0, dragStartY = 0, dragOrigX = 0, dragOrigY = 0
+    let potentialDragId = null, draggingId = null, dragStartX = 0, dragStartY = 0, dragOrigX = 0, dragOrigY = 0
     let resizingId = null, resizeStartX = 0, resizeStartY = 0, resizeOrigW = 0, resizeOrigH = 0
+    let mbConnectingFrom = null
 
     viewport.addEventListener('mousedown', e => {
+      if (e.target.closest('.mb-conn-line')) return
       const itemEl = e.target.closest('.mb-item')
-      const handleEl = e.target.closest('.mb-item-handle')
+      const anchorEl = e.target.closest('.mb-anchor')
       const resizeEl = e.target.closest('.mb-resize-handle')
+      const deleteEl = e.target.closest('.mb-item-delete')
+      const toolbarEl = e.target.closest('.mb-item-toolbar')
 
+      if (deleteEl || toolbarEl) return // dejar que su propio onclick actúe
+
+      if (anchorEl && itemEl) {
+        mbConnectingFrom = { itemId: itemEl.dataset.id, side: anchorEl.dataset.side }
+        viewport.classList.add('connecting')
+        e.preventDefault(); e.stopPropagation()
+        return
+      }
       if (resizeEl && itemEl) {
         resizingId = itemEl.dataset.id
         resizeStartX = e.clientX; resizeStartY = e.clientY
         resizeOrigW = itemEl.offsetWidth; resizeOrigH = itemEl.offsetHeight
         e.preventDefault(); return
       }
-      if (handleEl && itemEl) {
-        draggingId = itemEl.dataset.id
+      if (itemEl) {
+        // Si está en modo edición de texto, dejar pasar el click nativo (cursor de texto)
+        const editing = itemEl.querySelector('.mb-nota[contenteditable="true"], .mb-texto[contenteditable="true"]')
+        if (editing) return
+        potentialDragId = itemEl.dataset.id
         dragStartX = e.clientX; dragStartY = e.clientY
         dragOrigX = parseFloat(itemEl.style.left); dragOrigY = parseFloat(itemEl.style.top)
-        e.preventDefault(); return
+        return // sin preventDefault: si no hay movimiento real, el click nativo actúa normal (video, seleccionar, etc.)
       }
-      if (itemEl) return // click en el cuerpo de un item: dejar que su propio onclick lo seleccione
 
       // Click en el fondo del lienzo
       if (mbActiveTool === 'select') {
@@ -12021,6 +12163,34 @@ if (id) {
     })
 
     document.addEventListener('mousemove', e => {
+      if (mbConnectingFrom) {
+        const rect = viewport.getBoundingClientRect()
+        const cx = (e.clientX - rect.left - mbPanX) / mbZoom
+        const cy = (e.clientY - rect.top - mbPanY) / mbZoom
+        const fromItem = moodboardItems.find(i => i.id === mbConnectingFrom.itemId)
+        if (fromItem) {
+          const p1 = getMbAnchorPoint(fromItem, mbConnectingFrom.side)
+          const svg = document.getElementById('mb-connections-svg')
+          let temp = document.getElementById('mb-temp-conn-line')
+          if (!temp) {
+            temp = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+            temp.id = 'mb-temp-conn-line'
+            temp.setAttribute('stroke', '#8B5CF6')
+            temp.setAttribute('stroke-width', '2.5')
+            temp.setAttribute('stroke-dasharray', '6,4')
+            svg.appendChild(temp)
+          }
+          temp.setAttribute('x1', p1.x); temp.setAttribute('y1', p1.y)
+          temp.setAttribute('x2', cx); temp.setAttribute('y2', cy)
+        }
+        return
+      }
+      if (potentialDragId && !draggingId) {
+        if (Math.abs(e.clientX - dragStartX) > DRAG_THRESHOLD || Math.abs(e.clientY - dragStartY) > DRAG_THRESHOLD) {
+          draggingId = potentialDragId
+          layer.querySelector(`.mb-item[data-id="${draggingId}"]`)?.classList.add('dragging')
+        }
+      }
       if (panning) {
         mbJustDragged = true
         mbPanX = panOrigX + (e.clientX - panStartX)
@@ -12028,49 +12198,72 @@ if (id) {
         applyMbTransform()
       } else if (draggingId) {
         mbJustDragged = true
-        const el = inner.querySelector(`.mb-item[data-id="${draggingId}"]`)
+        const el = layer.querySelector(`.mb-item[data-id="${draggingId}"]`)
         if (el) {
           el.style.left = (dragOrigX + (e.clientX - dragStartX) / mbZoom) + 'px'
           el.style.top = (dragOrigY + (e.clientY - dragStartY) / mbZoom) + 'px'
+          const item = moodboardItems.find(i => i.id === draggingId)
+          if (item) { item.x = parseFloat(el.style.left); item.y = parseFloat(el.style.top) }
+          renderMbConnections()
         }
       } else if (resizingId) {
         mbJustDragged = true
-        const el = inner.querySelector(`.mb-item[data-id="${resizingId}"]`)
+        const el = layer.querySelector(`.mb-item[data-id="${resizingId}"]`)
         if (el) {
           el.style.width = Math.max(60, resizeOrigW + (e.clientX - resizeStartX) / mbZoom) + 'px'
           el.style.height = Math.max(50, resizeOrigH + (e.clientY - resizeStartY) / mbZoom) + 'px'
+          const item = moodboardItems.find(i => i.id === resizingId)
+          if (item) { item.width = parseFloat(el.style.width); item.height = parseFloat(el.style.height) }
+          renderMbConnections()
         }
       }
     })
 
-    document.addEventListener('mouseup', async () => {
+    document.addEventListener('mouseup', async e => {
+      if (mbConnectingFrom) {
+        document.getElementById('mb-temp-conn-line')?.remove()
+        viewport.classList.remove('connecting')
+        const dropItemEl = document.elementFromPoint(e.clientX, e.clientY)?.closest('.mb-item')
+        if (dropItemEl && dropItemEl.dataset.id !== mbConnectingFrom.itemId) {
+          const toItem = moodboardItems.find(i => i.id === dropItemEl.dataset.id)
+          if (toItem) {
+            const rect = viewport.getBoundingClientRect()
+            const cx = (e.clientX - rect.left - mbPanX) / mbZoom
+            const cy = (e.clientY - rect.top - mbPanY) / mbZoom
+            const toSide = pickMbNearestSide(toItem, cx, cy)
+            await createMbConnection(mbConnectingFrom.itemId, mbConnectingFrom.side, toItem.id, toSide)
+          }
+        }
+        mbConnectingFrom = null
+        return
+      }
       if (panning) { panning = false; viewport.classList.remove('panning') }
       if (draggingId) {
-        const el = inner.querySelector(`.mb-item[data-id="${draggingId}"]`)
+        const el = layer.querySelector(`.mb-item[data-id="${draggingId}"]`)
         if (el) {
+          el.classList.remove('dragging')
           const item = moodboardItems.find(i => i.id === draggingId)
           const x = parseFloat(el.style.left), y = parseFloat(el.style.top)
           if (item) { item.x = x; item.y = y }
           await supabase.from('moodboard_items').update({ x, y }).eq('id', draggingId)
         }
-        draggingId = null
       }
       if (resizingId) {
-        const el = inner.querySelector(`.mb-item[data-id="${resizingId}"]`)
+        const el = layer.querySelector(`.mb-item[data-id="${resizingId}"]`)
         if (el) {
           const item = moodboardItems.find(i => i.id === resizingId)
           const width = parseFloat(el.style.width), height = parseFloat(el.style.height)
           if (item) { item.width = width; item.height = height }
           await supabase.from('moodboard_items').update({ width, height }).eq('id', resizingId)
         }
-        resizingId = null
       }
+      potentialDragId = null; draggingId = null; resizingId = null
       setTimeout(() => { mbJustDragged = false }, 0)
     })
 
     viewport.addEventListener('click', e => {
       if (mbJustDragged) return
-      if (e.target === inner && mbActiveTool === 'select') deselectMbItem()
+      if (e.target === document.getElementById('mb-canvas-inner') && mbActiveTool === 'select') deselectMbItem()
     })
 
     viewport.addEventListener('wheel', e => {
@@ -12082,7 +12275,7 @@ if (id) {
 
   // ── Crear elementos ──────────────────────────────────────
   function nextMbZIndex() {
-    return moodboardItems.length === 0 ? 1 : Math.max(...moodboardItems.map(i => i.z_index || 0)) + 1
+    return moodboardItems.length === 0 ? 2 : Math.max(...moodboardItems.map(i => i.z_index || 0)) + 1
   }
 
   window.addMbItemAt = function(tool, x, y) {
@@ -12095,6 +12288,11 @@ if (id) {
       const url = prompt('Pegá el link (imagen/video de YouTube, Vimeo, archivo de video, o cualquier otro link):')
       if (!url || !url.trim()) return
       createMbItem({ tipo: 'link', url: url.trim(), x, y, width: 280, height: 190, color: '#0A2540' })
+      setMbTool('select')
+      return
+    }
+    if (tool === 'texto') {
+      createMbItem({ tipo: 'texto', contenido: '', x, y, width: 240, height: 70 })
       setMbTool('select')
       return
     }
@@ -12138,10 +12336,10 @@ if (id) {
     moodboardItems.push(data)
     renderMbCanvas()
     selectMbItem(data.id)
-    if (data.tipo === 'nota') {
+    if (data.tipo === 'nota' || data.tipo === 'texto') {
       setTimeout(() => {
-        const el = document.querySelector(`.mb-nota[data-id="${data.id}"]`)
-        if (el) el.focus()
+        const el = document.querySelector(`.mb-nota[data-id="${data.id}"], .mb-texto[data-id="${data.id}"]`)
+        if (el) enterMbEditMode(el)
       }, 50)
     }
   }
@@ -12159,9 +12357,9 @@ if (id) {
   }
 
   function renderMbCanvas() {
-    const inner = document.getElementById('mb-canvas-inner')
-    if (!inner) return
-    inner.innerHTML = moodboardItems.map(item => {
+    const layer = document.getElementById('mb-items-layer')
+    if (!layer) return
+    layer.innerHTML = moodboardItems.map(item => {
       const isSelected = item.id === mbSelectedItemId
       let bodyHTML = '', extraClass = '', outerBg = '#fff'
       if (item.tipo === 'imagen') {
@@ -12172,43 +12370,49 @@ if (id) {
         else if (info.kind === 'video') bodyHTML = `<video src="${item.url}" controls></video>`
         else bodyHTML = `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="mb-link-card"><i class="ti ti-link"></i><div class="mb-link-domain">${info.domain}</div></a>`
       } else if (item.tipo === 'nota') {
-        bodyHTML = `<div class="mb-nota" contenteditable="true" data-id="${item.id}" onmousedown="event.stopPropagation()" onblur="saveMbNoteText(this)">${(item.contenido||'').replace(/</g,'&lt;')}</div>`
+        bodyHTML = `<div class="mb-nota" contenteditable="false" data-id="${item.id}" ondblclick="event.stopPropagation();enterMbEditMode(this)" onblur="saveMbText(this)">${(item.contenido||'').replace(/</g,'&lt;')}</div>`
         outerBg = item.color || '#FFF3B0'
+      } else if (item.tipo === 'texto') {
+        bodyHTML = `<div class="mb-texto" contenteditable="false" data-id="${item.id}" ondblclick="event.stopPropagation();enterMbEditMode(this)" onblur="saveMbText(this)">${(item.contenido||'Doble click para escribir').replace(/</g,'&lt;')}</div>`
+        outerBg = 'transparent'
       } else if (item.tipo === 'marco') {
         extraClass = 'mb-marco'
         bodyHTML = `<div class="mb-marco-label">${item.titulo || 'Marco'}</div>`
         outerBg = 'transparent'
       }
       const abrirBtn = (item.tipo === 'link') ? `<button onclick="event.stopPropagation();window.open('${item.url}','_blank')" title="Abrir"><i class="ti ti-external-link"></i></button>` : ''
+      const anchors = ['top','right','bottom','left'].map(side => `<div class="mb-anchor ${side}" data-side="${side}"></div>`).join('')
       return `<div class="mb-item ${extraClass} ${isSelected?'selected':''}" data-id="${item.id}" style="left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;z-index:${item.z_index};background:${outerBg}" onclick="event.stopPropagation();selectMbItem('${item.id}')">
+        <button class="mb-item-delete" onclick="event.stopPropagation();deleteMbItem('${item.id}')" title="Eliminar"><i class="ti ti-x"></i></button>
         <div class="mb-item-toolbar">
           ${abrirBtn}
           <button onclick="event.stopPropagation();mbBringToFront('${item.id}')" title="Traer al frente"><i class="ti ti-stack-front"></i></button>
           <button onclick="event.stopPropagation();mbSendToBack('${item.id}')" title="Enviar atrás"><i class="ti ti-stack-back"></i></button>
-          <button onclick="event.stopPropagation();deleteMbItem('${item.id}')" title="Eliminar"><i class="ti ti-trash"></i></button>
         </div>
-        <div class="mb-item-handle"></div>
-        <div class="mb-item-body">${bodyHTML}</div>
+        <div class="mb-item-clip">${bodyHTML}</div>
+        ${anchors}
         <div class="mb-resize-handle"></div>
       </div>`
     }).join('')
+    renderMbConnections()
   }
 
   window.selectMbItem = function(id) {
     mbSelectedItemId = id
-    document.querySelectorAll('#mb-canvas-inner .mb-item').forEach(el => el.classList.toggle('selected', el.dataset.id === id))
+    document.querySelectorAll('#mb-items-layer .mb-item').forEach(el => el.classList.toggle('selected', el.dataset.id === id))
   }
 
   function deselectMbItem() {
     mbSelectedItemId = null
-    document.querySelectorAll('#mb-canvas-inner .mb-item.selected').forEach(el => el.classList.remove('selected'))
+    document.querySelectorAll('#mb-items-layer .mb-item.selected').forEach(el => el.classList.remove('selected'))
   }
 
   window.mbBringToFront = async function(id) {
     const item = moodboardItems.find(i => i.id === id)
     if (!item) return
     item.z_index = nextMbZIndex()
-    document.querySelector(`.mb-item[data-id="${id}"]`).style.zIndex = item.z_index
+    const el = document.querySelector(`.mb-item[data-id="${id}"]`)
+    if (el) el.style.zIndex = item.z_index
     await supabase.from('moodboard_items').update({ z_index: item.z_index }).eq('id', id)
   }
 
@@ -12217,7 +12421,8 @@ if (id) {
     if (!item) return
     const min = moodboardItems.length === 0 ? 0 : Math.min(...moodboardItems.map(i => i.z_index || 0))
     item.z_index = min - 1
-    document.querySelector(`.mb-item[data-id="${id}"]`).style.zIndex = item.z_index
+    const el = document.querySelector(`.mb-item[data-id="${id}"]`)
+    if (el) el.style.zIndex = item.z_index
     await supabase.from('moodboard_items').update({ z_index: item.z_index }).eq('id', id)
   }
 
@@ -12225,11 +12430,24 @@ if (id) {
     if (!confirm('¿Eliminar este elemento del moodboard?')) return
     await supabase.from('moodboard_items').delete().eq('id', id)
     moodboardItems = moodboardItems.filter(i => i.id !== id)
+    mbConnections = mbConnections.filter(c => c.from_item_id !== id && c.to_item_id !== id)
     if (mbSelectedItemId === id) mbSelectedItemId = null
     renderMbCanvas()
   }
 
-  window.saveMbNoteText = async function(el) {
+  window.enterMbEditMode = function(el) {
+    el.setAttribute('contenteditable', 'true')
+    el.focus()
+    const range = document.createRange()
+    range.selectNodeContents(el)
+    range.collapse(false)
+    const sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+  }
+
+  window.saveMbText = async function(el) {
+    el.setAttribute('contenteditable', 'false')
     const id = el.dataset.id
     const texto = el.innerText
     const item = moodboardItems.find(i => i.id === id)
