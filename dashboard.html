@@ -937,6 +937,8 @@
       body > *:not(#calendario-pdf-overlay) { display: none !important; }
       #calendario-pdf-overlay { position: static !important; overflow: visible !important; background: #fff !important; height: auto !important; }
       #calendario-pdf-topbar { display: none !important; }
+      #calendario-pdf-customize { display: none !important; }
+      #calendario-pdf-tip { display: none !important; }
       #calendario-pdf-content { padding: 0 !important; overflow: visible !important; height: auto !important; }
     }
 
@@ -4235,6 +4237,40 @@
       <button onclick="closeCalendarioPdfPreview()" class="tbtn" style="gap:6px"><i class="ti ti-x" style="font-size:14px"></i> Cerrar</button>
     </div>
   </div>
+  <div id="calendario-pdf-customize" style="background:#fff;border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Color del PDF</span>
+      <div style="display:flex;gap:6px">
+        <div class="pdfcal-swatch" data-color="#0A2540" onclick="setCalendarioPdfColor('#0A2540',this)" style="width:20px;height:20px;border-radius:50%;background:#0A2540;cursor:pointer"></div>
+        <div class="pdfcal-swatch" data-color="#3B82F6" onclick="setCalendarioPdfColor('#3B82F6',this)" style="width:20px;height:20px;border-radius:50%;background:#3B82F6;cursor:pointer"></div>
+        <div class="pdfcal-swatch" data-color="#8B5CF6" onclick="setCalendarioPdfColor('#8B5CF6',this)" style="width:20px;height:20px;border-radius:50%;background:#8B5CF6;cursor:pointer"></div>
+        <div class="pdfcal-swatch" data-color="#EC4899" onclick="setCalendarioPdfColor('#EC4899',this)" style="width:20px;height:20px;border-radius:50%;background:#EC4899;cursor:pointer"></div>
+        <div class="pdfcal-swatch" data-color="#F59E0B" onclick="setCalendarioPdfColor('#F59E0B',this)" style="width:20px;height:20px;border-radius:50%;background:#F59E0B;cursor:pointer"></div>
+        <div class="pdfcal-swatch" data-color="#10B981" onclick="setCalendarioPdfColor('#10B981',this)" style="width:20px;height:20px;border-radius:50%;background:#10B981;cursor:pointer"></div>
+        <div class="pdfcal-swatch" data-color="#EF4444" onclick="setCalendarioPdfColor('#EF4444',this)" style="width:20px;height:20px;border-radius:50%;background:#EF4444;cursor:pointer"></div>
+        <label style="width:20px;height:20px;border-radius:50%;border:1.5px dashed var(--ink3);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative" title="Color personalizado">
+          <i class="ti ti-plus" style="font-size:10px;color:var(--ink3)"></i>
+          <input type="color" onchange="setCalendarioPdfCustomColor(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+        </label>
+      </div>
+    </div>
+    <div style="width:1px;height:20px;background:var(--border)"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Logo de tu marca</span>
+      <button onclick="document.getElementById('calendario-pdf-logo-input').click()" class="tbtn" style="padding:6px 12px;font-size:11px;gap:5px">
+        <i class="ti ti-upload" style="font-size:12px"></i> Subir logo
+      </button>
+      <input type="file" id="calendario-pdf-logo-input" accept="image/png,image/jpeg" style="display:none" onchange="handleCalendarioLogoUpload(this)">
+      <div id="calendario-pdf-logo-preview" style="display:none;align-items:center;gap:6px">
+        <img id="calendario-pdf-logo-preview-img" style="height:24px;max-width:70px;object-fit:contain;border-radius:4px;border:1px solid var(--border)">
+        <button onclick="removeCalendarioPdfLogo()" style="background:none;border:none;cursor:pointer;color:var(--ink3);padding:2px" title="Quitar logo"><i class="ti ti-x" style="font-size:13px"></i></button>
+      </div>
+    </div>
+  </div>
+  <div id="calendario-pdf-tip" style="background:#FFFBEB;border-bottom:1px solid #FDE68A;color:#92400E;font-size:12px;font-weight:600;padding:8px 24px;display:flex;align-items:center;gap:6px">
+    <i class="ti ti-info-circle" style="font-size:14px;flex-shrink:0"></i>
+    En el diálogo de impresión, elegí <strong>"Guardar como PDF"</strong> en "Destino" (no "Microsoft Print to PDF") para que los links queden clickeables y el texto se pueda copiar.
+  </div>
   <div id="calendario-pdf-content" style="padding:32px 20px"></div>
 </div>
 
@@ -5475,6 +5511,52 @@
   }
 
   // ── Descargar calendario como PDF (para aprobación de cliente) ──
+  // ── Personalización del PDF: color y logo (persisten durante la sesión) ──
+  let pdfAccentOverride = null
+  let pdfLogoBase64 = null
+
+  window.setCalendarioPdfColor = function(color) {
+    pdfAccentOverride = color
+    generateCalendarioPDF()
+  }
+
+  window.setCalendarioPdfCustomColor = function(input) {
+    pdfAccentOverride = input.value
+    generateCalendarioPDF()
+  }
+
+  window.handleCalendarioLogoUpload = function(input) {
+    const file = input.files[0]
+    if (!file) return
+    if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+      showToast('Solo se admiten imágenes PNG o JPG')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      pdfLogoBase64 = reader.result
+      const prev = document.getElementById('calendario-pdf-logo-preview')
+      const prevImg = document.getElementById('calendario-pdf-logo-preview-img')
+      if (prev && prevImg) { prevImg.src = pdfLogoBase64; prev.style.display = 'flex' }
+      generateCalendarioPDF()
+    }
+    reader.readAsDataURL(file)
+  }
+
+  window.removeCalendarioPdfLogo = function() {
+    pdfLogoBase64 = null
+    document.getElementById('calendario-pdf-logo-preview').style.display = 'none'
+    document.getElementById('calendario-pdf-logo-input').value = ''
+    generateCalendarioPDF()
+  }
+
+  function syncPdfSwatches(accentColor) {
+    document.querySelectorAll('.pdfcal-swatch').forEach(s => {
+      const match = s.dataset.color.toLowerCase() === (accentColor || '').toLowerCase()
+      s.style.boxShadow = match ? `0 0 0 2px #fff, 0 0 0 4px ${accentColor}` : 'none'
+    })
+  }
+
   const TIPO_COLORS = {
     'Reunión': '#F59E0B', 'Evento': '#0A2540',
     'Reel': '#EC4899', 'Story': '#8B5CF6', 'Carrusel': '#3B82F6',
@@ -5495,9 +5577,10 @@
     const nombreCalendario = activo?.nombre || 'General'
     // Evitar "Cliente — Cliente" cuando el calendario se llama igual que el cliente
     const mostrarClienteEnTitulo = cliente && cliente.trim().toLowerCase() !== nombreCalendario.trim().toLowerCase()
-    const accentColor = activo?.color || '#0A2540'
+    const accentColor = pdfAccentOverride || activo?.color || '#0A2540'
     const agencyName = document.body.dataset.agencyName || 'Mi agencia'
     const today = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
+    syncPdfSwatches(accentColor)
 
     const inMonth = (dateStr) => {
       const d = new Date(dateStr)
@@ -5608,6 +5691,7 @@
       '#calendario-pdf-content .pdfcal-h1 { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -.6px; margin-bottom: 4px; }',
       '#calendario-pdf-content .pdfcal-header-sub { font-size: 12px; color: rgba(255,255,255,.65); }',
       '#calendario-pdf-content .pdfcal-logo { font-size: 18px; font-weight: 900; color: rgba(255,255,255,.5); border: 1.5px solid rgba(255,255,255,.3); border-radius: 10px; padding: 10px 16px; }',
+      '#calendario-pdf-content .pdfcal-logo-img { max-width: 130px; max-height: 56px; object-fit: contain; background: #fff; border-radius: 8px; padding: 6px 10px; }',
       '#calendario-pdf-content .pdfcal-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }',
       '#calendario-pdf-content .pdfcal-legend-chip { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #4A5568; }',
       '#calendario-pdf-content .pdfcal-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }',
@@ -5651,10 +5735,14 @@
       '@media print { #calendario-pdf-content * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } #calendario-pdf-content .pdfcal-header{background:' + accentColor + ' !important} #calendario-pdf-content .pdfcal-dvideo{background:#0A2540 !important} #calendario-pdf-content .pdfcal-ghead{background:#F5F7FA !important} #calendario-pdf-content .pdfcal-gother{background:#FAFBFC !important} #calendario-pdf-content .pdfcal-dcard{break-inside:avoid} }',
     ].join('\n')
 
+    const logoHTML = pdfLogoBase64
+      ? '<img src="' + pdfLogoBase64 + '" class="pdfcal-logo-img" alt="Logo">'
+      : '<div class="pdfcal-logo">' + agencyName.substring(0,2).toUpperCase() + '</div>'
+
     const contentHTML = '<style>' + pdfCSS + '</style>' +
       '<div class="pdfcal-page">' +
       '<div class="pdfcal-header"><div><div class="pdfcal-kicker">Calendario de contenido</div><div class="pdfcal-h1">' + nombreCalendario + (mostrarClienteEnTitulo ? ' — ' + cliente : '') + '</div><div class="pdfcal-header-sub">' + monthLabel + ' · Generado el ' + today + '</div></div>' +
-      '<div class="pdfcal-logo">' + agencyName.substring(0,2).toUpperCase() + '</div></div>' +
+      logoHTML + '</div>' +
       (legendHTML ? '<div class="pdfcal-legend">' + legendHTML + '</div>' : '') +
       '<div class="pdfcal-grid">' + gridHTML + '</div>' +
       (resumenHTML ? '<div class="pdfcal-section-title">Resumen del mes</div><div class="pdfcal-section-sub">Todo el contenido planificado para ' + monthLabel + '</div><div class="pdfcal-resumen">' + resumenHTML + '</div>' : '') +
