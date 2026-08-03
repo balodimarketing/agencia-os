@@ -1137,7 +1137,7 @@
       <div class="contenido-toolbar">
         <div class="contenido-tabs" id="contenido-tabs">
           <div class="pill-slider" id="contenido-pill"></div>
-          <div class="contenido-tab active" id="tab-piezas" onclick="switchContentTab('piezas')">
+          <div class="contenido-tab" id="tab-piezas" onclick="switchContentTab('piezas')" style="display:none">
             <i class="ti ti-layout-kanban" style="font-size:14px"></i>
             Piezas
           </div>
@@ -1145,7 +1145,7 @@
             <i class="ti ti-check" style="font-size:14px"></i>
             Tareas
           </div>
-          <div class="contenido-tab" id="tab-tableros" onclick="switchContentTab('tableros')">
+          <div class="contenido-tab active" id="tab-tableros" onclick="switchContentTab('tableros')">
             <i class="ti ti-stack-2" style="font-size:14px"></i>
             Tableros
           </div>
@@ -1158,12 +1158,12 @@
       </div>
 
       <!-- PIEZAS — Kanban -->
-      <div class="content-subview active" id="sv-piezas" style="padding:20px;overflow:auto">
+      <div class="content-subview" id="sv-piezas" style="padding:20px;overflow:auto">
         <div class="kanban" id="kanban-board"></div>
       </div>
 
       <!-- TABLEROS — libres, sin aprobación de cliente -->
-      <div class="content-subview" id="sv-tableros" style="padding:0;overflow:hidden">
+      <div class="content-subview active" id="sv-tableros" style="padding:0;overflow:hidden">
        <div style="display:flex;flex-direction:column;height:100%">
         <div style="display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
           <div style="position:relative;flex-shrink:0">
@@ -7184,7 +7184,7 @@
 
   let pieces = []
   let tasks = []
-  let currentContentTab = 'piezas'
+  let currentContentTab = 'tableros'
   let currentTaskFilter = 'todas'
   let detailPieceId = null
 
@@ -7276,27 +7276,26 @@
     renderKanban()
     renderTasks()
     renderContenidoPanel()
+    await renderTableros()
   }
 
   // ── Panel ─────────────────────────────────────────────
   function renderContenidoPanel() {
     const body = document.getElementById('panel-body')
-    const statusColors = { idea:'#94A3B8', produccion:'#60A5FA', revision:'#FBBF24', aprobacion:'#F87171', publicado:'#34C759', programado:'#8B5CF6' }
-    body.innerHTML = KANBAN_COLS.map(c => `
-      <div class="panel-item" onclick="switchContentTab('piezas');scrollToKanbanCol('${c.id}')">
+    body.innerHTML =
+      `<div class="panel-item" onclick="switchContentTab('tableros')">
         <div class="pi-row">
-          <div style="width:8px;height:8px;border-radius:50%;background:${statusColors[c.id]};flex-shrink:0;margin:0 4px"></div>
-          <div class="pi-name" style="font-size:12px">${c.name}</div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#8B5CF6;flex-shrink:0;margin:0 4px"></div>
+          <div class="pi-name" style="font-size:12px">Tableros</div>
         </div>
-      </div>`).join('') +
-      `<div style="height:1px;background:var(--border);margin:6px 4px"></div>
+      </div>
       <div class="panel-item" onclick="switchContentTab('tareas')">
         <div class="pi-row">
           <div style="width:8px;height:8px;border-radius:50%;background:#60A5FA;flex-shrink:0;margin:0 4px"></div>
           <div class="pi-name" style="font-size:12px">Tareas</div>
         </div>
       </div>`
-    document.getElementById('panel-sub').textContent = `${pieces.length} piezas · ${tasks.length} tareas`
+    document.getElementById('panel-sub').textContent = `${boardCards.length} cards · ${tasks.length} tareas`
   }
 
   window.scrollToKanbanCol = function(colId) {
@@ -8494,6 +8493,7 @@
 
   // ── Content tab switcher ──────────────────────────────
   window.switchContentTab = function(tab) {
+    if (tab === 'piezas') tab = 'tableros' // sección oculta — redirigir a un lugar visible
     currentContentTab = tab
     document.querySelectorAll('.contenido-tab').forEach(t => t.classList.remove('active'))
     document.getElementById('tab-' + tab)?.classList.add('active')
