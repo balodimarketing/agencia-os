@@ -509,21 +509,45 @@
 
     /* ── Moodboard: modo pantalla completa ── */
     #mb-floating-tabs {
-      display: none; position: fixed; top: 16px; left: 16px; z-index: 1000;
+      position: fixed; top: 16px; left: 16px; z-index: 1000;
       background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 5px;
-      box-shadow: var(--shadow-lg); gap: 3px;
+      box-shadow: var(--shadow-lg); display: flex; gap: 3px;
+      opacity: 0; transform: translateY(-8px) scale(.97); pointer-events: none;
+      transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
     }
+    #mb-floating-tabs.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .mb-floating-tab-btn {
       display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: none; background: none;
       border-radius: 10px; font-size: 12px; font-weight: 700; color: var(--ink2); cursor: pointer; font-family: inherit;
+      transition: background var(--t);
     }
     .mb-floating-tab-btn:hover { background: var(--bg); }
     .mb-floating-tab-btn.active { background: var(--azul); color: var(--celeste); }
-    body.mb-fullscreen .rail { display: none !important; }
-    body.mb-fullscreen .panel { display: none !important; }
-    body.mb-fullscreen .topbar { display: none !important; }
-    body.mb-fullscreen #v-contenido { height: 100vh !important; }
-    body.mb-fullscreen .contenido-toolbar { display: none !important; }
+
+    .rail {
+      transition: width .38s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1);
+    }
+    .panel {
+      transition: width .38s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1);
+    }
+    .topbar {
+      transition: height .38s cubic-bezier(.4,0,.2,1), opacity .28s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1), border-color .38s;
+    }
+    .contenido-toolbar {
+      transition: height .38s cubic-bezier(.4,0,.2,1), opacity .28s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1), border-color .38s;
+    }
+    body.mb-fullscreen .rail {
+      width: 0; opacity: 0; padding-left: 0; padding-right: 0; overflow: hidden; pointer-events: none;
+    }
+    body.mb-fullscreen .panel {
+      width: 0; opacity: 0; overflow: hidden; pointer-events: none;
+    }
+    body.mb-fullscreen .topbar {
+      height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; border-bottom-color: transparent; pointer-events: none;
+    }
+    body.mb-fullscreen .contenido-toolbar {
+      height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; border-bottom-color: transparent; pointer-events: none;
+    }
 
     /* Kanban */
     .kanban { display: flex; gap: 14px; overflow-x: auto; height: calc(100vh - 200px); padding-bottom: 12px; }
@@ -8709,10 +8733,10 @@
     const floatingTabs = document.getElementById('mb-floating-tabs')
     if (tab === 'moodboard') {
       document.body.classList.add('mb-fullscreen')
-      if (floatingTabs) floatingTabs.style.display = 'flex'
+      floatingTabs?.classList.add('visible')
     } else {
       document.body.classList.remove('mb-fullscreen')
-      if (floatingTabs) floatingTabs.style.display = 'none'
+      floatingTabs?.classList.remove('visible')
     }
     document.querySelectorAll('.mb-floating-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab))
 
