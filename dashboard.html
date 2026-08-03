@@ -5549,6 +5549,21 @@
       `<div class="pdfcal-legend-chip"><span class="pdfcal-legend-dot" style="background:${color}"></span>${label}</div>`
     ).join('')
 
+    // ── Resumen: listado con TODO el contenido del mes, tenga o no foto/video ──
+    const resumenHTML = itemsDelMes.map(it => {
+      const fecha = new Date(it.fecha)
+      const diaStr = fecha.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }).replace('.', '')
+      const horaStr = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+      const camara = it.archivo_url ? '<i class="pdfcal-row-cam">📷</i>' : ''
+      return `<div class="pdfcal-row">
+        <div class="pdfcal-row-date">${diaStr}<span>${horaStr}</span></div>
+        <div class="pdfcal-row-dot" style="background:${it.color}"></div>
+        <div class="pdfcal-row-title">${it.titulo}</div>
+        ${camara}
+        <div class="pdfcal-row-badge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
+      </div>`
+    }).join('')
+
     // ── Detalle visual: cards grandes para todo lo que tenga foto/video ──
     const conMedia = itemsDelMes.filter(it => it.archivo_url)
     const detalleHTML = conMedia.map(it => {
@@ -5593,6 +5608,15 @@
       '#calendario-pdf-content .pdfcal-gmore { font-size: 8px; color: #9AA5B4; font-weight: 700; padding-left: 2px; }',
       '#calendario-pdf-content .pdfcal-section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; }',
       '#calendario-pdf-content .pdfcal-section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; }',
+      '#calendario-pdf-content .pdfcal-resumen { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; margin-bottom: 32px; }',
+      '#calendario-pdf-content .pdfcal-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #F0F3F7; break-inside: avoid; page-break-inside: avoid; }',
+      '#calendario-pdf-content .pdfcal-row:last-child { border-bottom: none; }',
+      '#calendario-pdf-content .pdfcal-row-date { width: 78px; flex-shrink: 0; font-size: 11px; font-weight: 800; color: #4A5568; text-transform: capitalize; }',
+      '#calendario-pdf-content .pdfcal-row-date span { display: block; font-size: 10px; font-weight: 600; color: #9AA5B4; margin-top: 1px; }',
+      '#calendario-pdf-content .pdfcal-row-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }',
+      '#calendario-pdf-content .pdfcal-row-title { flex: 1; font-size: 12.5px; font-weight: 700; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+      '#calendario-pdf-content .pdfcal-row-cam { font-style: normal; font-size: 12px; flex-shrink: 0; }',
+      '#calendario-pdf-content .pdfcal-row-badge { flex-shrink: 0; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }',
       '#calendario-pdf-content .pdfcal-detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }',
       '#calendario-pdf-content .pdfcal-dcard { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }',
       '#calendario-pdf-content .pdfcal-dmedia { width: 100%; height: 200px; object-fit: cover; display: block; background: #F5F7FA; }',
@@ -5616,7 +5640,8 @@
       '<div class="pdfcal-logo">' + agencyName.substring(0,2).toUpperCase() + '</div></div>' +
       (legendHTML ? '<div class="pdfcal-legend">' + legendHTML + '</div>' : '') +
       '<div class="pdfcal-grid">' + gridHTML + '</div>' +
-      (detalleHTML ? '<div class="pdfcal-section-title">Detalle de publicaciones</div><div class="pdfcal-section-sub">Vista previa del contenido programado para ' + monthLabel + '</div><div class="pdfcal-detalle-grid">' + detalleHTML + '</div>' : '') +
+      (resumenHTML ? '<div class="pdfcal-section-title">Resumen del mes</div><div class="pdfcal-section-sub">Todo el contenido planificado para ' + monthLabel + '</div><div class="pdfcal-resumen">' + resumenHTML + '</div>' : '') +
+      (detalleHTML ? '<div class="pdfcal-section-title">Detalle de publicaciones</div><div class="pdfcal-section-sub">Vista previa del contenido con foto o video</div><div class="pdfcal-detalle-grid">' + detalleHTML + '</div>' : '') +
       '<div class="pdfcal-footer"><div class="pdfcal-footer-agency">' + agencyName + '</div><div class="pdfcal-footer-faro">Calendario generado con Faro</div></div>' +
       '</div>'
 
