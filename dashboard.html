@@ -2854,6 +2854,21 @@
     <div class="view flex-view" id="v-calendario" style="padding:0;flex-direction:column;overflow:hidden;height:calc(100vh - 52px)">
       <!-- Cal toolbar -->
       <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
+        <!-- Selector de calendario -->
+        <div style="position:relative;flex-shrink:0">
+          <button onclick="toggleCalendarioDropdown()" id="calendario-selector-btn" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;transition:border-color .15s;max-width:200px">
+            <i class="ti ti-calendar-stats" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>
+            <span id="calendario-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">General</span>
+            <i class="ti ti-chevron-down" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
+          </button>
+          <div id="calendario-dropdown" style="display:none;position:absolute;top:42px;left:0;width:260px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:360px;overflow-y:auto">
+            <div id="calendario-dropdown-list"></div>
+            <div style="height:1px;background:var(--border);margin:8px 0"></div>
+            <button onclick="openCreateCalendarioModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit;transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
+              <i class="ti ti-plus" style="font-size:14px;color:var(--celeste)"></i> Crear nuevo calendario
+            </button>
+          </div>
+        </div>
         <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="cal-tabs">
           <div class="pill-slider" id="cal-pill"></div>
           <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
@@ -2978,6 +2993,33 @@
     <div class="modal-footer">
       <button class="tbtn" onclick="closeCreatePipelineModal()">Cancelar</button>
       <button class="tbtn primary" onclick="saveNewPipeline()" id="btn-save-pipeline">Crear pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CREAR CALENDARIO -->
+<div class="modal-overlay" id="modal-crear-calendario" onclick="if(event.target===this)closeCreateCalendarioModal()" style="z-index:500">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-title">Crear nuevo calendario</div>
+      <button class="modal-close" onclick="closeCreateCalendarioModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:24px 28px">
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Nombre del calendario *</label>
+        <input type="text" id="new-calendario-nombre" placeholder="Ej: Cliente Norte, Interno, Campañas..." style="width:100%;height:44px;padding:0 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#91E8FB'" onblur="this.style.borderColor='#E8EDF3'">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Cliente asociado <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+        <select id="new-calendario-cliente" onchange="autofillCalendarioNombre()" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff">
+          <option value="">Sin cliente asociado</option>
+        </select>
+        <div style="font-size:11px;color:#8B98A9;margin-top:6px">Si elegís un cliente, sus publicaciones programadas y publicadas van a aparecer automáticamente en este calendario.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closeCreateCalendarioModal()">Cancelar</button>
+      <button class="tbtn primary" onclick="saveNewCalendario()" id="btn-save-calendario">Crear calendario</button>
     </div>
   </div>
 </div>
@@ -3129,7 +3171,7 @@
       <button class="modal-close" onclick="closeInviteModal()"><i class="ti ti-x"></i></button>
     </div>
     <div class="modal-body">
-      <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:20px">Compartí este código o el link con las personas que querés sumar a tu agencia. Van a poder registrarse y quedan pendientes de tu aprobación.</p>
+      <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:20px">Compartí este código con las personas que querés sumar a tu agencia. Ingresan con este código al registrarse.</p>
       <div style="background:var(--azul);border-radius:var(--r);padding:20px 24px">
         <div style="font-size:10px;font-weight:800;color:rgba(142,219,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Código de invitación</div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -3137,8 +3179,6 @@
           <button class="btn-copy-invite" id="btn-copy-invite" onclick="copyInviteCode()">Copiar</button>
         </div>
       </div>
-      <button class="btn-copy-invite" id="btn-copy-invite-link" onclick="copyInviteLink()" style="width:100%;justify-content:center;margin-top:10px;padding:11px;display:flex;gap:6px"><i class="ti ti-link"></i> Copiar link de invitación</button>
-      <button id="btn-regen-invite" onclick="regenerateInviteCode()" style="width:100%;justify-content:center;margin-top:8px;padding:9px;display:flex;gap:6px;align-items:center;background:transparent;border:none;color:var(--ink3);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit"><i class="ti ti-refresh" style="font-size:13px"></i> Generar nuevo código</button>
     </div>
     <div class="modal-footer">
       <button class="tbtn primary" style="width:100%" onclick="closeInviteModal()">Listo</button>
@@ -4160,7 +4200,7 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-  import { supabase, requireAuth, signOut, generateCode } from './supabase.js'
+  import { supabase, requireAuth, signOut } from './supabase.js'
 
   window.handleSignOut = signOut
 
@@ -5150,79 +5190,17 @@
       .eq('agency_id', agencyId)
       .eq('status', 'pending')
       .maybeSingle()
-
-    if (data?.code) {
-      inviteCode = data.code
-    } else {
-      // No existe un código de invitación todavía para esta agencia — crear uno
-      inviteCode = await createInviteCodeForAgency()
-    }
+    inviteCode = data?.code || null
   }
 
-  // Genera un código único, lo guarda en la tabla `invitations` para esta agencia y lo devuelve.
-  // Si por una colisión de código (muy poco probable) falla el insert, reintenta un par de veces.
-  async function createInviteCodeForAgency() {
-    if (!agencyId) return null
-    for (let intento = 0; intento < 3; intento++) {
-      const code = generateCode()
-      const { data, error } = await supabase
-        .from('invitations')
-        .insert({ agency_id: agencyId, code, status: 'pending' })
-        .select('code')
-        .single()
-
-      if (!error && data?.code) return data.code
-      // Si el error no es de código duplicado, no tiene sentido reintentar
-      if (error && error.code !== '23505') {
-        console.error('Error creando código de invitación:', error)
-        return null
-      }
-    }
-    return null
-  }
-
-  window.openInviteModal = async function() {
+  window.openInviteModal = function() {
     if (!checkLimit('miembros')) return
+    document.getElementById('invite-modal-code').textContent = inviteCode || '——————'
     document.getElementById('modal-invite').classList.add('show')
-    const codeEl = document.getElementById('invite-modal-code')
-    const linkBtn = document.getElementById('btn-copy-invite-link')
-
-    if (!inviteCode) {
-      // Fallback por si loadInviteCode no llegó a correr o falló al iniciar sesión
-      codeEl.textContent = 'Generando...'
-      inviteCode = await createInviteCodeForAgency()
-    }
-
-    codeEl.textContent = inviteCode || '——————'
-    if (linkBtn) linkBtn.style.display = inviteCode ? 'flex' : 'none'
-    if (!inviteCode) showToast('No se pudo generar el código. Probá de nuevo.')
   }
 
   window.closeInviteModal = function() {
     document.getElementById('modal-invite').classList.remove('show')
-  }
-
-  window.regenerateInviteCode = async function() {
-    if (!agencyId) return
-    const btn = document.getElementById('btn-regen-invite')
-    if (btn) { btn.disabled = true }
-
-    // Expirar el código anterior (si había) y crear uno nuevo
-    await supabase.from('invitations').update({ status: 'expired' }).eq('agency_id', agencyId).eq('status', 'pending')
-    inviteCode = await createInviteCodeForAgency()
-
-    document.getElementById('invite-modal-code').textContent = inviteCode || '——————'
-    const linkBtn = document.getElementById('btn-copy-invite-link')
-    if (linkBtn) linkBtn.style.display = inviteCode ? 'flex' : 'none'
-    if (btn) { btn.disabled = false }
-    showToast(inviteCode ? 'Nuevo código generado' : 'No se pudo generar el código')
-  }
-
-  window.copyInviteLink = function() {
-    if (!inviteCode) return
-    const link = `${window.location.origin}${window.location.pathname.replace('dashboard.html', '')}register.html?code=${inviteCode}`
-    navigator.clipboard.writeText(link)
-    showToast('Link de invitación copiado')
   }
 
   window.copyInviteCode = function() {
@@ -5246,30 +5224,211 @@
   let calDate = new Date()
   let calEvents = []
   let calPublishedPieces = []
+  let CALENDARS = []
+  let currentCalendarioId = null
   const DAYS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
   const EVENT_COLORS = ['#0A2540','#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444']
 
-  async function loadCalendarEvents() {
+  async function loadCalendars() {
+    if (!agencyId) return
     const { data } = await supabase
+      .from('calendars')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('archived', false)
+      .order('orden', { ascending: true })
+    CALENDARS = data || []
+
+    // Si esta agencia todavía no tiene ningún calendario (por ejemplo, se creó
+    // antes de esta función), generamos el "General" automáticamente.
+    if (CALENDARS.length === 0) {
+      const { data: creado } = await supabase
+        .from('calendars')
+        .insert({ agency_id: agencyId, nombre: 'General', es_default: true, orden: 0 })
+        .select('*')
+        .single()
+      if (creado) CALENDARS = [creado]
+    }
+
+    if (!currentCalendarioId || !CALENDARS.find(c => c.id === currentCalendarioId)) {
+      const def = CALENDARS.find(c => c.es_default) || CALENDARS[0]
+      currentCalendarioId = def?.id || null
+    }
+    renderCalendarioSelectorLabel()
+    renderCalendarioDropdown()
+  }
+
+  function renderCalendarioSelectorLabel() {
+    const label = document.getElementById('calendario-selector-label')
+    if (!label) return
+    const active = CALENDARS.find(c => c.id === currentCalendarioId)
+    label.textContent = active?.nombre || 'General'
+  }
+
+  function renderCalendarioDropdown() {
+    const list = document.getElementById('calendario-dropdown-list')
+    if (!list) return
+    const generales = CALENDARS.filter(c => !c.client_id)
+    const deCliente = CALENDARS.filter(c => c.client_id)
+
+    const renderGroup = (label, items) => {
+      if (!items.length) return ''
+      return `<div style="margin-bottom:6px">
+        <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;padding:6px 10px">${label}</div>
+        ${items.map(c => {
+          const isActive = c.id === currentCalendarioId
+          const canDelete = !c.es_default
+          return `<div style="display:flex;align-items:center;gap:2px;border-radius:9px;transition:background .15s" onmouseover="this.style.background='var(--bg)';this.querySelector('.calendario-del-btn')?.style.setProperty('opacity','1')" onmouseout="this.style.background='${isActive?'var(--celeste-dim)':'none'}';this.querySelector('.calendario-del-btn')?.style.setProperty('opacity','0')">
+            <button onclick="selectCalendario('${c.id}')" style="flex:1;display:flex;align-items:center;gap:9px;padding:8px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-family:inherit;text-align:left;min-width:0">
+              <span style="width:8px;height:8px;border-radius:50%;background:${c.color||'#0A2540'};flex-shrink:0"></span>
+              <span style="flex:1;font-size:12px;font-weight:${isActive?'700':'500'};color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.nombre}</span>
+              ${isActive ? '<i class="ti ti-check" style="font-size:13px;color:var(--ink);flex-shrink:0"></i>' : ''}
+            </button>
+            ${canDelete ? `<button class="calendario-del-btn" onclick="event.stopPropagation();deleteCalendarioConfirm('${c.id}','${(c.nombre||'').replace(/'/g,"\\'")}')" style="width:26px;height:26px;border-radius:7px;background:none;border:none;cursor:pointer;color:#C4CDD9;opacity:0;transition:opacity .15s,color .15s,background .15s;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-right:4px" onmouseover="this.style.background='#FEF2F2';this.style.color='#EF4444'" onmouseout="this.style.background='none';this.style.color='#C4CDD9'"><i class="ti ti-trash" style="font-size:12px"></i></button>` : '<div style="width:30px;flex-shrink:0"></div>'}
+          </div>`
+        }).join('')}
+      </div>`
+    }
+
+    list.innerHTML = renderGroup('GENERAL', generales) + renderGroup('CLIENTES', deCliente)
+  }
+
+  window.toggleCalendarioDropdown = function() {
+    const dd = document.getElementById('calendario-dropdown')
+    if (!dd) return
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none'
+  }
+
+  document.addEventListener('click', e => {
+    const dd = document.getElementById('calendario-dropdown')
+    const btn = document.getElementById('calendario-selector-btn')
+    if (dd && dd.style.display === 'block' && !dd.contains(e.target) && !btn?.contains(e.target)) {
+      dd.style.display = 'none'
+    }
+  })
+
+  window.selectCalendario = async function(calendarioId) {
+    currentCalendarioId = calendarioId
+    document.getElementById('calendario-dropdown').style.display = 'none'
+    renderCalendarioSelectorLabel()
+    renderCalendarioDropdown()
+    const grid = document.getElementById('cal-grid')
+    if (grid) grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink3)">Cargando calendario...</div>'
+    await renderCalendario()
+  }
+
+  window.openCreateCalendarioModal = function() {
+    document.getElementById('calendario-dropdown').style.display = 'none'
+    document.getElementById('new-calendario-nombre').value = ''
+    const sel = document.getElementById('new-calendario-cliente')
+    sel.innerHTML = '<option value="">Sin cliente asociado</option>' +
+      clients.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
+    document.getElementById('modal-crear-calendario').classList.add('show')
+  }
+
+  window.closeCreateCalendarioModal = function() {
+    document.getElementById('modal-crear-calendario').classList.remove('show')
+  }
+
+  // Si elegís un cliente y el campo nombre está vacío, lo autocompletamos (pero se puede editar)
+  window.autofillCalendarioNombre = function() {
+    const sel = document.getElementById('new-calendario-cliente')
+    const nombreInput = document.getElementById('new-calendario-nombre')
+    if (!nombreInput.value.trim() && sel.value) {
+      const opt = sel.options[sel.selectedIndex]
+      nombreInput.value = opt.textContent
+    }
+  }
+
+  window.saveNewCalendario = async function() {
+    const nombre = document.getElementById('new-calendario-nombre').value.trim()
+    if (!nombre) { showToast('El nombre es requerido'); return }
+    const clienteId = document.getElementById('new-calendario-cliente').value || null
+
+    const btn = document.getElementById('btn-save-calendario')
+    btn.disabled = true; btn.textContent = 'Creando...'
+
+    const orden = CALENDARS.length
+    const { data: nuevo, error } = await supabase
+      .from('calendars')
+      .insert({ agency_id: agencyId, nombre, client_id: clienteId, orden })
+      .select('*')
+      .single()
+
+    btn.disabled = false; btn.textContent = 'Crear calendario'
+
+    if (error) { showToast('Error: ' + error.message); return }
+
+    closeCreateCalendarioModal()
+    showToast('✓ Calendario creado')
+    await loadCalendars()
+    await selectCalendario(nuevo.id)
+  }
+
+  window.deleteCalendarioConfirm = async function(calendarioId, calendarioNombre) {
+    document.getElementById('calendario-dropdown').style.display = 'none'
+
+    // Contar eventos propios de este calendario para advertir antes de archivarlo
+    const { count } = await supabase
+      .from('calendar_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('calendario_id', calendarioId)
+
+    const eventosMsg = count > 0
+      ? `Este calendario tiene ${count} evento${count!==1?'s':''}. NO se eliminarán, pero quedarán solo visibles desde "General" hasta que los muevas a otro calendario.\n\n`
+      : ''
+
+    if (!confirm(`${eventosMsg}¿Eliminar el calendario "${calendarioNombre}"?\n\nEsta acción se puede revertir contactando soporte, pero dejará de estar visible.`)) return
+
+    const { error } = await supabase.from('calendars').update({ archived: true }).eq('id', calendarioId)
+    if (error) { showToast('Error al eliminar: ' + error.message); return }
+
+    showToast('✓ Calendario eliminado')
+
+    if (currentCalendarioId === calendarioId) currentCalendarioId = null
+    await loadCalendars()
+    await selectCalendario(currentCalendarioId)
+  }
+
+  async function loadCalendarEvents() {
+    if (!currentCalendarioId) await loadCalendars()
+    const activo = CALENDARS.find(c => c.id === currentCalendarioId)
+    let query = supabase
       .from('calendar_events')
       .select('*')
       .eq('agency_id', agencyId)
       .order('fecha_inicio')
+
+    if (activo?.es_default) {
+      // El calendario "General" también muestra los eventos viejos sin calendario asignado
+      query = query.or(`calendario_id.is.null,calendario_id.eq.${currentCalendarioId}`)
+    } else {
+      query = query.eq('calendario_id', currentCalendarioId)
+    }
+
+    const { data } = await query
     calEvents = data || []
   }
 
   async function loadPublishedPieces() {
-    const { data } = await supabase
+    const activo = CALENDARS.find(c => c.id === currentCalendarioId)
+    let query = supabase
       .from('content_pieces')
       .select('id, titulo, clients(nombre), fecha_publicacion, estado, archivo_url')
       .eq('agency_id', agencyId)
       .in('estado', ['publicado', 'programado'])
       .order('created_at', { ascending: false })
+
+    // Si el calendario activo está vinculado a un cliente, solo mostramos sus piezas
+    if (activo?.client_id) query = query.eq('client_id', activo.client_id)
+
+    const { data } = await query
     calPublishedPieces = data || []
   }
 
   async function renderCalendario() {
+    if (!currentCalendarioId) await loadCalendars()
     await Promise.all([loadCalendarEvents(), loadPublishedPieces()])
     renderCalGrid()
     renderCalPanel()
@@ -5871,6 +6030,7 @@
       link: document.getElementById('event-link').value.trim() || null,
       descripcion: document.getElementById('event-descripcion').value.trim() || null,
       agency_id: agencyId,
+      calendario_id: currentCalendarioId,
     }
 
     let error, savedId
