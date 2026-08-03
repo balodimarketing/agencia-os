@@ -963,7 +963,6 @@
     <div class="rail-btn" data-module="contenido" data-tip="Contenido" onclick="switchModule(this)"><i class="ti ti-photo"></i></div>
     <div class="rail-btn" data-module="calendario" data-tip="Calendario" onclick="switchModule(this)"><i class="ti ti-calendar"></i></div>
     <div class="rail-btn" data-module="crm" data-tip="CRM" onclick="switchModule(this)"><i class="ti ti-address-book"></i></div>
-    <div class="rail-btn" data-module="tableros" data-tip="Tableros" onclick="switchModule(this)"><i class="ti ti-layout-kanban"></i></div>
     <div class="rail-btn" data-module="herramientas" data-tip="Herramientas" onclick="switchModule(this)"><i class="ti ti-tools"></i></div>
     <div class="rail-divider"></div>
     <div class="rail-btn" data-module="equipo" data-tip="Equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i></div>
@@ -1146,6 +1145,10 @@
             <i class="ti ti-check" style="font-size:14px"></i>
             Tareas
           </div>
+          <div class="contenido-tab" id="tab-tableros" onclick="switchContentTab('tableros')">
+            <i class="ti ti-stack-2" style="font-size:14px"></i>
+            Tableros
+          </div>
         </div>
         <div style="flex:1"></div>
         <button id="contenido-cta" onclick="handleContenidoCta()" class="contenido-cta-btn">
@@ -1157,6 +1160,42 @@
       <!-- PIEZAS — Kanban -->
       <div class="content-subview active" id="sv-piezas" style="padding:20px;overflow:auto">
         <div class="kanban" id="kanban-board"></div>
+      </div>
+
+      <!-- TABLEROS — libres, sin aprobación de cliente -->
+      <div class="content-subview" id="sv-tableros" style="padding:0;overflow:hidden">
+       <div style="display:flex;flex-direction:column;height:100%">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
+          <div style="position:relative;flex-shrink:0">
+            <button onclick="toggleTableroDropdown()" id="tablero-selector-btn" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;max-width:220px">
+              <i class="ti ti-stack-2" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>
+              <span id="tablero-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Elegí un tablero</span>
+              <i class="ti ti-chevron-down" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
+            </button>
+            <div id="tablero-dropdown" style="display:none;position:absolute;top:44px;left:0;width:270px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:380px;overflow-y:auto">
+              <div id="tablero-dropdown-list"></div>
+              <div style="height:1px;background:var(--border);margin:8px 0"></div>
+              <button onclick="openCreateTableroModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
+                <i class="ti ti-plus" style="font-size:14px;color:var(--celeste)"></i> Crear nuevo tablero
+              </button>
+            </div>
+          </div>
+          <div style="flex:1"></div>
+          <button class="tbtn" id="btn-add-stage" onclick="promptAddStage()" style="gap:6px;display:none">
+            <i class="ti ti-plus" style="font-size:14px"></i> Nueva columna
+          </button>
+        </div>
+
+        <div id="tableros-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink3)">
+          <i class="ti ti-stack-2" style="font-size:52px;opacity:.35"></i>
+          <div style="font-size:15px;font-weight:800;color:var(--ink2)">Todavía no tenés tableros</div>
+          <div style="font-size:13px;max-width:340px;text-align:center;line-height:1.6">Creá uno para organizar el trabajo de un cliente o lo que necesites, con las columnas que quieras. Son independientes de las Piezas y no pasan por aprobación de cliente.</div>
+          <button onclick="openCreateTableroModal()" class="tbtn primary" style="gap:6px"><i class="ti ti-plus" style="font-size:14px"></i> Crear mi primer tablero</button>
+        </div>
+        <div id="tableros-board-wrap" style="flex:1;overflow-x:auto;overflow-y:hidden;padding:20px;display:none">
+          <div class="kanban" id="tablero-kanban" style="height:100%"></div>
+        </div>
+       </div>
       </div>
 
       <!-- TAREAS -->
@@ -2915,47 +2954,6 @@
 
   </div>
 
-  <!-- TABLEROS (estilo Trello, libre) -->
-  <div class="view flex-view" id="v-tableros" style="padding:0;flex-direction:column;overflow:hidden;height:calc(100vh - 52px)">
-    <!-- Toolbar -->
-    <div style="display:flex;align-items:center;gap:10px;padding:16px 32px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
-      <div style="font-size:22px;font-weight:700;color:var(--azul);letter-spacing:-.4px;flex-shrink:0">Tableros</div>
-
-      <!-- Selector de tablero -->
-      <div style="position:relative;flex-shrink:0">
-        <button onclick="toggleTableroDropdown()" id="tablero-selector-btn" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;transition:border-color .15s;max-width:220px">
-          <i class="ti ti-layout-kanban" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>
-          <span id="tablero-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Elegí un tablero</span>
-          <i class="ti ti-chevron-down" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
-        </button>
-        <div id="tablero-dropdown" style="display:none;position:absolute;top:46px;left:0;width:270px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:380px;overflow-y:auto">
-          <div id="tablero-dropdown-list"></div>
-          <div style="height:1px;background:var(--border);margin:8px 0"></div>
-          <button onclick="openCreateTableroModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
-            <i class="ti ti-plus" style="font-size:14px;color:var(--celeste)"></i> Crear nuevo tablero
-          </button>
-        </div>
-      </div>
-
-      <div style="flex:1"></div>
-      <button class="tbtn" id="btn-add-stage" onclick="promptAddStage()" style="gap:6px;display:none">
-        <i class="ti ti-plus" style="font-size:14px"></i> Nueva columna
-      </button>
-    </div>
-
-    <!-- Contenido -->
-    <div id="tableros-empty-state" style="display:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink3)">
-      <i class="ti ti-layout-kanban" style="font-size:52px;opacity:.35"></i>
-      <div style="font-size:15px;font-weight:800;color:var(--ink2)">Todavía no tenés tableros</div>
-      <div style="font-size:13px;max-width:340px;text-align:center;line-height:1.6">Creá uno para organizar el trabajo de un cliente o lo que necesites, con las columnas que quieras.</div>
-      <button onclick="openCreateTableroModal()" class="tbtn primary" style="gap:6px"><i class="ti ti-plus" style="font-size:14px"></i> Crear mi primer tablero</button>
-    </div>
-    <div id="tableros-board-wrap" style="flex:1;overflow-x:auto;overflow-y:hidden;padding:20px 32px;display:none">
-      <div class="kanban" id="tablero-kanban" style="height:100%"></div>
-    </div>
-  </div>
-</div>
-
 
 
 
@@ -4482,7 +4480,7 @@
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
     const cta = document.getElementById('ws-cta')
     // Módulos con su propio CTA interno o sin CTA
-    const noCta = ['contenido', 'herramientas', 'crm', 'reportes', 'calendario', 'inicio', 'tableros']
+    const noCta = ['contenido', 'herramientas', 'crm', 'reportes', 'calendario', 'inicio']
     if (userRole === 'MEMBER' || noCta.includes(mod)) {
       cta.style.display = 'none'
     } else {
@@ -4495,7 +4493,6 @@
     else if (mod === 'calendario') { renderCalendario(); setTimeout(()=>{showTooltipBanner('calendario');initPills()},300) }
     else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); renderToolsGrid(); setTimeout(()=>showTooltipBanner('herramientas'),300) }
     else if (mod === 'crm') { renderCrm(); setTimeout(()=>{showTooltipBanner('crm');initPills()},300) }
-    else if (mod === 'tableros') { renderTableros() }
     else if (mod === 'reportes') { renderReportes(); setTimeout(()=>{showTooltipBanner('reportes');initPills()},300)
       const tabAgencia = document.getElementById('rep-tab-agencia')
       if (tabAgencia) tabAgencia.style.display = userRole === 'MEMBER' ? 'none' : 'block'
@@ -4512,7 +4509,6 @@
     crm:       { title: 'CRM',           sub: 'Contactos',                 cta: 'Nuevo contacto' },
     reportes:  { title: 'Reportes',      sub: 'Rendimiento por cliente',   cta: ''               },
     calendario:{ title: 'Calendario',    sub: 'Eventos y publicaciones',   cta: 'Nuevo evento'   },
-    tableros:  { title: 'Tableros',      sub: 'Organizá tu trabajo libremente', cta: ''          },
   }
 
   // ── CTA button ────────────────────────────────────────
@@ -8503,13 +8499,14 @@
     document.getElementById('tab-' + tab)?.classList.add('active')
     document.querySelectorAll('.content-subview').forEach(s => s.classList.remove('active'))
     document.getElementById('sv-' + tab)?.classList.add('active')
-    const label = tab === 'piezas' ? 'Nueva pieza' : 'Nueva tarea'
+    const label = tab === 'piezas' ? 'Nueva pieza' : tab === 'tareas' ? 'Nueva tarea' : ''
     document.getElementById('contenido-cta-label').textContent = label
     document.getElementById('ws-cta-label').textContent = label
     movePill('contenido-tabs', 'contenido-pill', 'tab-' + tab)
-    // En Tareas, el botón "+ Nueva tarea" vive en la barra de filtros del rediseño
+    // En Tareas y Tableros, la creación vive dentro de la propia subvista
     const ctaBtn = document.getElementById('contenido-cta')
-    if (ctaBtn) ctaBtn.style.display = tab === 'tareas' ? 'none' : ''
+    if (ctaBtn) ctaBtn.style.display = (tab === 'tareas' || tab === 'tableros') ? 'none' : ''
+    if (tab === 'tableros') renderTableros()
   }
 
   window.handleContenidoCta = function() {
