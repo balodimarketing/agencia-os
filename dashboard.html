@@ -963,6 +963,7 @@
     <div class="rail-btn" data-module="contenido" data-tip="Contenido" onclick="switchModule(this)"><i class="ti ti-photo"></i></div>
     <div class="rail-btn" data-module="calendario" data-tip="Calendario" onclick="switchModule(this)"><i class="ti ti-calendar"></i></div>
     <div class="rail-btn" data-module="crm" data-tip="CRM" onclick="switchModule(this)"><i class="ti ti-address-book"></i></div>
+    <div class="rail-btn" data-module="tableros" data-tip="Tableros" onclick="switchModule(this)"><i class="ti ti-layout-kanban"></i></div>
     <div class="rail-btn" data-module="herramientas" data-tip="Herramientas" onclick="switchModule(this)"><i class="ti ti-tools"></i></div>
     <div class="rail-divider"></div>
     <div class="rail-btn" data-module="equipo" data-tip="Equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i></div>
@@ -2913,6 +2914,46 @@
     </div>
 
   </div>
+
+  <!-- TABLEROS (estilo Trello, libre) -->
+  <div class="view flex-view" id="v-tableros" style="padding:0;flex-direction:column;overflow:hidden;height:calc(100vh - 52px)">
+    <!-- Toolbar -->
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 32px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
+      <div style="font-size:22px;font-weight:700;color:var(--azul);letter-spacing:-.4px;flex-shrink:0">Tableros</div>
+
+      <!-- Selector de tablero -->
+      <div style="position:relative;flex-shrink:0">
+        <button onclick="toggleTableroDropdown()" id="tablero-selector-btn" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;transition:border-color .15s;max-width:220px">
+          <i class="ti ti-layout-kanban" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>
+          <span id="tablero-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Elegí un tablero</span>
+          <i class="ti ti-chevron-down" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
+        </button>
+        <div id="tablero-dropdown" style="display:none;position:absolute;top:46px;left:0;width:270px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:380px;overflow-y:auto">
+          <div id="tablero-dropdown-list"></div>
+          <div style="height:1px;background:var(--border);margin:8px 0"></div>
+          <button onclick="openCreateTableroModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
+            <i class="ti ti-plus" style="font-size:14px;color:var(--celeste)"></i> Crear nuevo tablero
+          </button>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+      <button class="tbtn" id="btn-add-stage" onclick="promptAddStage()" style="gap:6px;display:none">
+        <i class="ti ti-plus" style="font-size:14px"></i> Nueva columna
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div id="tableros-empty-state" style="display:none;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink3)">
+      <i class="ti ti-layout-kanban" style="font-size:52px;opacity:.35"></i>
+      <div style="font-size:15px;font-weight:800;color:var(--ink2)">Todavía no tenés tableros</div>
+      <div style="font-size:13px;max-width:340px;text-align:center;line-height:1.6">Creá uno para organizar el trabajo de un cliente o lo que necesites, con las columnas que quieras.</div>
+      <button onclick="openCreateTableroModal()" class="tbtn primary" style="gap:6px"><i class="ti ti-plus" style="font-size:14px"></i> Crear mi primer tablero</button>
+    </div>
+    <div id="tableros-board-wrap" style="flex:1;overflow-x:auto;overflow-y:hidden;padding:20px 32px;display:none">
+      <div class="kanban" id="tablero-kanban" style="height:100%"></div>
+    </div>
+  </div>
 </div>
 
 
@@ -3036,6 +3077,116 @@
     <div class="modal-footer">
       <button class="tbtn" onclick="closeCreateCalendarioModal()">Cancelar</button>
       <button class="tbtn primary" onclick="saveNewCalendario()" id="btn-save-calendario">Crear calendario</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CREAR TABLERO -->
+<div class="modal-overlay" id="modal-crear-tablero" onclick="if(event.target===this)closeCreateTableroModal()" style="z-index:500">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title">Crear nuevo tablero</div>
+      <button class="modal-close" onclick="closeCreateTableroModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:24px 28px;max-height:70vh;overflow-y:auto">
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Nombre del tablero *</label>
+        <input type="text" id="new-tablero-nombre" placeholder="Ej: Cliente Norte, Producción interna..." style="width:100%;height:44px;padding:0 14px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:6px">Cliente asociado <span style="font-weight:400;color:#8B98A9">(opcional)</span></label>
+        <select id="new-tablero-cliente" onchange="autofillTableroNombre()" style="width:100%;height:44px;padding:0 12px;border:1px solid #E8EDF3;border-radius:10px;font-size:13px;font-family:inherit;color:#0A2540;outline:none;background:#fff">
+          <option value="">Sin cliente asociado</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:700;color:#0A2540;display:block;margin-bottom:8px">Columnas del tablero</label>
+        <div id="new-tablero-stages"></div>
+        <button onclick="addNewTableroStageRow()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:none;border:1.5px dashed #E8EDF3;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;color:#8B98A9;font-family:inherit;margin-top:6px" onmouseover="this.style.borderColor='#91E8FB';this.style.color='#0A2540'" onmouseout="this.style.borderColor='#E8EDF3';this.style.color='#8B98A9'">
+          <i class="ti ti-plus" style="font-size:13px"></i> Agregar columna
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tbtn" onclick="closeCreateTableroModal()">Cancelar</button>
+      <button class="tbtn primary" onclick="saveNewTablero()" id="btn-save-tablero">Crear tablero</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CARD DE TABLERO -->
+<div class="modal-overlay" id="modal-tb-card" onclick="if(event.target===this)closeTbCardModal()" style="z-index:500">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-tb-card-title">Nueva card</div>
+      <button class="modal-close" onclick="closeTbCardModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:24px 28px;max-height:72vh;overflow-y:auto">
+      <input type="hidden" id="tb-card-id">
+      <div class="form-field">
+        <label class="form-label">Título *</label>
+        <input class="form-input" type="text" id="tb-card-titulo" placeholder="Título de la card">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Cliente <span style="font-weight:400;color:var(--ink3);text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <select class="form-input form-select" id="tb-card-cliente">
+          <option value="">Sin cliente</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Tipo</label>
+        <select class="form-input form-select" id="tb-card-tipo">
+          <option value="">Sin tipo</option>
+          <option value="Reel">Reel</option>
+          <option value="Story">Story</option>
+          <option value="Carrusel">Carrusel</option>
+          <option value="Feed">Feed</option>
+          <option value="Banner">Banner</option>
+          <option value="Copy">Copy</option>
+          <option value="Video">Video</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Fecha de entrega</label>
+        <input class="form-input" type="date" id="tb-card-fecha">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-input form-textarea" id="tb-card-descripcion" style="min-height:70px" placeholder="Notas, contexto, links..."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Color de la card</label>
+        <div id="tb-card-colors" style="display:flex;gap:8px">
+          <div onclick="selectTbCardColor('#0A2540',this)" style="width:26px;height:26px;border-radius:50%;background:#0A2540;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selectTbCardColor('#3B82F6',this)" style="width:26px;height:26px;border-radius:50%;background:#3B82F6;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selectTbCardColor('#8B5CF6',this)" style="width:26px;height:26px;border-radius:50%;background:#8B5CF6;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selectTbCardColor('#EC4899',this)" style="width:26px;height:26px;border-radius:50%;background:#EC4899;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selectTbCardColor('#F59E0B',this)" style="width:26px;height:26px;border-radius:50%;background:#F59E0B;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selectTbCardColor('#10B981',this)" style="width:26px;height:26px;border-radius:50%;background:#10B981;cursor:pointer;border:2px solid transparent"></div>
+          <div onclick="selectTbCardColor('#EF4444',this)" style="width:26px;height:26px;border-radius:50%;background:#EF4444;cursor:pointer;border:2px solid transparent"></div>
+        </div>
+        <input type="hidden" id="tb-card-color" value="#0A2540">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Foto o video <span style="font-weight:400;color:var(--ink3);text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <div id="tb-card-upload-area" onclick="document.getElementById('tb-card-file').click()" style="border:1.5px dashed var(--border);border-radius:var(--r);padding:18px 16px;text-align:center;cursor:pointer;background:var(--bg)">
+          <i class="ti ti-cloud-upload" style="font-size:20px;color:var(--ink3);display:block;margin-bottom:5px"></i>
+          <div style="font-size:12px;font-weight:700;color:var(--ink2)" id="tb-card-upload-label">Hacé click para subir una imagen o video</div>
+        </div>
+        <input type="file" id="tb-card-file" accept="image/*,video/*" style="display:none" onchange="updateTbCardUploadLabel(this)">
+        <div id="tb-card-file-preview" style="display:none;margin-top:10px;position:relative">
+          <div id="tb-card-file-preview-content"></div>
+          <button type="button" onclick="removeTbCardFile()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:13px"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="tbtn" id="btn-delete-tb-card" onclick="deleteTbCard()" style="display:none;color:var(--danger)">Eliminar</button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="tbtn" onclick="closeTbCardModal()">Cancelar</button>
+        <button class="tbtn primary" onclick="saveTbCard()" id="btn-save-tb-card">Guardar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4331,7 +4482,7 @@
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
     const cta = document.getElementById('ws-cta')
     // Módulos con su propio CTA interno o sin CTA
-    const noCta = ['contenido', 'herramientas', 'crm', 'reportes', 'calendario', 'inicio']
+    const noCta = ['contenido', 'herramientas', 'crm', 'reportes', 'calendario', 'inicio', 'tableros']
     if (userRole === 'MEMBER' || noCta.includes(mod)) {
       cta.style.display = 'none'
     } else {
@@ -4344,6 +4495,7 @@
     else if (mod === 'calendario') { renderCalendario(); setTimeout(()=>{showTooltipBanner('calendario');initPills()},300) }
     else if (mod === 'herramientas') { updatePomoDisplay(); renderPomoDots(); renderToolsGrid(); setTimeout(()=>showTooltipBanner('herramientas'),300) }
     else if (mod === 'crm') { renderCrm(); setTimeout(()=>{showTooltipBanner('crm');initPills()},300) }
+    else if (mod === 'tableros') { renderTableros() }
     else if (mod === 'reportes') { renderReportes(); setTimeout(()=>{showTooltipBanner('reportes');initPills()},300)
       const tabAgencia = document.getElementById('rep-tab-agencia')
       if (tabAgencia) tabAgencia.style.display = userRole === 'MEMBER' ? 'none' : 'block'
@@ -4360,6 +4512,7 @@
     crm:       { title: 'CRM',           sub: 'Contactos',                 cta: 'Nuevo contacto' },
     reportes:  { title: 'Reportes',      sub: 'Rendimiento por cliente',   cta: ''               },
     calendario:{ title: 'Calendario',    sub: 'Eventos y publicaciones',   cta: 'Nuevo evento'   },
+    tableros:  { title: 'Tableros',      sub: 'Organizá tu trabajo libremente', cta: ''          },
   }
 
   // ── CTA button ────────────────────────────────────────
@@ -10968,6 +11121,520 @@ if (id) {
     await loadCrmContacts()
     if (crmView === 'pipeline') renderCrmPipeline()
     else renderCrmList()
+  }
+
+  // ══════════════════════════════════════
+  // TABLEROS (estilo Trello, libre — módulo aparte de Piezas)
+  // ══════════════════════════════════════
+
+  let PIECE_BOARDS = []
+  let currentBoardId = null
+  let boardStages = []
+  let boardCards = []
+  const TB_STAGE_COLORS = ['#94A3B8','#60A5FA','#FBBF24','#F87171','#34C759','#8B5CF6','#EC4899','#10B981']
+
+  async function loadPieceBoards() {
+    if (!agencyId) return
+    const { data } = await supabase
+      .from('piece_boards')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('archived', false)
+      .order('orden', { ascending: true })
+    PIECE_BOARDS = data || []
+    if (!currentBoardId || !PIECE_BOARDS.find(b => b.id === currentBoardId)) {
+      currentBoardId = PIECE_BOARDS[0]?.id || null
+    }
+    renderTableroSelectorLabel()
+    renderTableroDropdown()
+  }
+
+  function renderTableroSelectorLabel() {
+    const label = document.getElementById('tablero-selector-label')
+    if (!label) return
+    const active = PIECE_BOARDS.find(b => b.id === currentBoardId)
+    label.textContent = active?.nombre || 'Elegí un tablero'
+  }
+
+  function renderTableroDropdown() {
+    const list = document.getElementById('tablero-dropdown-list')
+    if (!list) return
+    if (PIECE_BOARDS.length === 0) {
+      list.innerHTML = `<div style="padding:10px;font-size:12px;color:var(--ink3);text-align:center">Todavía no hay tableros</div>`
+      return
+    }
+    list.innerHTML = PIECE_BOARDS.map(b => {
+      const isActive = b.id === currentBoardId
+      return `<div style="display:flex;align-items:center;gap:2px;border-radius:9px" onmouseover="this.style.background='var(--bg)';this.querySelector('.tablero-del-btn')?.style.setProperty('opacity','1')" onmouseout="this.style.background='none';this.querySelector('.tablero-del-btn')?.style.setProperty('opacity','0')">
+        <button onclick="selectTablero('${b.id}')" style="flex:1;display:flex;align-items:center;gap:9px;padding:8px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-family:inherit;text-align:left;min-width:0">
+          <span style="width:8px;height:8px;border-radius:50%;background:${b.color||'#0A2540'};flex-shrink:0"></span>
+          <span style="flex:1;font-size:12px;font-weight:${isActive?'700':'500'};color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.nombre}</span>
+          ${isActive ? '<i class="ti ti-check" style="font-size:13px;color:var(--ink);flex-shrink:0"></i>' : ''}
+        </button>
+        <button class="tablero-del-btn" onclick="event.stopPropagation();deleteTableroConfirm('${b.id}','${(b.nombre||'').replace(/'/g,"\\'")}')" style="width:26px;height:26px;border-radius:7px;background:none;border:none;cursor:pointer;color:#C4CDD9;opacity:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-right:4px" onmouseover="this.style.background='#FEF2F2';this.style.color='#EF4444'" onmouseout="this.style.background='none';this.style.color='#C4CDD9'"><i class="ti ti-trash" style="font-size:12px"></i></button>
+      </div>`
+    }).join('')
+  }
+
+  window.toggleTableroDropdown = function() {
+    const dd = document.getElementById('tablero-dropdown')
+    if (!dd) return
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none'
+  }
+
+  document.addEventListener('click', e => {
+    const dd = document.getElementById('tablero-dropdown')
+    const btn = document.getElementById('tablero-selector-btn')
+    if (dd && dd.style.display === 'block' && !dd.contains(e.target) && !btn?.contains(e.target)) {
+      dd.style.display = 'none'
+    }
+  })
+
+  window.selectTablero = async function(boardId) {
+    currentBoardId = boardId
+    const dd = document.getElementById('tablero-dropdown')
+    if (dd) dd.style.display = 'none'
+    renderTableroSelectorLabel()
+    renderTableroDropdown()
+    await renderTableros()
+  }
+
+  async function renderTableros() {
+    await loadPieceBoards()
+    const emptyState = document.getElementById('tableros-empty-state')
+    const boardWrap = document.getElementById('tableros-board-wrap')
+    const addStageBtn = document.getElementById('btn-add-stage')
+
+    if (!currentBoardId) {
+      emptyState.style.display = 'flex'
+      boardWrap.style.display = 'none'
+      addStageBtn.style.display = 'none'
+      return
+    }
+    emptyState.style.display = 'none'
+    boardWrap.style.display = 'block'
+    addStageBtn.style.display = 'flex'
+
+    await Promise.all([loadBoardStages(), loadBoardCards()])
+    renderTableroKanban()
+  }
+
+  async function loadBoardStages() {
+    const { data } = await supabase
+      .from('piece_board_stages')
+      .select('*')
+      .eq('board_id', currentBoardId)
+      .order('orden', { ascending: true })
+    boardStages = data || []
+  }
+
+  async function loadBoardCards() {
+    const { data } = await supabase
+      .from('piece_board_cards')
+      .select('*, clients(nombre)')
+      .eq('board_id', currentBoardId)
+      .order('orden', { ascending: true })
+    boardCards = data || []
+  }
+
+  function renderTableroKanban() {
+    const el = document.getElementById('tablero-kanban')
+    if (!el) return
+    if (boardStages.length === 0) {
+      el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:100%;color:var(--ink3);font-size:13px">Este tablero no tiene columnas todavía. Usá "Nueva columna" arriba.</div>`
+      return
+    }
+    el.innerHTML = boardStages.map(stage => {
+      const cards = boardCards.filter(c => c.stage_id === stage.id)
+      const cardsHTML = cards.length === 0
+        ? `<div style="padding:12px;font-size:11px;color:var(--ink3);text-align:center">Sin cards</div>`
+        : cards.map(c => {
+            const due = formatDate(c.fecha_entrega)
+            const clientName = c.clients?.nombre || ''
+            return `<div class="k-card" draggable="true" data-id="${c.id}" onclick="openTbCardModal('${c.id}')" style="border-left:3px solid ${c.color||'#0A2540'}">
+              ${c.archivo_url ? `<div style="margin:-12px -12px 8px;border-radius:var(--r-sm) var(--r-sm) 0 0;overflow:hidden;height:90px;background:#eee">${isVideoFile(c.archivo_url) ? `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0A2540;color:#fff;font-size:20px">▶</div>` : `<img src="${c.archivo_url}" style="width:100%;height:100%;object-fit:cover">`}</div>` : ''}
+              <div class="k-card-title">${c.titulo}</div>
+              <div class="k-card-meta">
+                ${clientName ? `<span class="k-client-tag" style="background:${clientColor(c.client_id||'x','bg')};color:${clientColor(c.client_id||'x','text')}">${clientName}</span>` : ''}
+                ${c.tipo ? `<span class="k-type-tag">${c.tipo}</span>` : ''}
+                ${due ? `<span class="k-due ${due.overdue?'overdue':''}">${due.text}</span>` : ''}
+              </div>
+            </div>`
+          }).join('')
+      return `<div class="k-col" data-stage="${stage.id}">
+        <div class="k-col-head">
+          <div class="k-dot" style="background:${stage.color}"></div>
+          <div class="k-col-name" ondblclick="renameStage('${stage.id}','${(stage.nombre||'').replace(/'/g,"\\'")}')" title="Doble click para renombrar">${stage.nombre}</div>
+          <div class="k-count">${cards.length}</div>
+          <button onclick="deleteStageConfirm('${stage.id}','${(stage.nombre||'').replace(/'/g,"\\'")}')" style="background:none;border:none;cursor:pointer;color:var(--ink3);padding:2px" title="Eliminar columna"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        </div>
+        <div class="k-cards" data-stage="${stage.id}">${cardsHTML}</div>
+        <div class="k-add" onclick="openTbCardModal(null,'${stage.id}')"><i class="ti ti-plus" style="font-size:12px"></i> Agregar card</div>
+      </div>`
+    }).join('')
+    initTbDragDrop()
+  }
+
+  function initTbDragDrop() {
+    let dragCardId = null
+    let dropBeforeId = null
+
+    document.querySelectorAll('#tablero-kanban .k-card[draggable]').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        dragCardId = card.dataset.id
+        card.classList.add('dragging')
+        e.dataTransfer.effectAllowed = 'move'
+      })
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging')
+        document.querySelectorAll('#tablero-kanban .k-col').forEach(c => c.classList.remove('drag-over'))
+      })
+      card.addEventListener('dragover', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const rect = card.getBoundingClientRect()
+        const isAbove = (e.clientY - rect.top) < rect.height / 2
+        dropBeforeId = isAbove ? card.dataset.id : (card.nextElementSibling?.dataset.id || null)
+        document.querySelectorAll('#tablero-kanban .k-col').forEach(c => c.classList.remove('drag-over'))
+        card.closest('.k-col')?.classList.add('drag-over')
+      })
+    })
+
+    document.querySelectorAll('#tablero-kanban .k-col').forEach(col => {
+      col.addEventListener('dragover', e => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        document.querySelectorAll('#tablero-kanban .k-col').forEach(c => c.classList.remove('drag-over'))
+        col.classList.add('drag-over')
+      })
+      col.addEventListener('dragleave', e => {
+        if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over')
+      })
+      col.addEventListener('drop', async e => {
+        e.preventDefault()
+        col.classList.remove('drag-over')
+        const newStageId = col.dataset.stage
+        if (!dragCardId || !newStageId) return
+        const card = boardCards.find(c => c.id === dragCardId)
+        if (!card) return
+
+        // Reordenar en memoria: sacar la card de su posición actual
+        boardCards = boardCards.filter(c => c.id !== dragCardId)
+        card.stage_id = newStageId
+        let insertAt = boardCards.length
+        if (dropBeforeId) {
+          const idx = boardCards.findIndex(c => c.id === dropBeforeId)
+          if (idx !== -1) insertAt = idx
+        }
+        boardCards.splice(insertAt, 0, card)
+        dropBeforeId = null
+        dragCardId = null
+
+        renderTableroKanban()
+
+        // Persistir: nuevo stage_id + reordenar todas las cards de la columna destino
+        const cardsEnStage = boardCards.filter(c => c.stage_id === newStageId)
+        await Promise.all(cardsEnStage.map((c, i) =>
+          supabase.from('piece_board_cards').update({ stage_id: c.stage_id, orden: i }).eq('id', c.id)
+        ))
+      })
+    })
+  }
+
+  // ── Crear tablero ──────────────────────────────────────
+  let newTableroStageCount = 0
+
+  window.openCreateTableroModal = function() {
+    const dd = document.getElementById('tablero-dropdown')
+    if (dd) dd.style.display = 'none'
+    document.getElementById('new-tablero-nombre').value = ''
+    const sel = document.getElementById('new-tablero-cliente')
+    sel.innerHTML = '<option value="">Sin cliente asociado</option>' + clients.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
+    document.getElementById('new-tablero-stages').innerHTML = ''
+    newTableroStageCount = 0
+    ;['Por hacer', 'Haciendo', 'Listo'].forEach(n => addNewTableroStageRow(n))
+    document.getElementById('modal-crear-tablero').classList.add('show')
+  }
+
+  window.closeCreateTableroModal = function() {
+    document.getElementById('modal-crear-tablero').classList.remove('show')
+  }
+
+  window.autofillTableroNombre = function() {
+    const sel = document.getElementById('new-tablero-cliente')
+    const nombreInput = document.getElementById('new-tablero-nombre')
+    if (!nombreInput.value.trim() && sel.value) {
+      nombreInput.value = sel.options[sel.selectedIndex].textContent
+    }
+  }
+
+  window.addNewTableroStageRow = function(prefill) {
+    newTableroStageCount++
+    const rowId = 'tb-stage-row-' + newTableroStageCount
+    const color = TB_STAGE_COLORS[(newTableroStageCount - 1) % TB_STAGE_COLORS.length]
+    const wrap = document.getElementById('new-tablero-stages')
+    const row = document.createElement('div')
+    row.id = rowId
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px'
+    row.innerHTML = `
+      <input type="color" value="${color}" style="width:30px;height:34px;border:1px solid #E8EDF3;border-radius:8px;padding:0;cursor:pointer;flex-shrink:0">
+      <input type="text" placeholder="Nombre de la columna" value="${prefill || ''}" style="flex:1;height:34px;padding:0 10px;border:1px solid #E8EDF3;border-radius:8px;font-size:12px;font-family:inherit;color:#0A2540;outline:none">
+      <button onclick="document.getElementById('${rowId}').remove()" style="width:30px;height:30px;border-radius:8px;background:none;border:none;cursor:pointer;color:#C4CDD9;flex-shrink:0" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#C4CDD9'"><i class="ti ti-x" style="font-size:14px"></i></button>
+    `
+    wrap.appendChild(row)
+  }
+
+  window.saveNewTablero = async function() {
+    const nombre = document.getElementById('new-tablero-nombre').value.trim()
+    if (!nombre) { showToast('El nombre es requerido'); return }
+    const clienteId = document.getElementById('new-tablero-cliente').value || null
+
+    const stageRows = [...document.getElementById('new-tablero-stages').children]
+    const stageNames = stageRows.map(row => {
+      const inputs = row.querySelectorAll('input')
+      return { color: inputs[0].value, nombre: inputs[1].value.trim() }
+    }).filter(s => s.nombre)
+
+    if (stageNames.length === 0) { showToast('Agregá al menos una columna'); return }
+
+    const btn = document.getElementById('btn-save-tablero')
+    btn.disabled = true; btn.textContent = 'Creando...'
+
+    const { data: nuevoBoard, error } = await supabase
+      .from('piece_boards')
+      .insert({ agency_id: agencyId, nombre, client_id: clienteId, orden: PIECE_BOARDS.length })
+      .select('*')
+      .single()
+
+    if (error) { showToast('Error: ' + error.message); btn.disabled = false; btn.textContent = 'Crear tablero'; return }
+
+    const stagesToInsert = stageNames.map((s, i) => ({ board_id: nuevoBoard.id, nombre: s.nombre, color: s.color, orden: i }))
+    const { error: stagesErr } = await supabase.from('piece_board_stages').insert(stagesToInsert)
+
+    btn.disabled = false; btn.textContent = 'Crear tablero'
+
+    if (stagesErr) { showToast('Tablero creado, pero hubo un error con las columnas: ' + stagesErr.message) }
+
+    closeCreateTableroModal()
+    showToast('✓ Tablero creado')
+    currentBoardId = nuevoBoard.id
+    await renderTableros()
+  }
+
+  window.deleteTableroConfirm = async function(boardId, boardNombre) {
+    const dd = document.getElementById('tablero-dropdown')
+    if (dd) dd.style.display = 'none'
+
+    const { count } = await supabase
+      .from('piece_board_cards')
+      .select('id', { count: 'exact', head: true })
+      .eq('board_id', boardId)
+
+    const cardsMsg = count > 0 ? `Este tablero tiene ${count} card${count!==1?'s':''} que se van a archivar junto con él.\n\n` : ''
+    if (!confirm(`${cardsMsg}¿Eliminar el tablero "${boardNombre}"?`)) return
+
+    const { error } = await supabase.from('piece_boards').update({ archived: true }).eq('id', boardId)
+    if (error) { showToast('Error al eliminar: ' + error.message); return }
+
+    showToast('✓ Tablero eliminado')
+    if (currentBoardId === boardId) currentBoardId = null
+    await renderTableros()
+  }
+
+  // ── Columnas: agregar / renombrar / eliminar ───────────
+  window.promptAddStage = async function() {
+    if (!currentBoardId) return
+    const nombre = prompt('Nombre de la nueva columna:')
+    if (!nombre || !nombre.trim()) return
+    const color = TB_STAGE_COLORS[boardStages.length % TB_STAGE_COLORS.length]
+    const { error } = await supabase.from('piece_board_stages').insert({ board_id: currentBoardId, nombre: nombre.trim(), color, orden: boardStages.length })
+    if (error) { showToast('Error: ' + error.message); return }
+    await loadBoardStages()
+    renderTableroKanban()
+    showToast('✓ Columna creada')
+  }
+
+  window.renameStage = async function(stageId, nombreActual) {
+    const nuevo = prompt('Renombrar columna:', nombreActual)
+    if (!nuevo || !nuevo.trim() || nuevo.trim() === nombreActual) return
+    const stage = boardStages.find(s => s.id === stageId)
+    if (stage) stage.nombre = nuevo.trim()
+    renderTableroKanban()
+    await supabase.from('piece_board_stages').update({ nombre: nuevo.trim() }).eq('id', stageId)
+  }
+
+  window.deleteStageConfirm = async function(stageId, stageNombre) {
+    const cardsEnColumna = boardCards.filter(c => c.stage_id === stageId)
+    if (cardsEnColumna.length > 0) {
+      showToast(`Movés o eliminás las ${cardsEnColumna.length} card(s) de "${stageNombre}" antes de borrar la columna`)
+      return
+    }
+    if (!confirm(`¿Eliminar la columna "${stageNombre}"?`)) return
+    const { error } = await supabase.from('piece_board_stages').delete().eq('id', stageId)
+    if (error) { showToast('Error: ' + error.message); return }
+    await loadBoardStages()
+    renderTableroKanban()
+    showToast('✓ Columna eliminada')
+  }
+
+  // ── Card: crear / editar / eliminar ────────────────────
+  let tbCardEditingId = null
+  let tbCardTargetStageId = null
+  let tbCardFileRemoved = false
+
+  window.openTbCardModal = function(cardId, stageId) {
+    tbCardFileRemoved = false
+    const sel = document.getElementById('tb-card-cliente')
+    sel.innerHTML = '<option value="">Sin cliente</option>' + clients.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
+
+    document.getElementById('tb-card-file').value = ''
+    document.getElementById('tb-card-file-preview').style.display = 'none'
+    document.getElementById('tb-card-file-preview-content').innerHTML = ''
+    document.getElementById('tb-card-upload-label').textContent = 'Hacé click para subir una imagen o video'
+
+    if (cardId) {
+      const c = boardCards.find(x => x.id === cardId)
+      if (!c) return
+      tbCardEditingId = cardId
+      tbCardTargetStageId = c.stage_id
+      document.getElementById('modal-tb-card-title').textContent = 'Editar card'
+      document.getElementById('tb-card-id').value = c.id
+      document.getElementById('tb-card-titulo').value = c.titulo || ''
+      document.getElementById('tb-card-cliente').value = c.client_id || ''
+      document.getElementById('tb-card-tipo').value = c.tipo || ''
+      document.getElementById('tb-card-fecha').value = c.fecha_entrega ? c.fecha_entrega.slice(0,10) : ''
+      document.getElementById('tb-card-descripcion').value = c.descripcion || ''
+      selectTbCardColorValue(c.color || '#0A2540')
+      if (c.archivo_url) {
+        const content = document.getElementById('tb-card-file-preview-content')
+        content.innerHTML = isVideoFile(c.archivo_url)
+          ? `<video src="${c.archivo_url}" controls style="width:100%;max-height:160px;border-radius:var(--r);display:block"></video>`
+          : `<img src="${c.archivo_url}" style="width:100%;max-height:160px;object-fit:cover;border-radius:var(--r);display:block">`
+        document.getElementById('tb-card-file-preview').style.display = 'block'
+      }
+      document.getElementById('btn-delete-tb-card').style.display = 'block'
+    } else {
+      tbCardEditingId = null
+      tbCardTargetStageId = stageId
+      document.getElementById('modal-tb-card-title').textContent = 'Nueva card'
+      document.getElementById('tb-card-id').value = ''
+      document.getElementById('tb-card-titulo').value = ''
+      document.getElementById('tb-card-cliente').value = ''
+      document.getElementById('tb-card-tipo').value = ''
+      document.getElementById('tb-card-fecha').value = ''
+      document.getElementById('tb-card-descripcion').value = ''
+      selectTbCardColorValue('#0A2540')
+      document.getElementById('btn-delete-tb-card').style.display = 'none'
+    }
+    document.getElementById('modal-tb-card').classList.add('show')
+  }
+
+  window.closeTbCardModal = function() {
+    document.getElementById('modal-tb-card').classList.remove('show')
+  }
+
+  function selectTbCardColorValue(color) {
+    document.getElementById('tb-card-color').value = color
+    document.querySelectorAll('#tb-card-colors > div').forEach(d => {
+      const matches = d.getAttribute('onclick').includes(color)
+      d.style.borderColor = matches ? '#fff' : 'transparent'
+      d.style.boxShadow = matches ? `0 0 0 2px ${color}` : 'none'
+    })
+  }
+
+  window.selectTbCardColor = function(color, el) {
+    document.getElementById('tb-card-color').value = color
+    document.querySelectorAll('#tb-card-colors > div').forEach(d => { d.style.borderColor = 'transparent'; d.style.boxShadow = 'none' })
+    el.style.borderColor = '#fff'
+    el.style.boxShadow = `0 0 0 2px ${color}`
+  }
+
+  window.updateTbCardUploadLabel = function(input) {
+    const file = input.files[0]
+    if (!file) return
+    tbCardFileRemoved = false
+    document.getElementById('tb-card-upload-label').textContent = file.name
+    const preview = document.getElementById('tb-card-file-preview')
+    const content = document.getElementById('tb-card-file-preview-content')
+    const url = URL.createObjectURL(file)
+    content.innerHTML = file.type.startsWith('video/')
+      ? `<video src="${url}" controls style="width:100%;max-height:160px;border-radius:var(--r);display:block"></video>`
+      : `<img src="${url}" style="width:100%;max-height:160px;object-fit:cover;border-radius:var(--r);display:block">`
+    preview.style.display = 'block'
+  }
+
+  window.removeTbCardFile = function() {
+    tbCardFileRemoved = true
+    document.getElementById('tb-card-file').value = ''
+    document.getElementById('tb-card-upload-label').textContent = 'Hacé click para subir una imagen o video'
+    document.getElementById('tb-card-file-preview').style.display = 'none'
+    document.getElementById('tb-card-file-preview-content').innerHTML = ''
+  }
+
+  window.saveTbCard = async function() {
+    const titulo = document.getElementById('tb-card-titulo').value.trim()
+    if (!titulo) { showToast('El título es requerido'); return }
+
+    const btn = document.getElementById('btn-save-tb-card')
+    btn.disabled = true; btn.textContent = 'Guardando...'
+
+    const fechaVal = document.getElementById('tb-card-fecha').value
+    const payload = {
+      titulo,
+      client_id: document.getElementById('tb-card-cliente').value || null,
+      tipo: document.getElementById('tb-card-tipo').value || null,
+      fecha_entrega: fechaVal ? fechaVal + 'T12:00:00' : null,
+      descripcion: document.getElementById('tb-card-descripcion').value.trim() || null,
+      color: document.getElementById('tb-card-color').value || '#0A2540',
+    }
+
+    const file = document.getElementById('tb-card-file').files[0]
+    if (file) {
+      const ext = file.name.split('.').pop()
+      const path = `${agencyId}/board-${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage.from('pieces').upload(path, file, { upsert: true })
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
+        payload.archivo_url = urlData.publicUrl
+        payload.archivo_nombre = file.name
+      } else {
+        showToast('No se pudo subir el archivo, se guardó la card sin él')
+      }
+    } else if (tbCardFileRemoved) {
+      payload.archivo_url = null
+      payload.archivo_nombre = null
+    }
+
+    let error
+    if (tbCardEditingId) {
+      ;({ error } = await supabase.from('piece_board_cards').update(payload).eq('id', tbCardEditingId))
+    } else {
+      payload.board_id = currentBoardId
+      payload.stage_id = tbCardTargetStageId
+      payload.agency_id = agencyId
+      payload.orden = boardCards.filter(c => c.stage_id === tbCardTargetStageId).length
+      ;({ error } = await supabase.from('piece_board_cards').insert(payload))
+    }
+
+    btn.disabled = false; btn.textContent = 'Guardar'
+
+    if (error) { showToast('Error: ' + error.message); return }
+
+    closeTbCardModal()
+    showToast('✓ Card guardada')
+    await loadBoardCards()
+    renderTableroKanban()
+  }
+
+  window.deleteTbCard = async function() {
+    if (!tbCardEditingId) return
+    if (!confirm('¿Eliminar esta card?')) return
+    const { error } = await supabase.from('piece_board_cards').delete().eq('id', tbCardEditingId)
+    if (error) { showToast('Error: ' + error.message); return }
+    closeTbCardModal()
+    showToast('✓ Card eliminada')
+    await loadBoardCards()
+    renderTableroKanban()
   }
 
   // ══════════════════════════════════════
