@@ -933,10 +933,11 @@
 
     /* ── Impresión: al exportar el calendario en PDF, ocultar todo el dashboard y mostrar solo el overlay ── */
     @media print {
+      html, body { height: auto !important; overflow: visible !important; }
       body > *:not(#calendario-pdf-overlay) { display: none !important; }
-      #calendario-pdf-overlay { position: static !important; overflow: visible !important; background: #fff !important; }
+      #calendario-pdf-overlay { position: static !important; overflow: visible !important; background: #fff !important; height: auto !important; }
       #calendario-pdf-topbar { display: none !important; }
-      #calendario-pdf-content { padding: 0 !important; }
+      #calendario-pdf-content { padding: 0 !important; overflow: visible !important; height: auto !important; }
     }
 
   </style>
