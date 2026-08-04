@@ -424,14 +424,6 @@
     .content-subview.active { display: block; }
 
     /* ── Moodboard ── */
-    .mb-tool-btn {
-      width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent;
-      background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--ink2); font-size: 15px; transition: all var(--t);
-    }
-    .mb-tool-btn:hover { background: var(--bg); }
-    .mb-tool-btn.active { background: var(--azul); color: var(--celeste); }
-
     #mb-canvas-viewport { cursor: grab; }
     #mb-canvas-viewport.panning { cursor: grabbing; }
     #mb-canvas-viewport.tool-active { cursor: crosshair; }
@@ -559,13 +551,16 @@
       height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; border-bottom-color: transparent; pointer-events: none;
     }
 
-    /* ── Moodboard: selector flotante arriba a la derecha ── */
+    /* ── Moodboard: cluster flotante arriba a la derecha (Presentar, Compartir, selector) ── */
     #mb-floating-selector {
       display: none; position: fixed; top: 16px; right: 16px; z-index: 1000;
+      align-items: center; gap: 8px;
       opacity: 0; transform: translateY(-8px) scale(.97); pointer-events: none;
       transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
     }
-    #mb-floating-selector.visible { display: block; opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    #mb-floating-selector.visible { display: flex; opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    #mb-floating-selector .mb-pill-btn { height: 42px; border-radius: 12px; box-shadow: var(--shadow-lg); }
+    #mb-selector-wrap { position: relative; }
     #moodboard-selector-btn {
       display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 8px 0 14px; max-width: 260px;
       background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg);
@@ -620,22 +615,23 @@
     .mb-pill-btn:disabled { opacity: .45; cursor: not-allowed; }
     .mb-pill-btn:not(:disabled):hover { border-color: var(--celeste); }
 
-    /* ── Moodboard: workspace (sidebar + canvas + panel) ── */
+    /* ── Moodboard: pastilla flotante de herramientas, abajo al centro (estilo Figma) ── */
     #mb-workspace.show { display: flex !important; }
-    #mb-sidebar {
-      width: 78px; flex-shrink: 0; background: #fff; border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 14px 8px; overflow-y: auto;
+    #mb-tools-pill {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 30;
+      display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid var(--border);
+      border-radius: 14px; box-shadow: var(--shadow-lg); padding: 5px;
     }
+    .mb-tools-pill-divider { width: 1px; height: 22px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
     .mb-side-tool-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 4px; border-radius: 12px;
-      border: none; background: none; cursor: pointer; font-family: inherit; transition: background .18s;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px;
+      border: none; background: none; cursor: pointer; font-family: inherit; transition: background .18s; flex-shrink: 0;
     }
-    .mb-side-tool-btn i { font-size: 18px; color: var(--ink2); }
-    .mb-side-tool-btn span { font-size: 10px; font-weight: 700; color: var(--ink2); }
+    .mb-side-tool-btn i { font-size: 17px; color: var(--ink2); }
     .mb-side-tool-btn:hover:not(:disabled) { background: var(--bg); }
     .mb-side-tool-btn.active { background: var(--azul); }
-    .mb-side-tool-btn.active i, .mb-side-tool-btn.active span { color: var(--celeste); }
-    .mb-side-tool-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .mb-side-tool-btn.active i { color: var(--celeste); }
+    .mb-side-tool-btn:disabled { opacity: .3; cursor: not-allowed; }
 
     /* ── Moodboard: card flotante de info ── */
     #mb-header-card {
@@ -665,8 +661,6 @@
     #mb-history-controls button { width: 30px; height: 30px; border-radius: 8px; border: none; background: none; color: var(--ink2); display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; }
     #mb-history-controls button:hover:not(:disabled) { background: var(--bg); }
     #mb-history-controls button:disabled { cursor: not-allowed; opacity: .35; }
-    #mb-ai-bar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 5px; }
-    #mb-ai-bar button { width: 34px; height: 34px; border-radius: 10px; border: none; background: none; color: var(--ink3); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: not-allowed; opacity: .5; }
 
     /* ── Moodboard: modo presentación (solo lectura) ── */
     #mb-present-exit-btn {
@@ -677,8 +671,7 @@
     }
     #mb-present-exit-btn:hover { opacity: .9; }
     body.mb-presenting #mb-present-exit-btn { display: flex; }
-    body.mb-presenting #mb-sidebar,
-    body.mb-presenting #mb-toolbar,
+    body.mb-presenting #mb-tools-pill,
     body.mb-presenting #mb-floating-tabs,
     body.mb-presenting #mb-floating-selector,
     body.mb-presenting .mb-item-move,
@@ -687,7 +680,6 @@
     body.mb-presenting .mb-resize-handle,
     body.mb-presenting .mb-anchor,
     body.mb-presenting #mb-history-controls,
-    body.mb-presenting #mb-ai-bar,
     body.mb-presenting #mb-properties-tabs .mb-prop-tab[data-tab="props"],
     body.mb-presenting .mb-comment-actions { display: none !important; }
     body.mb-presenting .mb-item { cursor: default; }
@@ -1550,20 +1542,6 @@
        <div style="display:flex;flex-direction:column;height:100%">
 
         <!-- Barra de herramientas -->
-        <div id="mb-toolbar" style="display:none;align-items:center;gap:6px;padding:70px 20px 10px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
-          <div id="mb-hint" style="font-size:11px;color:var(--ink3);font-weight:600">Elegí una herramienta y clickeá el lienzo</div>
-          <div style="flex:1"></div>
-          <button class="mb-tool-btn" disabled title="Próximamente"><i class="ti ti-moon"></i></button>
-          <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
-          <button class="mb-tool-btn" onclick="mbZoomOut()" title="Alejar"><i class="ti ti-zoom-out"></i></button>
-          <div id="mb-zoom-label" style="font-size:11px;font-weight:800;color:var(--ink2);width:42px;text-align:center">100%</div>
-          <button class="mb-tool-btn" onclick="mbZoomIn()" title="Acercar"><i class="ti ti-zoom-in"></i></button>
-          <button class="mb-tool-btn" onclick="mbResetZoom()" title="Restablecer zoom"><i class="ti ti-focus-2"></i></button>
-          <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
-          <button class="mb-pill-btn" onclick="mbEnterPresent()"><i class="ti ti-presentation"></i> Presentar</button>
-          <button class="mb-pill-btn primary" disabled title="Próximamente"><i class="ti ti-share-2"></i> Compartir</button>
-        </div>
-
         <!-- Estado vacío -->
         <div id="moodboard-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink3);padding-top:70px">
           <div style="width:72px;height:72px;border-radius:20px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center">
@@ -1574,25 +1552,12 @@
           <button onclick="openCreateMoodboardModal()" class="tbtn primary" style="gap:6px"><i class="ti ti-plus" style="font-size:14px"></i> Crear mi primer moodboard</button>
         </div>
 
-        <!-- Workspace: sidebar + lienzo + panel de propiedades -->
+        <!-- Workspace: lienzo + panel de propiedades (sin sidebar docked, todo flota como en Figma) -->
         <div id="mb-workspace" style="display:none;flex:1;overflow:hidden;position:relative">
           <button id="mb-present-exit-btn" onclick="mbExitPresent()"><i class="ti ti-x"></i> Salir de presentación</button>
 
-          <!-- Sidebar izquierda: biblioteca de elementos -->
-          <div id="mb-sidebar">
-            <button class="mb-side-tool-btn active" data-tool="select" onclick="setMbTool('select')" title="Seleccionar"><i class="ti ti-pointer"></i><span>Seleccionar</span></button>
-            <button class="mb-side-tool-btn" data-tool="nota" onclick="setMbTool('nota')" title="Nota"><i class="ti ti-note"></i><span>Nota</span></button>
-            <button class="mb-side-tool-btn" data-tool="texto" onclick="setMbTool('texto')" title="Texto"><i class="ti ti-typography"></i><span>Texto</span></button>
-            <button class="mb-side-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Imagen"><i class="ti ti-photo"></i><span>Imagen</span></button>
-            <button class="mb-side-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Link o video"><i class="ti ti-brand-youtube"></i><span>Video</span></button>
-            <button class="mb-side-tool-btn" data-tool="marco" onclick="setMbTool('marco')" title="Marco"><i class="ti ti-frame"></i><span>Marco</span></button>
-            <div style="height:1px;background:var(--border);margin:4px 10px"></div>
-            <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-sticker"></i><span>Sticker</span></button>
-            <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-file"></i><span>Archivo</span></button>
-          </div>
-
           <!-- Lienzo -->
-          <div id="mb-canvas-viewport" style="flex:1;overflow:hidden;position:relative;background-color:#F7F8FB">
+          <div id="mb-canvas-viewport" style="flex:1;overflow:hidden;position:relative;background-color:#F7F8FB;padding-top:70px">
 
             <!-- Card flotante con info del moodboard -->
             <div id="mb-header-card"></div>
@@ -1602,17 +1567,25 @@
               <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
             </div>
 
-            <!-- Controles inferiores izquierda: undo/redo (preparado, sin historial todavía) -->
+            <!-- Controles inferiores izquierda: deshacer/rehacer -->
             <div id="mb-history-controls">
               <button onclick="mbUndo()" disabled title="Deshacer (Ctrl+Z)"><i class="ti ti-arrow-back-up"></i></button>
               <button onclick="mbRedo()" disabled title="Rehacer (Ctrl+Shift+Z)"><i class="ti ti-arrow-forward-up"></i></button>
             </div>
 
-            <!-- Barra inferior central: acciones de IA (preparado, sin conectar) -->
-            <div id="mb-ai-bar" title="Próximamente">
-              <button disabled><i class="ti ti-sparkles"></i></button>
-              <button disabled><i class="ti ti-layout-grid"></i></button>
-              <button disabled><i class="ti ti-message-circle"></i></button>
+            <!-- Pastilla flotante de herramientas, abajo al centro, estilo Figma -->
+            <div id="mb-tools-pill">
+              <button class="mb-side-tool-btn active" data-tool="select" onclick="setMbTool('select')" title="Seleccionar"><i class="ti ti-pointer"></i></button>
+              <button class="mb-side-tool-btn" data-tool="nota" onclick="setMbTool('nota')" title="Nota"><i class="ti ti-note"></i></button>
+              <button class="mb-side-tool-btn" data-tool="texto" onclick="setMbTool('texto')" title="Texto"><i class="ti ti-typography"></i></button>
+              <button class="mb-side-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Imagen"><i class="ti ti-photo"></i></button>
+              <button class="mb-side-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Link o video"><i class="ti ti-brand-youtube"></i></button>
+              <button class="mb-side-tool-btn" data-tool="marco" onclick="setMbTool('marco')" title="Marco"><i class="ti ti-frame"></i></button>
+              <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-sticker"></i></button>
+              <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-file"></i></button>
+              <div class="mb-tools-pill-divider"></div>
+              <button class="mb-side-tool-btn" disabled title="IA (próximamente)"><i class="ti ti-sparkles"></i></button>
+              <button class="mb-side-tool-btn" disabled title="Ordenar automático (próximamente)"><i class="ti ti-layout-grid"></i></button>
             </div>
 
             <!-- Control de zoom flotante -->
@@ -4854,21 +4827,25 @@
 </div>
 
 <div id="mb-floating-selector">
-  <button onclick="toggleMoodboardDropdown()" id="moodboard-selector-btn">
-    <i class="ti ti-palette"></i>
-    <span id="moodboard-selector-label">Elegí un moodboard</span>
-    <i class="ti ti-chevron-down"></i>
-  </button>
-  <div id="moodboard-dropdown">
-    <div id="moodboard-search-wrap">
-      <i class="ti ti-search"></i>
-      <input type="text" id="moodboard-search-input" placeholder="Buscar moodboard..." oninput="filterMoodboardDropdown(this.value)">
-    </div>
-    <div id="moodboard-dropdown-list"></div>
-    <div class="mb-dd-divider"></div>
-    <button class="mb-dd-create" onclick="openCreateMoodboardModal()">
-      <i class="ti ti-plus"></i> Crear nuevo moodboard
+  <button class="mb-pill-btn" onclick="mbEnterPresent()"><i class="ti ti-presentation"></i> Presentar</button>
+  <button class="mb-pill-btn primary" disabled title="Próximamente"><i class="ti ti-share-2"></i> Compartir</button>
+  <div id="mb-selector-wrap">
+    <button onclick="toggleMoodboardDropdown()" id="moodboard-selector-btn">
+      <i class="ti ti-palette"></i>
+      <span id="moodboard-selector-label">Elegí un moodboard</span>
+      <i class="ti ti-chevron-down"></i>
     </button>
+    <div id="moodboard-dropdown">
+      <div id="moodboard-search-wrap">
+        <i class="ti ti-search"></i>
+        <input type="text" id="moodboard-search-input" placeholder="Buscar moodboard..." oninput="filterMoodboardDropdown(this.value)">
+      </div>
+      <div id="moodboard-dropdown-list"></div>
+      <div class="mb-dd-divider"></div>
+      <button class="mb-dd-create" onclick="openCreateMoodboardModal()">
+        <i class="ti ti-plus"></i> Crear nuevo moodboard
+      </button>
+    </div>
   </div>
 </div>
 
@@ -12253,7 +12230,6 @@ if (id) {
     await loadMoodboards()
     const emptyState = document.getElementById('moodboard-empty-state')
     const workspace = document.getElementById('mb-workspace')
-    const toolbar = document.getElementById('mb-toolbar')
     const floatingSelector = document.getElementById('mb-floating-selector')
     floatingSelector?.classList.add('visible')
 
@@ -12261,12 +12237,10 @@ if (id) {
       emptyState.style.display = 'flex'
       workspace.classList.remove('show')
       workspace.style.display = 'none'
-      toolbar.style.display = 'none'
       return
     }
     emptyState.style.display = 'none'
     workspace.style.display = 'flex'
-    toolbar.style.display = 'flex'
 
     await Promise.all([loadMoodboardItems(), loadMoodboardConnections(), loadMoodboardComments()])
     renderMbCanvas()
@@ -12355,12 +12329,9 @@ if (id) {
   // ── Herramientas ────────────────────────────────────────
   window.setMbTool = function(tool) {
     mbActiveTool = tool
-    document.querySelectorAll('.mb-tool-btn[data-tool], .mb-side-tool-btn[data-tool]').forEach(b => b.classList.toggle('active', b.dataset.tool === tool))
+    document.querySelectorAll('.mb-side-tool-btn[data-tool]').forEach(b => b.classList.toggle('active', b.dataset.tool === tool))
     const viewport = document.getElementById('mb-canvas-viewport')
     viewport.classList.toggle('tool-active', tool !== 'select')
-    const hint = document.getElementById('mb-hint')
-    const hints = { select: 'Arrastrá cualquier elemento para moverlo · doble click para editar texto · rueda del mouse para zoom', imagen: 'Clickeá el lienzo para subir una imagen', link: 'Clickeá el lienzo y pegá un link o video', texto: 'Clickeá el lienzo para agregar texto libre', nota: 'Clickeá el lienzo para agregar una nota', marco: 'Clickeá el lienzo para agregar un marco' }
-    if (hint) hint.textContent = hints[tool] || ''
   }
 
   window.mbZoomIn = function() { setMbZoom(mbZoom * 1.2) }
