@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faro — Moodboard compartido</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  :root {
+    --azul: #0A2540; --celeste: #8EDBFF; --celeste-dim: rgba(142,219,255,.14);
+    --bg: #F5F7FA; --ink: #111111; --ink2: #4A5568; --ink3: #7C8B9C; --border: #DCE2E9;
+    --shadow-lg: 0 8px 32px rgba(16,24,40,.14);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); overflow: hidden; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+
+  /* ── Estados de carga / error ── */
+  #mbp-status { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; }
+  #mbp-status .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--azul); border-radius: 50%; animation: mbp-spin .8s linear infinite; }
+  @keyframes mbp-spin { to { transform: rotate(360deg); } }
+  #mbp-status h1 { font-size: 17px; font-weight: 900; margin: 0; letter-spacing: -.3px; }
+  #mbp-status p { font-size: 13px; color: var(--ink3); margin: 0; max-width: 340px; line-height: 1.6; }
+
+  /* ── Pantalla de mail ── */
+  #mbp-gate { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; }
+  #mbp-gate.show { display: flex; }
+  .mbp-gate-card { background: #fff; border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-lg); padding: 36px 32px; max-width: 400px; width: 100%; text-align: center; }
+  .mbp-gate-icon { width: 52px; height: 52px; border-radius: 15px; background: var(--azul); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--celeste); font-size: 22px; }
+  .mbp-gate-title { font-size: 18px; font-weight: 900; letter-spacing: -.4px; margin-bottom: 6px; }
+  .mbp-gate-sub { font-size: 12.5px; color: var(--ink3); line-height: 1.6; margin-bottom: 22px; }
+  .mbp-gate-input { width: 100%; height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; font-family: inherit; color: var(--ink); outline: none; margin-bottom: 10px; }
+  .mbp-gate-input:focus { border-color: var(--celeste); }
+  .mbp-gate-btn { width: 100%; height: 44px; border: none; border-radius: 12px; background: var(--azul); color: var(--celeste); font-size: 13.5px; font-weight: 800; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .mbp-gate-btn:hover { opacity: .9; }
+  .mbp-gate-err { font-size: 11.5px; color: #EF4444; margin-top: 8px; display: none; }
+  .mbp-gate-err.show { display: block; }
+  .mbp-gate-brand { font-size: 10.5px; color: var(--ink3); margin-top: 20px; font-weight: 700; }
+
+  /* ── Barra superior ── */
+  #mbp-topbar { position: fixed; top: 16px; left: 16px; right: 16px; z-index: 40; display: none; align-items: center; justify-content: space-between; pointer-events: none; }
+  #mbp-topbar.show { display: flex; }
+  #mbp-info-card { pointer-events: auto; background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 12px 18px; display: flex; align-items: center; gap: 14px; max-width: 70vw; }
+  #mbp-info-icon { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#8B5CF6,#EC4899); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; flex-shrink: 0; }
+  #mbp-info-name { font-size: 14px; font-weight: 900; letter-spacing: -.3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #mbp-info-sub { font-size: 11px; color: var(--ink3); font-weight: 600; margin-top: 1px; }
+  #mbp-brand-pill { pointer-events: auto; background: var(--azul); color: var(--celeste); border-radius: 20px; padding: 9px 16px; font-size: 11.5px; font-weight: 800; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 6px; text-decoration: none; flex-shrink: 0; }
+
+  /* ── Zoom flotante ── */
+  #mbp-zoom { position: fixed; bottom: 20px; right: 20px; z-index: 40; display: none; align-items: center; gap: 2px; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 4px; }
+  #mbp-zoom.show { display: flex; }
+  #mbp-zoom button { width: 30px; height: 30px; border-radius: 8px; border: none; background: none; color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  #mbp-zoom button:hover { background: var(--bg); }
+  #mbp-zoom span { font-size: 10.5px; font-weight: 800; color: var(--ink2); width: 38px; text-align: center; }
+
+  /* ── Lienzo ── */
+  #mbp-viewport { position: fixed; inset: 0; overflow: hidden; cursor: grab; display: none; }
+  #mbp-viewport.show { display: block; }
+  #mbp-viewport.panning { cursor: grabbing; }
+  #mbp-canvas { position: absolute; top: 0; left: 0; width: 20000px; height: 20000px; transform-origin: 0 0; }
+  #mbp-svg { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; overflow: visible; }
+  #mbp-items { position: absolute; top: 0; left: 0; }
+
+  .mbp-item { position: absolute; border-radius: 14px; box-shadow: 0 3px 14px rgba(10,37,64,.1); overflow: hidden; border: 1px solid var(--border); }
+  .mbp-item.marco { box-shadow: none; border-radius: 16px; }
+  .mbp-item-body { width: 100%; height: 100%; }
+  .mbp-item img, .mbp-item video, .mbp-item iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
+  .mbp-nota, .mbp-texto { width: 100%; height: 100%; padding: 14px; font-size: 13px; line-height: 1.5; overflow: auto; word-break: break-word; }
+  .mbp-nota h3, .mbp-texto h3 { font-size: 1.35em; font-weight: 800; margin: 0 0 4px; }
+  .mbp-nota h4, .mbp-texto h4 { font-size: 1.1em; font-weight: 700; margin: 0 0 3px; }
+  .mbp-nota p, .mbp-texto p { margin: 0 0 4px; }
+  .mbp-nota ul, .mbp-texto ul { margin: 0 0 4px; padding-left: 18px; }
+  .mbp-auto-link { color: #2563EB; text-decoration: underline; word-break: break-all; }
+  .mbp-marco-label { position: absolute; top: -24px; left: 0; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 7px; box-shadow: 0 2px 6px rgba(0,0,0,.15); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbp-etiqueta-badge { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+  .mbp-link-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; padding: 16px; text-align: center; background: var(--bg); text-decoration: none; }
+  .mbp-link-card i { font-size: 26px; color: var(--ink3); }
+  .mbp-link-card span { font-size: 11px; font-weight: 700; color: var(--ink2); word-break: break-all; }
+  .mbp-link-text-wrap, .mbp-link-button-wrap { display: flex; align-items: center; justify-content: center; height: 100%; padding: 12px; background: var(--bg); }
+  .mbp-link-text { color: #2563EB; font-weight: 700; font-size: 13px; text-decoration: underline; text-align: center; }
+  .mbp-link-button { padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+</style>
+</head>
+<body>
+
+<div id="mbp-status">
+  <div class="spinner"></div>
+  <h1>Cargando moodboard…</h1>
+</div>
+
+<div id="mbp-gate">
+  <div class="mbp-gate-card">
+    <div class="mbp-gate-icon"><i class="ti ti-palette"></i></div>
+    <div class="mbp-gate-title" id="mbp-gate-title">Te compartieron un moodboard</div>
+    <div class="mbp-gate-sub">Dejanos tu mail para verlo. Solo lo usamos para mantenerte al tanto de novedades de Faro.</div>
+    <input type="email" id="mbp-gate-email" class="mbp-gate-input" placeholder="tu@mail.com" autocomplete="email">
+    <button class="mbp-gate-btn" id="mbp-gate-btn" onclick="mbpSubmitEmail()"><i class="ti ti-eye"></i> Ver moodboard</button>
+    <div class="mbp-gate-err" id="mbp-gate-err">Ingresá un mail válido.</div>
+    <div class="mbp-gate-brand">Hecho con Faro</div>
+  </div>
+</div>
+
+<div id="mbp-topbar">
+  <div id="mbp-info-card">
+    <div id="mbp-info-icon"><i class="ti ti-palette"></i></div>
+    <div>
+      <div id="mbp-info-name">—</div>
+      <div id="mbp-info-sub">Vista de solo lectura</div>
+    </div>
+  </div>
+  <a href="index.html" id="mbp-brand-pill" target="_blank"><i class="ti ti-sparkles"></i> Hecho con Faro</a>
+</div>
+
+<div id="mbp-viewport">
+  <div id="mbp-canvas">
+    <svg id="mbp-svg" width="20000" height="20000"></svg>
+    <div id="mbp-items"></div>
+  </div>
+</div>
+
+<div id="mbp-zoom">
+  <button onclick="mbpZoomBy(1/1.2)"><i class="ti ti-minus"></i></button>
+  <span id="mbp-zoom-label">100%</span>
+  <button onclick="mbpZoomBy(1.2)"><i class="ti ti-plus"></i></button>
+  <button onclick="mbpResetView()"><i class="ti ti-focus-2"></i></button>
+</div>
+
+<script type="module">
+import { supabase } from './supabase.js'
+
+const params = new URLSearchParams(location.search)
+const boardId = params.get('id')
+const token = params.get('token')
+
+let board = null
+let items = []
+let connections = []
+let zoom = 1, panX = 60, panY = 100
+let panning = false, panStartX = 0, panStartY = 0, panOrigX = 0, panOrigY = 0
+
+function showStatus(title, desc) {
+  document.getElementById('mbp-status').style.display = 'flex'
+  document.getElementById('mbp-status').innerHTML = `
+    <div style="width:52px;height:52px;border-radius:15px;background:var(--azul);display:flex;align-items:center;justify-content:center;color:var(--celeste);font-size:22px"><i class="ti ti-mood-empty"></i></div>
+    <h1>${title}</h1>
+    <p>${desc || ''}</p>
+  `
+}
+
+async function init() {
+  if (!boardId || !token) { showStatus('Link inválido', 'Este link no tiene los datos necesarios para abrir un moodboard.'); return }
+
+  const { data, error } = await supabase
+    .from('moodboards')
+    .select('id, nombre, agency_id, client_id, share_enabled, share_token')
+    .eq('id', boardId)
+    .maybeSingle()
+
+  if (error || !data || !data.share_enabled || data.share_token !== token) {
+    showStatus('Este link ya no está disponible', 'Puede que el link haya expirado o que quien lo compartió haya desactivado el acceso público.')
+    return
+  }
+  board = data
+
+  let clienteNombre = ''
+  if (board.client_id) {
+    const { data: c } = await supabase.from('clients').select('nombre').eq('id', board.client_id).maybeSingle()
+    clienteNombre = c?.nombre || ''
+  }
+
+  document.getElementById('mbp-info-name').textContent = board.nombre
+  document.getElementById('mbp-info-sub').textContent = clienteNombre || 'Vista de solo lectura'
+  document.getElementById('mbp-gate-title').textContent = `Te compartieron "${board.nombre}"`
+  document.getElementById('mbp-status').style.display = 'none'
+
+  const savedEmail = localStorage.getItem(`faro_mb_lead_${boardId}`)
+  if (savedEmail) {
+    await loadAndShow()
+  } else {
+    document.getElementById('mbp-gate').classList.add('show')
+    setTimeout(() => document.getElementById('mbp-gate-email').focus(), 150)
+  }
+}
+
+window.mbpSubmitEmail = async function() {
+  const input = document.getElementById('mbp-gate-email')
+  const err = document.getElementById('mbp-gate-err')
+  const email = input.value.trim()
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.classList.add('show'); return }
+  err.classList.remove('show')
+  const btn = document.getElementById('mbp-gate-btn')
+  btn.disabled = true
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Cargando...'
+
+  await supabase.from('moodboard_share_leads').insert({ moodboard_id: boardId, agency_id: board.agency_id, email })
+  localStorage.setItem(`faro_mb_lead_${boardId}`, email)
+
+  document.getElementById('mbp-gate').classList.remove('show')
+  await loadAndShow()
+}
+
+async function loadAndShow() {
+  const [{ data: itemsData }, { data: connData }] = await Promise.all([
+    supabase.from('moodboard_items').select('*').eq('moodboard_id', boardId).order('z_index', { ascending: true }),
+    supabase.from('moodboard_connections').select('*').eq('moodboard_id', boardId),
+  ])
+  items = itemsData || []
+  connections = connData || []
+
+  document.getElementById('mbp-topbar').classList.add('show')
+  document.getElementById('mbp-zoom').classList.add('show')
+  document.getElementById('mbp-viewport').classList.add('show')
+
+  renderCanvas()
+  mbpResetView()
+  initPanZoom()
+}
+
+// ── Render (solo lectura) ──────────────────────────────
+function classifyLinkUrl(url) {
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]+)/)
+  if (yt) return { kind: 'youtube', embed: `https://www.youtube.com/embed/${yt[1]}` }
+  const vm = url.match(/vimeo\.com\/(\d+)/)
+  if (vm) return { kind: 'vimeo', embed: `https://player.vimeo.com/video/${vm[1]}` }
+  if (/\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(url)) return { kind: 'video' }
+  let domain = url
+  try { domain = new URL(url).hostname.replace('www.', '') } catch {}
+  return { kind: 'generic', domain }
+}
+
+function badgeTextColor(hex) {
+  if (!hex) return '#fff'
+  const c = hex.replace('#', '')
+  const r = parseInt(c.substring(0,2),16), g = parseInt(c.substring(2,4),16), b = parseInt(c.substring(4,6),16)
+  return (0.299*r + 0.587*g + 0.114*b)/255 > 0.6 ? '#111827' : '#fff'
+}
+
+function linkify(text) {
+  if (!text) return ''
+  const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  return esc.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener noreferrer" class="mbp-auto-link">${u}</a>`).replace(/\n/g,'<br>')
+}
+
+function renderCanvas() {
+  const layer = document.getElementById('mbp-items')
+  layer.innerHTML = items.map(item => {
+    let body = '', extraClass = '', bg = '#fff', extraStyle = ''
+    if (item.tipo === 'imagen') {
+      body = `<img src="${item.archivo_url}">`
+      if (item.url) body = `<a href="${item.url}" target="_blank" rel="noopener noreferrer" style="display:block;width:100%;height:100%">${body}</a>`
+    } else if (item.tipo === 'link') {
+      const info = classifyLinkUrl(item.url)
+      if (info.kind === 'youtube' || info.kind === 'vimeo') body = `<iframe src="${info.embed}" allowfullscreen loading="lazy"></iframe>`
+      else if (info.kind === 'video') body = `<video src="${item.url}" controls></video>`
+      else if (item.link_estilo === 'boton') {
+        const c = item.color || '#0A2540'
+        body = `<div class="mbp-link-button-wrap"><a href="${item.url}" target="_blank" rel="noopener noreferrer" class="mbp-link-button" style="background:${c};color:${badgeTextColor(c)}">${item.link_texto || 'Abrir link'}</a></div>`
+      } else {
+        body = `<div class="mbp-link-text-wrap"><a href="${item.url}" target="_blank" rel="noopener noreferrer" class="mbp-link-text">${item.link_texto || info.domain}</a></div>`
+      }
+    } else if (item.tipo === 'nota') {
+      const html = /<[a-z][\s\S]*>/i.test(item.contenido||'') ? item.contenido : linkify(item.contenido)
+      body = `<div class="mbp-nota">${html || ''}</div>`
+      bg = item.color || '#FFF3B0'
+    } else if (item.tipo === 'texto') {
+      const html = /<[a-z][\s\S]*>/i.test(item.contenido||'') ? item.contenido : linkify(item.contenido)
+      body = `<div class="mbp-texto">${html || ''}</div>`
+      bg = 'transparent'
+    } else if (item.tipo === 'marco') {
+      extraClass = 'marco'
+      const c = item.color || '#94A3B8'
+      bg = c + '40'
+      extraStyle = `border:2px dashed ${c};`
+    }
+    const etiqueta = ((item.tipo==='imagen'||item.tipo==='link') && item.etiqueta)
+      ? `<div class="mbp-etiqueta-badge" style="background:${item.etiqueta_color||'#0A2540'};color:${badgeTextColor(item.etiqueta_color)}">${item.etiqueta}</div>` : ''
+    const titulo = item.titulo
+      ? `<div class="mbp-marco-label" style="background:${item.color||'#0A2540'};color:${badgeTextColor(item.color||'#0A2540')}">${item.titulo}</div>` : ''
+    return `<div class="mbp-item ${extraClass}" style="left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;z-index:${item.z_index};background:${bg};${extraStyle}">
+      ${titulo}
+      <div class="mbp-item-body">${body}${etiqueta}</div>
+    </div>`
+  }).join('')
+
+  const svg = document.getElementById('mbp-svg')
+  svg.innerHTML = connections.map(c => {
+    const from = items.find(i => i.id === c.from_item_id), to = items.find(i => i.id === c.to_item_id)
+    if (!from || !to) return ''
+    const x1 = from.x + from.width/2, y1 = from.y + from.height/2
+    const x2 = to.x + to.width/2, y2 = to.y + to.height/2
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c.color||'#94A3B8'}" stroke-width="2" stroke-linecap="round"/>`
+  }).join('')
+}
+
+// ── Pan / Zoom ──────────────────────────────────────────
+function applyTransform() {
+  document.getElementById('mbp-canvas').style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`
+  document.getElementById('mbp-zoom-label').textContent = Math.round(zoom * 100) + '%'
+}
+
+window.mbpZoomBy = function(factor) {
+  const viewport = document.getElementById('mbp-viewport')
+  const rect = viewport.getBoundingClientRect()
+  const px = rect.width/2, py = rect.height/2
+  const cx = (px - panX)/zoom, cy = (py - panY)/zoom
+  zoom = Math.min(3, Math.max(0.05, zoom * factor))
+  panX = px - cx*zoom
+  panY = py - cy*zoom
+  applyTransform()
+}
+
+window.mbpResetView = function() {
+  if (items.length === 0) { zoom = 1; panX = 60; panY = 100; applyTransform(); return }
+  const xs = items.map(i=>i.x), ys = items.map(i=>i.y)
+  const xe = items.map(i=>i.x+i.width), ye = items.map(i=>i.y+i.height)
+  const minX = Math.min(...xs), minY = Math.min(...ys)
+  const maxX = Math.max(...xe), maxY = Math.max(...ye)
+  const viewport = document.getElementById('mbp-viewport')
+  const rect = viewport.getBoundingClientRect()
+  const pad = 80
+  const scale = Math.min((rect.width-pad*2)/(maxX-minX||1), (rect.height-pad*2)/(maxY-minY||1), 1.2)
+  zoom = Math.max(0.05, scale)
+  panX = rect.width/2 - (minX+maxX)/2*zoom
+  panY = rect.height/2 - (minY+maxY)/2*zoom
+  applyTransform()
+}
+
+function initPanZoom() {
+  const viewport = document.getElementById('mbp-viewport')
+  viewport.addEventListener('mousedown', e => {
+    panning = true
+    viewport.classList.add('panning')
+    panStartX = e.clientX; panStartY = e.clientY
+    panOrigX = panX; panOrigY = panY
+  })
+  document.addEventListener('mousemove', e => {
+    if (!panning) return
+    panX = panOrigX + (e.clientX - panStartX)
+    panY = panOrigY + (e.clientY - panStartY)
+    applyTransform()
+  })
+  document.addEventListener('mouseup', () => { panning = false; viewport.classList.remove('panning') })
+  viewport.addEventListener('wheel', e => {
+    e.preventDefault()
+    const rect = viewport.getBoundingClientRect()
+    const px = e.clientX - rect.left, py = e.clientY - rect.top
+    const cx = (px - panX)/zoom, cy = (py - panY)/zoom
+    zoom = Math.min(3, Math.max(0.05, zoom * (e.deltaY < 0 ? 1.1 : 1/1.1)))
+    panX = px - cx*zoom
+    panY = py - cy*zoom
+    applyTransform()
+  }, { passive: false })
+}
+
+init()
+</script>
+</body>
+</html>
