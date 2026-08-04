@@ -46,23 +46,27 @@
 
     /* ── Rail: card flotante, dos estados (expandido / colapsado) ── */
     .rail {
-      width: var(--rail-w); margin: 12px 0 12px 12px; display: flex; flex-direction: column;
-      align-items: stretch; padding: 18px 14px; flex-shrink: 0; z-index: 30; gap: 3px; position: relative;
+      width: var(--rail-w); margin: 12px 0 12px 12px; flex-shrink: 0; z-index: 30; position: relative;
       background: var(--rail-bg);
       border: 1px solid var(--border);
       border-radius: 20px;
       box-shadow: var(--shadow-lg);
-      overflow: hidden;
-      transition: width var(--t), padding var(--t);
+      transition: width var(--t);
+    }
+    .rail-inner {
+      display: flex; flex-direction: column; align-items: stretch; height: 100%;
+      padding: 18px 14px; gap: 3px; position: relative; overflow: hidden; border-radius: 20px;
+      transition: padding var(--t);
     }
     /* Detalle decorativo muy sutil abajo del rail (líneas orgánicas, casi imperceptibles) */
-    .rail::after {
+    .rail-inner::after {
       content: ''; position: absolute; left: -20%; right: -20%; bottom: -10%; height: 42%; z-index: -1; pointer-events: none;
       background:
         radial-gradient(circle at 20% 100%, rgba(142,219,255,.16) 0%, transparent 55%),
         radial-gradient(circle at 80% 90%,  rgba(10,37,64,.05)   0%, transparent 50%);
     }
-    body.rail-collapsed .rail { width: var(--rail-w-collapsed); padding: 18px 12px; }
+    body.rail-collapsed .rail { width: var(--rail-w-collapsed); }
+    body.rail-collapsed .rail-inner { padding: 18px 12px; }
 
     .rail-logo-row { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 2px 4px 16px; flex-shrink: 0; }
     body.rail-collapsed .rail-logo-row { justify-content: center; padding: 2px 0 16px; }
@@ -1403,11 +1407,13 @@
   </style>
 </head>
 <body>
+<script>document.body.classList.toggle('rail-collapsed', localStorage.getItem('faro_rail_collapsed') !== '0')</script>
 
 <div class="app">
 
   <!-- RAIL -->
   <div class="rail" id="app-rail">
+   <div class="rail-inner">
     <div class="rail-logo-row" onclick="window.open('index.html','_self')">
       <div class="rail-logo">F</div>
       <span class="rail-logo-text">Faro</span>
@@ -1467,6 +1473,7 @@
       <!-- Reemplaza a la card de Pro cuando el rail está colapsado -->
       <button class="rail-collapsed-cta" id="rail-collapsed-cta" onclick="handleOpenProfile()" title="Faro Pro"><i class="ti ti-sparkles"></i></button>
     </div>
+   </div>
 
     <button class="rail-collapse-toggle" onclick="toggleRailCollapse()" title="Colapsar / expandir">
       <i class="ti ti-chevrons-left" id="rail-collapse-icon"></i>
