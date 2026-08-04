@@ -920,7 +920,7 @@
 
     /* ── Moodboard: card flotante de info ── */
     #mb-header-card {
-      display: none; position: absolute; top: 50px; left: 20px; z-index: 30; max-width: 620px;
+      display: none; position: absolute; top: 84px; left: 20px; z-index: 30; max-width: 620px;
       background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 22px;
       box-shadow: var(--shadow-lg); align-items: center; gap: 28px; flex-wrap: wrap;
     }
@@ -1838,11 +1838,6 @@
             <i class="ti ti-plus" style="font-size:14px"></i> Nueva columna
           </button>
         </div>
-
-        <button id="contenido-cta" onclick="handleContenidoCta()" class="contenido-cta-btn">
-          <i class="ti ti-plus" style="font-size:14px"></i>
-          <span id="contenido-cta-label">Nueva pieza</span>
-        </button>
       </div>
 
       <!-- PIEZAS — Kanban -->
@@ -9443,11 +9438,7 @@
     document.querySelectorAll('.content-subview').forEach(s => s.classList.remove('active'))
     document.getElementById('sv-' + tab)?.classList.add('active')
     const label = tab === 'piezas' ? 'Nueva pieza' : tab === 'tareas' ? 'Nueva tarea' : ''
-    document.getElementById('contenido-cta-label').textContent = label
     document.getElementById('ws-cta-label').textContent = label
-    // En Tareas, Tableros y Moodboard, la creación vive dentro de la propia subvista
-    const ctaBtn = document.getElementById('contenido-cta')
-    if (ctaBtn) ctaBtn.style.display = (tab === 'tareas' || tab === 'tableros' || tab === 'moodboard') ? 'none' : ''
     const tablerosExtra = document.getElementById('tableros-toolbar-extra')
     if (tablerosExtra) tablerosExtra.style.display = tab === 'tableros' ? 'flex' : 'none'
 
@@ -13456,8 +13447,19 @@ if (id) {
     `).join('')
   }
 
+  // Cierra los otros popovers de la pastilla (música/timer/sellos) al abrir uno — lo que esté
+  // sonando o corriendo adentro sigue funcionando en segundo plano, solo se esconde la ventanita.
+  function mbCloseOtherToolPopovers(except) {
+    ;['mb-music-widget', 'mb-timer-widget', 'mb-stamp-picker'].forEach(id => {
+      if (id !== except) document.getElementById(id)?.classList.remove('show')
+    })
+  }
+
   window.toggleMbMusicWidget = function() {
-    document.getElementById('mb-music-widget')?.classList.toggle('show')
+    const widget = document.getElementById('mb-music-widget')
+    const opening = !widget?.classList.contains('show')
+    mbCloseOtherToolPopovers('mb-music-widget')
+    if (opening) widget?.classList.add('show'); else widget?.classList.remove('show')
     renderMbMusicPicker()
   }
 
@@ -13501,7 +13503,10 @@ if (id) {
   // ── Sellos / reacciones rápidas ──────────────────────────
   window.toggleMbStampPicker = function(e) {
     e.stopPropagation()
-    document.getElementById('mb-stamp-picker')?.classList.toggle('show')
+    const picker = document.getElementById('mb-stamp-picker')
+    const opening = !picker?.classList.contains('show')
+    mbCloseOtherToolPopovers('mb-stamp-picker')
+    if (opening) picker?.classList.add('show'); else picker?.classList.remove('show')
   }
   document.addEventListener('click', e => {
     const picker = document.getElementById('mb-stamp-picker')
@@ -13526,7 +13531,10 @@ if (id) {
   }
 
   window.toggleMbTimerWidget = function() {
-    document.getElementById('mb-timer-widget')?.classList.toggle('show')
+    const widget = document.getElementById('mb-timer-widget')
+    const opening = !widget?.classList.contains('show')
+    mbCloseOtherToolPopovers('mb-timer-widget')
+    if (opening) widget?.classList.add('show'); else widget?.classList.remove('show')
   }
 
   window.mbTimerToggle = function() {
