@@ -711,6 +711,27 @@
     .mb-etiqueta-color-swatch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
     .mb-prop-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 16px; color: var(--ink3); text-align: center; }
     .mb-prop-empty i { font-size: 30px; opacity: .4; }
+
+    #mb-comments-count { color: #8B5CF6; font-weight: 900; }
+    .mb-item-comment-badge {
+      position: absolute; bottom: -10px; right: -10px; display: flex; align-items: center; gap: 4px;
+      padding: 4px 9px; border-radius: 20px; background: #8B5CF6; color: #fff; border: 1.5px solid #fff;
+      font-size: 10.5px; font-weight: 800; cursor: pointer; z-index: 20; box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    }
+    .mb-item-comment-badge i { font-size: 11px; }
+    .mb-comment { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .mb-comment:last-child { border-bottom: none; }
+    .mb-comment.resolved { opacity: .5; }
+    .mb-comment-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--azul); color: var(--celeste); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+    .mb-comment-body { flex: 1; min-width: 0; }
+    .mb-comment-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+    .mb-comment-author { font-size: 12.5px; font-weight: 800; color: var(--ink); }
+    .mb-comment-time { font-size: 10.5px; color: var(--ink3); font-weight: 600; }
+    .mb-comment-text { font-size: 12.5px; color: var(--ink2); line-height: 1.5; word-break: break-word; margin-bottom: 5px; }
+    .mb-comment-actions { display: flex; gap: 12px; }
+    .mb-comment-actions button { background: none; border: none; padding: 0; font-size: 11px; font-weight: 700; color: var(--ink3); cursor: pointer; font-family: inherit; }
+    .mb-comment-actions button:hover { text-decoration: underline; }
+    .mb-comment-input-row { margin-top: 8px; }
     .mb-prop-empty span { font-size: 12px; line-height: 1.6; }
 
     /* ── Moodboard: cards del lienzo, más premium ── */
@@ -1581,7 +1602,7 @@
           <div id="mb-properties-panel">
             <div id="mb-properties-tabs">
               <button class="mb-prop-tab active" data-tab="props" onclick="setMbPropTab('props')">Propiedades</button>
-              <button class="mb-prop-tab" data-tab="comments" onclick="setMbPropTab('comments')" disabled title="Próximamente">Comentarios</button>
+              <button class="mb-prop-tab" data-tab="comments" onclick="setMbPropTab('comments')">Comentarios <span id="mb-comments-count"></span></button>
             </div>
             <div id="mb-properties-body"></div>
           </div>
@@ -12213,7 +12234,7 @@ if (id) {
     workspace.style.display = 'flex'
     toolbar.style.display = 'flex'
 
-    await Promise.all([loadMoodboardItems(), loadMoodboardConnections()])
+    await Promise.all([loadMoodboardItems(), loadMoodboardConnections(), loadMoodboardComments()])
     renderMbCanvas()
     initMbCanvasEvents()
     setMbTool('select')
@@ -12752,9 +12773,14 @@ if (id) {
         : ''
       const anchors = ['top','right','bottom','left'].map(side => `<div class="mb-anchor ${side}" data-side="${side}"></div>`).join('')
       const lockIcon = item.locked ? '<div class="mb-item-lock-badge"><i class="ti ti-lock"></i></div>' : ''
+      const nComentarios = mbCommentsForItem(item.id, true).length
+      const commentBadge = nComentarios > 0
+        ? `<button class="mb-item-comment-badge" onclick="event.stopPropagation();selectMbItem('${item.id}');setMbPropTab('comments')" title="${nComentarios} comentario${nComentarios!==1?'s':''}"><i class="ti ti-message-circle"></i>${nComentarios}</button>`
+        : ''
       return `<div class="mb-item ${extraClass} ${isSelected?'selected':''} ${item.locked?'locked':''}" data-id="${item.id}" style="left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;z-index:${item.z_index};background:${outerBg};${extraStyle}" onclick="event.stopPropagation();selectMbItem('${item.id}')">
         ${tituloLabel}
         ${lockIcon}
+        ${commentBadge}
         <button class="mb-item-move" title="Mover"><i class="ti ti-arrows-move"></i></button>
         <button class="mb-item-delete" onclick="event.stopPropagation();deleteMbItem('${item.id}')" title="Eliminar"><i class="ti ti-x"></i></button>
         <div class="mb-item-toolbar">
@@ -12893,7 +12919,6 @@ if (id) {
   let mbPropTab = 'props'
 
   window.setMbPropTab = function(tab) {
-    if (tab === 'comments') return // preparado, todavía sin sistema de comentarios real
     mbPropTab = tab
     document.querySelectorAll('.mb-prop-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
     renderMbPropertiesPanel()
@@ -12910,6 +12935,15 @@ if (id) {
       return
     }
     panel.classList.add('open')
+
+    const totalComentarios = mbCommentsForItem(item.id).length
+    const countEl = document.getElementById('mb-comments-count')
+    if (countEl) countEl.textContent = totalComentarios > 0 ? totalComentarios : ''
+
+    if (mbPropTab === 'comments') {
+      renderMbCommentsTab(item)
+      return
+    }
 
     const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco' }
 
@@ -13135,6 +13169,99 @@ if (id) {
     renderMbCanvas()
     renderMbPropertiesPanel()
     await supabase.from('moodboard_items').update({ [field]: value }).eq('id', id)
+  }
+
+  // ── Comentarios por elemento ────────────────────────────
+  let mbComments = []
+
+  async function loadMoodboardComments() {
+    const { data } = await supabase
+      .from('moodboard_comments')
+      .select('*')
+      .eq('moodboard_id', currentMoodboardId)
+      .order('created_at', { ascending: true })
+    mbComments = data || []
+  }
+
+  function mbCommentsForItem(itemId, soloSinResolver) {
+    return mbComments.filter(c => c.item_id === itemId && (!soloSinResolver || !c.resuelto))
+  }
+
+  function mbRelativeTime(dateStr) {
+    const diff = (Date.now() - new Date(dateStr).getTime()) / 1000
+    if (diff < 60) return 'ahora'
+    if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`
+    if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`
+    return `hace ${Math.floor(diff / 86400)} d`
+  }
+
+  function mbNombreDeMiembro(memberId) {
+    const m = teamMembers.find(tm => tm.id === memberId)
+    if (!m) return 'Alguien'
+    return ((m.profiles?.nombre || '') + ' ' + (m.profiles?.apellido || '')).trim() || 'Sin nombre'
+  }
+
+  function renderMbCommentsTab(item) {
+    const body = document.getElementById('mb-properties-body')
+    const comentarios = mbCommentsForItem(item.id)
+
+    const listHTML = comentarios.length === 0
+      ? `<div class="mb-prop-empty"><i class="ti ti-message-circle"></i><span>Todavía no hay comentarios en este elemento. Escribí el primero abajo.</span></div>`
+      : comentarios.map(c => {
+          const nombre = mbNombreDeMiembro(c.author_id)
+          return `<div class="mb-comment ${c.resuelto ? 'resolved' : ''}">
+            <div class="mb-comment-avatar">${nombre.charAt(0).toUpperCase()}</div>
+            <div class="mb-comment-body">
+              <div class="mb-comment-head">
+                <span class="mb-comment-author">${nombre}</span>
+                <span class="mb-comment-time">${mbRelativeTime(c.created_at)}</span>
+              </div>
+              <div class="mb-comment-text">${(c.mensaje || '').replace(/</g, '&lt;')}</div>
+              <div class="mb-comment-actions">
+                <button onclick="toggleMbCommentResolved('${c.id}')">${c.resuelto ? 'Reabrir' : 'Resolver'}</button>
+                <button onclick="deleteMbComment('${c.id}')" style="color:var(--danger)">Eliminar</button>
+              </div>
+            </div>
+          </div>`
+        }).join('')
+
+    body.innerHTML = `
+      <div id="mb-comments-list">${listHTML}</div>
+      <div class="mb-comment-input-row">
+        <textarea id="mb-comment-input" class="mb-prop-textarea" placeholder="Escribí un comentario..." rows="2"></textarea>
+        <button class="tbtn primary" style="width:100%;justify-content:center;margin-top:8px" onclick="postMbComment('${item.id}')">Comentar</button>
+      </div>
+    `
+  }
+
+  window.postMbComment = async function(itemId) {
+    const input = document.getElementById('mb-comment-input')
+    const mensaje = input.value.trim()
+    if (!mensaje) return
+    const myMember = teamMembers.find(m => m.user_id === currentUserId)
+    const payload = { item_id: itemId, moodboard_id: currentMoodboardId, agency_id: agencyId, author_id: myMember?.id || null, mensaje }
+    const { data, error } = await supabase.from('moodboard_comments').insert(payload).select('*').single()
+    if (error) { showToast('Error: ' + error.message); return }
+    mbComments.push(data)
+    renderMbPropertiesPanel()
+    renderMbCanvas()
+  }
+
+  window.toggleMbCommentResolved = async function(id) {
+    const c = mbComments.find(x => x.id === id)
+    if (!c) return
+    c.resuelto = !c.resuelto
+    renderMbPropertiesPanel()
+    renderMbCanvas()
+    await supabase.from('moodboard_comments').update({ resuelto: c.resuelto }).eq('id', id)
+  }
+
+  window.deleteMbComment = async function(id) {
+    if (!confirm('¿Eliminar este comentario?')) return
+    await supabase.from('moodboard_comments').delete().eq('id', id)
+    mbComments = mbComments.filter(c => c.id !== id)
+    renderMbPropertiesPanel()
+    renderMbCanvas()
   }
 
   // ══════════════════════════════════════
