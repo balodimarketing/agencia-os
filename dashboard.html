@@ -658,6 +658,21 @@
     .mb-share-role-row .mb-share-input { flex: 1; }
     .mb-share-send-btn { width: 38px; height: 38px; border-radius: 10px; border: none; background: var(--ink3); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; cursor: not-allowed; }
 
+    /* ── Diálogos de confirmar / preguntar (reemplazan a los nativos del navegador) ── */
+    .fc-dialog { padding: 28px; text-align: center; }
+    .fc-dialog-icon { width: 52px; height: 52px; border-radius: 16px; background: var(--celeste-dim); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px; }
+    .fc-dialog-icon.danger { background: #FEF2F2; color: #EF4444; }
+    .fc-dialog-title { font-size: 16px; font-weight: 900; color: var(--ink); letter-spacing: -.3px; margin-bottom: 6px; }
+    .fc-dialog-message { font-size: 12.5px; color: var(--ink3); line-height: 1.6; margin-bottom: 20px; }
+    .fc-dialog-input { width: 100%; height: 42px; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 13.5px; font-family: inherit; color: var(--ink); outline: none; margin: 4px 0 20px; box-sizing: border-box; text-align: left; }
+    .fc-dialog-input:focus { border-color: var(--celeste); }
+    .fc-dialog-actions { display: flex; gap: 8px; }
+    .fc-dialog-btn { flex: 1; height: 42px; border-radius: 12px; border: none; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; transition: opacity var(--t); }
+    .fc-dialog-btn:hover { opacity: .88; }
+    .fc-dialog-btn.cancel { background: var(--bg); color: var(--ink2); }
+    .fc-dialog-btn.primary { background: var(--azul); color: var(--celeste); }
+    .fc-dialog-btn.danger { background: #EF4444; color: #fff; }
+
     .mb-share-switch { position: relative; display: inline-block; width: 40px; height: 24px; flex-shrink: 0; }
     .mb-share-switch input { opacity: 0; width: 0; height: 0; }
     .mb-share-switch-track { position: absolute; inset: 0; background: var(--border); border-radius: 20px; cursor: pointer; transition: background var(--t); }
@@ -12316,8 +12331,9 @@ if (id) {
       .select('id', { count: 'exact', head: true })
       .eq('board_id', boardId)
 
-    const cardsMsg = count > 0 ? `Este tablero tiene ${count} card${count!==1?'s':''} que se van a archivar junto con él.\n\n` : ''
-    if (!confirm(`${cardsMsg}¿Eliminar el tablero "${boardNombre}"?`)) return
+    const cardsMsg = count > 0 ? `Este tablero tiene ${count} card${count!==1?'s':''} que se van a archivar junto con él.` : ''
+    const ok = await mbConfirmModal({ title: `¿Eliminar el tablero "${boardNombre}"?`, message: cardsMsg })
+    if (!ok) return
 
     const { error } = await supabase.from('piece_boards').update({ archived: true }).eq('id', boardId)
     if (error) { showToast('Error al eliminar: ' + error.message); return }
@@ -12330,7 +12346,7 @@ if (id) {
   // ── Columnas: agregar / renombrar / eliminar ───────────
   window.promptAddStage = async function() {
     if (!currentBoardId) return
-    const nombre = prompt('Nombre de la nueva columna:')
+    const nombre = await mbPromptModal({ title: 'Nueva columna', placeholder: 'Nombre de la columna', confirmText: 'Crear' })
     if (!nombre || !nombre.trim()) return
     const color = TB_STAGE_COLORS[boardStages.length % TB_STAGE_COLORS.length]
     const { error } = await supabase.from('piece_board_stages').insert({ board_id: currentBoardId, nombre: nombre.trim(), color, orden: boardStages.length })
@@ -12341,7 +12357,7 @@ if (id) {
   }
 
   window.renameStage = async function(stageId, nombreActual) {
-    const nuevo = prompt('Renombrar columna:', nombreActual)
+    const nuevo = await mbPromptModal({ title: 'Renombrar columna', defaultValue: nombreActual, confirmText: 'Guardar' })
     if (!nuevo || !nuevo.trim() || nuevo.trim() === nombreActual) return
     const stage = boardStages.find(s => s.id === stageId)
     if (stage) stage.nombre = nuevo.trim()
@@ -12355,7 +12371,8 @@ if (id) {
       showToast(`Movés o eliminás las ${cardsEnColumna.length} card(s) de "${stageNombre}" antes de borrar la columna`)
       return
     }
-    if (!confirm(`¿Eliminar la columna "${stageNombre}"?`)) return
+    const ok = await mbConfirmModal({ title: `¿Eliminar la columna "${stageNombre}"?` })
+    if (!ok) return
     const { error } = await supabase.from('piece_board_stages').delete().eq('id', stageId)
     if (error) { showToast('Error: ' + error.message); return }
     await loadBoardStages()
@@ -12514,7 +12531,8 @@ if (id) {
 
   window.deleteTbCard = async function() {
     if (!tbCardEditingId) return
-    if (!confirm('¿Eliminar esta card?')) return
+    const ok = await mbConfirmModal({ title: '¿Eliminar esta card?' })
+    if (!ok) return
     const { error } = await supabase.from('piece_board_cards').delete().eq('id', tbCardEditingId)
     if (error) { showToast('Error: ' + error.message); return }
     closeTbCardModal()
@@ -12720,8 +12738,9 @@ if (id) {
     const dd = document.getElementById('moodboard-dropdown')
     if (dd) dd.classList.remove('show')
     const { count } = await supabase.from('moodboard_items').select('id', { count: 'exact', head: true }).eq('moodboard_id', id)
-    const msg = count > 0 ? `Este moodboard tiene ${count} elemento${count!==1?'s':''} que se van a borrar con él.\n\n` : ''
-    if (!confirm(`${msg}¿Eliminar el moodboard "${nombre}"?`)) return
+    const msg = count > 0 ? `Este moodboard tiene ${count} elemento${count!==1?'s':''} que se van a borrar con él.` : ''
+    const ok = await mbConfirmModal({ title: `¿Eliminar el moodboard "${nombre}"?`, message: msg })
+    if (!ok) return
     await supabase.from('moodboard_items').delete().eq('moodboard_id', id)
     const { error } = await supabase.from('moodboards').update({ archived: true }).eq('id', id)
     if (error) { showToast('Error: ' + error.message); return }
@@ -12740,14 +12759,14 @@ if (id) {
     }
   }
 
-  window.setMbTool = function(tool) {
+  window.setMbTool = async function(tool) {
     if (tool === 'imagen') {
       mbPendingImagePos = mbViewportCenterCanvasCoords()
       document.getElementById('mb-image-input').click()
       return
     }
     if (tool === 'link') {
-      const url = prompt('Pegá un link (YouTube, Vimeo, o cualquier otro) — o dejalo vacío para subir un archivo de video')
+      const url = await mbPromptModal({ title: 'Agregar link o video', message: 'Pegá un link (YouTube, Vimeo, o cualquier otro) — o dejalo vacío para subir un archivo de video.', placeholder: 'https://...', confirmText: 'Agregar' })
       if (url === null) return // cancelado
       if (!url.trim()) {
         mbPendingVideoPos = mbViewportCenterCanvasCoords()
@@ -12769,6 +12788,61 @@ if (id) {
   window.mbResetZoom = function() { mbZoom = 1; mbPanX = 60; mbPanY = 180; applyMbTransform() }
 
   // ── Modo presentación: solo lectura, para mostrarle el moodboard a alguien ──
+  // ── Modales propios de confirmar / preguntar (reemplazan a confirm()/prompt() nativos) ──
+  function mbConfirmModal({ title, message, confirmText = 'Eliminar', cancelText = 'Cancelar', danger = true }) {
+    return new Promise(resolve => {
+      const existing = document.getElementById('modal-fc-dialog')
+      if (existing) existing.remove()
+      const m = document.createElement('div')
+      m.id = 'modal-fc-dialog'
+      m.className = 'modal-overlay show'
+      m.innerHTML = `<div class="modal" style="max-width:380px"><div class="fc-dialog">
+        <div class="fc-dialog-icon ${danger ? 'danger' : ''}"><i class="ti ${danger ? 'ti-trash' : 'ti-help-circle'}"></i></div>
+        <div class="fc-dialog-title">${title}</div>
+        ${message ? `<div class="fc-dialog-message">${message}</div>` : ''}
+        <div class="fc-dialog-actions">
+          <button class="fc-dialog-btn cancel" id="fc-dialog-cancel">${cancelText}</button>
+          <button class="fc-dialog-btn ${danger ? 'danger' : 'primary'}" id="fc-dialog-ok">${confirmText}</button>
+        </div>
+      </div></div>`
+      document.body.appendChild(m)
+      const done = result => { m.remove(); resolve(result) }
+      document.getElementById('fc-dialog-cancel').onclick = () => done(false)
+      document.getElementById('fc-dialog-ok').onclick = () => done(true)
+      m.onclick = e => { if (e.target === m) done(false) }
+    })
+  }
+
+  function mbPromptModal({ title, message = '', defaultValue = '', placeholder = '', confirmText = 'Guardar' }) {
+    return new Promise(resolve => {
+      const existing = document.getElementById('modal-fc-dialog')
+      if (existing) existing.remove()
+      const m = document.createElement('div')
+      m.id = 'modal-fc-dialog'
+      m.className = 'modal-overlay show'
+      m.innerHTML = `<div class="modal" style="max-width:380px"><div class="fc-dialog">
+        <div class="fc-dialog-title">${title}</div>
+        ${message ? `<div class="fc-dialog-message">${message}</div>` : ''}
+        <input class="fc-dialog-input" id="fc-dialog-input" value="${(defaultValue || '').replace(/"/g, '&quot;')}" placeholder="${placeholder}">
+        <div class="fc-dialog-actions">
+          <button class="fc-dialog-btn cancel" id="fc-dialog-cancel">Cancelar</button>
+          <button class="fc-dialog-btn primary" id="fc-dialog-ok">${confirmText}</button>
+        </div>
+      </div></div>`
+      document.body.appendChild(m)
+      const input = document.getElementById('fc-dialog-input')
+      setTimeout(() => { input.focus(); input.select() }, 60)
+      const done = result => { m.remove(); resolve(result) }
+      document.getElementById('fc-dialog-cancel').onclick = () => done(null)
+      document.getElementById('fc-dialog-ok').onclick = () => done(input.value)
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') done(input.value)
+        if (e.key === 'Escape') done(null)
+      })
+      m.onclick = e => { if (e.target === m) done(null) }
+    })
+  }
+
   window.mbShareMoodboard = function() {
     if (!currentMoodboardId) return
     const board = MOODBOARDS.find(b => b.id === currentMoodboardId)
@@ -13218,14 +13292,14 @@ if (id) {
     return moodboardItems.length === 0 ? 2 : Math.max(...moodboardItems.map(i => i.z_index || 0)) + 1
   }
 
-  window.addMbItemAt = function(tool, x, y) {
+  window.addMbItemAt = async function(tool, x, y) {
     if (tool === 'imagen') {
       mbPendingImagePos = { x, y }
       document.getElementById('mb-image-input').click()
       return
     }
     if (tool === 'link') {
-      const url = prompt('Pegá el link (imagen/video de YouTube, Vimeo, archivo de video, o cualquier otro link):')
+      const url = await mbPromptModal({ title: 'Agregar link', message: 'Imagen o video de YouTube, Vimeo, archivo de video, o cualquier otro link.', placeholder: 'https://...', confirmText: 'Agregar' })
       if (!url || !url.trim()) return
       createMbItem({ tipo: 'link', url: url.trim(), x, y, width: 280, height: 190, color: '#0A2540' })
       setMbTool('select')
@@ -13242,7 +13316,7 @@ if (id) {
       return
     }
     if (tool === 'marco') {
-      const titulo = prompt('Nombre del marco (opcional):', 'Marco')
+      const titulo = await mbPromptModal({ title: 'Nombre del marco', defaultValue: 'Marco', confirmText: 'Crear' })
       createMbItem({ tipo: 'marco', titulo: (titulo || 'Marco'), x, y, width: 420, height: 320, color: '#94A3B8', z_index: 0 })
       setMbTool('select')
       return
@@ -13604,7 +13678,8 @@ if (id) {
   }
 
   window.deleteMbItem = async function(id) {
-    if (!confirm('¿Eliminar este elemento del moodboard?')) return
+    const ok = await mbConfirmModal({ title: '¿Eliminar este elemento del moodboard?' })
+    if (!ok) return
     await supabase.from('moodboard_items').delete().eq('id', id)
     moodboardItems = moodboardItems.filter(i => i.id !== id)
     mbConnections = mbConnections.filter(c => c.from_item_id !== id && c.to_item_id !== id)
@@ -13726,7 +13801,7 @@ if (id) {
   window.promptRenameMoodboard = async function() {
     const board = MOODBOARDS.find(b => b.id === currentMoodboardId)
     if (!board) return
-    const nuevo = prompt('Nombre del moodboard:', board.nombre)
+    const nuevo = await mbPromptModal({ title: 'Renombrar moodboard', defaultValue: board.nombre, confirmText: 'Guardar' })
     if (!nuevo || !nuevo.trim() || nuevo.trim() === board.nombre) return
     board.nombre = nuevo.trim()
     renderMoodboardSelectorLabel()
@@ -14111,7 +14186,8 @@ if (id) {
   }
 
   window.deleteMbComment = async function(id) {
-    if (!confirm('¿Eliminar este comentario?')) return
+    const ok = await mbConfirmModal({ title: '¿Eliminar este comentario?' })
+    if (!ok) return
     await supabase.from('moodboard_comments').delete().eq('id', id)
     mbComments = mbComments.filter(c => c.id !== id)
     renderMbPropertiesPanel()
