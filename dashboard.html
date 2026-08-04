@@ -499,6 +499,7 @@
     .mb-texto { padding: 8px; font-size: 20px; font-weight: 800; line-height: 1.3; color: var(--ink); overflow-y: auto; height: 100%; box-sizing: border-box; cursor: text; outline: none; background: transparent; }
     .mb-marco { box-shadow: none !important; }
     .mb-marco-label { position: absolute; top: -22px; left: 0; font-size: 11px; font-weight: 800; color: var(--ink2); background: #EEF1F5; padding: 1px 8px; border-radius: 6px; }
+    .mb-etiqueta-badge { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,.18); z-index: 3; letter-spacing: .2px; }
     .mb-link-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; padding: 16px; text-align: center; background: var(--bg); }
     .mb-link-card i { font-size: 26px; color: var(--ink3); }
     .mb-link-card .mb-link-domain { font-size: 11px; font-weight: 700; color: var(--ink2); word-break: break-all; }
@@ -569,7 +570,7 @@
     #moodboard-dropdown {
       display: none; position: absolute; top: 50px; right: 0; width: 280px; background: #fff;
       border: 1px solid var(--border); border-radius: 16px; padding: 10px; box-shadow: var(--shadow-lg);
-      max-height: 380px; display: flex; flex-direction: column;
+      max-height: 380px; flex-direction: column;
     }
     #moodboard-dropdown.show { display: flex; }
     #moodboard-search-wrap {
@@ -680,6 +681,20 @@
     .mb-prop-colors { display: flex; gap: 8px; flex-wrap: wrap; }
     .mb-prop-color-dot { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
     .mb-prop-color-dot.active { border-color: var(--ink); }
+    .mb-etiqueta-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .mb-etiqueta-preset {
+      display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 20px;
+      border: 1px solid var(--border); background: #fff; font-size: 11px; font-weight: 700; color: var(--ink2);
+      cursor: pointer; font-family: inherit; transition: all .15s;
+    }
+    .mb-etiqueta-preset::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--dot); flex-shrink: 0; }
+    .mb-etiqueta-preset:hover { border-color: var(--dot); }
+    .mb-etiqueta-preset.active { background: var(--dot); border-color: var(--dot); color: #fff; }
+    .mb-etiqueta-custom-row { display: flex; gap: 6px; align-items: center; }
+    .mb-etiqueta-color-swatch { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; cursor: pointer; position: relative; overflow: hidden; }
+    .mb-etiqueta-color-swatch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .mb-etiqueta-clear { margin-top: 8px; background: none; border: none; color: var(--ink3); font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0; }
+    .mb-etiqueta-clear:hover { color: var(--danger); }
     .mb-prop-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 16px; color: var(--ink3); text-align: center; }
     .mb-prop-empty i { font-size: 30px; opacity: .4; }
     .mb-prop-empty span { font-size: 12px; line-height: 1.6; }
@@ -12700,6 +12715,9 @@ if (id) {
       const colorBtn = (item.tipo === 'nota' || item.tipo === 'marco')
         ? `<button onclick="event.stopPropagation();document.getElementById('mb-color-input-${item.id}').click()" title="Cambiar color"><i class="ti ti-palette"></i></button><input type="color" id="mb-color-input-${item.id}" value="${item.color||'#FFF3B0'}" onmousedown="event.stopPropagation()" onchange="event.stopPropagation();changeMbItemColor('${item.id}', this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">`
         : ''
+      const etiquetaBadge = ((item.tipo === 'imagen' || item.tipo === 'link') && item.etiqueta)
+        ? `<div class="mb-etiqueta-badge" style="background:${item.etiqueta_color || '#0A2540'};color:${mbBadgeTextColor(item.etiqueta_color)}">${item.etiqueta}</div>`
+        : ''
       const anchors = ['top','right','bottom','left'].map(side => `<div class="mb-anchor ${side}" data-side="${side}"></div>`).join('')
       return `<div class="mb-item ${extraClass} ${isSelected?'selected':''}" data-id="${item.id}" style="left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;z-index:${item.z_index};background:${outerBg};${extraStyle}" onclick="event.stopPropagation();selectMbItem('${item.id}')">
         <button class="mb-item-move" title="Mover"><i class="ti ti-arrows-move"></i></button>
@@ -12710,7 +12728,7 @@ if (id) {
           <button onclick="event.stopPropagation();mbBringToFront('${item.id}')" title="Traer al frente"><i class="ti ti-stack-front"></i></button>
           <button onclick="event.stopPropagation();mbSendToBack('${item.id}')" title="Enviar atrás"><i class="ti ti-stack-back"></i></button>
         </div>
-        <div class="mb-item-clip">${bodyHTML}</div>
+        <div class="mb-item-clip">${bodyHTML}${etiquetaBadge}</div>
         ${anchors}
         <div class="mb-resize-handle"></div>
       </div>`
@@ -12885,18 +12903,62 @@ if (id) {
         </div>
       </div>` : ''
 
+    const etiquetaField = (item.tipo === 'imagen' || item.tipo === 'link') ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Etiqueta</label>
+        <div class="mb-etiqueta-presets">
+          ${MB_ETIQUETA_PRESETS.map(p => `<button class="mb-etiqueta-preset ${item.etiqueta===p.nombre?'active':''}" style="--dot:${p.color}" onclick="setMbItemEtiqueta('${item.id}','${p.nombre}','${p.color}')">${p.nombre}</button>`).join('')}
+        </div>
+        <div class="mb-etiqueta-custom-row">
+          <input class="mb-prop-input" placeholder="Etiqueta personalizada" value="${item.etiqueta && !MB_ETIQUETA_PRESETS.find(p=>p.nombre===item.etiqueta) ? item.etiqueta.replace(/"/g,'&quot;') : ''}" onchange="setMbItemEtiqueta('${item.id}', this.value, '${item.etiqueta_color || '#0A2540'}')" style="flex:1">
+          <label class="mb-etiqueta-color-swatch" style="background:${item.etiqueta_color || '#0A2540'}">
+            <input type="color" value="${item.etiqueta_color || '#0A2540'}" onchange="setMbItemEtiqueta('${item.id}', '${(item.etiqueta||'').replace(/'/g,"\\'")}', this.value)">
+          </label>
+        </div>
+        ${item.etiqueta ? `<button class="mb-etiqueta-clear" onclick="setMbItemEtiqueta('${item.id}', null, null)">Quitar etiqueta</button>` : ''}
+      </div>` : ''
+
     body.innerHTML = `
       ${previewHTML}
       <div class="mb-prop-field">
         <label class="mb-prop-label">Tipo</label>
         <div style="font-size:13px;font-weight:700;color:var(--ink2)">${tipoLabels[item.tipo] || item.tipo}</div>
       </div>
+      ${etiquetaField}
       ${tituloField}
       ${urlField}
       ${textoField}
       ${colorField}
       <button class="mb-prop-delete" onclick="deleteMbItem('${item.id}')"><i class="ti ti-trash"></i> Eliminar elemento</button>
     `
+  }
+
+  const MB_ETIQUETA_PRESETS = [
+    { nombre: 'Reel', color: '#EC4899' },
+    { nombre: 'Carrusel', color: '#3B82F6' },
+    { nombre: 'Publicación', color: '#10B981' },
+    { nombre: 'Historia', color: '#8B5CF6' },
+    { nombre: 'Video', color: '#EF4444' },
+    { nombre: 'Imagen', color: '#F59E0B' },
+    { nombre: 'Otro', color: '#64748B' },
+  ]
+
+  // Decide si el texto del badge debe ser blanco o oscuro según el color de fondo
+  function mbBadgeTextColor(hex) {
+    if (!hex) return '#fff'
+    const c = hex.replace('#', '')
+    const r = parseInt(c.substring(0,2), 16), g = parseInt(c.substring(2,4), 16), b = parseInt(c.substring(4,6), 16)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.6 ? '#111827' : '#fff'
+  }
+
+  window.setMbItemEtiqueta = async function(id, etiqueta, color) {
+    const item = moodboardItems.find(i => i.id === id)
+    const nombre = (etiqueta || '').trim() || null
+    if (item) { item.etiqueta = nombre; item.etiqueta_color = nombre ? color : null }
+    renderMbCanvas()
+    renderMbPropertiesPanel()
+    await supabase.from('moodboard_items').update({ etiqueta: nombre, etiqueta_color: nombre ? color : null }).eq('id', id)
   }
 
   window.updateMbItemField = async function(id, field, value) {
