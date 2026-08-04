@@ -1466,7 +1466,7 @@
       <!-- Upsell Faro Pro (solo si la agencia no es Pro/Agency todavía) -->
       <div class="rail-pro-card" id="rail-pro-card">
         <div class="rail-pro-title"><i class="ti ti-sparkles"></i> Faro Pro</div>
-        <div class="rail-pro-desc">Automatizaciones, IA y reportes avanzados.</div>
+        <div class="rail-pro-desc">CRM, reportes, presupuestos y contratos.</div>
         <button class="rail-pro-btn" onclick="handleOpenProfile()">Actualizar plan <i class="ti ti-arrow-right"></i></button>
       </div>
 
@@ -4863,7 +4863,7 @@
         <div style="font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Plan actual</div>
         <div style="border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
           <div id="profile-plan-name" style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Free</div>
-          <div id="profile-plan-desc" style="font-size:10px;color:var(--ink3);margin-top:3px">3 clientes · 2 miembros</div>
+          <div id="profile-plan-desc" style="font-size:10px;color:var(--ink3);margin-top:3px">2 clientes · 1 miembro</div>
         </div>
         <button id="btn-upgrade-plan" onclick="closeProfileModal();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))" style="width:100%;padding:9px;background:var(--azul);color:var(--celeste);border:none;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;display:none">Mejorar plan →</button>
       </div>
@@ -7489,7 +7489,7 @@
 
     // Plan info
     const planNombre = agencyPlan === 'pro' ? 'Pro' : agencyPlan === 'agency' ? 'Agency' : 'Free'
-    const planDesc = agencyPlan === 'pro' ? 'Ilimitado' : agencyPlan === 'agency' ? 'Múltiples agencias' : '3 clientes · 2 miembros'
+    const planDesc = agencyPlan === 'pro' ? 'Ilimitado' : agencyPlan === 'agency' ? 'Múltiples agencias' : '2 clientes · 1 miembro'
     const planEl = document.getElementById('profile-plan-name')
     const planDescEl = document.getElementById('profile-plan-desc')
     const upgradeBtn = document.getElementById('btn-upgrade-plan')
@@ -15186,8 +15186,9 @@ if (id) {
   // ══════════════════════════════════════
 
   const PLAN_LIMITS = {
-    free: { clientes: 3, miembros: 2 },
-    pro:  { clientes: Infinity, miembros: Infinity },
+    free:   { clientes: 2, miembros: 1 },
+    pro:    { clientes: Infinity, miembros: Infinity },
+    agency: { clientes: Infinity, miembros: Infinity },
   }
 
   function isPro() { return agencyPlan === 'pro' || agencyPlan === 'agency' }
