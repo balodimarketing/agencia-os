@@ -35,16 +35,16 @@
 
     html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow: hidden; }
 
-    /* Luces de color de fondo en toda la página, con la paleta de Faro, para que no se pierda entre tanto blanco */
+    /* Luces de color de fondo en toda la página, con la paleta de Faro (azules), para que no se pierda entre tanto blanco */
     .app::before {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
       background:
-        radial-gradient(circle at 6% 8%,   rgba(142,219,255,.32) 0%, transparent 24%),
-        radial-gradient(circle at 8% 62%,  rgba(168,85,247,.16)  0%, transparent 26%),
-        radial-gradient(circle at 4% 96%,  rgba(110,123,255,.18) 0%, transparent 26%),
-        radial-gradient(circle at 94% 6%,  rgba(142,219,255,.20) 0%, transparent 26%),
-        radial-gradient(circle at 97% 55%, rgba(168,85,247,.14)  0%, transparent 28%),
-        radial-gradient(circle at 90% 98%, rgba(110,123,255,.16) 0%, transparent 28%);
+        radial-gradient(circle at 6% 8%,   rgba(142,219,255,.34) 0%, transparent 24%),
+        radial-gradient(circle at 8% 62%,  rgba(59,130,246,.18)  0%, transparent 26%),
+        radial-gradient(circle at 4% 96%,  rgba(14,165,233,.20)  0%, transparent 26%),
+        radial-gradient(circle at 94% 6%,  rgba(142,219,255,.22) 0%, transparent 26%),
+        radial-gradient(circle at 97% 55%, rgba(59,130,246,.16)  0%, transparent 28%),
+        radial-gradient(circle at 90% 98%, rgba(14,165,233,.18)  0%, transparent 28%);
     }
     .rail { position: relative; }
 
@@ -1362,7 +1362,7 @@
     </div>
 
     <!-- INICIO -->
-    <div class="view active" id="v-inicio" style="padding:32px 32px 48px;background:#F5F7FA"><div style="max-width:1200px;margin:0 auto;width:100%">
+    <div class="view active" id="v-inicio" style="padding:32px 32px 48px"><div style="max-width:1200px;margin:0 auto;width:100%">
 
       <!-- Skeleton loader -->
       <div id="inicio-skeleton">
@@ -1642,7 +1642,7 @@
       </div>
 
       <!-- TAREAS -->
-      <div class="content-subview" id="sv-tareas" style="padding:32px;overflow-y:auto;background:#F5F7FA;max-width:1400px;margin:0 auto;width:100%">
+      <div class="content-subview" id="sv-tareas" style="padding:32px;overflow-y:auto;max-width:1400px;margin:0 auto;width:100%">
 
         <!-- Hero -->
         <div style="background:linear-gradient(135deg,#FFFFFF,#F7FCFF);border:1px solid #E8EDF3;border-radius:20px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;min-height:126px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
@@ -2058,7 +2058,7 @@
 
       </div>
       <!-- Vista: lista de clientes con reportes — REDISEÑADA -->
-      <div id="rep-home" style="padding:32px;max-width:1400px;margin:0 auto;background:#F5F7FA;min-height:100%">
+      <div id="rep-home" style="padding:32px;max-width:1400px;margin:0 auto;min-height:100%">
 
         <!-- Hero -->
         <div style="background:#fff;border:1px solid #E8EDF3;border-radius:20px;padding:32px 40px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(10,37,64,.04),0 16px 40px rgba(10,37,64,.05)">
@@ -2144,7 +2144,7 @@
       </div>
 
       <!-- Vista: detalle cliente con selector de mes y piezas -->
-      <div id="rep-months" style="display:none;padding:32px;max-width:1400px;margin:0 auto;background:#F5F7FA;min-height:100%">
+      <div id="rep-months" style="display:none;padding:32px;max-width:1400px;margin:0 auto;min-height:100%">
 
         <!-- Nav back -->
         <button onclick="repGoHome()" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:#8B98A9;font-size:13px;font-weight:600;margin-bottom:24px;padding:0;transition:color .15s" onmouseover="this.style.color='#0A2540'" onmouseout="this.style.color='#8B98A9'">
@@ -2202,7 +2202,7 @@
     </div><!-- fin v-reportes -->
 
     <!-- CRM -->
-    <div class="view flex-view" id="v-crm" style="padding:0;flex-direction:column;height:100vh;overflow:hidden;background:#F5F7FA">
+    <div class="view flex-view" id="v-crm" style="padding:0;flex-direction:column;height:100vh;overflow:hidden">
 
       <!-- CRM: Vista Pipeline (default) -->
       <div id="crm-pipeline-view" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
@@ -2356,7 +2356,7 @@
     <div class="view" id="v-herramientas" style="padding:0;overflow-y:auto">
 
       <!-- Vista: grid de herramientas -->
-      <div id="tools-home" style="padding:32px;max-width:1400px;margin:0 auto;background:#F5F7FA;min-height:100%">
+      <div id="tools-home" style="padding:32px;max-width:1400px;margin:0 auto;min-height:100%">
 
         <!-- ── Hero ── -->
         <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:stretch;margin-bottom:32px">
