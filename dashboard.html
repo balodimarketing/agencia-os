@@ -718,12 +718,26 @@
     #mb-timer-controls button:hover { background: var(--border); }
     #mb-timer-toggle-btn { background: var(--azul) !important; color: var(--celeste) !important; }
 
-    /* ── Card de audio ── */
-    .mb-audio-card { display: flex; align-items: center; gap: 10px; height: 100%; padding: 0 14px; background: #fff; }
-    .mb-audio-play-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--azul); color: var(--celeste); display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; flex-shrink: 0; }
-    .mb-audio-info { flex: 1; min-width: 0; }
-    .mb-audio-title { font-size: 12px; font-weight: 800; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mb-audio-sub { font-size: 10px; color: var(--ink3); font-weight: 600; }
+    /* ── Reproductor de música de fondo ── */
+    #mb-music-widget {
+      display: none; position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%); z-index: 60;
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg);
+    }
+    #mb-music-widget.show { display: block; }
+    #mb-music-empty { padding: 6px; }
+    #mb-music-empty button { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: var(--bg); color: var(--ink2); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    #mb-music-empty button:hover { background: var(--border); }
+    #mb-music-loaded { display: flex; align-items: center; gap: 8px; padding: 8px 10px; position: relative; }
+    #mb-music-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--celeste-dim); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    #mb-music-info { min-width: 0; max-width: 130px; }
+    #mb-music-title { font-size: 12px; font-weight: 800; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #mb-music-sub { font-size: 10px; color: var(--ink3); font-weight: 600; }
+    #mb-music-loaded button { width: 30px; height: 30px; border-radius: 8px; border: none; background: var(--bg); color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    #mb-music-loaded button:hover { background: var(--border); }
+    #mb-music-toggle-btn { background: var(--azul) !important; color: var(--celeste) !important; }
+    #mb-music-vol-row { display: none; position: absolute; bottom: calc(100% + 6px); right: 10px; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 10px 8px; }
+    #mb-music-vol-row.show { display: block; }
+    #mb-music-vol-row input { width: 90px; }
 
 
     #mb-connections-svg { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; overflow: visible; }
@@ -1855,12 +1869,19 @@
               <button class="mb-side-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Link o video"><i class="ti ti-brand-youtube"></i></button>
               <button class="mb-side-tool-btn" data-tool="marco" onclick="setMbTool('marco')" title="Marco"><i class="ti ti-frame"></i></button>
               <button class="mb-side-tool-btn" data-tool="forma" onclick="setMbTool('forma')" title="Forma"><i class="ti ti-shape"></i></button>
-              <button class="mb-side-tool-btn" onclick="setMbTool('audio')" title="Audio"><i class="ti ti-music"></i></button>
+              <button class="mb-side-tool-btn" onclick="toggleMbMusicWidget()" title="Música de fondo" id="mb-music-btn"><i class="ti ti-music"></i></button>
               <div class="mb-tools-pill-divider"></div>
               <div style="position:relative">
                 <button class="mb-side-tool-btn" onclick="toggleMbStampPicker(event)" title="Sello / reacción"><i class="ti ti-mood-smile"></i></button>
                 <div id="mb-stamp-picker">
-                  ${['✅','👍','⭐','❤️','🔥','👀','❌','💡'].map(e => `<button onclick="mbPlaceStamp('${e}')">${e}</button>`).join('')}
+                  <button onclick="mbPlaceStamp('✅')">✅</button>
+                  <button onclick="mbPlaceStamp('👍')">👍</button>
+                  <button onclick="mbPlaceStamp('⭐')">⭐</button>
+                  <button onclick="mbPlaceStamp('❤️')">❤️</button>
+                  <button onclick="mbPlaceStamp('🔥')">🔥</button>
+                  <button onclick="mbPlaceStamp('👀')">👀</button>
+                  <button onclick="mbPlaceStamp('❌')">❌</button>
+                  <button onclick="mbPlaceStamp('💡')">💡</button>
                 </div>
               </div>
               <button class="mb-side-tool-btn" onclick="toggleMbTimerWidget()" title="Cronómetro" id="mb-timer-btn"><i class="ti ti-clock"></i></button>
@@ -1878,8 +1899,25 @@
               </div>
             </div>
 
-            <!-- Input oculto para subir audio -->
-            <input type="file" id="mb-audio-input" accept="audio/*" style="display:none" onchange="handleMbAudioSelected(this)">
+            <!-- Reproductor de música de fondo, personal, no forma parte del contenido del moodboard -->
+            <div id="mb-music-widget">
+              <div id="mb-music-empty">
+                <button onclick="document.getElementById('mb-music-input').click()"><i class="ti ti-upload"></i> Subir canción</button>
+              </div>
+              <div id="mb-music-loaded" style="display:none">
+                <div id="mb-music-icon"><i class="ti ti-music"></i></div>
+                <div id="mb-music-info">
+                  <div id="mb-music-title">—</div>
+                  <div id="mb-music-sub">Música de fondo</div>
+                </div>
+                <button onclick="mbMusicToggle()" id="mb-music-toggle-btn"><i class="ti ti-player-play" id="mb-music-toggle-icon"></i></button>
+                <button onclick="document.getElementById('mb-music-vol-row').classList.toggle('show')" title="Volumen"><i class="ti ti-volume"></i></button>
+                <button onclick="mbMusicRemove()" title="Quitar"><i class="ti ti-x"></i></button>
+                <div id="mb-music-vol-row"><input type="range" id="mb-music-volume" min="0" max="100" value="60" oninput="mbMusicSetVolume(this.value)"></div>
+              </div>
+              <audio id="mb-music-audio-el" loop></audio>
+            </div>
+            <input type="file" id="mb-music-input" accept="audio/*" style="display:none" onchange="handleMbMusicSelected(this)">
 
             <!-- Control de zoom flotante -->
             <div id="mb-minimap-wrap">
@@ -12495,7 +12533,6 @@ if (id) {
   let mbSelectedItemId = null
   let mbPendingImagePos = null
   let mbPendingVideoPos = null
-  let mbPendingAudioPos = null
   let mbJustDragged = false
   let mbHistory = []
   let mbHistoryIndex = -1
@@ -12702,11 +12739,6 @@ if (id) {
     if (tool === 'imagen') {
       mbPendingImagePos = mbViewportCenterCanvasCoords()
       document.getElementById('mb-image-input').click()
-      return
-    }
-    if (tool === 'audio') {
-      mbPendingAudioPos = mbViewportCenterCanvasCoords()
-      document.getElementById('mb-audio-input').click()
       return
     }
     if (tool === 'link') {
@@ -13261,19 +13293,44 @@ if (id) {
     mbPendingVideoPos = null
   }
 
-  window.handleMbAudioSelected = async function(input) {
+  // ── Música de fondo: personal, no forma parte del contenido del moodboard ──
+  window.toggleMbMusicWidget = function() {
+    document.getElementById('mb-music-widget')?.classList.toggle('show')
+  }
+
+  window.handleMbMusicSelected = function(input) {
     const file = input.files[0]
-    if (!file || !mbPendingAudioPos) return
-    const ext = file.name.split('.').pop()
-    const path = `${agencyId}/mb-${Date.now()}.${ext}`
-    showToast('Subiendo audio...')
-    const { error: uploadError } = await supabase.storage.from('pieces').upload(path, file, { upsert: true })
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    const audioEl = document.getElementById('mb-music-audio-el')
+    audioEl.src = url
+    audioEl.volume = 0.6
+    document.getElementById('mb-music-title').textContent = file.name.replace(/\.[^.]+$/, '')
+    document.getElementById('mb-music-empty').style.display = 'none'
+    document.getElementById('mb-music-loaded').style.display = 'flex'
     input.value = ''
-    if (uploadError) { showToast('No se pudo subir el audio'); mbPendingAudioPos = null; return }
-    const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
-    const width = 240, height = 80
-    await createMbItem({ tipo: 'audio', archivo_url: urlData.publicUrl, titulo: file.name.replace(/\.[^.]+$/,''), x: mbPendingAudioPos.x - width/2, y: mbPendingAudioPos.y - height/2, width, height, color: '#0A2540' })
-    mbPendingAudioPos = null
+  }
+
+  window.mbMusicToggle = function() {
+    const el = document.getElementById('mb-music-audio-el')
+    const icon = document.getElementById('mb-music-toggle-icon')
+    if (!el.src) return
+    if (el.paused) { el.play(); icon.className = 'ti ti-player-pause' }
+    else { el.pause(); icon.className = 'ti ti-player-play' }
+  }
+
+  window.mbMusicSetVolume = function(val) {
+    document.getElementById('mb-music-audio-el').volume = val / 100
+  }
+
+  window.mbMusicRemove = function() {
+    const el = document.getElementById('mb-music-audio-el')
+    el.pause()
+    el.removeAttribute('src')
+    el.load()
+    document.getElementById('mb-music-loaded').style.display = 'none'
+    document.getElementById('mb-music-empty').style.display = 'flex'
+    document.getElementById('mb-music-toggle-icon').className = 'ti ti-player-play'
   }
 
   // ── Sellos / reacciones rápidas ──────────────────────────
@@ -13328,28 +13385,6 @@ if (id) {
     mbTimerSeconds = 0
     document.getElementById('mb-timer-display').textContent = '00:00:00'
     document.getElementById('mb-timer-toggle-icon').className = 'ti ti-player-play'
-  }
-
-  // ── Reproducción de audio (uno a la vez) ────────────────
-  window.mbToggleAudio = function(id) {
-    const el = document.getElementById(`mb-audio-el-${id}`)
-    const btn = document.getElementById(`mb-audio-btn-${id}`)
-    if (!el || !btn) return
-    document.querySelectorAll('audio').forEach(a => {
-      if (a.id !== `mb-audio-el-${id}` && !a.paused) {
-        a.pause()
-        const otherId = a.id.replace('mb-audio-el-', '')
-        const otherBtn = document.getElementById(`mb-audio-btn-${otherId}`)
-        if (otherBtn) otherBtn.innerHTML = '<i class="ti ti-player-play"></i>'
-      }
-    })
-    if (el.paused) { el.play(); btn.innerHTML = '<i class="ti ti-player-pause"></i>' }
-    else { el.pause(); btn.innerHTML = '<i class="ti ti-player-play"></i>' }
-  }
-
-  window.mbAudioEnded = function(id) {
-    const btn = document.getElementById(`mb-audio-btn-${id}`)
-    if (btn) btn.innerHTML = '<i class="ti ti-player-play"></i>'
   }
 
   async function createMbItem(partial) {
@@ -13438,16 +13473,6 @@ if (id) {
       } else if (item.tipo === 'stamp') {
         outerBg = 'transparent'
         bodyHTML = `<div class="mb-stamp">${item.stamp_emoji || '✅'}</div>`
-      } else if (item.tipo === 'audio') {
-        bodyHTML = `<div class="mb-audio-card">
-          <button class="mb-audio-play-btn" onclick="event.stopPropagation();mbToggleAudio('${item.id}')" id="mb-audio-btn-${item.id}"><i class="ti ti-player-play"></i></button>
-          <div class="mb-audio-info">
-            <div class="mb-audio-title">${item.titulo || 'Audio'}</div>
-            <div class="mb-audio-sub">Click para reproducir</div>
-          </div>
-          <audio id="mb-audio-el-${item.id}" src="${item.archivo_url}" onended="mbAudioEnded('${item.id}')"></audio>
-        </div>`
-        outerBg = '#fff'
       }
       const abrirBtn = (item.tipo === 'link' || (item.tipo === 'imagen' && item.url))
         ? `<button onclick="event.stopPropagation();window.open('${item.url}','_blank')" title="Abrir link"><i class="ti ti-external-link"></i></button>` : ''
@@ -13712,7 +13737,7 @@ if (id) {
       return
     }
 
-    const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco', forma: 'Forma', stamp: 'Sello', audio: 'Audio' }
+    const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco', forma: 'Forma', stamp: 'Sello' }
 
     let previewHTML = ''
     if (item.tipo === 'imagen') {
