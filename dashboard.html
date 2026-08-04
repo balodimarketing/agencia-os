@@ -35,13 +35,16 @@
 
     html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow: hidden; }
 
-    /* Manchas suaves de color detrás del rail, para que el blur del "liquid glass" tenga algo lindo que capturar */
+    /* Luces de color de fondo en toda la página, con la paleta de Faro, para que no se pierda entre tanto blanco */
     .app::before {
-      content: ''; position: fixed; top: 0; left: 0; width: 220px; height: 100vh; z-index: 0; pointer-events: none;
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(circle at 10% 12%, rgba(142,219,255,.22) 0%, transparent 32%),
-        radial-gradient(circle at 18% 78%, rgba(139,92,246,.13) 0%, transparent 34%),
-        radial-gradient(circle at 5% 45%, rgba(236,72,153,.08) 0%, transparent 30%);
+        radial-gradient(circle at 6% 8%,   rgba(142,219,255,.32) 0%, transparent 24%),
+        radial-gradient(circle at 8% 62%,  rgba(168,85,247,.16)  0%, transparent 26%),
+        radial-gradient(circle at 4% 96%,  rgba(110,123,255,.18) 0%, transparent 26%),
+        radial-gradient(circle at 94% 6%,  rgba(142,219,255,.20) 0%, transparent 26%),
+        radial-gradient(circle at 97% 55%, rgba(168,85,247,.14)  0%, transparent 28%),
+        radial-gradient(circle at 90% 98%, rgba(110,123,255,.16) 0%, transparent 28%);
     }
     .rail { position: relative; }
 
@@ -64,9 +67,9 @@
     .rail-logo { width: 38px; height: 38px; border-radius: 11px; background: var(--azul); display: flex; align-items: center; justify-content: center; margin-bottom: 4px; cursor: pointer; flex-shrink: 0; }
     .rail-logo svg { width: 22px; height: 28px; }
     .rail-sep { width: 28px; height: 1px; background: var(--border); margin: 6px 0; flex-shrink: 0; }
-    .rail-btn { width: 42px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background var(--t), color var(--t), box-shadow var(--t), transform var(--t); color: var(--ink3); position: relative; }
+    .rail-btn { width: 42px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background var(--t), color var(--t), box-shadow var(--t), transform var(--t); color: #4FA8DE; position: relative; }
     .rail-btn i { font-size: 19px; position: relative; z-index: 1; }
-    .rail-btn:hover { background: var(--bg); color: var(--azul); }
+    .rail-btn:hover { background: var(--celeste-dim); color: #1D8AC7; }
     .rail-btn.active {
       background: linear-gradient(135deg, #8EDBFF 0%, #6E7BFF 55%, #A855F7 100%);
       color: #fff;
