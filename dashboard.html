@@ -456,6 +456,15 @@
     }
     .mb-item-delete:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
+    .mb-item-lock-badge {
+      position: absolute; top: -9px; right: 18px; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--azul); color: var(--celeste); display: flex; align-items: center; justify-content: center;
+      font-size: 10px; z-index: 20; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    }
+    .mb-item.locked .mb-item-move { display: none; }
+    .mb-item.locked .mb-resize-handle { display: none !important; }
+    .mb-item.locked { cursor: default; }
+
     .mb-item-move {
       position: absolute; top: -9px; left: -9px; width: 22px; height: 22px; border-radius: 50%;
       background: var(--azul); border: 1.5px solid #fff; color: var(--celeste); cursor: grab;
@@ -664,7 +673,7 @@
       transition: width .28s cubic-bezier(.4,0,.2,1);
     }
     #mb-properties-panel.open { width: 300px; }
-    #mb-properties-tabs { display: flex; gap: 4px; padding: 74px 16px 0; flex-shrink: 0; }
+    #mb-properties-tabs { display: flex; gap: 4px; padding: 16px 16px 0; flex-shrink: 0; }
     .mb-prop-tab { padding: 8px 4px; background: none; border: none; border-bottom: 2px solid transparent; font-size: 12.5px; font-weight: 700; color: var(--ink3); cursor: pointer; font-family: inherit; margin-right: 14px; }
     .mb-prop-tab.active { color: var(--azul); border-bottom-color: var(--azul); }
     .mb-prop-tab:disabled { cursor: not-allowed; opacity: .5; }
@@ -1539,7 +1548,7 @@
             <!-- Card flotante con info del moodboard -->
             <div id="mb-header-card"></div>
 
-            <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:3000px;height:3000px;transform-origin:0 0;background-image:radial-gradient(#D7DCE5 1px,transparent 1px);background-size:22px 22px">
+            <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:3000px;height:3000px;transform-origin:0 0">
               <svg id="mb-connections-svg" width="3000" height="3000"></svg>
               <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
             </div>
@@ -12317,8 +12326,17 @@ if (id) {
   function applyMbTransform() {
     const inner = document.getElementById('mb-canvas-inner')
     if (inner) inner.style.transform = `translate(${mbPanX}px, ${mbPanY}px) scale(${mbZoom})`
+    const viewport = document.getElementById('mb-canvas-viewport')
+    if (viewport) {
+      const size = 22 * mbZoom
+      viewport.style.backgroundImage = 'radial-gradient(#D7DCE5 1px, transparent 1px)'
+      viewport.style.backgroundSize = `${size}px ${size}px`
+      viewport.style.backgroundPosition = `${mbPanX}px ${mbPanY}px`
+    }
     const label = document.getElementById('mb-zoom-label')
     if (label) label.textContent = Math.round(mbZoom * 100) + '%'
+    const label2 = document.getElementById('mb-zoom-label-2')
+    if (label2) label2.textContent = Math.round(mbZoom * 100) + '%'
   }
 
   // ── Conexiones: helpers de posición ──────────────────────
@@ -12437,12 +12455,16 @@ if (id) {
         return
       }
       if (resizeEl && itemEl) {
+        const itemData = moodboardItems.find(i => i.id === itemEl.dataset.id)
+        if (itemData?.locked) return
         resizingId = itemEl.dataset.id
         resizeStartX = e.clientX; resizeStartY = e.clientY
         resizeOrigW = itemEl.offsetWidth; resizeOrigH = itemEl.offsetHeight
         e.preventDefault(); return
       }
       if (moveEl && itemEl) {
+        const itemData = moodboardItems.find(i => i.id === itemEl.dataset.id)
+        if (itemData?.locked) return
         // Botón de mover (tipo Canva): arranca el drag al toque, sin esperar umbral de movimiento
         draggingId = itemEl.dataset.id
         dragStartX = e.clientX; dragStartY = e.clientY
@@ -12454,6 +12476,8 @@ if (id) {
         // Si está en modo edición de texto, dejar pasar el click nativo (cursor de texto)
         const editing = itemEl.querySelector('.mb-nota[contenteditable="true"], .mb-texto[contenteditable="true"]')
         if (editing) return
+        const itemData = moodboardItems.find(i => i.id === itemEl.dataset.id)
+        if (itemData?.locked) return // bloqueado: no se arrastra, pero sí se puede seleccionar (onclick propio)
         potentialDragId = itemEl.dataset.id
         dragStartX = e.clientX; dragStartY = e.clientY
         dragOrigX = parseFloat(itemEl.style.left); dragOrigY = parseFloat(itemEl.style.top)
@@ -12727,13 +12751,16 @@ if (id) {
         ? `<div class="mb-item-title-label" style="background:${tituloColor};color:${mbBadgeTextColor(tituloColor)}">${item.titulo}</div>`
         : ''
       const anchors = ['top','right','bottom','left'].map(side => `<div class="mb-anchor ${side}" data-side="${side}"></div>`).join('')
-      return `<div class="mb-item ${extraClass} ${isSelected?'selected':''}" data-id="${item.id}" style="left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;z-index:${item.z_index};background:${outerBg};${extraStyle}" onclick="event.stopPropagation();selectMbItem('${item.id}')">
+      const lockIcon = item.locked ? '<div class="mb-item-lock-badge"><i class="ti ti-lock"></i></div>' : ''
+      return `<div class="mb-item ${extraClass} ${isSelected?'selected':''} ${item.locked?'locked':''}" data-id="${item.id}" style="left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;z-index:${item.z_index};background:${outerBg};${extraStyle}" onclick="event.stopPropagation();selectMbItem('${item.id}')">
         ${tituloLabel}
+        ${lockIcon}
         <button class="mb-item-move" title="Mover"><i class="ti ti-arrows-move"></i></button>
         <button class="mb-item-delete" onclick="event.stopPropagation();deleteMbItem('${item.id}')" title="Eliminar"><i class="ti ti-x"></i></button>
         <div class="mb-item-toolbar">
           ${abrirBtn}
           ${colorBtn}
+          <button onclick="event.stopPropagation();toggleMbItemLock('${item.id}')" title="${item.locked?'Desbloquear':'Bloquear'}"><i class="ti ${item.locked?'ti-lock-open':'ti-lock'}"></i></button>
           <button onclick="event.stopPropagation();mbBringToFront('${item.id}')" title="Traer al frente"><i class="ti ti-stack-front"></i></button>
           <button onclick="event.stopPropagation();mbSendToBack('${item.id}')" title="Enviar atrás"><i class="ti ti-stack-back"></i></button>
         </div>
@@ -12776,6 +12803,15 @@ if (id) {
     const el = document.querySelector(`.mb-item[data-id="${id}"]`)
     if (el) el.style.zIndex = item.z_index
     await supabase.from('moodboard_items').update({ z_index: item.z_index }).eq('id', id)
+  }
+
+  window.toggleMbItemLock = async function(id) {
+    const item = moodboardItems.find(i => i.id === id)
+    if (!item) return
+    item.locked = !item.locked
+    renderMbCanvas()
+    await supabase.from('moodboard_items').update({ locked: item.locked }).eq('id', id)
+    showToast(item.locked ? '🔒 Elemento bloqueado' : '🔓 Elemento desbloqueado')
   }
 
   window.deleteMbItem = async function(id) {
@@ -12917,14 +12953,7 @@ if (id) {
 
     const etiquetaField = (item.tipo === 'imagen' || item.tipo === 'link') ? renderMbEtiquetaField(item) : ''
 
-    const responsableField = `
-      <div class="mb-prop-field">
-        <label class="mb-prop-label">Responsable</label>
-        <select class="mb-prop-input" onchange="updateMbItemField('${item.id}','responsable_id', this.value || null)">
-          <option value="">Sin asignar</option>
-          ${teamMembers.map(m => `<option value="${m.id}" ${item.responsable_id===m.id?'selected':''}>${((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).trim() || 'Sin nombre'}</option>`).join('')}
-        </select>
-      </div>`
+    const responsableField = renderMbResponsableField(item)
 
     const fechaField = `
       <div class="mb-prop-field">
@@ -13024,6 +13053,60 @@ if (id) {
     if (mbEtiquetaDropdownOpenFor && !e.target.closest('.mb-etiqueta-dd-wrap')) {
       mbEtiquetaDropdownOpenFor = null
       mbEtiquetaCustomMode = false
+      renderMbPropertiesPanel()
+    }
+  })
+
+  // ── Responsables (selección múltiple) ──────────────────
+  let mbResponsableDropdownOpenFor = null
+
+  function renderMbResponsableField(item) {
+    const ids = item.responsable_ids || []
+    const isOpen = mbResponsableDropdownOpenFor === item.id
+    const nombreDe = m => ((m.profiles?.nombre || '') + ' ' + (m.profiles?.apellido || '')).trim() || 'Sin nombre'
+    const seleccionados = teamMembers.filter(m => ids.includes(m.id)).map(nombreDe)
+    const label = seleccionados.length ? seleccionados.join(', ') : 'Sin asignar'
+
+    const ddHTML = isOpen ? `<div class="mb-etiqueta-dd">
+      ${teamMembers.length === 0 ? `<div style="padding:10px;font-size:12px;color:var(--ink3);text-align:center">No hay miembros en el equipo</div>` : teamMembers.map(m => {
+        const checked = ids.includes(m.id)
+        return `<button class="mb-etiqueta-dd-item" onclick="event.stopPropagation();toggleMbResponsable('${item.id}','${m.id}')">
+          <i class="ti ${checked ? 'ti-square-rounded-check' : 'ti-square-rounded'}" style="font-size:16px;color:${checked ? 'var(--azul)' : 'var(--ink3)'}"></i>
+          ${nombreDe(m)}
+        </button>`
+      }).join('')}
+    </div>` : ''
+
+    return `<div class="mb-prop-field">
+      <label class="mb-prop-label">Responsables</label>
+      <div class="mb-etiqueta-dd-wrap">
+        <button class="mb-etiqueta-trigger" onclick="event.stopPropagation();toggleMbResponsableDropdown('${item.id}')">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${seleccionados.length ? 'var(--ink)' : 'var(--ink3)'}">${label}</span>
+          <i class="ti ti-chevron-down" style="margin-left:auto;font-size:12px;color:var(--ink3);flex-shrink:0"></i>
+        </button>
+        ${ddHTML}
+      </div>
+    </div>`
+  }
+
+  window.toggleMbResponsableDropdown = function(id) {
+    mbResponsableDropdownOpenFor = (mbResponsableDropdownOpenFor === id) ? null : id
+    renderMbPropertiesPanel()
+  }
+
+  window.toggleMbResponsable = async function(itemId, memberId) {
+    const item = moodboardItems.find(i => i.id === itemId)
+    if (!item) return
+    const ids = new Set(item.responsable_ids || [])
+    if (ids.has(memberId)) ids.delete(memberId); else ids.add(memberId)
+    item.responsable_ids = [...ids]
+    renderMbPropertiesPanel()
+    await supabase.from('moodboard_items').update({ responsable_ids: item.responsable_ids }).eq('id', itemId)
+  }
+
+  document.addEventListener('click', e => {
+    if (mbResponsableDropdownOpenFor && !e.target.closest('.mb-etiqueta-dd-wrap')) {
+      mbResponsableDropdownOpenFor = null
       renderMbPropertiesPanel()
     }
   })
