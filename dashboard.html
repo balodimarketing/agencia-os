@@ -4909,6 +4909,11 @@
         <input type="text" class="form-input" id="event-titulo" placeholder="Ej: Reunión semanal de equipo">
       </div>
 
+      <div class="form-field">
+        <label class="form-label">Calendario</label>
+        <select class="form-input form-select" id="event-calendario"></select>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Tipo</label>
@@ -5298,6 +5303,14 @@
   window.switchModule = async function(el) {
     const mod = el.dataset.module
     currentModule = mod
+    // Si veníamos del Moodboard (modo pantalla completa) y saltamos a otro módulo que no sea Contenido,
+    // hay que limpiar ese estado — si no, las pastillas flotantes del Moodboard quedan pegadas en pantalla.
+    if (mod !== 'contenido') {
+      document.body.classList.remove('mb-fullscreen')
+      document.getElementById('mb-floating-tabs')?.classList.remove('visible')
+      document.getElementById('mb-floating-selector')?.classList.remove('visible')
+      if (typeof mbPresenting !== 'undefined' && mbPresenting) mbExitPresent()
+    }
     document.querySelectorAll('.rail-btn[data-module]').forEach(b => b.classList.remove('active'))
     el.classList.add('active')
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
@@ -7277,12 +7290,19 @@
     preview.style.display = 'block'
   }
 
+  function populateEventCalendarioSelect(selectedId) {
+    const select = document.getElementById('event-calendario')
+    if (!select) return
+    select.innerHTML = CALENDARS.map(c => `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.nombre}</option>`).join('')
+  }
+
   window.openEventModal = function(defaultDate) {
     calEditingEventId = null
     document.getElementById('modal-event-title').textContent = 'Nuevo evento'
     document.getElementById('event-id').value = ''
     document.getElementById('event-titulo').value = ''
     document.getElementById('event-tipo').value = 'evento'
+    populateEventCalendarioSelect(currentCalendarioId)
     document.getElementById('event-link').value = ''
     document.getElementById('event-descripcion').value = ''
     document.getElementById('event-error').classList.remove('show')
@@ -7328,6 +7348,7 @@
       document.getElementById('modal-event-title').textContent = 'Editar evento'
       document.getElementById('event-id').value = ev.id
       document.getElementById('event-titulo').value = ev.titulo
+      populateEventCalendarioSelect(ev.calendario_id)
       document.getElementById('event-tipo').value = ev.tipo
       document.getElementById('event-link').value = ev.link || ''
       document.getElementById('event-descripcion').value = ev.descripcion || ''
@@ -7388,7 +7409,7 @@
       link: document.getElementById('event-link').value.trim() || null,
       descripcion: document.getElementById('event-descripcion').value.trim() || null,
       agency_id: agencyId,
-      calendario_id: currentCalendarioId,
+      calendario_id: document.getElementById('event-calendario').value || currentCalendarioId,
     }
 
     // Foto o video del evento
@@ -13684,10 +13705,12 @@ if (id) {
     if (!item || !item.archivo_url) return
     const btn = document.querySelector('.rail-btn[data-module="calendario"]')
     if (btn) await switchModule(btn)
+    await loadCalendars() // por si renderCalendario todavía no terminó de cargarlos
     openEventModal()
     document.getElementById('event-titulo').value = item.titulo || ''
+    populateEventCalendarioSelect(currentCalendarioId)
     showExistingEventFile(item.archivo_url)
-    showToast('Imagen cargada — elegí la fecha y guardá el evento')
+    showToast('Imagen cargada — elegí el calendario, la fecha, y guardá el evento')
   }
 
   window.deleteMbItem = async function(id) {
