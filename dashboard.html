@@ -724,9 +724,12 @@
       background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg);
     }
     #mb-music-widget.show { display: block; }
-    #mb-music-empty { padding: 6px; }
-    #mb-music-empty button { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: var(--bg); color: var(--ink2); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
-    #mb-music-empty button:hover { background: var(--border); }
+    #mb-music-empty { padding: 12px 16px; }
+    #mb-music-empty-label { font-size: 11.5px; color: var(--ink3); font-weight: 600; white-space: nowrap; }
+    #mb-music-picker { display: none; padding: 6px; min-width: 200px; max-height: 220px; overflow-y: auto; }
+    .mb-music-track-btn { width: 100%; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 9px; border: none; background: none; color: var(--ink2); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; text-align: left; }
+    .mb-music-track-btn:hover { background: var(--bg); }
+    .mb-music-track-btn i { color: var(--ink3); font-size: 13px; flex-shrink: 0; }
     #mb-music-loaded { display: flex; align-items: center; gap: 8px; padding: 8px 10px; position: relative; }
     #mb-music-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--celeste-dim); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
     #mb-music-info { min-width: 0; max-width: 130px; }
@@ -1902,7 +1905,10 @@
             <!-- Reproductor de música de fondo, personal, no forma parte del contenido del moodboard -->
             <div id="mb-music-widget">
               <div id="mb-music-empty">
-                <button onclick="document.getElementById('mb-music-input').click()"><i class="ti ti-upload"></i> Subir canción</button>
+                <div id="mb-music-empty-label">Sin canciones cargadas todavía</div>
+              </div>
+              <div id="mb-music-picker">
+                <!-- Se completa desde MB_MUSIC_TRACKS en el JS -->
               </div>
               <div id="mb-music-loaded" style="display:none">
                 <div id="mb-music-icon"><i class="ti ti-music"></i></div>
@@ -1912,12 +1918,11 @@
                 </div>
                 <button onclick="mbMusicToggle()" id="mb-music-toggle-btn"><i class="ti ti-player-play" id="mb-music-toggle-icon"></i></button>
                 <button onclick="document.getElementById('mb-music-vol-row').classList.toggle('show')" title="Volumen"><i class="ti ti-volume"></i></button>
-                <button onclick="mbMusicRemove()" title="Quitar"><i class="ti ti-x"></i></button>
+                <button onclick="mbMusicStop()" title="Detener"><i class="ti ti-x"></i></button>
                 <div id="mb-music-vol-row"><input type="range" id="mb-music-volume" min="0" max="100" value="60" oninput="mbMusicSetVolume(this.value)"></div>
               </div>
               <audio id="mb-music-audio-el" loop></audio>
             </div>
-            <input type="file" id="mb-music-input" accept="audio/*" style="display:none" onchange="handleMbMusicSelected(this)">
 
             <!-- Control de zoom flotante -->
             <div id="mb-minimap-wrap">
@@ -13294,21 +13299,49 @@ if (id) {
   }
 
   // ── Música de fondo: personal, no forma parte del contenido del moodboard ──
-  window.toggleMbMusicWidget = function() {
-    document.getElementById('mb-music-widget')?.classList.toggle('show')
+  // Lista fija de canciones sin copyright — se completa acá cuando estén subidas al storage.
+  // Ejemplo de cómo se agrega una vez que la tengamos: { titulo: 'Nombre del tema', url: 'https://.../archivo.mp3' }
+  const MB_MUSIC_TRACKS = [
+    { titulo: 'Kuntry Boy — Anno Domini Beats', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track1-kuntry-boy.mp3' },
+    { titulo: 'Easy With You — Leon Albertson', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track2-easy-with-you.mp3' },
+    { titulo: 'Always Yours — The Parrisian', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track3-always-yours.mp3' },
+    { titulo: 'I Love What You Do To Me — The Soundlings', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track4-i-love-what-you-do-to-me.mp3' },
+    { titulo: 'Halfway In — Anno Domini Beats', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track5-halfway-in.mp3' },
+    { titulo: 'In The Morning — Blue Beat Review', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track6-in-the-morning.mp3' },
+    { titulo: 'Wait Too Long — Anno Domini Beats', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track7-wait-too-long.mp3' },
+    { titulo: 'Gone Away — Blue Beat Review', url: 'https://trsbjjagrpvlzvcveiph.supabase.co/storage/v1/object/public/music/track8-gone-away.mp3' },
+  ]
+
+  function renderMbMusicPicker() {
+    const empty = document.getElementById('mb-music-empty')
+    const picker = document.getElementById('mb-music-picker')
+    if (MB_MUSIC_TRACKS.length === 0) {
+      empty.style.display = 'block'
+      picker.style.display = 'none'
+      return
+    }
+    empty.style.display = 'none'
+    picker.style.display = 'block'
+    picker.innerHTML = MB_MUSIC_TRACKS.map(t => `
+      <button class="mb-music-track-btn" onclick="mbMusicSelect('${t.url}','${t.titulo.replace(/'/g,"\\'")}')"><i class="ti ti-music"></i> ${t.titulo}</button>
+    `).join('')
   }
 
-  window.handleMbMusicSelected = function(input) {
-    const file = input.files[0]
-    if (!file) return
-    const url = URL.createObjectURL(file)
+  window.toggleMbMusicWidget = function() {
+    document.getElementById('mb-music-widget')?.classList.toggle('show')
+    renderMbMusicPicker()
+  }
+
+  window.mbMusicSelect = function(url, titulo) {
     const audioEl = document.getElementById('mb-music-audio-el')
     audioEl.src = url
-    audioEl.volume = 0.6
-    document.getElementById('mb-music-title').textContent = file.name.replace(/\.[^.]+$/, '')
+    audioEl.volume = document.getElementById('mb-music-volume').value / 100
+    document.getElementById('mb-music-title').textContent = titulo
     document.getElementById('mb-music-empty').style.display = 'none'
+    document.getElementById('mb-music-picker').style.display = 'none'
     document.getElementById('mb-music-loaded').style.display = 'flex'
-    input.value = ''
+    audioEl.play()
+    document.getElementById('mb-music-toggle-icon').className = 'ti ti-player-pause'
   }
 
   window.mbMusicToggle = function() {
@@ -13323,14 +13356,14 @@ if (id) {
     document.getElementById('mb-music-audio-el').volume = val / 100
   }
 
-  window.mbMusicRemove = function() {
+  window.mbMusicStop = function() {
     const el = document.getElementById('mb-music-audio-el')
     el.pause()
     el.removeAttribute('src')
     el.load()
     document.getElementById('mb-music-loaded').style.display = 'none'
-    document.getElementById('mb-music-empty').style.display = 'flex'
     document.getElementById('mb-music-toggle-icon').className = 'ti ti-player-play'
+    renderMbMusicPicker()
   }
 
   // ── Sellos / reacciones rápidas ──────────────────────────
