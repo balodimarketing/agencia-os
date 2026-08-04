@@ -645,7 +645,6 @@
 
     /* ── Moodboard: minimapa + zoom ── */
     #mb-minimap-wrap { position: absolute; bottom: 20px; right: 20px; z-index: 30; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-    #mb-minimap { width: 150px; height: 100px; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
     #mb-minimap-zoom { display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 4px; }
     #mb-minimap-zoom button { width: 26px; height: 26px; border-radius: 8px; border: none; background: none; cursor: pointer; color: var(--ink2); display: flex; align-items: center; justify-content: center; font-size: 12px; }
     #mb-minimap-zoom button:hover { background: var(--bg); }
@@ -1474,7 +1473,7 @@
        <div style="display:flex;flex-direction:column;height:100%">
 
         <!-- Barra de herramientas -->
-        <div id="mb-toolbar" style="display:none;align-items:center;gap:6px;padding:9px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
+        <div id="mb-toolbar" style="display:none;align-items:center;gap:6px;padding:70px 20px 10px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
           <button class="mb-tool-btn active" data-tool="select" onclick="setMbTool('select')" title="Seleccionar / mover"><i class="ti ti-pointer"></i></button>
           <button class="mb-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Agregar imagen"><i class="ti ti-photo"></i></button>
           <button class="mb-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Agregar link o video"><i class="ti ti-link"></i></button>
@@ -1496,7 +1495,7 @@
         </div>
 
         <!-- Estado vacío -->
-        <div id="moodboard-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink3)">
+        <div id="moodboard-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink3);padding-top:70px">
           <div style="width:72px;height:72px;border-radius:20px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center">
             <i class="ti ti-palette" style="font-size:32px;color:var(--azul);opacity:.5"></i>
           </div>
@@ -1545,9 +1544,8 @@
               <button disabled><i class="ti ti-message-circle"></i></button>
             </div>
 
-            <!-- Minimapa + zoom (vista simplificada, no interactiva todavía) -->
+            <!-- Control de zoom flotante -->
             <div id="mb-minimap-wrap">
-              <div id="mb-minimap"></div>
               <div id="mb-minimap-zoom">
                 <button onclick="mbZoomOut()" title="Alejar"><i class="ti ti-minus"></i></button>
                 <span id="mb-zoom-label-2">100%</span>
@@ -12829,28 +12827,10 @@ if (id) {
     await supabase.from('moodboards').update({ nombre: nuevo.trim() }).eq('id', board.id)
   }
 
-  // ── Minimapa (vista simplificada, no interactiva) ──────
+  // ── Indicador de zoom flotante ──────────────────────────
   function renderMbMinimap() {
-    const map = document.getElementById('mb-minimap')
     const zoomLabel2 = document.getElementById('mb-zoom-label-2')
     if (zoomLabel2) zoomLabel2.textContent = Math.round(mbZoom * 100) + '%'
-    if (!map) return
-    if (moodboardItems.length === 0) { map.innerHTML = '' ; return }
-    const xs = moodboardItems.map(i => i.x), ys = moodboardItems.map(i => i.y)
-    const xe = moodboardItems.map(i => i.x + i.width), ye = moodboardItems.map(i => i.y + i.height)
-    const minX = Math.min(...xs) - 40, minY = Math.min(...ys) - 40
-    const maxX = Math.max(...xe) + 40, maxY = Math.max(...ye) + 40
-    const spanX = Math.max(maxX - minX, 1), spanY = Math.max(maxY - minY, 1)
-    const scale = Math.min(150 / spanX, 100 / spanY)
-    const colorFor = { imagen: '#3B82F6', link: '#EF4444', nota: '#FACC15', texto: '#8B5CF6', marco: 'transparent' }
-    map.innerHTML = moodboardItems.map(it => {
-      const left = (it.x - minX) * scale, top = (it.y - minY) * scale
-      const w = Math.max(it.width * scale, 3), h = Math.max(it.height * scale, 3)
-      const isMarco = it.tipo === 'marco'
-      const bg = isMarco ? 'transparent' : (it.color && (it.tipo==='nota') ? it.color : (colorFor[it.tipo] || '#94A3B8'))
-      const border = isMarco ? `1px dashed ${it.color || '#94A3B8'}` : 'none'
-      return `<div style="position:absolute;left:${left}px;top:${top}px;width:${w}px;height:${h}px;background:${bg};border:${border};border-radius:2px;opacity:.85"></div>`
-    }).join('')
   }
 
   // ── Panel derecho de propiedades ───────────────────────
