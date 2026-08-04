@@ -627,6 +627,38 @@
     .mb-marco { box-shadow: none !important; }
     .mb-item-title-label { position: absolute; top: -24px; left: 0; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 7px; box-shadow: 0 2px 6px rgba(0,0,0,.15); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; z-index: 4; letter-spacing: .1px; }
 
+    /* ── Modal "Compartir moodboard" ── */
+    .mb-share-modal { padding: 28px; }
+    .mb-share-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 26px; }
+    .mb-share-title { font-size: 17px; font-weight: 900; color: var(--ink); letter-spacing: -.4px; }
+    .mb-share-subtitle { font-size: 12.5px; color: var(--ink3); font-weight: 600; margin-top: 3px; }
+    .mb-share-close { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--bg); color: var(--ink3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: background var(--t), color var(--t); }
+    .mb-share-close:hover { background: var(--border); color: var(--ink); }
+
+    .mb-share-section { margin-bottom: 22px; }
+    .mb-share-label { font-size: 11px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
+    .mb-share-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .mb-share-label-row .mb-share-label { margin: 0; }
+
+    .mb-share-link-row { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 5px 5px 5px 16px; margin-top: 10px; }
+    .mb-share-link-input { flex: 1; font-size: 12px; color: var(--ink2); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .mb-share-copy-btn { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border-radius: 10px; border: none; background: var(--azul); color: var(--celeste); font-size: 12.5px; font-weight: 800; cursor: pointer; font-family: inherit; flex-shrink: 0; transition: opacity var(--t); }
+    .mb-share-copy-btn:hover { opacity: .88; }
+    .mb-share-copy-btn i { font-size: 13px; }
+    .mb-share-hint { display: flex; align-items: flex-start; gap: 6px; font-size: 11.5px; color: var(--ink3); line-height: 1.5; margin-top: 10px; }
+    .mb-share-hint i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+
+    .mb-share-divider { height: 1px; background: var(--border); margin: 0 0 22px; }
+
+    .mb-share-soon-badge { font-size: 9.5px; font-weight: 800; color: var(--ink3); background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 20px; letter-spacing: .2px; }
+    .mb-share-soon-box { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; opacity: .6; }
+    .mb-share-input { width: 100%; height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 12.5px; font-family: inherit; color: var(--ink2); background: #fff; box-sizing: border-box; }
+    .mb-share-input:disabled { cursor: not-allowed; }
+    .mb-share-role-row { display: flex; gap: 8px; margin-top: 8px; }
+    .mb-share-role-row .mb-share-input { flex: 1; }
+    .mb-share-send-btn { width: 38px; height: 38px; border-radius: 10px; border: none; background: var(--ink3); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; cursor: not-allowed; }
+
+
     /* Barra flotante de formato de texto (negrita, título, subtítulo, lista) */
     #mb-rte-toolbar {
       display: none; position: absolute; z-index: 90; background: var(--ink); border-radius: 10px; padding: 4px;
@@ -12644,44 +12676,57 @@ if (id) {
     m.id = 'modal-mb-share'
     m.className = 'modal-overlay show'
     m.onclick = e => { if (e.target === m) m.remove() }
-    m.innerHTML = `<div class="modal" style="max-width:420px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <div style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Compartir "${board?.nombre || 'moodboard'}"</div>
-        <button onclick="document.getElementById('modal-mb-share').remove()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:18px;line-height:1;padding:4px"><i class="ti ti-x"></i></button>
+    m.innerHTML = `<div class="modal" style="max-width:440px">
+      <div class="mb-share-modal">
+
+        <div class="mb-share-head">
+          <div>
+            <div class="mb-share-title">Compartir moodboard</div>
+            <div class="mb-share-subtitle">${board?.nombre || ''}</div>
+          </div>
+          <button class="mb-share-close" onclick="document.getElementById('modal-mb-share').remove()"><i class="ti ti-x"></i></button>
+        </div>
+
+        <div class="mb-share-section">
+          <div class="mb-share-label">Link directo</div>
+          <div class="mb-share-link-row">
+            <div class="mb-share-link-input" id="mb-share-link-input" onclick="mbCopyShareLink()">${url}</div>
+            <button class="mb-share-copy-btn" onclick="mbCopyShareLink()"><i class="ti ti-copy"></i> Copiar</button>
+          </div>
+          <div class="mb-share-hint"><i class="ti ti-info-circle"></i> Lo puede abrir cualquiera de tu agencia que ya esté logueado en Faro.</div>
+        </div>
+
+        <div class="mb-share-divider"></div>
+
+        <div class="mb-share-section">
+          <div class="mb-share-label-row">
+            <div class="mb-share-label">Invitar por mail</div>
+            <span class="mb-share-soon-badge">Próximamente</span>
+          </div>
+          <div class="mb-share-soon-box">
+            <input class="mb-share-input" placeholder="mail@ejemplo.com" disabled>
+            <div class="mb-share-role-row">
+              <select class="mb-share-input" disabled>
+                <option>Puede ver</option>
+                <option>Puede ver y comentar</option>
+              </select>
+              <button class="mb-share-send-btn" disabled><i class="ti ti-send"></i></button>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div style="font-size:12px;color:var(--ink3);margin-bottom:16px">Cualquiera de tu agencia que esté logueado en Faro puede abrir este link y entra directo acá.</div>
-
-      <label class="mb-prop-label" style="display:block;margin-bottom:6px">Link directo</label>
-      <div style="display:flex;gap:8px;margin-bottom:20px">
-        <input id="mb-share-link-input" class="mb-prop-input" readonly value="${url}" style="flex:1;font-size:11.5px;color:var(--ink2)" onclick="this.select()">
-        <button class="tbtn primary" style="flex-shrink:0" onclick="mbCopyShareLink()"><i class="ti ti-copy" style="font-size:14px"></i> Copiar</button>
-      </div>
-
-      <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
-
-      <label class="mb-prop-label" style="display:block;margin-bottom:6px">Invitar por mail</label>
-      <input id="mb-share-email-input" class="mb-prop-input" placeholder="mail@ejemplo.com" style="margin-bottom:8px">
-      <select id="mb-share-role-select" class="mb-prop-input" style="margin-bottom:12px">
-        <option value="lector">Puede ver</option>
-        <option value="comentador">Puede ver y comentar</option>
-      </select>
-      <button class="tbtn primary" style="width:100%;justify-content:center" disabled title="Todavía no está conectado a un sistema de envío de mails">
-        <i class="ti ti-send" style="font-size:14px"></i> Enviar invitación
-      </button>
-      <div style="font-size:10.5px;color:var(--ink3);margin-top:8px;text-align:center">Por ahora, usá el link directo de arriba para compartir.</div>
     </div>`
     document.body.appendChild(m)
   }
 
   window.mbCopyShareLink = async function() {
-    const input = document.getElementById('mb-share-link-input')
-    if (!input) return
+    const url = `${location.origin}${location.pathname}?moodboard=${currentMoodboardId}`
     try {
-      await navigator.clipboard.writeText(input.value)
+      await navigator.clipboard.writeText(url)
       showToast('🔗 Link copiado')
     } catch {
-      input.select()
-      showToast('Seleccioná y copiá el link')
+      prompt('Copiá este link:', url)
     }
   }
 
