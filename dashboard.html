@@ -694,6 +694,38 @@
     .mb-link-button-wrap { display: flex; align-items: center; justify-content: center; height: 100%; padding: 12px; background: var(--bg); }
     .mb-link-button { padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; text-align: center; word-break: break-word; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
 
+    /* ── Picker de sellos/reacciones ── */
+    #mb-stamp-picker {
+      display: none; position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg);
+      padding: 6px; grid-template-columns: repeat(4, 1fr); gap: 2px; z-index: 60; width: 168px;
+    }
+    #mb-stamp-picker.show { display: grid; }
+    #mb-stamp-picker button { width: 36px; height: 36px; border-radius: 9px; border: none; background: none; font-size: 19px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    #mb-stamp-picker button:hover { background: var(--bg); }
+    .mb-stamp { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 34px; }
+
+    /* ── Cronómetro flotante del Moodboard ── */
+    #mb-timer-widget {
+      display: none; position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%); z-index: 60;
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg);
+      padding: 10px 14px; align-items: center; gap: 12px;
+    }
+    #mb-timer-widget.show { display: flex; }
+    #mb-timer-display { font-size: 15px; font-weight: 900; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -.3px; }
+    #mb-timer-controls { display: flex; gap: 4px; }
+    #mb-timer-controls button { width: 30px; height: 30px; border-radius: 8px; border: none; background: var(--bg); color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    #mb-timer-controls button:hover { background: var(--border); }
+    #mb-timer-toggle-btn { background: var(--azul) !important; color: var(--celeste) !important; }
+
+    /* ── Card de audio ── */
+    .mb-audio-card { display: flex; align-items: center; gap: 10px; height: 100%; padding: 0 14px; background: #fff; }
+    .mb-audio-play-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--azul); color: var(--celeste); display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; flex-shrink: 0; }
+    .mb-audio-info { flex: 1; min-width: 0; }
+    .mb-audio-title { font-size: 12px; font-weight: 800; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mb-audio-sub { font-size: 10px; color: var(--ink3); font-weight: 600; }
+
+
     #mb-connections-svg { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; overflow: visible; }
     #mb-connections-svg .mb-conn-line { pointer-events: stroke; cursor: pointer; }
     #mb-connections-svg .mb-conn-line:hover { stroke: var(--danger) !important; }
@@ -1822,12 +1854,32 @@
               <button class="mb-side-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Imagen"><i class="ti ti-photo"></i></button>
               <button class="mb-side-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Link o video"><i class="ti ti-brand-youtube"></i></button>
               <button class="mb-side-tool-btn" data-tool="marco" onclick="setMbTool('marco')" title="Marco"><i class="ti ti-frame"></i></button>
-              <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-sticker"></i></button>
-              <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-file"></i></button>
+              <button class="mb-side-tool-btn" data-tool="forma" onclick="setMbTool('forma')" title="Forma"><i class="ti ti-shape"></i></button>
+              <button class="mb-side-tool-btn" onclick="setMbTool('audio')" title="Audio"><i class="ti ti-music"></i></button>
+              <div class="mb-tools-pill-divider"></div>
+              <div style="position:relative">
+                <button class="mb-side-tool-btn" onclick="toggleMbStampPicker(event)" title="Sello / reacción"><i class="ti ti-mood-smile"></i></button>
+                <div id="mb-stamp-picker">
+                  ${['✅','👍','⭐','❤️','🔥','👀','❌','💡'].map(e => `<button onclick="mbPlaceStamp('${e}')">${e}</button>`).join('')}
+                </div>
+              </div>
+              <button class="mb-side-tool-btn" onclick="toggleMbTimerWidget()" title="Cronómetro" id="mb-timer-btn"><i class="ti ti-clock"></i></button>
               <div class="mb-tools-pill-divider"></div>
               <button class="mb-side-tool-btn" disabled title="IA (próximamente)"><i class="ti ti-sparkles"></i></button>
               <button class="mb-side-tool-btn" disabled title="Ordenar automático (próximamente)"><i class="ti ti-layout-grid"></i></button>
             </div>
+
+            <!-- Cronómetro flotante simple, independiente del timer de Herramientas -->
+            <div id="mb-timer-widget">
+              <div id="mb-timer-display">00:00:00</div>
+              <div id="mb-timer-controls">
+                <button onclick="mbTimerToggle()" id="mb-timer-toggle-btn"><i class="ti ti-player-play" id="mb-timer-toggle-icon"></i></button>
+                <button onclick="mbTimerReset()" title="Reiniciar"><i class="ti ti-refresh"></i></button>
+              </div>
+            </div>
+
+            <!-- Input oculto para subir audio -->
+            <input type="file" id="mb-audio-input" accept="audio/*" style="display:none" onchange="handleMbAudioSelected(this)">
 
             <!-- Control de zoom flotante -->
             <div id="mb-minimap-wrap">
@@ -12443,6 +12495,7 @@ if (id) {
   let mbSelectedItemId = null
   let mbPendingImagePos = null
   let mbPendingVideoPos = null
+  let mbPendingAudioPos = null
   let mbJustDragged = false
   let mbHistory = []
   let mbHistoryIndex = -1
@@ -12649,6 +12702,11 @@ if (id) {
     if (tool === 'imagen') {
       mbPendingImagePos = mbViewportCenterCanvasCoords()
       document.getElementById('mb-image-input').click()
+      return
+    }
+    if (tool === 'audio') {
+      mbPendingAudioPos = mbViewportCenterCanvasCoords()
+      document.getElementById('mb-audio-input').click()
       return
     }
     if (tool === 'link') {
@@ -13152,6 +13210,11 @@ if (id) {
       setMbTool('select')
       return
     }
+    if (tool === 'forma') {
+      createMbItem({ tipo: 'forma', forma_tipo: 'rect', x, y, width: 160, height: 160, color: '#3B82F6' })
+      setMbTool('select')
+      return
+    }
   }
 
   // Lee las dimensiones naturales del archivo antes de subirlo, para no deformar la imagen
@@ -13198,6 +13261,97 @@ if (id) {
     mbPendingVideoPos = null
   }
 
+  window.handleMbAudioSelected = async function(input) {
+    const file = input.files[0]
+    if (!file || !mbPendingAudioPos) return
+    const ext = file.name.split('.').pop()
+    const path = `${agencyId}/mb-${Date.now()}.${ext}`
+    showToast('Subiendo audio...')
+    const { error: uploadError } = await supabase.storage.from('pieces').upload(path, file, { upsert: true })
+    input.value = ''
+    if (uploadError) { showToast('No se pudo subir el audio'); mbPendingAudioPos = null; return }
+    const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
+    const width = 240, height = 80
+    await createMbItem({ tipo: 'audio', archivo_url: urlData.publicUrl, titulo: file.name.replace(/\.[^.]+$/,''), x: mbPendingAudioPos.x - width/2, y: mbPendingAudioPos.y - height/2, width, height, color: '#0A2540' })
+    mbPendingAudioPos = null
+  }
+
+  // ── Sellos / reacciones rápidas ──────────────────────────
+  window.toggleMbStampPicker = function(e) {
+    e.stopPropagation()
+    document.getElementById('mb-stamp-picker')?.classList.toggle('show')
+  }
+  document.addEventListener('click', e => {
+    const picker = document.getElementById('mb-stamp-picker')
+    if (picker?.classList.contains('show') && !e.target.closest('#mb-stamp-picker') && !e.target.closest('[onclick*="toggleMbStampPicker"]')) {
+      picker.classList.remove('show')
+    }
+  })
+  window.mbPlaceStamp = function(emoji) {
+    document.getElementById('mb-stamp-picker')?.classList.remove('show')
+    const pos = mbViewportCenterCanvasCoords()
+    createMbItem({ tipo: 'stamp', stamp_emoji: emoji, x: pos.x - 30, y: pos.y - 30, width: 60, height: 60 })
+  }
+
+  // ── Cronómetro flotante simple (propio del Moodboard, no toca el timer de Herramientas) ──
+  let mbTimerSeconds = 0
+  let mbTimerRunning = false
+  let mbTimerInterval = null
+
+  function mbFormatTimer(s) {
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+  }
+
+  window.toggleMbTimerWidget = function() {
+    document.getElementById('mb-timer-widget')?.classList.toggle('show')
+  }
+
+  window.mbTimerToggle = function() {
+    mbTimerRunning = !mbTimerRunning
+    const icon = document.getElementById('mb-timer-toggle-icon')
+    if (mbTimerRunning) {
+      icon.className = 'ti ti-player-pause'
+      mbTimerInterval = setInterval(() => {
+        mbTimerSeconds++
+        document.getElementById('mb-timer-display').textContent = mbFormatTimer(mbTimerSeconds)
+      }, 1000)
+    } else {
+      icon.className = 'ti ti-player-play'
+      clearInterval(mbTimerInterval)
+    }
+  }
+
+  window.mbTimerReset = function() {
+    mbTimerRunning = false
+    clearInterval(mbTimerInterval)
+    mbTimerSeconds = 0
+    document.getElementById('mb-timer-display').textContent = '00:00:00'
+    document.getElementById('mb-timer-toggle-icon').className = 'ti ti-player-play'
+  }
+
+  // ── Reproducción de audio (uno a la vez) ────────────────
+  window.mbToggleAudio = function(id) {
+    const el = document.getElementById(`mb-audio-el-${id}`)
+    const btn = document.getElementById(`mb-audio-btn-${id}`)
+    if (!el || !btn) return
+    document.querySelectorAll('audio').forEach(a => {
+      if (a.id !== `mb-audio-el-${id}` && !a.paused) {
+        a.pause()
+        const otherId = a.id.replace('mb-audio-el-', '')
+        const otherBtn = document.getElementById(`mb-audio-btn-${otherId}`)
+        if (otherBtn) otherBtn.innerHTML = '<i class="ti ti-player-play"></i>'
+      }
+    })
+    if (el.paused) { el.play(); btn.innerHTML = '<i class="ti ti-player-pause"></i>' }
+    else { el.pause(); btn.innerHTML = '<i class="ti ti-player-play"></i>' }
+  }
+
+  window.mbAudioEnded = function(id) {
+    const btn = document.getElementById(`mb-audio-btn-${id}`)
+    if (btn) btn.innerHTML = '<i class="ti ti-player-play"></i>'
+  }
+
   async function createMbItem(partial) {
     const payload = {
       moodboard_id: currentMoodboardId, agency_id: agencyId,
@@ -13207,6 +13361,7 @@ if (id) {
       titulo: partial.titulo || null, contenido: partial.contenido || null, color: partial.color || null,
       etiqueta: partial.etiqueta || null, etiqueta_color: partial.etiqueta_color || null,
       locked: partial.locked || false, responsable_ids: partial.responsable_ids || [],
+      forma_tipo: partial.forma_tipo || null, stamp_emoji: partial.stamp_emoji || null,
     }
     const { data, error } = await supabase.from('moodboard_items').insert(payload).select('*').single()
     if (error) { showToast('Error: ' + error.message); return }
@@ -13275,12 +13430,30 @@ if (id) {
         const c = item.color || '#94A3B8'
         outerBg = c + '40'
         if (!isSelected) extraStyle = `border:2px dashed ${c};`
+      } else if (item.tipo === 'forma') {
+        const c = item.color || '#3B82F6'
+        outerBg = c
+        if (item.forma_tipo === 'circulo') extraStyle = 'border-radius:50%;'
+        else if (item.forma_tipo === 'triangulo') extraStyle = 'clip-path:polygon(50% 0%,0% 100%,100% 100%);border-radius:0;'
+      } else if (item.tipo === 'stamp') {
+        outerBg = 'transparent'
+        bodyHTML = `<div class="mb-stamp">${item.stamp_emoji || '✅'}</div>`
+      } else if (item.tipo === 'audio') {
+        bodyHTML = `<div class="mb-audio-card">
+          <button class="mb-audio-play-btn" onclick="event.stopPropagation();mbToggleAudio('${item.id}')" id="mb-audio-btn-${item.id}"><i class="ti ti-player-play"></i></button>
+          <div class="mb-audio-info">
+            <div class="mb-audio-title">${item.titulo || 'Audio'}</div>
+            <div class="mb-audio-sub">Click para reproducir</div>
+          </div>
+          <audio id="mb-audio-el-${item.id}" src="${item.archivo_url}" onended="mbAudioEnded('${item.id}')"></audio>
+        </div>`
+        outerBg = '#fff'
       }
       const abrirBtn = (item.tipo === 'link' || (item.tipo === 'imagen' && item.url))
         ? `<button onclick="event.stopPropagation();window.open('${item.url}','_blank')" title="Abrir link"><i class="ti ti-external-link"></i></button>` : ''
       const calBtn = (item.tipo === 'imagen' && item.archivo_url)
         ? `<button onclick="event.stopPropagation();mbSendToCalendar('${item.id}')" title="Agregar al calendario"><i class="ti ti-calendar-plus"></i></button>` : ''
-      const colorBtn = (item.tipo === 'nota' || item.tipo === 'marco' || (item.tipo === 'link' && item.link_estilo === 'boton'))
+      const colorBtn = (item.tipo === 'nota' || item.tipo === 'marco' || item.tipo === 'forma' || (item.tipo === 'link' && item.link_estilo === 'boton'))
         ? `<button onclick="event.stopPropagation();document.getElementById('mb-color-input-${item.id}').click()" title="Cambiar color"><i class="ti ti-palette"></i></button><input type="color" id="mb-color-input-${item.id}" value="${item.color||'#FFF3B0'}" onmousedown="event.stopPropagation()" onchange="event.stopPropagation();changeMbItemColor('${item.id}', this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">`
         : ''
       const etiquetaBadge = ((item.tipo === 'imagen' || item.tipo === 'link') && item.etiqueta)
@@ -13539,7 +13712,7 @@ if (id) {
       return
     }
 
-    const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco' }
+    const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco', forma: 'Forma', stamp: 'Sello', audio: 'Audio' }
 
     let previewHTML = ''
     if (item.tipo === 'imagen') {
@@ -13579,16 +13752,26 @@ if (id) {
         <input class="mb-prop-input" placeholder="${item.link_estilo==='boton'?'Texto del botón (ej: Ver más)':'Título del link (opcional)'}" value="${(item.link_texto||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','link_texto',this.value)">
       </div>` : ''
 
-    const colorPalette = item.tipo === 'marco'
+    const colorPalette = (item.tipo === 'marco' || item.tipo === 'forma')
       ? ['#94A3B8','#0A2540','#3B82F6','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981','#14B8A6','#64748B']
       : item.tipo === 'link'
       ? ['#0A2540','#3B82F6','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981']
       : ['#FFF3B0','#DDD6FE','#BFDBFE','#BBF7D0','#FBCFE8','#94A3B8']
-    const colorField = (item.tipo === 'nota' || item.tipo === 'marco' || (item.tipo === 'link' && item.link_estilo === 'boton')) ? `
+    const colorField = (item.tipo === 'nota' || item.tipo === 'marco' || item.tipo === 'forma' || (item.tipo === 'link' && item.link_estilo === 'boton')) ? `
       <div class="mb-prop-field">
         <label class="mb-prop-label">Color</label>
         <div class="mb-prop-colors">
           ${colorPalette.map(c => `<div class="mb-prop-color-dot ${item.color===c?'active':''}" style="background:${c}" onclick="updateMbItemField('${item.id}','color','${c}')"></div>`).join('')}
+        </div>
+      </div>` : ''
+
+    const formaField = item.tipo === 'forma' ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Figura</label>
+        <div style="display:flex;gap:6px">
+          ${[['rect','Rectángulo','ti-square'],['circulo','Círculo','ti-circle'],['triangulo','Triángulo','ti-triangle']].map(([val,label,icon]) => `
+            <button class="tbtn ${item.forma_tipo===val?'primary':''}" style="flex:1;justify-content:center;padding:8px 4px;gap:5px" onclick="updateMbItemField('${item.id}','forma_tipo','${val}')" title="${label}"><i class="ti ${icon}" style="font-size:14px"></i></button>
+          `).join('')}
         </div>
       </div>` : ''
 
@@ -13613,6 +13796,7 @@ if (id) {
       ${urlField}
       ${linkEstiloField}
       ${textoField}
+      ${formaField}
       ${colorField}
       ${responsableField}
       ${fechaField}
