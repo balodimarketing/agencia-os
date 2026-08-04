@@ -631,6 +631,12 @@
     .mb-link-card i { font-size: 26px; color: var(--ink3); }
     .mb-link-card .mb-link-domain { font-size: 11px; font-weight: 700; color: var(--ink2); word-break: break-all; }
 
+    .mb-auto-link { color: #2563EB; text-decoration: underline; word-break: break-all; }
+    .mb-link-text-wrap { display: flex; align-items: center; justify-content: center; height: 100%; padding: 12px; background: var(--bg); }
+    .mb-link-text { color: #2563EB; font-weight: 700; font-size: 13px; text-decoration: underline; text-align: center; word-break: break-word; }
+    .mb-link-button-wrap { display: flex; align-items: center; justify-content: center; height: 100%; padding: 12px; background: var(--bg); }
+    .mb-link-button { padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; text-align: center; word-break: break-word; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+
     #mb-connections-svg { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; overflow: visible; }
     #mb-connections-svg .mb-conn-line { pointer-events: stroke; cursor: pointer; }
     #mb-connections-svg .mb-conn-line:hover { stroke: var(--danger) !important; }
@@ -3719,6 +3725,7 @@
 </div>
 
 <input type="file" id="mb-image-input" accept="image/*" style="display:none" onchange="handleMbImageSelected(this)">
+<input type="file" id="mb-video-input" accept="video/*" style="display:none" onchange="handleMbVideoSelected(this)">
 
 <!-- MODAL CARD DE TABLERO -->
 <div class="modal-overlay" id="modal-tb-card" onclick="if(event.target===this)closeTbCardModal()" style="z-index:500">
@@ -7208,6 +7215,9 @@
     } else if (eventFileRemoved) {
       payload.archivo_url = null
       payload.archivo_nombre = null
+    } else if (!id && eventExistingFileUrl) {
+      // Evento nuevo con un archivo ya existente (ej: enviado desde el Moodboard)
+      payload.archivo_url = eventExistingFileUrl
     }
     // Si no hay archivo nuevo y no se quitó el existente, no tocamos estas columnas
 
@@ -12351,10 +12361,11 @@ if (id) {
   let mbConnections = []
   let mbActiveTool = 'select'
   let mbZoom = 1
-  let mbPanX = 40
-  let mbPanY = 40
+  let mbPanX = 60
+  let mbPanY = 180
   let mbSelectedItemId = null
   let mbPendingImagePos = null
+  let mbPendingVideoPos = null
   let mbJustDragged = false
   let mbHistory = []
   let mbHistoryIndex = -1
@@ -12548,7 +12559,33 @@ if (id) {
   }
 
   // ── Herramientas ────────────────────────────────────────
+  function mbViewportCenterCanvasCoords() {
+    const viewport = document.getElementById('mb-canvas-viewport')
+    const rect = viewport.getBoundingClientRect()
+    return {
+      x: (rect.width / 2 - mbPanX) / mbZoom,
+      y: (rect.height / 2 - mbPanY) / mbZoom,
+    }
+  }
+
   window.setMbTool = function(tool) {
+    if (tool === 'imagen') {
+      mbPendingImagePos = mbViewportCenterCanvasCoords()
+      document.getElementById('mb-image-input').click()
+      return
+    }
+    if (tool === 'link') {
+      const url = prompt('Pegá un link (YouTube, Vimeo, o cualquier otro) — o dejalo vacío para subir un archivo de video')
+      if (url === null) return // cancelado
+      if (!url.trim()) {
+        mbPendingVideoPos = mbViewportCenterCanvasCoords()
+        document.getElementById('mb-video-input').click()
+        return
+      }
+      const pos = mbViewportCenterCanvasCoords()
+      createMbItem({ tipo: 'link', url: url.trim(), x: pos.x - 140, y: pos.y - 95, width: 280, height: 190, color: '#0A2540' })
+      return
+    }
     mbActiveTool = tool
     document.querySelectorAll('.mb-side-tool-btn[data-tool]').forEach(b => b.classList.toggle('active', b.dataset.tool === tool))
     const viewport = document.getElementById('mb-canvas-viewport')
@@ -12557,7 +12594,7 @@ if (id) {
 
   window.mbZoomIn = function() { setMbZoom(mbZoom * 1.2) }
   window.mbZoomOut = function() { setMbZoom(mbZoom / 1.2) }
-  window.mbResetZoom = function() { mbZoom = 1; mbPanX = 40; mbPanY = 40; applyMbTransform() }
+  window.mbResetZoom = function() { mbZoom = 1; mbPanX = 60; mbPanY = 180; applyMbTransform() }
 
   // ── Modo presentación: solo lectura, para mostrarle el moodboard a alguien ──
   window.mbEnterPresent = function() {
@@ -12944,11 +12981,25 @@ if (id) {
     const path = `${agencyId}/mb-${Date.now()}.${ext}`
     const { error: uploadError } = await supabase.storage.from('pieces').upload(path, file, { upsert: true })
     input.value = ''
-    if (uploadError) { showToast('No se pudo subir la imagen'); mbPendingImagePos = null; setMbTool('select'); return }
+    if (uploadError) { showToast('No se pudo subir la imagen'); mbPendingImagePos = null; return }
     const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
-    await createMbItem({ tipo: 'imagen', archivo_url: urlData.publicUrl, x: mbPendingImagePos.x, y: mbPendingImagePos.y, width, height })
+    await createMbItem({ tipo: 'imagen', archivo_url: urlData.publicUrl, x: mbPendingImagePos.x - width/2, y: mbPendingImagePos.y - height/2, width, height })
     mbPendingImagePos = null
-    setMbTool('select')
+  }
+
+  window.handleMbVideoSelected = async function(input) {
+    const file = input.files[0]
+    if (!file || !mbPendingVideoPos) return
+    const ext = file.name.split('.').pop()
+    const path = `${agencyId}/mb-${Date.now()}.${ext}`
+    showToast('Subiendo video...')
+    const { error: uploadError } = await supabase.storage.from('pieces').upload(path, file, { upsert: true })
+    input.value = ''
+    if (uploadError) { showToast('No se pudo subir el video'); mbPendingVideoPos = null; return }
+    const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
+    const width = 280, height = 190
+    await createMbItem({ tipo: 'link', url: urlData.publicUrl, x: mbPendingVideoPos.x - width/2, y: mbPendingVideoPos.y - height/2, width, height, color: '#0A2540' })
+    mbPendingVideoPos = null
   }
 
   async function createMbItem(partial) {
@@ -12988,6 +13039,15 @@ if (id) {
     return { kind: 'generic', domain }
   }
 
+  // Convierte URLs sueltas dentro de un texto en links celestes clickeables (escapa HTML primero)
+  function mbLinkify(text) {
+    if (!text) return ''
+    const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    return esc.replace(/(https?:\/\/[^\s<]+)/g, url =>
+      `<a href="${url}" target="_blank" rel="noopener noreferrer" class="mb-auto-link" onmousedown="event.stopPropagation()">${url}</a>`
+    ).replace(/\n/g, '<br>')
+  }
+
   function renderMbCanvas() {
     const layer = document.getElementById('mb-items-layer')
     if (!layer) return
@@ -13000,12 +13060,17 @@ if (id) {
         const info = classifyLinkUrl(item.url)
         if (info.kind === 'youtube' || info.kind === 'vimeo') bodyHTML = `<iframe src="${info.embed}" allowfullscreen loading="lazy"></iframe>`
         else if (info.kind === 'video') bodyHTML = `<video src="${item.url}" controls></video>`
-        else bodyHTML = `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="mb-link-card"><i class="ti ti-link"></i><div class="mb-link-domain">${info.domain}</div></a>`
+        else if (item.link_estilo === 'boton') {
+          const btnColor = item.color || '#0A2540'
+          bodyHTML = `<div class="mb-link-button-wrap"><a href="${item.url}" target="_blank" rel="noopener noreferrer" class="mb-link-button" style="background:${btnColor};color:${mbBadgeTextColor(btnColor)}">${item.link_texto || 'Abrir link'}</a></div>`
+        } else {
+          bodyHTML = `<div class="mb-link-text-wrap"><a href="${item.url}" target="_blank" rel="noopener noreferrer" class="mb-link-text">${item.link_texto || info.domain}</a></div>`
+        }
       } else if (item.tipo === 'nota') {
-        bodyHTML = `<div class="mb-nota" contenteditable="false" data-id="${item.id}" ondblclick="event.stopPropagation();enterMbEditMode(this)" onblur="saveMbText(this)">${(item.contenido||'').replace(/</g,'&lt;')}</div>`
+        bodyHTML = `<div class="mb-nota" contenteditable="false" data-id="${item.id}" ondblclick="event.stopPropagation();enterMbEditMode(this)" onblur="saveMbText(this)">${mbLinkify(item.contenido)}</div>`
         outerBg = item.color || '#FFF3B0'
       } else if (item.tipo === 'texto') {
-        bodyHTML = `<div class="mb-texto" contenteditable="false" data-id="${item.id}" ondblclick="event.stopPropagation();enterMbEditMode(this)" onblur="saveMbText(this)">${(item.contenido||'Doble click para escribir').replace(/</g,'&lt;')}</div>`
+        bodyHTML = `<div class="mb-texto" contenteditable="false" data-id="${item.id}" ondblclick="event.stopPropagation();enterMbEditMode(this)" onblur="saveMbText(this)">${item.contenido ? mbLinkify(item.contenido) : 'Doble click para escribir'}</div>`
         outerBg = 'transparent'
       } else if (item.tipo === 'marco') {
         extraClass = 'mb-marco'
@@ -13013,8 +13078,11 @@ if (id) {
         outerBg = c + '40'
         if (!isSelected) extraStyle = `border:2px dashed ${c};`
       }
-      const abrirBtn = (item.tipo === 'link') ? `<button onclick="event.stopPropagation();window.open('${item.url}','_blank')" title="Abrir"><i class="ti ti-external-link"></i></button>` : ''
-      const colorBtn = (item.tipo === 'nota' || item.tipo === 'marco')
+      const abrirBtn = (item.tipo === 'link' || (item.tipo === 'imagen' && item.url))
+        ? `<button onclick="event.stopPropagation();window.open('${item.url}','_blank')" title="Abrir link"><i class="ti ti-external-link"></i></button>` : ''
+      const calBtn = (item.tipo === 'imagen' && item.archivo_url)
+        ? `<button onclick="event.stopPropagation();mbSendToCalendar('${item.id}')" title="Agregar al calendario"><i class="ti ti-calendar-plus"></i></button>` : ''
+      const colorBtn = (item.tipo === 'nota' || item.tipo === 'marco' || (item.tipo === 'link' && item.link_estilo === 'boton'))
         ? `<button onclick="event.stopPropagation();document.getElementById('mb-color-input-${item.id}').click()" title="Cambiar color"><i class="ti ti-palette"></i></button><input type="color" id="mb-color-input-${item.id}" value="${item.color||'#FFF3B0'}" onmousedown="event.stopPropagation()" onchange="event.stopPropagation();changeMbItemColor('${item.id}', this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">`
         : ''
       const etiquetaBadge = ((item.tipo === 'imagen' || item.tipo === 'link') && item.etiqueta)
@@ -13038,6 +13106,7 @@ if (id) {
         <button class="mb-item-delete" onclick="event.stopPropagation();deleteMbItem('${item.id}')" title="Eliminar"><i class="ti ti-x"></i></button>
         <div class="mb-item-toolbar">
           ${abrirBtn}
+          ${calBtn}
           ${colorBtn}
           <button onclick="event.stopPropagation();toggleMbItemLock('${item.id}')" title="${item.locked?'Desbloquear':'Bloquear'}"><i class="ti ${item.locked?'ti-lock-open':'ti-lock'}"></i></button>
           <button onclick="event.stopPropagation();mbBringToFront('${item.id}')" title="Traer al frente"><i class="ti ti-stack-front"></i></button>
@@ -13092,6 +13161,17 @@ if (id) {
     await supabase.from('moodboard_items').update({ locked: item.locked }).eq('id', id)
     pushMbHistory()
     showToast(item.locked ? '🔒 Elemento bloqueado' : '🔓 Elemento desbloqueado')
+  }
+
+  window.mbSendToCalendar = async function(itemId) {
+    const item = moodboardItems.find(i => i.id === itemId)
+    if (!item || !item.archivo_url) return
+    const btn = document.querySelector('.rail-btn[data-module="calendario"]')
+    if (btn) await switchModule(btn)
+    openEventModal()
+    document.getElementById('event-titulo').value = item.titulo || ''
+    showExistingEventFile(item.archivo_url)
+    showToast('Imagen cargada — elegí la fecha y guardá el evento')
   }
 
   window.deleteMbItem = async function(id) {
@@ -13226,16 +13306,29 @@ if (id) {
         <textarea class="mb-prop-textarea" onchange="updateMbItemField('${item.id}','contenido',this.value)">${(item.contenido||'').replace(/</g,'&lt;')}</textarea>
       </div>` : ''
 
-    const urlField = (item.tipo === 'link') ? `
+    const urlField = (item.tipo === 'link' || item.tipo === 'imagen') ? `
       <div class="mb-prop-field">
-        <label class="mb-prop-label">URL</label>
-        <input class="mb-prop-input" value="${(item.url||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','url',this.value)">
+        <label class="mb-prop-label">${item.tipo === 'imagen' ? 'Link (opcional)' : 'URL'}</label>
+        <input class="mb-prop-input" placeholder="${item.tipo === 'imagen' ? 'https://...' : ''}" value="${(item.url||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','url',this.value)">
+      </div>` : ''
+
+    const linkEsGenerico = item.tipo === 'link' && item.url && classifyLinkUrl(item.url).kind === 'generic'
+    const linkEstiloField = linkEsGenerico ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Cómo se muestra</label>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="tbtn ${item.link_estilo!=='boton'?'primary':''}" style="flex:1;justify-content:center;padding:8px" onclick="updateMbItemField('${item.id}','link_estilo','texto')">Texto</button>
+          <button class="tbtn ${item.link_estilo==='boton'?'primary':''}" style="flex:1;justify-content:center;padding:8px" onclick="updateMbItemField('${item.id}','link_estilo','boton')">Botón</button>
+        </div>
+        <input class="mb-prop-input" placeholder="${item.link_estilo==='boton'?'Texto del botón (ej: Ver más)':'Título del link (opcional)'}" value="${(item.link_texto||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','link_texto',this.value)">
       </div>` : ''
 
     const colorPalette = item.tipo === 'marco'
       ? ['#94A3B8','#0A2540','#3B82F6','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981','#14B8A6','#64748B']
+      : item.tipo === 'link'
+      ? ['#0A2540','#3B82F6','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981']
       : ['#FFF3B0','#DDD6FE','#BFDBFE','#BBF7D0','#FBCFE8','#94A3B8']
-    const colorField = (item.tipo === 'nota' || item.tipo === 'marco') ? `
+    const colorField = (item.tipo === 'nota' || item.tipo === 'marco' || (item.tipo === 'link' && item.link_estilo === 'boton')) ? `
       <div class="mb-prop-field">
         <label class="mb-prop-label">Color</label>
         <div class="mb-prop-colors">
@@ -13262,6 +13355,7 @@ if (id) {
       ${tituloField}
       ${etiquetaField}
       ${urlField}
+      ${linkEstiloField}
       ${textoField}
       ${colorField}
       ${responsableField}
