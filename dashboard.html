@@ -549,6 +549,147 @@
       height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; border-bottom-color: transparent; pointer-events: none;
     }
 
+    /* ── Moodboard: selector flotante arriba a la derecha ── */
+    #mb-floating-selector {
+      display: none; position: fixed; top: 16px; right: 16px; z-index: 1000;
+      opacity: 0; transform: translateY(-8px) scale(.97); pointer-events: none;
+      transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
+    }
+    #mb-floating-selector.visible { display: block; opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    #moodboard-selector-btn {
+      display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 8px 0 14px; max-width: 260px;
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg);
+      font-size: 13px; font-weight: 700; color: var(--ink); cursor: pointer; font-family: inherit;
+      transition: border-color .18s;
+    }
+    #moodboard-selector-btn:hover { border-color: var(--celeste); }
+    #moodboard-selector-btn i:first-child { font-size: 15px; color: var(--azul); flex-shrink: 0; }
+    #moodboard-selector-btn span { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #moodboard-selector-btn i:last-child { font-size: 13px; color: var(--ink3); flex-shrink: 0; }
+    #moodboard-dropdown {
+      display: none; position: absolute; top: 50px; right: 0; width: 280px; background: #fff;
+      border: 1px solid var(--border); border-radius: 16px; padding: 10px; box-shadow: var(--shadow-lg);
+      max-height: 380px; display: flex; flex-direction: column;
+    }
+    #moodboard-dropdown.show { display: flex; }
+    #moodboard-search-wrap {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg);
+      border-radius: 9px; margin-bottom: 8px; flex-shrink: 0;
+    }
+    #moodboard-search-wrap i { font-size: 13px; color: var(--ink3); }
+    #moodboard-search-wrap input {
+      border: none; background: none; outline: none; font-size: 12px; font-family: inherit; color: var(--ink); flex: 1;
+    }
+    #moodboard-dropdown-list { overflow-y: auto; flex: 1; min-height: 0; }
+    .mb-dd-divider { height: 1px; background: var(--border); margin: 8px 0; flex-shrink: 0; }
+    .mb-dd-create {
+      width: 100%; display: flex; align-items: center; gap: 8px; padding: 10px; background: var(--celeste-dim);
+      border: none; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 800; color: var(--azul);
+      font-family: inherit; flex-shrink: 0;
+    }
+    .mb-dd-create i { color: var(--azul); font-size: 14px; }
+    .mb-dd-create:hover { opacity: .85; }
+    .mb-dd-item { display: flex; align-items: center; gap: 10px; border-radius: 10px; padding: 2px; }
+    .mb-dd-item:hover { background: var(--bg); }
+    .mb-dd-item-btn { flex: 1; display: flex; align-items: center; gap: 10px; padding: 8px 8px; background: none; border: none; cursor: pointer; text-align: left; font-family: inherit; min-width: 0; }
+    .mb-dd-item-dot { width: 8px; height: 8px; border-radius: 50%; background: #8B5CF6; flex-shrink: 0; }
+    .mb-dd-item-info { flex: 1; min-width: 0; }
+    .mb-dd-item-name { font-size: 12.5px; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mb-dd-item-meta { font-size: 10.5px; color: var(--ink3); font-weight: 600; margin-top: 1px; }
+    .mb-dd-item-del { width: 26px; height: 26px; border-radius: 7px; background: none; border: none; cursor: pointer; color: #C4CDD9; flex-shrink: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+    .mb-dd-item:hover .mb-dd-item-del { opacity: 1; }
+    .mb-dd-item-del:hover { background: #FEF2F2; color: #EF4444; }
+
+    /* ── Moodboard: toolbar / pills ── */
+    .mb-pill-btn {
+      display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: 9px;
+      border: 1px solid var(--border); background: #fff; color: var(--ink2); font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all var(--t);
+    }
+    .mb-pill-btn.primary { background: #8B5CF6; border-color: #8B5CF6; color: #fff; }
+    .mb-pill-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .mb-pill-btn:not(:disabled):hover { border-color: var(--celeste); }
+
+    /* ── Moodboard: workspace (sidebar + canvas + panel) ── */
+    #mb-workspace.show { display: flex !important; }
+    #mb-sidebar {
+      width: 78px; flex-shrink: 0; background: #fff; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 14px 8px; overflow-y: auto;
+    }
+    .mb-side-tool-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 4px; border-radius: 12px;
+      border: none; background: none; cursor: pointer; font-family: inherit; transition: background .18s;
+    }
+    .mb-side-tool-btn i { font-size: 18px; color: var(--ink2); }
+    .mb-side-tool-btn span { font-size: 10px; font-weight: 700; color: var(--ink2); }
+    .mb-side-tool-btn:hover:not(:disabled) { background: var(--bg); }
+    .mb-side-tool-btn.active { background: var(--azul); }
+    .mb-side-tool-btn.active i, .mb-side-tool-btn.active span { color: var(--celeste); }
+    .mb-side-tool-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* ── Moodboard: card flotante de info ── */
+    #mb-header-card {
+      display: none; position: absolute; top: 20px; left: 20px; z-index: 30; max-width: 620px;
+      background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 22px;
+      box-shadow: var(--shadow-lg); align-items: center; gap: 28px; flex-wrap: wrap;
+    }
+    .mb-hc-title-row { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .mb-hc-icon { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg,#8B5CF6,#EC4899); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; flex-shrink: 0; }
+    .mb-hc-title { font-size: 15px; font-weight: 900; color: var(--ink); letter-spacing: -.3px; }
+    .mb-hc-edit-btn { background: none; border: none; cursor: pointer; color: var(--ink3); padding: 3px; display: flex; }
+    .mb-hc-edit-btn:hover { color: var(--azul); }
+    .mb-hc-stat { display: flex; flex-direction: column; gap: 2px; }
+    .mb-hc-stat-label { font-size: 9.5px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
+    .mb-hc-stat-value { font-size: 12px; font-weight: 700; color: var(--ink2); }
+    .mb-hc-count { margin-left: auto; font-size: 11px; font-weight: 800; color: var(--azul); background: var(--celeste-dim); padding: 5px 12px; border-radius: 20px; flex-shrink: 0; }
+
+    /* ── Moodboard: minimapa + zoom ── */
+    #mb-minimap-wrap { position: absolute; bottom: 20px; right: 20px; z-index: 30; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    #mb-minimap { width: 150px; height: 100px; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+    #mb-minimap-zoom { display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 4px; }
+    #mb-minimap-zoom button { width: 26px; height: 26px; border-radius: 8px; border: none; background: none; cursor: pointer; color: var(--ink2); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    #mb-minimap-zoom button:hover { background: var(--bg); }
+    #mb-minimap-zoom span { font-size: 10.5px; font-weight: 800; color: var(--ink2); width: 36px; text-align: center; }
+
+    /* ── Moodboard: controles inferiores ── */
+    #mb-history-controls { position: absolute; bottom: 20px; left: 20px; z-index: 30; display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 4px; }
+    #mb-history-controls button { width: 30px; height: 30px; border-radius: 8px; border: none; background: none; color: var(--ink3); display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: not-allowed; opacity: .5; }
+    #mb-ai-bar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 5px; }
+    #mb-ai-bar button { width: 34px; height: 34px; border-radius: 10px; border: none; background: none; color: var(--ink3); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: not-allowed; opacity: .5; }
+
+    /* ── Moodboard: panel derecho de propiedades ── */
+    #mb-properties-panel {
+      width: 0; flex-shrink: 0; background: #fff; border-left: 1px solid var(--border);
+      overflow: hidden; display: flex; flex-direction: column;
+      transition: width .28s cubic-bezier(.4,0,.2,1);
+    }
+    #mb-properties-panel.open { width: 300px; }
+    #mb-properties-tabs { display: flex; gap: 4px; padding: 12px 16px 0; flex-shrink: 0; }
+    .mb-prop-tab { padding: 8px 4px; background: none; border: none; border-bottom: 2px solid transparent; font-size: 12.5px; font-weight: 700; color: var(--ink3); cursor: pointer; font-family: inherit; margin-right: 14px; }
+    .mb-prop-tab.active { color: var(--azul); border-bottom-color: var(--azul); }
+    .mb-prop-tab:disabled { cursor: not-allowed; opacity: .5; }
+    #mb-properties-body { flex: 1; overflow-y: auto; padding: 16px; }
+    .mb-prop-field { margin-bottom: 16px; }
+    .mb-prop-label { font-size: 10.5px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block; }
+    .mb-prop-input, .mb-prop-textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-family: inherit; color: var(--ink); outline: none; box-sizing: border-box; }
+    .mb-prop-input:focus, .mb-prop-textarea:focus { border-color: var(--celeste); }
+    .mb-prop-textarea { min-height: 70px; resize: vertical; }
+    .mb-prop-preview { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 16px; background: var(--bg); }
+    .mb-prop-preview img, .mb-prop-preview video, .mb-prop-preview iframe { width: 100%; height: 160px; object-fit: cover; display: block; border: none; }
+    .mb-prop-delete { width: 100%; padding: 10px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; color: var(--danger); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .mb-prop-delete:hover { background: #FEE2E2; }
+    .mb-prop-colors { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mb-prop-color-dot { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+    .mb-prop-color-dot.active { border-color: var(--ink); }
+    .mb-prop-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 16px; color: var(--ink3); text-align: center; }
+    .mb-prop-empty i { font-size: 30px; opacity: .4; }
+    .mb-prop-empty span { font-size: 12px; line-height: 1.6; }
+
+    /* ── Moodboard: cards del lienzo, más premium ── */
+    #mb-canvas-content .mb-item, #mb-items-layer .mb-item { box-shadow: 0 3px 14px rgba(10,37,64,.10); }
+    .mb-item.selected { border-color: #8B5CF6 !important; box-shadow: 0 0 0 3px rgba(139,92,246,.28) !important; }
+    #mb-anchor-hint { display: none; }
+
     /* Kanban */
     .kanban { display: flex; gap: 14px; overflow-x: auto; height: calc(100vh - 200px); padding-bottom: 12px; }
     .kanban::-webkit-scrollbar { height: 5px; }
@@ -1332,27 +1473,8 @@
       <div class="content-subview" id="sv-moodboard" style="padding:0;overflow:hidden">
        <div style="display:flex;flex-direction:column;height:100%">
 
-        <!-- Barra superior: selector de moodboard -->
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
-          <div style="flex:1"></div>
-          <div style="position:relative;flex-shrink:0">
-            <button onclick="toggleMoodboardDropdown()" id="moodboard-selector-btn" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;max-width:220px">
-              <i class="ti ti-palette" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>
-              <span id="moodboard-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Elegí un moodboard</span>
-              <i class="ti ti-chevron-down" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
-            </button>
-            <div id="moodboard-dropdown" style="display:none;position:absolute;top:44px;right:0;width:260px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:340px;overflow-y:auto">
-              <div id="moodboard-dropdown-list"></div>
-              <div style="height:1px;background:var(--border);margin:8px 0"></div>
-              <button onclick="openCreateMoodboardModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
-                <i class="ti ti-plus" style="font-size:14px;color:var(--celeste)"></i> Crear nuevo moodboard
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Barra de herramientas tipo Figma -->
-        <div id="mb-toolbar" style="display:none;align-items:center;gap:6px;padding:8px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
+        <!-- Barra de herramientas -->
+        <div id="mb-toolbar" style="display:none;align-items:center;gap:6px;padding:9px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
           <button class="mb-tool-btn active" data-tool="select" onclick="setMbTool('select')" title="Seleccionar / mover"><i class="ti ti-pointer"></i></button>
           <button class="mb-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Agregar imagen"><i class="ti ti-photo"></i></button>
           <button class="mb-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Agregar link o video"><i class="ti ti-link"></i></button>
@@ -1362,25 +1484,86 @@
           <div style="width:1px;height:20px;background:var(--border);margin:0 6px"></div>
           <div id="mb-hint" style="font-size:11px;color:var(--ink3);font-weight:600">Elegí una herramienta y clickeá el lienzo</div>
           <div style="flex:1"></div>
+          <button class="mb-tool-btn" disabled title="Próximamente"><i class="ti ti-moon"></i></button>
+          <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
           <button class="mb-tool-btn" onclick="mbZoomOut()" title="Alejar"><i class="ti ti-zoom-out"></i></button>
           <div id="mb-zoom-label" style="font-size:11px;font-weight:800;color:var(--ink2);width:42px;text-align:center">100%</div>
           <button class="mb-tool-btn" onclick="mbZoomIn()" title="Acercar"><i class="ti ti-zoom-in"></i></button>
           <button class="mb-tool-btn" onclick="mbResetZoom()" title="Restablecer zoom"><i class="ti ti-focus-2"></i></button>
+          <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
+          <button class="mb-pill-btn" disabled title="Próximamente"><i class="ti ti-presentation"></i> Presentar</button>
+          <button class="mb-pill-btn primary" disabled title="Próximamente"><i class="ti ti-share-2"></i> Compartir</button>
         </div>
 
         <!-- Estado vacío -->
-        <div id="moodboard-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink3)">
-          <i class="ti ti-palette" style="font-size:52px;opacity:.35"></i>
-          <div style="font-size:15px;font-weight:800;color:var(--ink2)">Todavía no tenés moodboards</div>
-          <div style="font-size:13px;max-width:340px;text-align:center;line-height:1.6">Creá uno para armar referencias visuales de un cliente: imágenes, links, videos y notas en un lienzo libre.</div>
+        <div id="moodboard-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink3)">
+          <div style="width:72px;height:72px;border-radius:20px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center">
+            <i class="ti ti-palette" style="font-size:32px;color:var(--azul);opacity:.5"></i>
+          </div>
+          <div style="font-size:17px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Empezá a construir tu moodboard</div>
+          <div style="font-size:13px;max-width:360px;text-align:center;line-height:1.6">Agregá imágenes, notas, referencias o ideas para organizar visualmente tu campaña.</div>
           <button onclick="openCreateMoodboardModal()" class="tbtn primary" style="gap:6px"><i class="ti ti-plus" style="font-size:14px"></i> Crear mi primer moodboard</button>
         </div>
 
-        <!-- Lienzo -->
-        <div id="mb-canvas-viewport" style="display:none;flex:1;overflow:hidden;position:relative;background:#EEF1F5">
-          <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:3000px;height:3000px;transform-origin:0 0;background-image:radial-gradient(circle,#D7DEE6 1.5px,transparent 1.5px);background-size:26px 26px">
-            <svg id="mb-connections-svg" width="3000" height="3000"></svg>
-            <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
+        <!-- Workspace: sidebar + lienzo + panel de propiedades -->
+        <div id="mb-workspace" style="display:none;flex:1;overflow:hidden;position:relative">
+
+          <!-- Sidebar izquierda: biblioteca de elementos -->
+          <div id="mb-sidebar">
+            <button class="mb-side-tool-btn active" data-tool="select" onclick="setMbTool('select')" title="Seleccionar"><i class="ti ti-pointer"></i><span>Seleccionar</span></button>
+            <button class="mb-side-tool-btn" data-tool="nota" onclick="setMbTool('nota')" title="Nota"><i class="ti ti-note"></i><span>Nota</span></button>
+            <button class="mb-side-tool-btn" data-tool="texto" onclick="setMbTool('texto')" title="Texto"><i class="ti ti-typography"></i><span>Texto</span></button>
+            <button class="mb-side-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Imagen"><i class="ti ti-photo"></i><span>Imagen</span></button>
+            <button class="mb-side-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Link o video"><i class="ti ti-brand-youtube"></i><span>Video</span></button>
+            <button class="mb-side-tool-btn" data-tool="marco" onclick="setMbTool('marco')" title="Marco"><i class="ti ti-frame"></i><span>Marco</span></button>
+            <div style="height:1px;background:var(--border);margin:4px 10px"></div>
+            <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-sticker"></i><span>Sticker</span></button>
+            <button class="mb-side-tool-btn" disabled title="Próximamente"><i class="ti ti-file"></i><span>Archivo</span></button>
+          </div>
+
+          <!-- Lienzo -->
+          <div id="mb-canvas-viewport" style="flex:1;overflow:hidden;position:relative;background-color:#F7F8FB">
+
+            <!-- Card flotante con info del moodboard -->
+            <div id="mb-header-card"></div>
+
+            <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:3000px;height:3000px;transform-origin:0 0;background-image:radial-gradient(#D7DCE5 1px,transparent 1px);background-size:22px 22px">
+              <svg id="mb-connections-svg" width="3000" height="3000"></svg>
+              <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
+            </div>
+
+            <!-- Controles inferiores izquierda: undo/redo (preparado, sin historial todavía) -->
+            <div id="mb-history-controls">
+              <button disabled title="Deshacer (próximamente)"><i class="ti ti-arrow-back-up"></i></button>
+              <button disabled title="Rehacer (próximamente)"><i class="ti ti-arrow-forward-up"></i></button>
+            </div>
+
+            <!-- Barra inferior central: acciones de IA (preparado, sin conectar) -->
+            <div id="mb-ai-bar" title="Próximamente">
+              <button disabled><i class="ti ti-sparkles"></i></button>
+              <button disabled><i class="ti ti-layout-grid"></i></button>
+              <button disabled><i class="ti ti-message-circle"></i></button>
+            </div>
+
+            <!-- Minimapa + zoom (vista simplificada, no interactiva todavía) -->
+            <div id="mb-minimap-wrap">
+              <div id="mb-minimap"></div>
+              <div id="mb-minimap-zoom">
+                <button onclick="mbZoomOut()" title="Alejar"><i class="ti ti-minus"></i></button>
+                <span id="mb-zoom-label-2">100%</span>
+                <button onclick="mbZoomIn()" title="Acercar"><i class="ti ti-plus"></i></button>
+                <button onclick="mbResetZoom()" title="Centrar"><i class="ti ti-focus-2"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel derecho de propiedades -->
+          <div id="mb-properties-panel">
+            <div id="mb-properties-tabs">
+              <button class="mb-prop-tab active" data-tab="props" onclick="setMbPropTab('props')">Propiedades</button>
+              <button class="mb-prop-tab" data-tab="comments" onclick="setMbPropTab('comments')" disabled title="Próximamente">Comentarios</button>
+            </div>
+            <div id="mb-properties-body"></div>
           </div>
         </div>
        </div>
@@ -4599,6 +4782,25 @@
   <button class="mb-floating-tab-btn" data-tab="tareas" onclick="switchContentTab('tareas')"><i class="ti ti-check"></i> Tareas</button>
   <button class="mb-floating-tab-btn" data-tab="tableros" onclick="switchContentTab('tableros')"><i class="ti ti-stack-2"></i> Tableros</button>
   <button class="mb-floating-tab-btn active" data-tab="moodboard" onclick="switchContentTab('moodboard')"><i class="ti ti-palette"></i> Moodboard</button>
+</div>
+
+<div id="mb-floating-selector">
+  <button onclick="toggleMoodboardDropdown()" id="moodboard-selector-btn">
+    <i class="ti ti-palette"></i>
+    <span id="moodboard-selector-label">Elegí un moodboard</span>
+    <i class="ti ti-chevron-down"></i>
+  </button>
+  <div id="moodboard-dropdown">
+    <div id="moodboard-search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="moodboard-search-input" placeholder="Buscar moodboard..." oninput="filterMoodboardDropdown(this.value)">
+    </div>
+    <div id="moodboard-dropdown-list"></div>
+    <div class="mb-dd-divider"></div>
+    <button class="mb-dd-create" onclick="openCreateMoodboardModal()">
+      <i class="ti ti-plus"></i> Crear nuevo moodboard
+    </button>
+  </div>
 </div>
 
 <div id="calendario-pdf-overlay" style="display:none;position:fixed;inset:0;background:#EEF1F5;z-index:900;overflow-y:auto">
@@ -8731,12 +8933,14 @@
 
     // Moodboard toma toda la pantalla: se esconde el rail/topbar y aparece el cluster flotante
     const floatingTabs = document.getElementById('mb-floating-tabs')
+    const floatingSelector = document.getElementById('mb-floating-selector')
     if (tab === 'moodboard') {
       document.body.classList.add('mb-fullscreen')
       floatingTabs?.classList.add('visible')
     } else {
       document.body.classList.remove('mb-fullscreen')
       floatingTabs?.classList.remove('visible')
+      floatingSelector?.classList.remove('visible')
     }
     document.querySelectorAll('.mb-floating-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab))
 
@@ -11908,44 +12112,63 @@ if (id) {
     label.textContent = active?.nombre || 'Elegí un moodboard'
   }
 
-  function renderMoodboardDropdown() {
+  function renderMoodboardDropdown(filterText) {
     const list = document.getElementById('moodboard-dropdown-list')
     if (!list) return
+    const q = (filterText || '').trim().toLowerCase()
+    const items = q ? MOODBOARDS.filter(b => b.nombre.toLowerCase().includes(q)) : MOODBOARDS
     if (MOODBOARDS.length === 0) {
-      list.innerHTML = `<div style="padding:10px;font-size:12px;color:var(--ink3);text-align:center">Todavía no hay moodboards</div>`
+      list.innerHTML = `<div style="padding:16px 10px;font-size:12px;color:var(--ink3);text-align:center">Todavía no hay moodboards</div>`
       return
     }
-    list.innerHTML = MOODBOARDS.map(b => {
+    if (items.length === 0) {
+      list.innerHTML = `<div style="padding:16px 10px;font-size:12px;color:var(--ink3);text-align:center">Sin resultados para "${filterText}"</div>`
+      return
+    }
+    list.innerHTML = items.map(b => {
       const isActive = b.id === currentMoodboardId
-      return `<div style="display:flex;align-items:center;gap:2px;border-radius:9px" onmouseover="this.style.background='var(--bg)';this.querySelector('.mb-del-btn')?.style.setProperty('opacity','1')" onmouseout="this.style.background='none';this.querySelector('.mb-del-btn')?.style.setProperty('opacity','0')">
-        <button onclick="selectMoodboard('${b.id}')" style="flex:1;display:flex;align-items:center;gap:9px;padding:8px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-family:inherit;text-align:left;min-width:0">
-          <span style="width:8px;height:8px;border-radius:50%;background:#8B5CF6;flex-shrink:0"></span>
-          <span style="flex:1;font-size:12px;font-weight:${isActive?'700':'500'};color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.nombre}</span>
-          ${isActive ? '<i class="ti ti-check" style="font-size:13px;color:var(--ink);flex-shrink:0"></i>' : ''}
+      const cliente = b.client_id ? (clients.find(c => c.id === b.client_id)?.nombre || '') : ''
+      const nItems = b.id === currentMoodboardId ? moodboardItems.length : null
+      const meta = [cliente, nItems !== null ? `${nItems} elemento${nItems!==1?'s':''}` : null].filter(Boolean).join(' · ')
+      return `<div class="mb-dd-item">
+        <button class="mb-dd-item-btn" onclick="selectMoodboard('${b.id}')">
+          <span class="mb-dd-item-dot" style="background:${isActive?'#8B5CF6':'#C4CDD9'}"></span>
+          <span class="mb-dd-item-info">
+            <span class="mb-dd-item-name">${b.nombre}</span>
+            ${meta ? `<span class="mb-dd-item-meta">${meta}</span>` : ''}
+          </span>
+          ${isActive ? '<i class="ti ti-check" style="font-size:14px;color:#8B5CF6;flex-shrink:0"></i>' : ''}
         </button>
-        <button class="mb-del-btn" onclick="event.stopPropagation();deleteMoodboardConfirm('${b.id}','${(b.nombre||'').replace(/'/g,"\\'")}')" style="width:26px;height:26px;border-radius:7px;background:none;border:none;cursor:pointer;color:#C4CDD9;opacity:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-right:4px" onmouseover="this.style.background='#FEF2F2';this.style.color='#EF4444'" onmouseout="this.style.background='none';this.style.color='#C4CDD9'"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        <button class="mb-dd-item-del" onclick="event.stopPropagation();deleteMoodboardConfirm('${b.id}','${(b.nombre||'').replace(/'/g,"\\'")}')"><i class="ti ti-trash" style="font-size:12px"></i></button>
       </div>`
     }).join('')
   }
 
+  window.filterMoodboardDropdown = function(text) { renderMoodboardDropdown(text) }
+
   window.toggleMoodboardDropdown = function() {
     const dd = document.getElementById('moodboard-dropdown')
     if (!dd) return
-    dd.style.display = dd.style.display === 'none' ? 'block' : 'none'
+    dd.classList.toggle('show')
+    if (dd.classList.contains('show')) {
+      const search = document.getElementById('moodboard-search-input')
+      if (search) { search.value = ''; setTimeout(() => search.focus(), 50) }
+      renderMoodboardDropdown()
+    }
   }
 
   document.addEventListener('click', e => {
     const dd = document.getElementById('moodboard-dropdown')
     const btn = document.getElementById('moodboard-selector-btn')
-    if (dd && dd.style.display === 'block' && !dd.contains(e.target) && !btn?.contains(e.target)) {
-      dd.style.display = 'none'
+    if (dd && dd.classList.contains('show') && !dd.contains(e.target) && !btn?.contains(e.target)) {
+      dd.classList.remove('show')
     }
   })
 
   window.selectMoodboard = async function(id) {
     currentMoodboardId = id
     const dd = document.getElementById('moodboard-dropdown')
-    if (dd) dd.style.display = 'none'
+    if (dd) dd.classList.remove('show')
     renderMoodboardSelectorLabel()
     renderMoodboardDropdown()
     await renderMoodboardTab()
@@ -11954,17 +12177,20 @@ if (id) {
   async function renderMoodboardTab() {
     await loadMoodboards()
     const emptyState = document.getElementById('moodboard-empty-state')
-    const viewport = document.getElementById('mb-canvas-viewport')
+    const workspace = document.getElementById('mb-workspace')
     const toolbar = document.getElementById('mb-toolbar')
+    const floatingSelector = document.getElementById('mb-floating-selector')
+    floatingSelector?.classList.add('visible')
 
     if (!currentMoodboardId) {
       emptyState.style.display = 'flex'
-      viewport.style.display = 'none'
+      workspace.classList.remove('show')
+      workspace.style.display = 'none'
       toolbar.style.display = 'none'
       return
     }
     emptyState.style.display = 'none'
-    viewport.style.display = 'block'
+    workspace.style.display = 'flex'
     toolbar.style.display = 'flex'
 
     await Promise.all([loadMoodboardItems(), loadMoodboardConnections()])
@@ -11993,7 +12219,7 @@ if (id) {
   // ── Crear / eliminar moodboard ─────────────────────────
   window.openCreateMoodboardModal = function() {
     const dd = document.getElementById('moodboard-dropdown')
-    if (dd) dd.style.display = 'none'
+    if (dd) dd.classList.remove('show')
     document.getElementById('new-moodboard-nombre').value = ''
     const sel = document.getElementById('new-moodboard-cliente')
     sel.innerHTML = '<option value="">Sin cliente asociado</option>' + clients.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
@@ -12036,7 +12262,7 @@ if (id) {
 
   window.deleteMoodboardConfirm = async function(id, nombre) {
     const dd = document.getElementById('moodboard-dropdown')
-    if (dd) dd.style.display = 'none'
+    if (dd) dd.classList.remove('show')
     const { count } = await supabase.from('moodboard_items').select('id', { count: 'exact', head: true }).eq('moodboard_id', id)
     const msg = count > 0 ? `Este moodboard tiene ${count} elemento${count!==1?'s':''} que se van a borrar con él.\n\n` : ''
     if (!confirm(`${msg}¿Eliminar el moodboard "${nombre}"?`)) return
@@ -12051,7 +12277,7 @@ if (id) {
   // ── Herramientas ────────────────────────────────────────
   window.setMbTool = function(tool) {
     mbActiveTool = tool
-    document.querySelectorAll('.mb-tool-btn[data-tool]').forEach(b => b.classList.toggle('active', b.dataset.tool === tool))
+    document.querySelectorAll('.mb-tool-btn[data-tool], .mb-side-tool-btn[data-tool]').forEach(b => b.classList.toggle('active', b.dataset.tool === tool))
     const viewport = document.getElementById('mb-canvas-viewport')
     viewport.classList.toggle('tool-active', tool !== 'select')
     const hint = document.getElementById('mb-hint')
@@ -12499,16 +12725,20 @@ if (id) {
       </div>`
     }).join('')
     renderMbConnections()
+    renderMbHeaderCard()
+    renderMbMinimap()
   }
 
   window.selectMbItem = function(id) {
     mbSelectedItemId = id
     document.querySelectorAll('#mb-items-layer .mb-item').forEach(el => el.classList.toggle('selected', el.dataset.id === id))
+    renderMbPropertiesPanel()
   }
 
   function deselectMbItem() {
     mbSelectedItemId = null
     document.querySelectorAll('#mb-items-layer .mb-item.selected').forEach(el => el.classList.remove('selected'))
+    renderMbPropertiesPanel()
   }
 
   window.mbBringToFront = async function(id) {
@@ -12537,6 +12767,7 @@ if (id) {
     mbConnections = mbConnections.filter(c => c.from_item_id !== id && c.to_item_id !== id)
     if (mbSelectedItemId === id) mbSelectedItemId = null
     renderMbCanvas()
+    renderMbPropertiesPanel()
   }
 
   window.enterMbEditMode = function(el) {
@@ -12564,6 +12795,143 @@ if (id) {
     if (item) item.color = color
     renderMbCanvas()
     await supabase.from('moodboard_items').update({ color }).eq('id', id)
+  }
+
+  // ── Card flotante con info del moodboard ──────────────
+  function renderMbHeaderCard() {
+    const card = document.getElementById('mb-header-card')
+    if (!card) return
+    const board = MOODBOARDS.find(b => b.id === currentMoodboardId)
+    if (!board) { card.style.display = 'none'; return }
+    card.style.display = 'flex'
+    const cliente = board.client_id ? (clients.find(c => c.id === board.client_id)?.nombre || '') : ''
+    card.innerHTML = `
+      <div class="mb-hc-title-row">
+        <div class="mb-hc-icon"><i class="ti ti-palette"></i></div>
+        <div>
+          <div class="mb-hc-title">${board.nombre}</div>
+        </div>
+        <button class="mb-hc-edit-btn" onclick="promptRenameMoodboard()" title="Renombrar"><i class="ti ti-pencil" style="font-size:13px"></i></button>
+      </div>
+      ${cliente ? `<div class="mb-hc-stat"><span class="mb-hc-stat-label">Cliente</span><span class="mb-hc-stat-value">${cliente}</span></div>` : ''}
+      <div class="mb-hc-count">${moodboardItems.length} elemento${moodboardItems.length!==1?'s':''}</div>
+    `
+  }
+
+  window.promptRenameMoodboard = async function() {
+    const board = MOODBOARDS.find(b => b.id === currentMoodboardId)
+    if (!board) return
+    const nuevo = prompt('Nombre del moodboard:', board.nombre)
+    if (!nuevo || !nuevo.trim() || nuevo.trim() === board.nombre) return
+    board.nombre = nuevo.trim()
+    renderMoodboardSelectorLabel()
+    renderMbHeaderCard()
+    await supabase.from('moodboards').update({ nombre: nuevo.trim() }).eq('id', board.id)
+  }
+
+  // ── Minimapa (vista simplificada, no interactiva) ──────
+  function renderMbMinimap() {
+    const map = document.getElementById('mb-minimap')
+    const zoomLabel2 = document.getElementById('mb-zoom-label-2')
+    if (zoomLabel2) zoomLabel2.textContent = Math.round(mbZoom * 100) + '%'
+    if (!map) return
+    if (moodboardItems.length === 0) { map.innerHTML = '' ; return }
+    const xs = moodboardItems.map(i => i.x), ys = moodboardItems.map(i => i.y)
+    const xe = moodboardItems.map(i => i.x + i.width), ye = moodboardItems.map(i => i.y + i.height)
+    const minX = Math.min(...xs) - 40, minY = Math.min(...ys) - 40
+    const maxX = Math.max(...xe) + 40, maxY = Math.max(...ye) + 40
+    const spanX = Math.max(maxX - minX, 1), spanY = Math.max(maxY - minY, 1)
+    const scale = Math.min(150 / spanX, 100 / spanY)
+    const colorFor = { imagen: '#3B82F6', link: '#EF4444', nota: '#FACC15', texto: '#8B5CF6', marco: 'transparent' }
+    map.innerHTML = moodboardItems.map(it => {
+      const left = (it.x - minX) * scale, top = (it.y - minY) * scale
+      const w = Math.max(it.width * scale, 3), h = Math.max(it.height * scale, 3)
+      const isMarco = it.tipo === 'marco'
+      const bg = isMarco ? 'transparent' : (it.color && (it.tipo==='nota') ? it.color : (colorFor[it.tipo] || '#94A3B8'))
+      const border = isMarco ? `1px dashed ${it.color || '#94A3B8'}` : 'none'
+      return `<div style="position:absolute;left:${left}px;top:${top}px;width:${w}px;height:${h}px;background:${bg};border:${border};border-radius:2px;opacity:.85"></div>`
+    }).join('')
+  }
+
+  // ── Panel derecho de propiedades ───────────────────────
+  let mbPropTab = 'props'
+
+  window.setMbPropTab = function(tab) {
+    if (tab === 'comments') return // preparado, todavía sin sistema de comentarios real
+    mbPropTab = tab
+    document.querySelectorAll('.mb-prop-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab))
+    renderMbPropertiesPanel()
+  }
+
+  function renderMbPropertiesPanel() {
+    const panel = document.getElementById('mb-properties-panel')
+    const body = document.getElementById('mb-properties-body')
+    if (!panel || !body) return
+    const item = moodboardItems.find(i => i.id === mbSelectedItemId)
+    if (!item) {
+      panel.classList.remove('open')
+      body.innerHTML = ''
+      return
+    }
+    panel.classList.add('open')
+
+    const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco' }
+
+    let previewHTML = ''
+    if (item.tipo === 'imagen') {
+      previewHTML = `<div class="mb-prop-preview"><img src="${item.archivo_url}"></div>`
+    } else if (item.tipo === 'link') {
+      const info = classifyLinkUrl(item.url)
+      if (info.kind === 'youtube' || info.kind === 'vimeo') previewHTML = `<div class="mb-prop-preview"><iframe src="${info.embed}"></iframe></div>`
+      else if (info.kind === 'video') previewHTML = `<div class="mb-prop-preview"><video src="${item.url}" controls></video></div>`
+    }
+
+    const tituloField = (item.tipo === 'marco') ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Título del marco</label>
+        <input class="mb-prop-input" value="${(item.titulo||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','titulo',this.value)">
+      </div>` : ''
+
+    const textoField = (item.tipo === 'nota' || item.tipo === 'texto') ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Texto</label>
+        <textarea class="mb-prop-textarea" onchange="updateMbItemField('${item.id}','contenido',this.value)">${(item.contenido||'').replace(/</g,'&lt;')}</textarea>
+      </div>` : ''
+
+    const urlField = (item.tipo === 'link') ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">URL</label>
+        <input class="mb-prop-input" value="${(item.url||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','url',this.value)">
+      </div>` : ''
+
+    const colorField = (item.tipo === 'nota' || item.tipo === 'marco') ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Color</label>
+        <div class="mb-prop-colors">
+          ${['#FFF3B0','#DDD6FE','#BFDBFE','#BBF7D0','#FBCFE8','#94A3B8'].map(c => `<div class="mb-prop-color-dot ${item.color===c?'active':''}" style="background:${c}" onclick="updateMbItemField('${item.id}','color','${c}')"></div>`).join('')}
+        </div>
+      </div>` : ''
+
+    body.innerHTML = `
+      ${previewHTML}
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Tipo</label>
+        <div style="font-size:13px;font-weight:700;color:var(--ink2)">${tipoLabels[item.tipo] || item.tipo}</div>
+      </div>
+      ${tituloField}
+      ${urlField}
+      ${textoField}
+      ${colorField}
+      <button class="mb-prop-delete" onclick="deleteMbItem('${item.id}')"><i class="ti ti-trash"></i> Eliminar elemento</button>
+    `
+  }
+
+  window.updateMbItemField = async function(id, field, value) {
+    const item = moodboardItems.find(i => i.id === id)
+    if (item) item[field] = value
+    renderMbCanvas()
+    renderMbPropertiesPanel()
+    await supabase.from('moodboard_items').update({ [field]: value }).eq('id', id)
   }
 
   // ══════════════════════════════════════
