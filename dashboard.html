@@ -884,6 +884,12 @@
     .mb-side-tool-btn:hover:not(:disabled) { background: var(--bg); }
     .mb-side-tool-btn.active { background: var(--azul); }
     .mb-side-tool-btn.active i { color: var(--celeste); }
+    .mb-side-tool-btn.running { position: relative; background: var(--celeste-dim); }
+    .mb-side-tool-btn.running i { color: var(--azul); }
+    .mb-side-tool-btn.running::after {
+      content: ''; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%;
+      background: #22C55E; border: 1.5px solid #fff; animation: pulse-dot 2s ease-in-out infinite;
+    }
     .mb-side-tool-btn:disabled { opacity: .3; cursor: not-allowed; }
 
     /* ── Moodboard: card flotante de info ── */
@@ -13416,14 +13422,16 @@ if (id) {
     document.getElementById('mb-music-loaded').style.display = 'flex'
     audioEl.play()
     document.getElementById('mb-music-toggle-icon').className = 'ti ti-player-pause'
+    document.getElementById('mb-music-btn')?.classList.add('running')
   }
 
   window.mbMusicToggle = function() {
     const el = document.getElementById('mb-music-audio-el')
     const icon = document.getElementById('mb-music-toggle-icon')
+    const btn = document.getElementById('mb-music-btn')
     if (!el.src) return
-    if (el.paused) { el.play(); icon.className = 'ti ti-player-pause' }
-    else { el.pause(); icon.className = 'ti ti-player-play' }
+    if (el.paused) { el.play(); icon.className = 'ti ti-player-pause'; btn?.classList.add('running') }
+    else { el.pause(); icon.className = 'ti ti-player-play'; btn?.classList.remove('running') }
   }
 
   window.mbMusicSetVolume = function(val) {
@@ -13437,6 +13445,7 @@ if (id) {
     el.load()
     document.getElementById('mb-music-loaded').style.display = 'none'
     document.getElementById('mb-music-toggle-icon').className = 'ti ti-player-play'
+    document.getElementById('mb-music-btn')?.classList.remove('running')
     renderMbMusicPicker()
   }
 
@@ -13474,14 +13483,17 @@ if (id) {
   window.mbTimerToggle = function() {
     mbTimerRunning = !mbTimerRunning
     const icon = document.getElementById('mb-timer-toggle-icon')
+    const btn = document.getElementById('mb-timer-btn')
     if (mbTimerRunning) {
       icon.className = 'ti ti-player-pause'
+      btn?.classList.add('running')
       mbTimerInterval = setInterval(() => {
         mbTimerSeconds++
         document.getElementById('mb-timer-display').textContent = mbFormatTimer(mbTimerSeconds)
       }, 1000)
     } else {
       icon.className = 'ti ti-player-play'
+      btn?.classList.remove('running')
       clearInterval(mbTimerInterval)
     }
   }
@@ -13492,6 +13504,7 @@ if (id) {
     mbTimerSeconds = 0
     document.getElementById('mb-timer-display').textContent = '00:00:00'
     document.getElementById('mb-timer-toggle-icon').className = 'ti ti-player-play'
+    document.getElementById('mb-timer-btn')?.classList.remove('running')
   }
 
   async function createMbItem(partial) {
