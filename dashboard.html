@@ -496,26 +496,54 @@
     /* ── Contenido toolbar ── */
     .contenido-toolbar {
       display: flex; align-items: center; gap: 12px;
-      padding: 10px 20px; background: var(--white);
-      border-bottom: 1px solid var(--border);
+      padding: 16px 20px 4px; background: transparent;
+      border-bottom: none;
       flex-shrink: 0;
     }
     .contenido-tabs {
-      display: flex; gap: 0;
-      background: var(--bg); border: 1.5px solid var(--border);
-      border-radius: 10px; padding: 3px;
+      display: flex; gap: 3px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 14px; padding: 5px;
+      box-shadow: var(--shadow-lg);
       position: relative;
     }
     .contenido-tab {
       display: flex; align-items: center; gap: 6px;
-      padding: 7px 16px; border-radius: 8px;
-      font-size: 13px; font-weight: 700;
-      cursor: pointer; color: var(--ink3);
-      transition: color var(--t); user-select: none;
+      padding: 8px 14px; border-radius: 10px;
+      font-size: 12.5px; font-weight: 700;
+      cursor: pointer; color: var(--ink2);
+      transition: background var(--t), color var(--t); user-select: none;
       position: relative; z-index: 1;
     }
-    .contenido-tab.active { color: var(--celeste); }
-    .contenido-tab:not(.active):hover { color: var(--ink); }
+    .contenido-tab.active { background: var(--azul); color: var(--celeste); }
+    .contenido-tab:not(.active):hover { background: var(--bg); }
+
+    /* ── Selector partido: nombre + "+" para crear directo (Tableros) ── */
+    .cp-selector-split {
+      display: flex; align-items: stretch; background: #fff; border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+    }
+    .cp-selector-main {
+      display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; max-width: 200px;
+      background: none; border: none; font-size: 13px; font-weight: 700; color: var(--ink); cursor: pointer;
+      font-family: inherit; transition: background var(--t);
+    }
+    .cp-selector-main:hover { background: var(--bg); }
+    .cp-selector-main i:first-child { font-size: 14px; color: var(--ink3); flex-shrink: 0; }
+    .cp-selector-main span { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cp-selector-main i:last-child { font-size: 13px; color: var(--ink3); flex-shrink: 0; }
+    .cp-selector-plus {
+      width: 38px; height: 38px; border: none; border-left: 1px solid var(--border); background: var(--bg);
+      color: var(--azul); cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0; transition: background var(--t);
+    }
+    .cp-selector-plus:hover { background: var(--celeste-dim); }
+    #tablero-dropdown {
+      display: none; position: absolute; top: 44px; left: 0; width: 270px; background: #fff;
+      border: 1px solid var(--border); border-radius: 14px; padding: 10px; box-shadow: var(--shadow-lg);
+      z-index: 200; max-height: 380px; overflow-y: auto;
+    }
+    #tablero-dropdown.show { display: block; }
 
     /* ── Sliding pill — shared by all pill-tab groups ── */
     .pill-slider {
@@ -1771,7 +1799,7 @@
       <!-- Barra de acciones contenido -->
       <div class="contenido-toolbar">
         <div class="contenido-tabs" id="contenido-tabs">
-          <div class="pill-slider" id="contenido-pill"></div>
+          <div class="pill-slider" id="contenido-pill" style="display:none"></div>
           <div class="contenido-tab" id="tab-piezas" onclick="switchContentTab('piezas')" style="display:none">
             <i class="ti ti-layout-kanban" style="font-size:14px"></i>
             Piezas
@@ -1790,6 +1818,29 @@
           </div>
         </div>
         <div style="flex:1"></div>
+
+        <!-- Controles de Tableros: selector con "+" integrado, y Nueva columna. Solo visibles en esa pestaña -->
+        <div id="tableros-toolbar-extra" style="display:flex;align-items:center;gap:10px">
+          <div class="cp-selector-split">
+            <button onclick="toggleTableroDropdown()" id="tablero-selector-btn" class="cp-selector-main">
+              <i class="ti ti-stack-2"></i>
+              <span id="tablero-selector-label">Elegí un tablero</span>
+              <i class="ti ti-chevron-down"></i>
+            </button>
+            <button onclick="openCreateTableroModal()" class="cp-selector-plus" title="Crear tablero nuevo"><i class="ti ti-plus"></i></button>
+            <div id="tablero-dropdown">
+              <div id="tablero-dropdown-list"></div>
+              <div style="height:1px;background:var(--border);margin:8px 0"></div>
+              <button onclick="openCreateTableroModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
+                <i class="ti ti-plus" style="font-size:14px;color:var(--celeste)"></i> Crear nuevo tablero
+              </button>
+            </div>
+          </div>
+          <button class="tbtn primary" id="btn-add-stage" onclick="promptAddStage()" style="gap:6px;display:none">
+            <i class="ti ti-plus" style="font-size:14px"></i> Nueva columna
+          </button>
+        </div>
+
         <button id="contenido-cta" onclick="handleContenidoCta()" class="contenido-cta-btn">
           <i class="ti ti-plus" style="font-size:14px"></i>
           <span id="contenido-cta-label">Nueva pieza</span>
@@ -1804,27 +1855,6 @@
       <!-- TABLEROS — libres, sin aprobación de cliente -->
       <div class="content-subview active" id="sv-tableros" style="padding:0;overflow:hidden">
        <div style="display:flex;flex-direction:column;height:100%">
-        <div style="display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0">
-          <div style="position:relative;flex-shrink:0">
-            <button onclick="toggleTableroDropdown()" id="tablero-selector-btn" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;max-width:220px">
-              <i class="ti ti-stack-2" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>
-              <span id="tablero-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Elegí un tablero</span>
-              <i class="ti ti-chevron-down" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
-            </button>
-            <div id="tablero-dropdown" style="display:none;position:absolute;top:44px;left:0;width:270px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:380px;overflow-y:auto">
-              <div id="tablero-dropdown-list"></div>
-              <div style="height:1px;background:var(--border);margin:8px 0"></div>
-              <button onclick="openCreateTableroModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
-                <i class="ti ti-plus" style="font-size:14px;color:var(--celeste)"></i> Crear nuevo tablero
-              </button>
-            </div>
-          </div>
-          <div style="flex:1"></div>
-          <button class="tbtn" id="btn-add-stage" onclick="promptAddStage()" style="gap:6px;display:none">
-            <i class="ti ti-plus" style="font-size:14px"></i> Nueva columna
-          </button>
-        </div>
-
         <div id="tableros-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink3)">
           <i class="ti ti-stack-2" style="font-size:52px;opacity:.35"></i>
           <div style="font-size:15px;font-weight:800;color:var(--ink2)">Todavía no tenés tableros</div>
@@ -8709,7 +8739,6 @@
   // Initialize all pills after DOM is ready
   function initPills() {
     requestAnimationFrame(() => {
-      movePill('contenido-tabs', 'contenido-pill', 'tab-piezas')
       movePill('cal-tabs', 'cal-pill', 'cal-btn-semana')
       movePill('crm-tabs', 'crm-pill', 'crm-btn-pipeline')
       movePill('crm-tabs2', 'crm-pill2', 'crm-btn-contactos2')
@@ -9420,10 +9449,11 @@
     const label = tab === 'piezas' ? 'Nueva pieza' : tab === 'tareas' ? 'Nueva tarea' : ''
     document.getElementById('contenido-cta-label').textContent = label
     document.getElementById('ws-cta-label').textContent = label
-    movePill('contenido-tabs', 'contenido-pill', 'tab-' + tab)
     // En Tareas, Tableros y Moodboard, la creación vive dentro de la propia subvista
     const ctaBtn = document.getElementById('contenido-cta')
     if (ctaBtn) ctaBtn.style.display = (tab === 'tareas' || tab === 'tableros' || tab === 'moodboard') ? 'none' : ''
+    const tablerosExtra = document.getElementById('tableros-toolbar-extra')
+    if (tablerosExtra) tablerosExtra.style.display = tab === 'tableros' ? 'flex' : 'none'
 
     // Moodboard toma toda la pantalla: se esconde el rail/topbar y aparece el cluster flotante
     const floatingTabs = document.getElementById('mb-floating-tabs')
@@ -12110,21 +12140,21 @@ if (id) {
   window.toggleTableroDropdown = function() {
     const dd = document.getElementById('tablero-dropdown')
     if (!dd) return
-    dd.style.display = dd.style.display === 'none' ? 'block' : 'none'
+    dd.classList.toggle('show')
   }
 
   document.addEventListener('click', e => {
     const dd = document.getElementById('tablero-dropdown')
     const btn = document.getElementById('tablero-selector-btn')
-    if (dd && dd.style.display === 'block' && !dd.contains(e.target) && !btn?.contains(e.target)) {
-      dd.style.display = 'none'
+    if (dd && dd.classList.contains('show') && !dd.contains(e.target) && !btn?.contains(e.target)) {
+      dd.classList.remove('show')
     }
   })
 
   window.selectTablero = async function(boardId) {
     currentBoardId = boardId
     const dd = document.getElementById('tablero-dropdown')
-    if (dd) dd.style.display = 'none'
+    if (dd) dd.classList.remove('show')
     renderTableroSelectorLabel()
     renderTableroDropdown()
     await renderTableros()
@@ -12277,7 +12307,7 @@ if (id) {
 
   window.openCreateTableroModal = function() {
     const dd = document.getElementById('tablero-dropdown')
-    if (dd) dd.style.display = 'none'
+    if (dd) dd.classList.remove('show')
     document.getElementById('new-tablero-nombre').value = ''
     const sel = document.getElementById('new-tablero-cliente')
     sel.innerHTML = '<option value="">Sin cliente asociado</option>' + clients.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
@@ -12354,7 +12384,7 @@ if (id) {
 
   window.deleteTableroConfirm = async function(boardId, boardNombre) {
     const dd = document.getElementById('tablero-dropdown')
-    if (dd) dd.style.display = 'none'
+    if (dd) dd.classList.remove('show')
 
     const { count } = await supabase
       .from('piece_board_cards')
