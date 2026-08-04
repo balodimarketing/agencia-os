@@ -498,7 +498,7 @@
     .mb-nota { padding: 14px; font-size: 13px; line-height: 1.5; color: #4A3B00; overflow-y: auto; height: 100%; box-sizing: border-box; cursor: text; outline: none; }
     .mb-texto { padding: 8px; font-size: 20px; font-weight: 800; line-height: 1.3; color: var(--ink); overflow-y: auto; height: 100%; box-sizing: border-box; cursor: text; outline: none; background: transparent; }
     .mb-marco { box-shadow: none !important; }
-    .mb-marco-label { position: absolute; top: -22px; left: 0; font-size: 11px; font-weight: 800; color: var(--ink2); background: #EEF1F5; padding: 1px 8px; border-radius: 6px; }
+    .mb-item-title-label { position: absolute; top: -24px; left: 0; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 7px; box-shadow: 0 2px 6px rgba(0,0,0,.15); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; z-index: 4; letter-spacing: .1px; }
     .mb-etiqueta-badge { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,.18); z-index: 3; letter-spacing: .2px; }
     .mb-link-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; padding: 16px; text-align: center; background: var(--bg); }
     .mb-link-card i { font-size: 26px; color: var(--ink3); }
@@ -681,20 +681,25 @@
     .mb-prop-colors { display: flex; gap: 8px; flex-wrap: wrap; }
     .mb-prop-color-dot { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
     .mb-prop-color-dot.active { border-color: var(--ink); }
-    .mb-etiqueta-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-    .mb-etiqueta-preset {
-      display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 20px;
-      border: 1px solid var(--border); background: #fff; font-size: 11px; font-weight: 700; color: var(--ink2);
-      cursor: pointer; font-family: inherit; transition: all .15s;
+    .mb-etiqueta-dd-wrap { position: relative; }
+    .mb-etiqueta-trigger {
+      width: 100%; display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: #fff; font-size: 13px; font-weight: 700; color: var(--ink);
+      cursor: pointer; font-family: inherit; transition: border-color .15s;
     }
-    .mb-etiqueta-preset::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--dot); flex-shrink: 0; }
-    .mb-etiqueta-preset:hover { border-color: var(--dot); }
-    .mb-etiqueta-preset.active { background: var(--dot); border-color: var(--dot); color: #fff; }
-    .mb-etiqueta-custom-row { display: flex; gap: 6px; align-items: center; }
+    .mb-etiqueta-trigger:hover { border-color: var(--celeste); }
+    .mb-etiqueta-trigger-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .mb-etiqueta-dd {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: var(--shadow-lg); padding: 6px; z-index: 50; max-height: 260px; overflow-y: auto;
+    }
+    .mb-etiqueta-dd-item {
+      width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: none; border: none;
+      border-radius: 8px; cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--ink); font-family: inherit; text-align: left;
+    }
+    .mb-etiqueta-dd-item:hover { background: var(--bg); }
     .mb-etiqueta-color-swatch { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; cursor: pointer; position: relative; overflow: hidden; }
     .mb-etiqueta-color-swatch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .mb-etiqueta-clear { margin-top: 8px; background: none; border: none; color: var(--ink3); font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; padding: 0; }
-    .mb-etiqueta-clear:hover { color: var(--danger); }
     .mb-prop-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 16px; color: var(--ink3); text-align: center; }
     .mb-prop-empty i { font-size: 30px; opacity: .4; }
     .mb-prop-empty span { font-size: 12px; line-height: 1.6; }
@@ -12707,8 +12712,7 @@ if (id) {
       } else if (item.tipo === 'marco') {
         extraClass = 'mb-marco'
         const c = item.color || '#94A3B8'
-        bodyHTML = `<div class="mb-marco-label">${item.titulo || 'Marco'}</div>`
-        outerBg = c + '14'
+        outerBg = c + '40'
         if (!isSelected) extraStyle = `border:2px dashed ${c};`
       }
       const abrirBtn = (item.tipo === 'link') ? `<button onclick="event.stopPropagation();window.open('${item.url}','_blank')" title="Abrir"><i class="ti ti-external-link"></i></button>` : ''
@@ -12718,8 +12722,13 @@ if (id) {
       const etiquetaBadge = ((item.tipo === 'imagen' || item.tipo === 'link') && item.etiqueta)
         ? `<div class="mb-etiqueta-badge" style="background:${item.etiqueta_color || '#0A2540'};color:${mbBadgeTextColor(item.etiqueta_color)}">${item.etiqueta}</div>`
         : ''
+      const tituloColor = item.color || '#0A2540'
+      const tituloLabel = item.titulo
+        ? `<div class="mb-item-title-label" style="background:${tituloColor};color:${mbBadgeTextColor(tituloColor)}">${item.titulo}</div>`
+        : ''
       const anchors = ['top','right','bottom','left'].map(side => `<div class="mb-anchor ${side}" data-side="${side}"></div>`).join('')
       return `<div class="mb-item ${extraClass} ${isSelected?'selected':''}" data-id="${item.id}" style="left:${item.x}px;top:${item.y}px;width:${item.width}px;height:${item.height}px;z-index:${item.z_index};background:${outerBg};${extraStyle}" onclick="event.stopPropagation();selectMbItem('${item.id}')">
+        ${tituloLabel}
         <button class="mb-item-move" title="Mover"><i class="ti ti-arrows-move"></i></button>
         <button class="mb-item-delete" onclick="event.stopPropagation();deleteMbItem('${item.id}')" title="Eliminar"><i class="ti ti-x"></i></button>
         <div class="mb-item-toolbar">
@@ -12877,11 +12886,11 @@ if (id) {
       else if (info.kind === 'video') previewHTML = `<div class="mb-prop-preview"><video src="${item.url}" controls></video></div>`
     }
 
-    const tituloField = (item.tipo === 'marco') ? `
+    const tituloField = `
       <div class="mb-prop-field">
-        <label class="mb-prop-label">Título del marco</label>
-        <input class="mb-prop-input" value="${(item.titulo||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','titulo',this.value)">
-      </div>` : ''
+        <label class="mb-prop-label">Título</label>
+        <input class="mb-prop-input" placeholder="Sin título" value="${(item.titulo||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','titulo',this.value)">
+      </div>`
 
     const textoField = (item.tipo === 'nota' || item.tipo === 'texto') ? `
       <div class="mb-prop-field">
@@ -12895,28 +12904,33 @@ if (id) {
         <input class="mb-prop-input" value="${(item.url||'').replace(/"/g,'&quot;')}" onchange="updateMbItemField('${item.id}','url',this.value)">
       </div>` : ''
 
+    const colorPalette = item.tipo === 'marco'
+      ? ['#94A3B8','#0A2540','#3B82F6','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981','#14B8A6','#64748B']
+      : ['#FFF3B0','#DDD6FE','#BFDBFE','#BBF7D0','#FBCFE8','#94A3B8']
     const colorField = (item.tipo === 'nota' || item.tipo === 'marco') ? `
       <div class="mb-prop-field">
         <label class="mb-prop-label">Color</label>
         <div class="mb-prop-colors">
-          ${['#FFF3B0','#DDD6FE','#BFDBFE','#BBF7D0','#FBCFE8','#94A3B8'].map(c => `<div class="mb-prop-color-dot ${item.color===c?'active':''}" style="background:${c}" onclick="updateMbItemField('${item.id}','color','${c}')"></div>`).join('')}
+          ${colorPalette.map(c => `<div class="mb-prop-color-dot ${item.color===c?'active':''}" style="background:${c}" onclick="updateMbItemField('${item.id}','color','${c}')"></div>`).join('')}
         </div>
       </div>` : ''
 
-    const etiquetaField = (item.tipo === 'imagen' || item.tipo === 'link') ? `
+    const etiquetaField = (item.tipo === 'imagen' || item.tipo === 'link') ? renderMbEtiquetaField(item) : ''
+
+    const responsableField = `
       <div class="mb-prop-field">
-        <label class="mb-prop-label">Etiqueta</label>
-        <div class="mb-etiqueta-presets">
-          ${MB_ETIQUETA_PRESETS.map(p => `<button class="mb-etiqueta-preset ${item.etiqueta===p.nombre?'active':''}" style="--dot:${p.color}" onclick="setMbItemEtiqueta('${item.id}','${p.nombre}','${p.color}')">${p.nombre}</button>`).join('')}
-        </div>
-        <div class="mb-etiqueta-custom-row">
-          <input class="mb-prop-input" placeholder="Etiqueta personalizada" value="${item.etiqueta && !MB_ETIQUETA_PRESETS.find(p=>p.nombre===item.etiqueta) ? item.etiqueta.replace(/"/g,'&quot;') : ''}" onchange="setMbItemEtiqueta('${item.id}', this.value, '${item.etiqueta_color || '#0A2540'}')" style="flex:1">
-          <label class="mb-etiqueta-color-swatch" style="background:${item.etiqueta_color || '#0A2540'}">
-            <input type="color" value="${item.etiqueta_color || '#0A2540'}" onchange="setMbItemEtiqueta('${item.id}', '${(item.etiqueta||'').replace(/'/g,"\\'")}', this.value)">
-          </label>
-        </div>
-        ${item.etiqueta ? `<button class="mb-etiqueta-clear" onclick="setMbItemEtiqueta('${item.id}', null, null)">Quitar etiqueta</button>` : ''}
-      </div>` : ''
+        <label class="mb-prop-label">Responsable</label>
+        <select class="mb-prop-input" onchange="updateMbItemField('${item.id}','responsable_id', this.value || null)">
+          <option value="">Sin asignar</option>
+          ${teamMembers.map(m => `<option value="${m.id}" ${item.responsable_id===m.id?'selected':''}>${((m.profiles?.nombre||'')+' '+(m.profiles?.apellido||'')).trim() || 'Sin nombre'}</option>`).join('')}
+        </select>
+      </div>`
+
+    const fechaField = `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Fecha de carga</label>
+        <div style="font-size:13px;font-weight:700;color:var(--ink2)">${item.created_at ? new Date(item.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—'}</div>
+      </div>`
 
     body.innerHTML = `
       ${previewHTML}
@@ -12924,11 +12938,13 @@ if (id) {
         <label class="mb-prop-label">Tipo</label>
         <div style="font-size:13px;font-weight:700;color:var(--ink2)">${tipoLabels[item.tipo] || item.tipo}</div>
       </div>
-      ${etiquetaField}
       ${tituloField}
+      ${etiquetaField}
       ${urlField}
       ${textoField}
       ${colorField}
+      ${responsableField}
+      ${fechaField}
       <button class="mb-prop-delete" onclick="deleteMbItem('${item.id}')"><i class="ti ti-trash"></i> Eliminar elemento</button>
     `
   }
@@ -12942,6 +12958,75 @@ if (id) {
     { nombre: 'Imagen', color: '#F59E0B' },
     { nombre: 'Otro', color: '#64748B' },
   ]
+  let mbEtiquetaDropdownOpenFor = null
+  let mbEtiquetaCustomMode = false
+
+  function renderMbEtiquetaField(item) {
+    const isOpen = mbEtiquetaDropdownOpenFor === item.id
+    const currentLabel = item.etiqueta
+      ? `<span class="mb-etiqueta-trigger-dot" style="background:${item.etiqueta_color}"></span><span>${item.etiqueta}</span>`
+      : `<i class="ti ti-tag" style="font-size:13px;color:var(--ink3)"></i><span style="color:var(--ink3)">Asignar categoría</span>`
+
+    let ddHTML = ''
+    if (isOpen && mbEtiquetaCustomMode) {
+      const customVal = item.etiqueta && !MB_ETIQUETA_PRESETS.find(p => p.nombre === item.etiqueta) ? item.etiqueta.replace(/"/g,'&quot;') : ''
+      ddHTML = `<div class="mb-etiqueta-dd">
+        <div style="padding:8px">
+          <input class="mb-prop-input" id="mb-etiqueta-custom-name" placeholder="Nombre de la categoría" value="${customVal}" style="margin-bottom:8px" onclick="event.stopPropagation()">
+          <div style="display:flex;gap:8px;align-items:center">
+            <label class="mb-etiqueta-color-swatch" style="background:${item.etiqueta_color||'#0A2540'}" onclick="event.stopPropagation()">
+              <input type="color" id="mb-etiqueta-custom-color" value="${item.etiqueta_color||'#0A2540'}">
+            </label>
+            <button class="tbtn primary" style="flex:1;justify-content:center" onclick="event.stopPropagation();saveMbCustomEtiqueta('${item.id}')">Guardar</button>
+          </div>
+        </div>
+      </div>`
+    } else if (isOpen) {
+      ddHTML = `<div class="mb-etiqueta-dd">
+        ${MB_ETIQUETA_PRESETS.map(p => `<button class="mb-etiqueta-dd-item" onclick="event.stopPropagation();setMbItemEtiqueta('${item.id}','${p.nombre}','${p.color}');closeMbEtiquetaDropdown()"><span class="mb-etiqueta-trigger-dot" style="background:${p.color}"></span>${p.nombre}</button>`).join('')}
+        <div class="mb-dd-divider"></div>
+        <button class="mb-etiqueta-dd-item" onclick="event.stopPropagation();openMbEtiquetaCustomMode()"><i class="ti ti-palette" style="font-size:13px"></i> Personalizar...</button>
+        ${item.etiqueta ? `<button class="mb-etiqueta-dd-item" style="color:var(--danger)" onclick="event.stopPropagation();setMbItemEtiqueta('${item.id}',null,null);closeMbEtiquetaDropdown()"><i class="ti ti-x" style="font-size:13px"></i> Quitar categoría</button>` : ''}
+      </div>`
+    }
+
+    return `<div class="mb-prop-field">
+      <label class="mb-prop-label">Categoría</label>
+      <div class="mb-etiqueta-dd-wrap">
+        <button class="mb-etiqueta-trigger" onclick="event.stopPropagation();toggleMbEtiquetaDropdown('${item.id}')">${currentLabel}<i class="ti ti-chevron-down" style="margin-left:auto;font-size:12px;color:var(--ink3)"></i></button>
+        ${ddHTML}
+      </div>
+    </div>`
+  }
+
+  window.toggleMbEtiquetaDropdown = function(id) {
+    mbEtiquetaDropdownOpenFor = (mbEtiquetaDropdownOpenFor === id) ? null : id
+    mbEtiquetaCustomMode = false
+    renderMbPropertiesPanel()
+  }
+  window.closeMbEtiquetaDropdown = function() {
+    mbEtiquetaDropdownOpenFor = null
+    mbEtiquetaCustomMode = false
+    renderMbPropertiesPanel()
+  }
+  window.openMbEtiquetaCustomMode = function() {
+    mbEtiquetaCustomMode = true
+    renderMbPropertiesPanel()
+  }
+  window.saveMbCustomEtiqueta = async function(id) {
+    const name = document.getElementById('mb-etiqueta-custom-name').value.trim()
+    const color = document.getElementById('mb-etiqueta-custom-color').value
+    if (!name) { showToast('Escribí un nombre para la categoría'); return }
+    await setMbItemEtiqueta(id, name, color)
+    closeMbEtiquetaDropdown()
+  }
+  document.addEventListener('click', e => {
+    if (mbEtiquetaDropdownOpenFor && !e.target.closest('.mb-etiqueta-dd-wrap')) {
+      mbEtiquetaDropdownOpenFor = null
+      mbEtiquetaCustomMode = false
+      renderMbPropertiesPanel()
+    }
+  })
 
   // Decide si el texto del badge debe ser blanco o oscuro según el color de fondo
   function mbBadgeTextColor(hex) {
