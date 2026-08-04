@@ -767,7 +767,7 @@
 
     /* ── Moodboard: card flotante de info ── */
     #mb-header-card {
-      display: none; position: absolute; top: 24px; left: 20px; z-index: 30; max-width: 620px;
+      display: none; position: absolute; top: 50px; left: 20px; z-index: 30; max-width: 620px;
       background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 22px;
       box-shadow: var(--shadow-lg); align-items: center; gap: 28px; flex-wrap: wrap;
     }
@@ -5002,7 +5002,7 @@
 
 <div id="mb-floating-selector">
   <button class="mb-pill-btn" onclick="mbEnterPresent()"><i class="ti ti-presentation"></i> Presentar</button>
-  <button class="mb-pill-btn primary" disabled title="Próximamente"><i class="ti ti-share-2"></i> Compartir</button>
+  <button class="mb-pill-btn primary" onclick="mbShareMoodboard()"><i class="ti ti-share-2"></i> Compartir</button>
   <div id="mb-selector-wrap">
     <button onclick="toggleMoodboardDropdown()" id="moodboard-selector-btn">
       <i class="ti ti-palette"></i>
@@ -6045,6 +6045,15 @@
     renderInicio()
     // Inicializar sliding pills
     setTimeout(initPills, 100)
+
+    // Link compartido de un moodboard (?moodboard=ID): abrirlo directo
+    const sharedMoodboardId = new URLSearchParams(location.search).get('moodboard')
+    if (sharedMoodboardId) {
+      const contenidoBtn = document.querySelector('.rail-btn[data-module="contenido"]')
+      if (contenidoBtn) await switchModule(contenidoBtn)
+      switchContentTab('moodboard')
+      setTimeout(() => selectMoodboard(sharedMoodboardId), 400)
+    }
   }
 
 
@@ -12597,6 +12606,17 @@ if (id) {
   window.mbResetZoom = function() { mbZoom = 1; mbPanX = 60; mbPanY = 180; applyMbTransform() }
 
   // ── Modo presentación: solo lectura, para mostrarle el moodboard a alguien ──
+  window.mbShareMoodboard = async function() {
+    if (!currentMoodboardId) return
+    const url = `${location.origin}${location.pathname}?moodboard=${currentMoodboardId}`
+    try {
+      await navigator.clipboard.writeText(url)
+      showToast('🔗 Link copiado — cualquiera de tu equipo lo abre directo en este moodboard')
+    } catch {
+      prompt('Copiá este link para compartir el moodboard:', url)
+    }
+  }
+
   window.mbEnterPresent = function() {
     mbPresenting = true
     setMbTool('select')
@@ -12616,7 +12636,7 @@ if (id) {
   }
 
   function setMbZoom(z, cx, cy) {
-    const newZoom = Math.min(2.5, Math.max(0.3, z))
+    const newZoom = Math.min(3, Math.max(0.05, z))
     const viewport = document.getElementById('mb-canvas-viewport')
     const rect = viewport.getBoundingClientRect()
     const px = cx ?? rect.width / 2
