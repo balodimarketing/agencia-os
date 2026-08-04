@@ -35,15 +35,34 @@
 
     html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow: hidden; }
 
+    /* Manchas suaves de color detrás del rail, para que el blur del "liquid glass" tenga algo lindo que capturar */
+    .app::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 420px; height: 100vh; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 10% 12%, rgba(142,219,255,.35) 0%, transparent 42%),
+        radial-gradient(circle at 18% 78%, rgba(139,92,246,.20) 0%, transparent 46%),
+        radial-gradient(circle at 5% 45%, rgba(236,72,153,.12) 0%, transparent 40%);
+    }
+    .rail { position: relative; }
+
     /* Skeleton loader */
     @keyframes sk-shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
     .sk { background:linear-gradient(90deg,var(--border) 25%,#f0f0f0 50%,var(--border) 75%);background-size:400px 100%;animation:sk-shimmer 1.4s ease-in-out infinite; }
 
     /* ── Shell ── */
-    .app { display: flex; height: 100vh; overflow: hidden; }
+    .app { display: flex; height: 100vh; overflow: hidden; position: relative; }
 
-    /* ── Rail ── */
-    .rail { width: var(--rail-w); background: var(--azul); display: flex; flex-direction: column; align-items: center; padding: 14px 0; flex-shrink: 0; z-index: 30; gap: 4px; border-radius: 0 0 16px 0; }
+    /* ── Rail (estilo "liquid glass") ── */
+    .rail {
+      width: var(--rail-w); margin: 12px 0 12px 12px; display: flex; flex-direction: column;
+      align-items: center; padding: 16px 0; flex-shrink: 0; z-index: 30; gap: 4px;
+      background: rgba(10,37,64,.72);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 24px;
+      box-shadow: 0 16px 40px rgba(10,37,64,.28), 0 2px 8px rgba(10,37,64,.16), inset 0 1px 0 rgba(255,255,255,.12);
+    }
     .rail-logo { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; cursor: pointer; flex-shrink: 0; }
     .rail-logo svg { width: 28px; height: 30px; }
     .rail-sep { width: 28px; height: 1px; background: rgba(142,219,255,.12); margin: 6px 0; flex-shrink: 0; }
@@ -527,7 +546,7 @@
     .mb-floating-tab-btn.active { background: var(--azul); color: var(--celeste); }
 
     .rail {
-      transition: width .38s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1);
+      transition: width .38s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1), margin .38s cubic-bezier(.4,0,.2,1);
     }
     .panel {
       transition: width .38s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1);
@@ -539,7 +558,7 @@
       transition: height .38s cubic-bezier(.4,0,.2,1), opacity .28s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1), border-color .38s;
     }
     body.mb-fullscreen .rail {
-      width: 0; opacity: 0; padding-left: 0; padding-right: 0; overflow: hidden; pointer-events: none;
+      width: 0; opacity: 0; padding-left: 0; padding-right: 0; margin: 12px 0 12px 0; overflow: hidden; pointer-events: none;
     }
     body.mb-fullscreen .panel {
       width: 0; opacity: 0; overflow: hidden; pointer-events: none;
