@@ -15,6 +15,7 @@
       --celeste-dim: rgba(142,219,255,.1);
       --white:       #FFFFFF;
       --bg:          #F5F7FA;
+      --rail-bg:     #F4F7FB;
       --ink:         #111111;
       --ink2:        #4A5568;
       --ink3:        #7C8B9C;
@@ -22,7 +23,8 @@
       --success:     #34C759;
       --danger:      #FF6B6B;
       --warn:        #FFB800;
-      --rail-w:      230px;
+      --rail-w:      252px;
+      --rail-w-collapsed: 76px;
       --panel-w:     0px;
       --topbar-h:    52px;
       --r-sm:        8px;
@@ -30,7 +32,7 @@
       --r-lg:        16px;
       --shadow:      0 2px 14px rgba(16,24,40,.09);
       --shadow-lg:   0 8px 32px rgba(16,24,40,.14);
-      --t:           .16s cubic-bezier(.4,0,.2,1);
+      --t:           .2s cubic-bezier(.4,0,.2,1);
     }
 
     html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow: hidden; }
@@ -42,42 +44,136 @@
     /* ── Shell ── */
     .app { display: flex; height: 100vh; overflow: hidden; position: relative; }
 
-    /* ── Rail (expandido, blanco, minimalista) ── */
+    /* ── Rail: card flotante, dos estados (expandido / colapsado) ── */
     .rail {
       width: var(--rail-w); margin: 12px 0 12px 12px; display: flex; flex-direction: column;
-      align-items: stretch; padding: 16px 12px; flex-shrink: 0; z-index: 30; gap: 2px; position: relative;
-      background: #fff;
+      align-items: stretch; padding: 18px 14px; flex-shrink: 0; z-index: 30; gap: 3px; position: relative;
+      background: var(--rail-bg);
       border: 1px solid var(--border);
       border-radius: 20px;
       box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      transition: width var(--t), padding var(--t);
     }
-    .rail-logo-row { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 6px 14px; flex-shrink: 0; }
+    /* Detalle decorativo muy sutil abajo del rail (líneas orgánicas, casi imperceptibles) */
+    .rail::after {
+      content: ''; position: absolute; left: -20%; right: -20%; bottom: -10%; height: 42%; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 100%, rgba(142,219,255,.16) 0%, transparent 55%),
+        radial-gradient(circle at 80% 90%,  rgba(10,37,64,.05)   0%, transparent 50%);
+    }
+    body.rail-collapsed .rail { width: var(--rail-w-collapsed); padding: 18px 12px; }
+
+    .rail-logo-row { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 2px 4px 16px; flex-shrink: 0; }
+    body.rail-collapsed .rail-logo-row { justify-content: center; padding: 2px 0 16px; }
     .rail-logo { width: 32px; height: 32px; border-radius: 9px; background: var(--azul); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .rail-logo-text { font-size: 16px; font-weight: 900; color: var(--azul); letter-spacing: -.4px; }
-    .rail-sep { height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
+    .rail-logo-text { font-size: 16px; font-weight: 900; color: var(--azul); letter-spacing: -.4px; white-space: nowrap; }
+    body.rail-collapsed .rail-logo-text { display: none; }
+
+    /* Card del workspace */
+    .rail-workspace-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 11px 12px;
+      margin-bottom: 14px; cursor: pointer; transition: border-color var(--t); flex-shrink: 0;
+    }
+    .rail-workspace-card:hover { border-color: var(--celeste); }
+    .rail-ws-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+    .rail-ws-name { font-size: 13px; font-weight: 800; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rail-ws-plan-badge { flex-shrink: 0; font-size: 9.5px; font-weight: 900; color: #fff; background: linear-gradient(135deg,#6E7BFF,#A855F7); padding: 2px 8px; border-radius: 20px; letter-spacing: .3px; }
+    .rail-ws-plan-badge.free { background: var(--ink3); }
+    .rail-ws-sub { font-size: 11px; color: var(--ink3); font-weight: 600; }
+    body.rail-collapsed .rail-workspace-card { display: none; }
+
+    .rail-nav { display: flex; flex-direction: column; gap: 2px; }
+    .rail-group-label { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .6px; padding: 12px 10px 5px; }
+    .rail-group-label:first-child { padding-top: 2px; }
+    body.rail-collapsed .rail-group-label { display: none; }
+
     .rail-btn {
       height: 40px; border-radius: 10px; display: flex; align-items: center; gap: 11px; padding: 0 10px;
-      cursor: pointer; transition: background var(--t), color var(--t); color: var(--ink2); position: relative;
+      cursor: pointer; transition: background var(--t), color var(--t); color: var(--ink2); position: relative; flex-shrink: 0;
     }
     .rail-btn i { font-size: 17px; width: 18px; text-align: center; flex-shrink: 0; color: var(--ink3); transition: color var(--t); }
     .rail-btn span { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rail-btn:hover { background: var(--bg); color: var(--ink); }
+    .rail-btn:hover { background: rgba(10,37,64,.05); color: var(--ink); }
     .rail-btn:hover i { color: var(--ink2); }
-    .rail-btn.active {
-      background: var(--celeste-dim);
-      color: var(--azul);
-    }
+    .rail-btn.active { background: var(--celeste-dim); color: var(--azul); }
     .rail-btn.active i { color: var(--azul); }
+    .rail-btn.active span { font-weight: 700; }
     .rail-btn.active::before {
-      content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px;
+      content: ''; position: absolute; left: -14px; top: 7px; bottom: 7px; width: 3px;
       background: var(--azul); border-radius: 0 3px 3px 0;
     }
-    .rail-divider { height: 1px; background: var(--border); margin: 8px 0; }
-    .rail-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
-    .rail-av { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; letter-spacing: -.3px; flex-shrink: 0; }
-    .rail-profile-row { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border-radius: 10px; cursor: pointer; transition: background var(--t); }
-    .rail-profile-row:hover { background: var(--bg); }
-    .rail-profile-row span { font-size: 13px; font-weight: 600; color: var(--ink2); }
+    body.rail-collapsed .rail-btn { justify-content: center; padding: 0; }
+    body.rail-collapsed .rail-btn span { display: none; }
+    body.rail-collapsed .rail-btn.active::before { left: -12px; }
+
+    .rail-sep { height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
+    .rail-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+
+    /* Notificaciones: badge numérico */
+    .notif-dot {
+      position: absolute; top: 5px; left: 21px; min-width: 15px; height: 15px; padding: 0 3px;
+      background: var(--danger); border-radius: 20px; border: 2px solid var(--rail-bg);
+      display: none; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 900; color: #fff; line-height: 1;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    body.rail-collapsed .notif-dot { left: auto; right: 6px; top: 2px; }
+
+    /* Card de perfil */
+    .rail-profile-card { display: flex; align-items: center; gap: 9px; padding: 6px; border-radius: 12px; position: relative; }
+    body.rail-collapsed .rail-profile-card { justify-content: center; padding: 6px 0; }
+    .rail-av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; letter-spacing: -.3px; flex-shrink: 0; }
+    .rail-profile-info { flex: 1; min-width: 0; cursor: pointer; }
+    body.rail-collapsed .rail-profile-info { display: none; }
+    .rail-profile-name { font-size: 12.5px; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rail-profile-role { font-size: 10.5px; color: var(--ink3); font-weight: 600; }
+    .rail-profile-menu-btn { width: 24px; height: 24px; border-radius: 7px; border: none; background: none; color: var(--ink3); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .rail-profile-menu-btn:hover { background: var(--bg); color: var(--ink); }
+    body.rail-collapsed .rail-profile-menu-btn { display: none; }
+    .rail-profile-menu {
+      display: none; position: absolute; bottom: calc(100% + 6px); right: 0; width: 172px; background: #fff;
+      border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 6px; z-index: 100;
+    }
+    .rail-profile-menu.show { display: block; }
+    .rail-profile-menu button {
+      width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 9px; background: none; border: none;
+      border-radius: 8px; cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--ink2); font-family: inherit; text-align: left;
+    }
+    .rail-profile-menu button:hover { background: var(--bg); }
+
+    /* Upsell Faro Pro */
+    .rail-pro-card {
+      margin-top: 10px; background: linear-gradient(150deg,var(--celeste-dim),rgba(142,219,255,.22));
+      border: 1px solid rgba(142,219,255,.4); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 3px;
+    }
+    body.rail-collapsed .rail-pro-card { display: none; }
+    .rail-pro-title { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: var(--azul); }
+    .rail-pro-title i { font-size: 13px; }
+    .rail-pro-desc { font-size: 10.5px; color: var(--ink2); line-height: 1.4; margin-bottom: 6px; }
+    .rail-pro-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px; height: 32px; border: none; border-radius: 9px;
+      background: var(--azul); color: var(--celeste); font-size: 11px; font-weight: 800; cursor: pointer; font-family: inherit;
+    }
+    .rail-pro-btn:hover { opacity: .88; }
+    .rail-pro-btn i { font-size: 12px; }
+
+    .rail-collapsed-cta {
+      display: none; margin-top: 10px; width: 44px; height: 44px; align-self: center; border-radius: 13px; border: none;
+      background: linear-gradient(135deg,#8EDBFF,#6E7BFF); color: #fff; font-size: 17px; cursor: pointer; align-items: center; justify-content: center;
+    }
+    .rail-collapsed-cta:hover { opacity: .88; }
+    body.rail-collapsed .rail-collapsed-cta { display: flex; }
+
+    /* Toggle de colapsar / expandir */
+    .rail-collapse-toggle {
+      position: absolute; top: 26px; right: -12px; width: 24px; height: 24px; border-radius: 50%;
+      background: #fff; border: 1px solid var(--border); box-shadow: var(--shadow); color: var(--ink3);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 40; transition: color var(--t), transform var(--t);
+    }
+    .rail-collapse-toggle:hover { color: var(--azul); }
+    .rail-collapse-toggle i { font-size: 13px; transition: transform var(--t); }
+    body.rail-collapsed .rail-collapse-toggle i { transform: rotate(180deg); }
 
     /* ── Panel ── */
     .panel { width: var(--panel-w); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
@@ -90,6 +186,7 @@
     .panel-search input:focus { border-color: var(--celeste); }
     .panel-search input::placeholder { color: var(--ink3); }
     .panel-body { flex: 1; overflow-y: auto; padding: 8px; }
+
     .panel-body::-webkit-scrollbar { width: 4px; }
     .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
     .panel-item { padding: 9px 10px; border-radius: 9px; cursor: pointer; transition: background var(--t); margin-bottom: 1px; }
@@ -1307,7 +1404,7 @@
 <div class="app">
 
   <!-- RAIL -->
-  <div class="rail">
+  <div class="rail" id="app-rail">
     <div class="rail-logo-row" onclick="window.open('index.html','_self')">
       <div class="rail-logo">
         <svg viewBox="0 0 2160 2700" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:25px">
@@ -1318,27 +1415,65 @@
       </div>
       <span class="rail-logo-text">Faro</span>
     </div>
-    <div class="rail-sep"></div>
-    <div class="rail-btn active" data-module="inicio" onclick="switchModule(this)"><i class="ti ti-layout-dashboard"></i><span>Inicio</span></div>
-    <div class="rail-btn" data-module="contenido" onclick="switchModule(this)"><i class="ti ti-photo"></i><span>Contenido</span></div>
-    <div class="rail-btn" data-module="calendario" onclick="switchModule(this)"><i class="ti ti-calendar"></i><span>Calendario</span></div>
-    <div class="rail-btn" data-module="crm" onclick="switchModule(this)"><i class="ti ti-address-book"></i><span>CRM</span></div>
-    <div class="rail-btn" data-module="herramientas" onclick="switchModule(this)"><i class="ti ti-tools"></i><span>Herramientas</span></div>
-    <div class="rail-divider"></div>
-    <div class="rail-btn" data-module="equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i><span>Equipo</span></div>
-    <div class="rail-btn" data-module="cuentas" onclick="switchModule(this)"><i class="ti ti-building"></i><span>Cuentas</span></div>
-    <div class="rail-btn" data-module="reportes" onclick="switchModule(this)"><i class="ti ti-chart-bar"></i><span>Reportes</span></div>
+
+    <!-- Card del workspace: nombre de agencia, plan y clientes activos -->
+    <div class="rail-workspace-card" id="rail-workspace-card" onclick="handleOpenProfile()">
+      <div class="rail-ws-row">
+        <span class="rail-ws-name" id="rail-ws-name">Mi agencia</span>
+        <span class="rail-ws-plan-badge" id="rail-ws-plan-badge">Free</span>
+      </div>
+      <div class="rail-ws-sub" id="rail-ws-sub">0 clientes activos</div>
+    </div>
+
+    <div class="rail-nav">
+      <div class="rail-group-label">General</div>
+      <div class="rail-btn active" data-module="inicio" onclick="switchModule(this)"><i class="ti ti-layout-dashboard"></i><span>Inicio</span></div>
+      <div class="rail-btn" data-module="contenido" onclick="switchModule(this)"><i class="ti ti-photo"></i><span>Contenido</span></div>
+      <div class="rail-btn" data-module="calendario" onclick="switchModule(this)"><i class="ti ti-calendar"></i><span>Calendario</span></div>
+      <div class="rail-btn" data-module="crm" onclick="switchModule(this)"><i class="ti ti-address-book"></i><span>CRM</span></div>
+      <div class="rail-btn" data-module="herramientas" onclick="switchModule(this)"><i class="ti ti-tools"></i><span>Herramientas</span></div>
+
+      <div class="rail-group-label">Administración</div>
+      <div class="rail-btn" data-module="equipo" id="rail-equipo-btn" onclick="switchModule(this)"><i class="ti ti-users"></i><span>Equipo</span></div>
+      <div class="rail-btn" data-module="cuentas" onclick="switchModule(this)"><i class="ti ti-building"></i><span>Cuentas</span></div>
+      <div class="rail-btn" data-module="reportes" onclick="switchModule(this)"><i class="ti ti-chart-bar"></i><span>Reportes</span></div>
+    </div>
+
     <div class="rail-bottom">
       <div class="rail-btn notif-btn" onclick="toggleNotifPanel()" id="notif-rail-btn">
         <i class="ti ti-bell"></i><span>Notificaciones</span>
         <div class="notif-dot" id="notif-dot"></div>
       </div>
-      <div class="rail-sep" style="margin:4px 0"></div>
-      <div class="rail-profile-row" onclick="handleOpenProfile()">
-        <div class="rail-av" id="rail-av" style="cursor:pointer;border:1.5px solid var(--border)"></div>
-        <span>Mi perfil</span>
+
+      <div class="rail-sep" style="margin:6px 0"></div>
+
+      <div class="rail-profile-card" id="rail-profile-card">
+        <div class="rail-av" id="rail-av" onclick="handleOpenProfile()" style="cursor:pointer;border:1.5px solid var(--border)"></div>
+        <div class="rail-profile-info" onclick="handleOpenProfile()">
+          <div class="rail-profile-name" id="rail-profile-name">Tu nombre</div>
+          <div class="rail-profile-role" id="rail-profile-role">Miembro</div>
+        </div>
+        <button class="rail-profile-menu-btn" onclick="event.stopPropagation();toggleRailProfileMenu()" title="Más opciones"><i class="ti ti-dots-vertical"></i></button>
+        <div class="rail-profile-menu" id="rail-profile-menu">
+          <button onclick="closeRailProfileMenu();handleOpenProfile()"><i class="ti ti-user-circle"></i> Ver perfil</button>
+          <button onclick="closeRailProfileMenu();handleSignOut()" style="color:var(--danger)"><i class="ti ti-logout"></i> Cerrar sesión</button>
+        </div>
       </div>
+
+      <!-- Upsell Faro Pro (solo si la agencia no es Pro/Agency todavía) -->
+      <div class="rail-pro-card" id="rail-pro-card">
+        <div class="rail-pro-title"><i class="ti ti-sparkles"></i> Faro Pro</div>
+        <div class="rail-pro-desc">Automatizaciones, IA y reportes avanzados.</div>
+        <button class="rail-pro-btn" onclick="handleOpenProfile()">Actualizar plan <i class="ti ti-arrow-right"></i></button>
+      </div>
+
+      <!-- Reemplaza a la card de Pro cuando el rail está colapsado -->
+      <button class="rail-collapsed-cta" id="rail-collapsed-cta" onclick="handleOpenProfile()" title="Faro Pro"><i class="ti ti-sparkles"></i></button>
     </div>
+
+    <button class="rail-collapse-toggle" onclick="toggleRailCollapse()" title="Colapsar / expandir">
+      <i class="ti ti-chevrons-left" id="rail-collapse-icon"></i>
+    </button>
   </div>
 
   <!-- PANEL -->
@@ -5880,6 +6015,7 @@
 
     // Load profile
     await loadProfile()
+    renderRailSidebarInfo()
 
     // Start real-time notifications
     subscribeToNotifications()
@@ -7253,7 +7389,7 @@
     if (!profileData) return
     const av = document.getElementById('rail-av')
     if (profileData.avatar_url) {
-      av.innerHTML = `<img src="${profileData.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover">`
+      av.innerHTML = `<img src="${profileData.avatar_url}" style="width:30px;height:30px;border-radius:50%;object-fit:cover">`
       av.style.background = 'transparent'
     } else {
       const ini = ((profileData.nombre?.[0]||'') + (profileData.apellido?.[0]||'')).toUpperCase()
@@ -7262,6 +7398,58 @@
       av.style.color = 'var(--celeste)'
     }
   }
+
+  // ── Sidebar: card de workspace, perfil y upsell con datos reales ──
+  function renderRailSidebarInfo() {
+    const nameEl = document.getElementById('rail-ws-name')
+    const badgeEl = document.getElementById('rail-ws-plan-badge')
+    const subEl = document.getElementById('rail-ws-sub')
+    if (nameEl) nameEl.textContent = document.body.dataset.agencyName || 'Mi agencia'
+    if (badgeEl) {
+      const planLabel = agencyPlan === 'pro' ? 'Pro' : agencyPlan === 'agency' ? 'Agency' : 'Free'
+      badgeEl.textContent = planLabel
+      badgeEl.classList.toggle('free', agencyPlan === 'free')
+    }
+    if (subEl) {
+      const n = clients.length
+      subEl.textContent = `${n} cliente${n!==1?'s':''} activo${n!==1?'s':''}`
+    }
+
+    const nameProfileEl = document.getElementById('rail-profile-name')
+    const roleEl = document.getElementById('rail-profile-role')
+    if (nameProfileEl) nameProfileEl.textContent = ((profileData?.nombre||'')+' '+(profileData?.apellido||'')).trim() || 'Sin nombre'
+    const roleLabels = { OWNER: 'Owner', ADMIN: 'Admin', MEMBER: 'Miembro' }
+    if (roleEl) roleEl.textContent = roleLabels[userRole] || userRole || ''
+
+    // Upsell "Faro Pro": solo tiene sentido mostrarlo si la agencia todavía no es Pro/Agency
+    const proCard = document.getElementById('rail-pro-card')
+    if (proCard) proCard.style.display = isPro() ? 'none' : 'flex'
+  }
+
+  // ── Sidebar: colapsar / expandir ──
+  let railCollapsed = localStorage.getItem('faro_rail_collapsed') === '1'
+  if (railCollapsed) document.body.classList.add('rail-collapsed')
+
+  window.toggleRailCollapse = function() {
+    railCollapsed = !railCollapsed
+    document.body.classList.toggle('rail-collapsed', railCollapsed)
+    localStorage.setItem('faro_rail_collapsed', railCollapsed ? '1' : '0')
+    closeRailProfileMenu()
+  }
+
+  // ── Sidebar: menú del perfil (⋮) ──
+  window.toggleRailProfileMenu = function() {
+    document.getElementById('rail-profile-menu')?.classList.toggle('show')
+  }
+  window.closeRailProfileMenu = function() {
+    document.getElementById('rail-profile-menu')?.classList.remove('show')
+  }
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('rail-profile-menu')
+    if (menu?.classList.contains('show') && !e.target.closest('.rail-profile-card')) {
+      menu.classList.remove('show')
+    }
+  })
 
   window.handleOpenProfile = function() {
     // Reset password section
@@ -7523,7 +7711,8 @@
   function updateNotifDot() {
     const unread = notifications.filter(n => !n.leida).length
     const dot = document.getElementById('notif-dot')
-    dot.style.display = unread > 0 ? 'block' : 'none'
+    dot.style.display = unread > 0 ? 'flex' : 'none'
+    dot.textContent = unread > 9 ? '9+' : (unread || '')
   }
 
   window.toggleNotifPanel = function() {
