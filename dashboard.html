@@ -767,7 +767,7 @@
 
     /* ── Moodboard: card flotante de info ── */
     #mb-header-card {
-      display: none; position: absolute; top: 20px; left: 20px; z-index: 30; max-width: 620px;
+      display: none; position: absolute; top: 24px; left: 20px; z-index: 30; max-width: 620px;
       background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 16px 22px;
       box-shadow: var(--shadow-lg); align-items: center; gap: 28px; flex-wrap: wrap;
     }
@@ -824,7 +824,7 @@
       transition: width .28s cubic-bezier(.4,0,.2,1);
     }
     #mb-properties-panel.open { width: 300px; }
-    #mb-properties-tabs { display: flex; gap: 4px; padding: 16px 16px 0; flex-shrink: 0; }
+    #mb-properties-tabs { display: flex; gap: 4px; padding: 90px 16px 0; flex-shrink: 0; }
     .mb-prop-tab { padding: 8px 4px; background: none; border: none; border-bottom: 2px solid transparent; font-size: 12.5px; font-weight: 700; color: var(--ink3); cursor: pointer; font-family: inherit; margin-right: 14px; }
     .mb-prop-tab.active { color: var(--azul); border-bottom-color: var(--azul); }
     .mb-prop-tab:disabled { cursor: not-allowed; opacity: .5; }
@@ -1716,7 +1716,7 @@
 
         <!-- Barra de herramientas -->
         <!-- Estado vacío -->
-        <div id="moodboard-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink3);padding-top:70px">
+        <div id="moodboard-empty-state" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--ink3);padding-top:90px">
           <div style="width:72px;height:72px;border-radius:20px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center">
             <i class="ti ti-palette" style="font-size:32px;color:var(--azul);opacity:.5"></i>
           </div>
@@ -1730,13 +1730,13 @@
           <button id="mb-present-exit-btn" onclick="mbExitPresent()"><i class="ti ti-x"></i> Salir de presentación</button>
 
           <!-- Lienzo -->
-          <div id="mb-canvas-viewport" style="flex:1;overflow:hidden;position:relative;background-color:#F7F8FB;padding-top:70px">
+          <div id="mb-canvas-viewport" style="flex:1;overflow:hidden;position:relative;background-color:#F7F8FB;padding-top:90px">
 
             <!-- Card flotante con info del moodboard -->
             <div id="mb-header-card"></div>
 
-            <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:3000px;height:3000px;transform-origin:0 0">
-              <svg id="mb-connections-svg" width="3000" height="3000"></svg>
+            <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:20000px;height:20000px;transform-origin:0 0">
+              <svg id="mb-connections-svg" width="20000" height="20000"></svg>
               <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
             </div>
 
@@ -13522,7 +13522,8 @@ if (id) {
     if (item) item[field] = value
     renderMbCanvas()
     renderMbPropertiesPanel()
-    await supabase.from('moodboard_items').update({ [field]: value }).eq('id', id)
+    const { error } = await supabase.from('moodboard_items').update({ [field]: value }).eq('id', id)
+    if (error) { showToast('No se pudo guardar: ' + error.message); return }
     pushMbHistory()
   }
 
