@@ -7290,10 +7290,11 @@
     preview.style.display = 'block'
   }
 
-  function populateEventCalendarioSelect(selectedId) {
+  function populateEventCalendarioSelect(selectedId, forceChoice) {
     const select = document.getElementById('event-calendario')
     if (!select) return
-    select.innerHTML = CALENDARS.map(c => `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.nombre}</option>`).join('')
+    const placeholder = forceChoice ? `<option value="" ${!selectedId ? 'selected' : ''} disabled hidden>Elegí un calendario...</option>` : ''
+    select.innerHTML = placeholder + CALENDARS.map(c => `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.nombre}</option>`).join('')
   }
 
   window.openEventModal = function(defaultDate) {
@@ -7302,7 +7303,7 @@
     document.getElementById('event-id').value = ''
     document.getElementById('event-titulo').value = ''
     document.getElementById('event-tipo').value = 'evento'
-    populateEventCalendarioSelect(currentCalendarioId)
+    populateEventCalendarioSelect(null, true)
     document.getElementById('event-link').value = ''
     document.getElementById('event-descripcion').value = ''
     document.getElementById('event-error').classList.remove('show')
@@ -7384,6 +7385,8 @@
     const errEl = document.getElementById('event-error')
     errEl.classList.remove('show')
     if (!titulo) { errEl.textContent = 'El título es obligatorio.'; errEl.classList.add('show'); return }
+    const calendarioVal = document.getElementById('event-calendario').value
+    if (!calendarioVal) { errEl.textContent = 'Elegí a qué calendario mandar el evento.'; errEl.classList.add('show'); return }
     const dateVal = document.getElementById('event-date').value
     if (!dateVal) { errEl.textContent = 'La fecha es obligatoria.'; errEl.classList.add('show'); return }
     const hI = document.getElementById('event-h-inicio').value
@@ -7409,7 +7412,7 @@
       link: document.getElementById('event-link').value.trim() || null,
       descripcion: document.getElementById('event-descripcion').value.trim() || null,
       agency_id: agencyId,
-      calendario_id: document.getElementById('event-calendario').value || currentCalendarioId,
+      calendario_id: calendarioVal,
     }
 
     // Foto o video del evento
@@ -13708,7 +13711,7 @@ if (id) {
     await loadCalendars() // por si renderCalendario todavía no terminó de cargarlos
     openEventModal()
     document.getElementById('event-titulo').value = item.titulo || ''
-    populateEventCalendarioSelect(currentCalendarioId)
+    populateEventCalendarioSelect(null, true)
     showExistingEventFile(item.archivo_url)
     showToast('Imagen cargada — elegí el calendario, la fecha, y guardá el evento')
   }
