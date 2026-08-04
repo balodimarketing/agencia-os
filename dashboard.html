@@ -52,37 +52,35 @@
     /* ── Shell ── */
     .app { display: flex; height: 100vh; overflow: hidden; position: relative; }
 
-    /* ── Rail (estilo "liquid glass") ── */
+    /* ── Rail (fondo blanco, sin transparencia) ── */
     .rail {
       width: var(--rail-w); margin: 12px 0 12px 12px; display: flex; flex-direction: column;
       align-items: center; padding: 16px 0; flex-shrink: 0; z-index: 30; gap: 4px;
-      background: rgba(10,37,64,.72);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255,255,255,.14);
+      background: #fff;
+      border: 1px solid var(--border);
       border-radius: 24px;
-      box-shadow: 0 16px 40px rgba(10,37,64,.28), 0 2px 8px rgba(10,37,64,.16), inset 0 1px 0 rgba(255,255,255,.12);
+      box-shadow: var(--shadow-lg);
     }
-    .rail-logo { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; cursor: pointer; flex-shrink: 0; }
-    .rail-logo svg { width: 28px; height: 30px; }
-    .rail-sep { width: 28px; height: 1px; background: rgba(142,219,255,.12); margin: 6px 0; flex-shrink: 0; }
-    .rail-btn { width: 42px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background var(--t), color var(--t), box-shadow var(--t), transform var(--t); color: rgba(142,219,255,.55); position: relative; }
+    .rail-logo { width: 38px; height: 38px; border-radius: 11px; background: var(--azul); display: flex; align-items: center; justify-content: center; margin-bottom: 4px; cursor: pointer; flex-shrink: 0; }
+    .rail-logo svg { width: 22px; height: 28px; }
+    .rail-sep { width: 28px; height: 1px; background: var(--border); margin: 6px 0; flex-shrink: 0; }
+    .rail-btn { width: 42px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background var(--t), color var(--t), box-shadow var(--t), transform var(--t); color: var(--ink3); position: relative; }
     .rail-btn i { font-size: 19px; position: relative; z-index: 1; }
-    .rail-btn:hover { background: rgba(142,219,255,.1); color: rgba(142,219,255,.85); }
+    .rail-btn:hover { background: var(--bg); color: var(--azul); }
     .rail-btn.active {
       background: linear-gradient(135deg, #8EDBFF 0%, #6E7BFF 55%, #A855F7 100%);
       color: #fff;
       border: none;
       box-shadow:
         0 0 0 1px rgba(255,255,255,.25) inset,
-        0 4px 16px rgba(110,123,255,.55),
-        0 0 24px rgba(142,219,255,.35);
+        0 4px 16px rgba(110,123,255,.45),
+        0 0 20px rgba(142,219,255,.3);
       transform: translateY(-1px);
     }
     .rail-btn.active i { text-shadow: 0 1px 2px rgba(0,0,0,.15); }
     .rail-btn::after { content: attr(data-tip); position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%); background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 7px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity var(--t); z-index: 100; }
     .rail-btn:hover::after { opacity: 1; }
-    .rail-divider { width: 28px; height: 1px; background: rgba(142,219,255,.08); margin: 6px 0; }
+    .rail-divider { width: 28px; height: 1px; background: var(--border); margin: 6px 0; }
     .rail-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .rail-av { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; cursor: pointer; letter-spacing: -.3px; }
 
@@ -1338,7 +1336,7 @@
         <div class="notif-dot" id="notif-dot"></div>
       </div>
       <div class="rail-sep" style="margin:4px 0"></div>
-      <div class="rail-av" id="rail-av" data-tip="Mi perfil" onclick="handleOpenProfile()" style="cursor:pointer;border:1.5px solid rgba(142,219,255,.25)"></div>
+      <div class="rail-av" id="rail-av" data-tip="Mi perfil" onclick="handleOpenProfile()" style="cursor:pointer;border:1.5px solid var(--border)"></div>
     </div>
   </div>
 
