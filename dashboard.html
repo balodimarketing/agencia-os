@@ -662,7 +662,9 @@
 
     /* ── Moodboard: controles inferiores ── */
     #mb-history-controls { position: absolute; bottom: 20px; left: 20px; z-index: 30; display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 4px; }
-    #mb-history-controls button { width: 30px; height: 30px; border-radius: 8px; border: none; background: none; color: var(--ink3); display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: not-allowed; opacity: .5; }
+    #mb-history-controls button { width: 30px; height: 30px; border-radius: 8px; border: none; background: none; color: var(--ink2); display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; }
+    #mb-history-controls button:hover:not(:disabled) { background: var(--bg); }
+    #mb-history-controls button:disabled { cursor: not-allowed; opacity: .35; }
     #mb-ai-bar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 5px; }
     #mb-ai-bar button { width: 34px; height: 34px; border-radius: 10px; border: none; background: none; color: var(--ink3); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: not-allowed; opacity: .5; }
 
@@ -1576,8 +1578,8 @@
 
             <!-- Controles inferiores izquierda: undo/redo (preparado, sin historial todavía) -->
             <div id="mb-history-controls">
-              <button disabled title="Deshacer (próximamente)"><i class="ti ti-arrow-back-up"></i></button>
-              <button disabled title="Rehacer (próximamente)"><i class="ti ti-arrow-forward-up"></i></button>
+              <button onclick="mbUndo()" disabled title="Deshacer (Ctrl+Z)"><i class="ti ti-arrow-back-up"></i></button>
+              <button onclick="mbRedo()" disabled title="Rehacer (Ctrl+Shift+Z)"><i class="ti ti-arrow-forward-up"></i></button>
             </div>
 
             <!-- Barra inferior central: acciones de IA (preparado, sin conectar) -->
@@ -12129,6 +12131,10 @@ if (id) {
   let mbSelectedItemId = null
   let mbPendingImagePos = null
   let mbJustDragged = false
+  let mbHistory = []
+  let mbHistoryIndex = -1
+  const MB_HISTORY_LIMIT = 50
+  let mbClipboard = null
 
   async function loadMoodboards() {
     if (!agencyId) return
@@ -12238,6 +12244,9 @@ if (id) {
     renderMbCanvas()
     initMbCanvasEvents()
     setMbTool('select')
+    mbHistory = [JSON.parse(JSON.stringify(moodboardItems))]
+    mbHistoryIndex = 0
+    updateMbHistoryButtons()
   }
 
   async function loadMoodboardItems() {
@@ -12622,6 +12631,7 @@ if (id) {
           await supabase.from('moodboard_items').update({ width, height }).eq('id', finishedResizeId)
         }
       }
+      if (finishedDragId || finishedResizeId) pushMbHistory()
     })
 
     viewport.addEventListener('click', e => {
@@ -12709,18 +12719,22 @@ if (id) {
       z_index: partial.z_index !== undefined ? partial.z_index : nextMbZIndex(),
       tipo: partial.tipo, archivo_url: partial.archivo_url || null, url: partial.url || null,
       titulo: partial.titulo || null, contenido: partial.contenido || null, color: partial.color || null,
+      etiqueta: partial.etiqueta || null, etiqueta_color: partial.etiqueta_color || null,
+      locked: partial.locked || false, responsable_ids: partial.responsable_ids || [],
     }
     const { data, error } = await supabase.from('moodboard_items').insert(payload).select('*').single()
     if (error) { showToast('Error: ' + error.message); return }
     moodboardItems.push(data)
     renderMbCanvas()
     selectMbItem(data.id)
+    pushMbHistory()
     if (data.tipo === 'nota' || data.tipo === 'texto') {
       setTimeout(() => {
         const el = document.querySelector(`.mb-nota[data-id="${data.id}"], .mb-texto[data-id="${data.id}"]`)
         if (el) enterMbEditMode(el)
       }, 50)
     }
+    return data
   }
 
   // ── Render del lienzo ────────────────────────────────────
@@ -12837,6 +12851,7 @@ if (id) {
     item.locked = !item.locked
     renderMbCanvas()
     await supabase.from('moodboard_items').update({ locked: item.locked }).eq('id', id)
+    pushMbHistory()
     showToast(item.locked ? '🔒 Elemento bloqueado' : '🔓 Elemento desbloqueado')
   }
 
@@ -12848,6 +12863,7 @@ if (id) {
     if (mbSelectedItemId === id) mbSelectedItemId = null
     renderMbCanvas()
     renderMbPropertiesPanel()
+    pushMbHistory()
   }
 
   window.enterMbEditMode = function(el) {
@@ -12868,6 +12884,7 @@ if (id) {
     const item = moodboardItems.find(i => i.id === id)
     if (item) item.contenido = texto
     await supabase.from('moodboard_items').update({ contenido: texto }).eq('id', id)
+    pushMbHistory()
   }
 
   window.changeMbItemColor = async function(id, color) {
@@ -12875,6 +12892,7 @@ if (id) {
     if (item) item.color = color
     renderMbCanvas()
     await supabase.from('moodboard_items').update({ color }).eq('id', id)
+    pushMbHistory()
   }
 
   // ── Card flotante con info del moodboard ──────────────
@@ -13136,6 +13154,7 @@ if (id) {
     item.responsable_ids = [...ids]
     renderMbPropertiesPanel()
     await supabase.from('moodboard_items').update({ responsable_ids: item.responsable_ids }).eq('id', itemId)
+    pushMbHistory()
   }
 
   document.addEventListener('click', e => {
@@ -13161,6 +13180,7 @@ if (id) {
     renderMbCanvas()
     renderMbPropertiesPanel()
     await supabase.from('moodboard_items').update({ etiqueta: nombre, etiqueta_color: nombre ? color : null }).eq('id', id)
+    pushMbHistory()
   }
 
   window.updateMbItemField = async function(id, field, value) {
@@ -13169,6 +13189,7 @@ if (id) {
     renderMbCanvas()
     renderMbPropertiesPanel()
     await supabase.from('moodboard_items').update({ [field]: value }).eq('id', id)
+    pushMbHistory()
   }
 
   // ── Comentarios por elemento ────────────────────────────
@@ -13263,6 +13284,117 @@ if (id) {
     renderMbPropertiesPanel()
     renderMbCanvas()
   }
+
+  // ── Deshacer / Rehacer ──────────────────────────────────
+  // Guarda una "foto" de todos los elementos después de cada acción. Deshacer/Rehacer
+  // vuelve a esa foto y sincroniza la base de datos (crea, borra o actualiza lo que cambió).
+  function pushMbHistory() {
+    if (!currentMoodboardId) return
+    mbHistory = mbHistory.slice(0, mbHistoryIndex + 1)
+    mbHistory.push(JSON.parse(JSON.stringify(moodboardItems)))
+    if (mbHistory.length > MB_HISTORY_LIMIT) mbHistory.shift()
+    mbHistoryIndex = mbHistory.length - 1
+    updateMbHistoryButtons()
+  }
+
+  function updateMbHistoryButtons() {
+    const btns = document.querySelectorAll('#mb-history-controls button')
+    if (btns[0]) btns[0].disabled = mbHistoryIndex <= 0
+    if (btns[1]) btns[1].disabled = mbHistoryIndex >= mbHistory.length - 1
+  }
+
+  async function applyMbSnapshot(snapshot) {
+    const oldIds = new Set(moodboardItems.map(i => i.id))
+    const newIds = new Set(snapshot.map(i => i.id))
+    const toDelete = [...oldIds].filter(id => !newIds.has(id))
+    const toInsert = snapshot.filter(i => !oldIds.has(i.id))
+    const toUpdate = snapshot.filter(i => oldIds.has(i.id))
+
+    moodboardItems = snapshot.map(i => ({ ...i }))
+    mbSelectedItemId = null
+    renderMbCanvas()
+    renderMbPropertiesPanel()
+
+    await Promise.all([
+      ...toDelete.map(id => supabase.from('moodboard_items').delete().eq('id', id)),
+      ...toInsert.map(item => supabase.from('moodboard_items').insert(item)),
+      ...toUpdate.map(item => supabase.from('moodboard_items').update(item).eq('id', item.id)),
+    ])
+    // Si se borró algún elemento, sus conexiones y comentarios ya se fueron en cascada
+    if (toDelete.length > 0) await Promise.all([loadMoodboardConnections(), loadMoodboardComments()])
+  }
+
+  window.mbUndo = async function() {
+    if (mbHistoryIndex <= 0) return
+    mbHistoryIndex--
+    await applyMbSnapshot(mbHistory[mbHistoryIndex])
+    updateMbHistoryButtons()
+    showToast('↶ Deshecho')
+  }
+
+  window.mbRedo = async function() {
+    if (mbHistoryIndex >= mbHistory.length - 1) return
+    mbHistoryIndex++
+    await applyMbSnapshot(mbHistory[mbHistoryIndex])
+    updateMbHistoryButtons()
+    showToast('↷ Rehecho')
+  }
+
+  // ── Copiar / Cortar / Pegar ─────────────────────────────
+  function mbCopySelected() {
+    const item = moodboardItems.find(i => i.id === mbSelectedItemId)
+    if (!item) return
+    mbClipboard = { ...item }
+    showToast('Copiado')
+  }
+
+  async function mbCutSelected() {
+    const item = moodboardItems.find(i => i.id === mbSelectedItemId)
+    if (!item) return
+    mbClipboard = { ...item }
+    await supabase.from('moodboard_items').delete().eq('id', item.id)
+    moodboardItems = moodboardItems.filter(i => i.id !== item.id)
+    mbConnections = mbConnections.filter(c => c.from_item_id !== item.id && c.to_item_id !== item.id)
+    mbSelectedItemId = null
+    renderMbCanvas()
+    renderMbPropertiesPanel()
+    pushMbHistory()
+    showToast('Cortado')
+  }
+
+  async function mbPasteClipboard() {
+    if (!mbClipboard || !currentMoodboardId) return
+    const partial = { ...mbClipboard, x: mbClipboard.x + 24, y: mbClipboard.y + 24, z_index: nextMbZIndex() }
+    delete partial.id
+    delete partial.created_at
+    delete partial.updated_at
+    delete partial.moodboard_id
+    delete partial.agency_id
+    await createMbItem(partial)
+    showToast('Pegado')
+  }
+
+  // Atajos: Ctrl/Cmd+Z deshacer, Ctrl/Cmd+Shift+Z o Ctrl+Y rehacer, Ctrl/Cmd+C/X/V copiar/cortar/pegar
+  document.addEventListener('keydown', e => {
+    if (currentContentTab !== 'moodboard' || !currentMoodboardId) return
+    const tag = document.activeElement?.tagName
+    const isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable
+    const ctrl = e.ctrlKey || e.metaKey
+    if (!ctrl) return
+
+    const key = e.key.toLowerCase()
+    if (key === 'z' && !isEditable) {
+      e.preventDefault()
+      if (e.shiftKey) mbRedo(); else mbUndo()
+      return
+    }
+    if (key === 'y' && !isEditable) { e.preventDefault(); mbRedo(); return }
+    if (isEditable) return // dejar que copiar/pegar de texto normal funcione en inputs y notas
+
+    if (key === 'c' && mbSelectedItemId) { e.preventDefault(); mbCopySelected(); return }
+    if (key === 'x' && mbSelectedItemId) { e.preventDefault(); mbCutSelected(); return }
+    if (key === 'v' && mbClipboard) { e.preventDefault(); mbPasteClipboard(); return }
+  })
 
   // ══════════════════════════════════════
   // REPORTES
