@@ -658,6 +658,14 @@
     .mb-share-role-row .mb-share-input { flex: 1; }
     .mb-share-send-btn { width: 38px; height: 38px; border-radius: 10px; border: none; background: var(--ink3); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; cursor: not-allowed; }
 
+    .mb-share-switch { position: relative; display: inline-block; width: 40px; height: 24px; flex-shrink: 0; }
+    .mb-share-switch input { opacity: 0; width: 0; height: 0; }
+    .mb-share-switch-track { position: absolute; inset: 0; background: var(--border); border-radius: 20px; cursor: pointer; transition: background var(--t); }
+    .mb-share-switch-track::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform var(--t); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+    .mb-share-switch input:checked + .mb-share-switch-track { background: var(--azul); }
+    .mb-share-switch input:checked + .mb-share-switch-track::before { transform: translateX(16px); }
+    .mb-share-switch input:disabled + .mb-share-switch-track { opacity: .6; cursor: not-allowed; }
+
 
     /* Barra flotante de formato de texto (negrita, título, subtítulo, lista) */
     #mb-rte-toolbar {
@@ -12700,6 +12708,25 @@ if (id) {
 
         <div class="mb-share-section">
           <div class="mb-share-label-row">
+            <div class="mb-share-label">Link público</div>
+            <label class="mb-share-switch">
+              <input type="checkbox" id="mb-share-public-toggle" ${board?.share_enabled ? 'checked' : ''} onchange="mbTogglePublicShare(this)">
+              <span class="mb-share-switch-track"></span>
+            </label>
+          </div>
+          <div class="mb-share-hint" style="margin-top:0;margin-bottom:${board?.share_enabled ? '10px' : '0'}">
+            <i class="ti ti-world"></i> Cualquiera con el link lo puede ver, sin cuenta en Faro. Le pedimos el mail antes de mostrarle el contenido.
+          </div>
+          <div id="mb-share-public-link-row" style="display:${board?.share_enabled ? 'flex' : 'none'}" class="mb-share-link-row">
+            <div class="mb-share-link-input" id="mb-share-public-link-input" onclick="mbCopyPublicShareLink()">${board?.share_token ? publicUrl(board.share_token) : ''}</div>
+            <button class="mb-share-copy-btn" onclick="mbCopyPublicShareLink()"><i class="ti ti-copy"></i> Copiar</button>
+          </div>
+        </div>
+
+        <div class="mb-share-divider"></div>
+
+        <div class="mb-share-section">
+          <div class="mb-share-label-row">
             <div class="mb-share-label">Invitar por mail</div>
             <span class="mb-share-soon-badge">Próximamente</span>
           </div>
@@ -12719,6 +12746,42 @@ if (id) {
     </div>`
     document.body.appendChild(m)
   }
+
+  function publicUrl(token) {
+    return `${location.origin}${location.pathname.replace('dashboard.html','moodboard-publico.html')}?id=${currentMoodboardId}&token=${token}`
+  }
+
+  window.mbTogglePublicShare = async function(checkbox) {
+    const board = MOODBOARDS.find(b => b.id === currentMoodboardId)
+    if (!board) return
+    const enabling = checkbox.checked
+    checkbox.disabled = true
+    let token = board.share_token
+    if (enabling && !token) token = crypto.randomUUID()
+    const { error } = await supabase.from('moodboards').update({ share_enabled: enabling, share_token: token }).eq('id', board.id)
+    checkbox.disabled = false
+    if (error) { showToast('No se pudo actualizar: ' + error.message); checkbox.checked = !enabling; return }
+    board.share_enabled = enabling
+    board.share_token = token
+    const row = document.getElementById('mb-share-public-link-row')
+    const input = document.getElementById('mb-share-public-link-input')
+    if (row) row.style.display = enabling ? 'flex' : 'none'
+    if (input) input.textContent = enabling ? publicUrl(token) : ''
+    showToast(enabling ? '🌍 Link público activado' : 'Link público desactivado')
+  }
+
+  window.mbCopyPublicShareLink = async function() {
+    const board = MOODBOARDS.find(b => b.id === currentMoodboardId)
+    if (!board?.share_token) return
+    const url = publicUrl(board.share_token)
+    try {
+      await navigator.clipboard.writeText(url)
+      showToast('🔗 Link público copiado')
+    } catch {
+      prompt('Copiá este link:', url)
+    }
+  }
+
 
   window.mbCopyShareLink = async function() {
     const url = `${location.origin}${location.pathname}?moodboard=${currentMoodboardId}`
