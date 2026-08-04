@@ -521,11 +521,11 @@
     /* ── Selector partido: nombre + "+" para crear directo (Tableros) ── */
     .cp-selector-split {
       display: flex; align-items: stretch; background: #fff; border: 1px solid var(--border);
-      border-radius: 12px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+      border-radius: 12px; box-shadow: var(--shadow-lg); position: relative;
     }
     .cp-selector-main {
       display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; max-width: 200px;
-      background: none; border: none; font-size: 13px; font-weight: 700; color: var(--ink); cursor: pointer;
+      background: none; border: none; border-radius: 12px 0 0 12px; font-size: 13px; font-weight: 700; color: var(--ink); cursor: pointer;
       font-family: inherit; transition: background var(--t);
     }
     .cp-selector-main:hover { background: var(--bg); }
@@ -533,11 +533,11 @@
     .cp-selector-main span { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cp-selector-main i:last-child { font-size: 13px; color: var(--ink3); flex-shrink: 0; }
     .cp-selector-plus {
-      width: 38px; height: 38px; border: none; border-left: 1px solid var(--border); background: var(--bg);
-      color: var(--azul); cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: 15px; flex-shrink: 0; transition: background var(--t);
+      width: 38px; height: 38px; border: none; border-radius: 0 12px 12px 0; background: var(--azul);
+      color: var(--celeste); cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0; transition: opacity var(--t);
     }
-    .cp-selector-plus:hover { background: var(--celeste-dim); }
+    .cp-selector-plus:hover { opacity: .85; }
     #tablero-dropdown {
       display: none; position: absolute; top: 44px; left: 0; width: 270px; background: #fff;
       border: 1px solid var(--border); border-radius: 14px; padding: 10px; box-shadow: var(--shadow-lg);
@@ -793,19 +793,17 @@
     /* ── Moodboard: modo pantalla completa ── */
     #mb-floating-tabs {
       position: fixed; top: 16px; left: 16px; z-index: 1000;
-      background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 5px;
-      box-shadow: var(--shadow-lg); display: flex; gap: 3px;
       opacity: 0; transform: translateY(-8px) scale(.97); pointer-events: none;
       transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
     }
     #mb-floating-tabs.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-    .mb-floating-tab-btn {
-      display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: none; background: none;
-      border-radius: 10px; font-size: 12px; font-weight: 700; color: var(--ink2); cursor: pointer; font-family: inherit;
-      transition: background var(--t);
+    .mb-floating-back-btn {
+      display: flex; align-items: center; gap: 7px; padding: 11px 16px; border: 1px solid var(--border); background: #fff;
+      border-radius: 14px; font-size: 12.5px; font-weight: 800; color: var(--ink2); cursor: pointer; font-family: inherit;
+      box-shadow: var(--shadow-lg); transition: background var(--t), color var(--t);
     }
-    .mb-floating-tab-btn:hover { background: var(--bg); }
-    .mb-floating-tab-btn.active { background: var(--azul); color: var(--celeste); }
+    .mb-floating-back-btn:hover { background: var(--azul); color: var(--celeste); }
+    .mb-floating-back-btn i { font-size: 14px; }
 
     .rail {
       transition: width .38s cubic-bezier(.4,0,.2,1), opacity .3s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1), margin .38s cubic-bezier(.4,0,.2,1);
@@ -5214,9 +5212,7 @@
 
 <!-- OVERLAY: Vista previa PDF del calendario (misma pestaña, sin abrir nada nuevo) -->
 <div id="mb-floating-tabs">
-  <button class="mb-floating-tab-btn" data-tab="tareas" onclick="switchContentTab('tareas')"><i class="ti ti-check"></i> Tareas</button>
-  <button class="mb-floating-tab-btn" data-tab="tableros" onclick="switchContentTab('tableros')"><i class="ti ti-stack-2"></i> Tableros</button>
-  <button class="mb-floating-tab-btn active" data-tab="moodboard" onclick="switchContentTab('moodboard')"><i class="ti ti-palette"></i> Moodboard</button>
+  <button class="mb-floating-back-btn" onclick="switchContentTab('tableros')"><i class="ti ti-arrow-left"></i> Volver</button>
 </div>
 
 <div id="mb-floating-selector">
@@ -9467,7 +9463,6 @@
       floatingSelector?.classList.remove('visible')
       if (mbPresenting) mbExitPresent()
     }
-    document.querySelectorAll('.mb-floating-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab))
 
     if (tab === 'tableros') renderTableros()
     if (tab === 'moodboard') renderMoodboardTab()
