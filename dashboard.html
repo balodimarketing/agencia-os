@@ -6786,7 +6786,7 @@
       ? '<img src="' + pdfLogoBase64 + '" class="pdfcal-logo-img" alt="Logo">'
       : '<div class="pdfcal-logo">' + agencyName.substring(0,2).toUpperCase() + '</div>'
 
-    const contentHTML = '<style>' + pdfCSS + '</style>' +
+    const contentHTML = '<style>' + pdfCSS.join('') + '</style>' +
       '<div class="pdfcal-page">' +
       '<div class="pdfcal-header"><div><div class="pdfcal-kicker">Calendario de contenido</div><div class="pdfcal-h1">' + nombreCalendario + (mostrarClienteEnTitulo ? ' — ' + cliente : '') + '</div><div class="pdfcal-header-sub">' + monthLabel + ' · Generado el ' + today + '</div></div>' +
       logoHTML + '</div>' +
@@ -6798,6 +6798,9 @@
       '</div>'
 
     document.getElementById('calendario-pdf-content').innerHTML = contentHTML
+    // Se reubica como hijo directo de <body> — si no, queda anidado dentro de .app y la regla
+    // de impresión que esconde "todo menos el PDF" lo esconde a él también sin querer.
+    document.body.appendChild(document.getElementById('calendario-pdf-overlay'))
     document.getElementById('calendario-pdf-overlay').style.display = 'block'
     document.getElementById('calendario-pdf-overlay').scrollTop = 0
   }
