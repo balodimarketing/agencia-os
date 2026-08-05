@@ -55,9 +55,12 @@
     }
     .rail-inner {
       display: flex; flex-direction: column; align-items: stretch; height: 100%;
-      padding: 18px 14px; gap: 3px; position: relative; overflow: hidden; border-radius: 20px;
+      padding: 18px 14px; gap: 3px; position: relative; overflow-y: auto; overflow-x: hidden; border-radius: 20px;
       transition: padding var(--t);
+      scrollbar-width: thin;
     }
+    .rail-inner::-webkit-scrollbar { width: 5px; }
+    .rail-inner::-webkit-scrollbar-thumb { background: rgba(10,37,64,.15); border-radius: 10px; }
     /* Detalle decorativo muy sutil abajo del rail (líneas orgánicas, casi imperceptibles) */
     .rail-inner::after {
       content: ''; position: absolute; left: -20%; right: -20%; bottom: -10%; height: 42%; z-index: -1; pointer-events: none;
@@ -152,6 +155,7 @@
       border: 1px solid rgba(142,219,255,.4); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 3px;
     }
     body.rail-collapsed .rail-pro-card { display: none; }
+    .rail-pro-card.pro-hidden { display: none; }
     .rail-pro-title { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: var(--azul); }
     .rail-pro-title i { font-size: 13px; }
     .rail-pro-desc { font-size: 10.5px; color: var(--ink2); line-height: 1.4; margin-bottom: 6px; }
@@ -1626,7 +1630,7 @@
       <div class="rail-pro-card" id="rail-pro-card">
         <div class="rail-pro-title"><i class="ti ti-sparkles"></i> Faro Pro</div>
         <div class="rail-pro-desc">CRM, reportes, presupuestos y contratos.</div>
-        <button class="rail-pro-btn" onclick="handleOpenProfile()">Actualizar plan <i class="ti ti-arrow-right"></i></button>
+        <button class="rail-pro-btn" onclick="openUpgradePlanModal()">Actualizar plan <i class="ti ti-arrow-right"></i></button>
       </div>
 
       <!-- Reemplaza a la card de Pro cuando el rail está colapsado -->
@@ -5084,7 +5088,7 @@
           <div id="profile-plan-name" style="font-size:16px;font-weight:900;color:var(--ink);letter-spacing:-.3px">Free</div>
           <div id="profile-plan-desc" style="font-size:10px;color:var(--ink3);margin-top:3px">2 clientes · 1 miembro</div>
         </div>
-        <button id="btn-upgrade-plan" onclick="closeProfileModal();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))" style="width:100%;padding:9px;background:var(--azul);color:var(--celeste);border:none;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;display:none">Mejorar plan →</button>
+        <button id="btn-upgrade-plan" onclick="openUpgradePlanModal()" style="width:100%;padding:9px;background:var(--azul);color:var(--celeste);border:none;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.2px;display:none">Mejorar plan →</button>
       </div>
 
       <div style="width:100%;height:1px;background:var(--border);margin-top:auto"></div>
@@ -7675,7 +7679,7 @@
 
     // Upsell "Faro Pro": solo tiene sentido mostrarlo si la agencia todavía no es Pro/Agency
     const proCard = document.getElementById('rail-pro-card')
-    if (proCard) proCard.style.display = isPro() ? 'none' : 'flex'
+    if (proCard) proCard.classList.toggle('pro-hidden', isPro())
   }
 
   // ── Sidebar: colapsar / expandir ──
@@ -7743,7 +7747,7 @@
     const upgradeBtn = document.getElementById('btn-upgrade-plan')
     if (planEl) planEl.textContent = planNombre
     if (planDescEl) planDescEl.textContent = planDesc
-    if (upgradeBtn) upgradeBtn.style.display = !isPro() && userRole === 'OWNER' ? 'block' : 'none'
+    if (upgradeBtn) upgradeBtn.style.display = agencyPlan !== 'agency' && userRole === 'OWNER' ? 'block' : 'none'
 
     // Avatar display
     const ini = ((profileData?.nombre?.[0]||'') + (profileData?.apellido?.[0]||'')).toUpperCase()
@@ -7768,6 +7772,71 @@
 
   window.closeProfileModal = function() {
     document.getElementById('modal-profile').classList.remove('show')
+  }
+
+  // ── Actualizar plan: elegir Pro/Agency y arrancar el checkout real de MercadoPago ──
+  const FARO_PLANS_INFO = {
+    pro:    { nombre: 'Pro',    precio: '$1.000 ARS/mes', desc: 'Clientes y miembros ilimitados, CRM, Reportes, Herramientas, Presupuestos y Contratos.' },
+    agency: { nombre: 'Agency', precio: '$3.000 ARS/mes', desc: 'Todo lo de Pro, más Moodboard, integraciones API, múltiples agencias y soporte prioritario.' },
+  }
+
+  window.openUpgradePlanModal = function() {
+    closeProfileModal()
+    const existing = document.getElementById('modal-upgrade-plan')
+    if (existing) existing.remove()
+    const disponibles = agencyPlan === 'pro' ? ['agency'] : ['pro', 'agency']
+
+    const m = document.createElement('div')
+    m.id = 'modal-upgrade-plan'
+    m.className = 'modal-overlay show'
+    m.onclick = e => { if (e.target === m) m.remove() }
+    m.innerHTML = `<div class="modal" style="max-width:420px"><div class="fc-dialog" style="text-align:left">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div class="fc-dialog-title" style="margin:0">Mejorar plan</div>
+        <button onclick="document.getElementById('modal-upgrade-plan').remove()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:16px"><i class="ti ti-x"></i></button>
+      </div>
+      ${disponibles.map(p => {
+        const info = FARO_PLANS_INFO[p]
+        return `<div style="border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div style="font-size:15px;font-weight:900;color:var(--ink)">${info.nombre}</div>
+            <div style="font-size:12px;font-weight:800;color:var(--azul)">${info.precio}</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink3);line-height:1.5;margin-bottom:12px">${info.desc}</div>
+          <button class="fc-dialog-btn primary" style="width:100%" id="upgrade-btn-${p}" onclick="startPlanCheckout('${p}')">Pasar a ${info.nombre}</button>
+        </div>`
+      }).join('')}
+      <div style="font-size:10.5px;color:var(--ink3);text-align:center;margin-top:4px">Te vamos a redirigir a MercadoPago para completar el pago.</div>
+    </div></div>`
+    document.body.appendChild(m)
+  }
+
+  window.startPlanCheckout = async function(plan) {
+    const btn = document.getElementById(`upgrade-btn-${plan}`)
+    if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...' }
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const email = userData?.user?.email
+      const res = await fetch('https://trsbjjagrpvlzvcveiph.supabase.co/functions/v1/crear-suscripcion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer sb_publishable_unJoCAXBOTCiLpLkFCG2oA_SdRcKHit',
+          'apikey': 'sb_publishable_unJoCAXBOTCiLpLkFCG2oA_SdRcKHit',
+        },
+        body: JSON.stringify({ plan, agency_id: agencyId, email }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.checkout_url) {
+        showToast('No se pudo iniciar el pago: ' + (data.error || 'error desconocido'))
+        if (btn) { btn.disabled = false; btn.textContent = `Pasar a ${FARO_PLANS_INFO[plan].nombre}` }
+        return
+      }
+      window.location.href = data.checkout_url
+    } catch (e) {
+      showToast('No se pudo iniciar el pago: ' + e.message)
+      if (btn) { btn.disabled = false; btn.textContent = `Pasar a ${FARO_PLANS_INFO[plan].nombre}` }
+    }
   }
 
   window.previewAvatar = function(input) {
