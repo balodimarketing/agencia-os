@@ -1630,6 +1630,26 @@
     }
     .cal-view-btn.active { color: var(--celeste); font-weight: 800; }
 
+    /* ── Barra del calendario, como pastillas flotantes ── */
+    .cal-floating-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 16px 20px 12px; background: transparent; flex-shrink: 0; }
+    .cal-fpill {
+      display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px;
+      background: #fff; border: 1px solid rgba(16,24,40,.08); border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(16,24,40,.06); font-size: 12.5px; font-weight: 700; color: var(--ink);
+      cursor: pointer; font-family: inherit; flex-shrink: 0; transition: box-shadow .15s;
+    }
+    .cal-fpill:hover { box-shadow: 0 4px 16px rgba(16,24,40,.1); }
+    .cal-fpill i { font-size: 14px; color: var(--ink3); }
+    .cal-fpill-label { white-space: nowrap; }
+    .cal-fpill-primary { background: var(--azul); color: var(--celeste); border-color: var(--azul); }
+    .cal-fpill-primary i { color: var(--celeste); }
+    .cal-fpill-primary:hover { opacity: .9; }
+    .cal-view-toggle { padding: 4px; height: 40px; box-sizing: border-box; cursor: default; }
+    .cal-nav-pill { padding: 0 6px; gap: 2px; cursor: default; }
+    .cal-nav-pill button { width: 30px; height: 30px; border-radius: 8px; border: none; background: none; color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: background .15s; }
+    .cal-nav-pill button:hover { background: var(--bg); }
+    #cal-range-label { font-size: 13px; font-weight: 900; color: var(--ink); letter-spacing: -.2px; padding: 0 4px; white-space: nowrap; }
+
     /* Side panel piece cards */
     .cal-piece-card {
       background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-sm);
@@ -1826,10 +1846,10 @@
       /* ── Calendario: vista agenda en vez de la grilla semanal/mensual ── */
       #cal-grid { display: none !important; }
       #cal-agenda-mobile { display: block; flex: 1; overflow-y: auto; padding: 4px 16px 24px; }
-      .cal-view-toggle, .cal-pdf-btn, .cal-drawer-btn { display: none !important; }
+      .cal-view-toggle, .cal-pdf-btn { display: none !important; }
       #v-calendario > div:first-child { flex-wrap: wrap; row-gap: 8px; padding: 12px 16px !important; }
-      #cal-range-label { flex-basis: 100%; text-align: left !important; order: 1; font-size: 14px !important; }
-      .cal-toolbar-actions { margin-left: auto; }
+      .cal-nav-pill { flex-basis: 100%; order: 1; justify-content: center; }
+      #cal-range-label { font-size: 14px !important; }
       .cal-agenda-day-group { margin-bottom: 22px; }
       .cal-agenda-day-label { font-size: 11.5px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; padding-left: 2px; }
       .cal-agenda-item {
@@ -4009,15 +4029,15 @@
         <!-- CALENDARIO -->
     <div class="view flex-view" id="v-calendario" style="padding:0;flex-direction:column;overflow:hidden;height:100vh">
       <!-- Cal toolbar -->
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0">
+      <div class="cal-floating-toolbar">
         <!-- Selector de calendario -->
         <div style="position:relative;flex-shrink:0">
-          <button onclick="toggleCalendarioDropdown()" id="calendario-selector-btn" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;transition:border-color .15s;max-width:200px">
-            <i class="ti ti-calendar-stats" style="font-size:14px;color:var(--ink3);flex-shrink:0"></i>
-            <span id="calendario-selector-label" style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">General</span>
-            <i class="ti ti-chevron-down" style="font-size:13px;color:var(--ink3);flex-shrink:0"></i>
+          <button onclick="toggleCalendarioDropdown()" id="calendario-selector-btn" class="cal-fpill">
+            <i class="ti ti-calendar-stats"></i>
+            <span id="calendario-selector-label" class="cal-fpill-label">General</span>
+            <i class="ti ti-chevron-down"></i>
           </button>
-          <div id="calendario-dropdown" style="display:none;position:absolute;top:42px;left:0;width:260px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:360px;overflow-y:auto">
+          <div id="calendario-dropdown" style="display:none;position:absolute;top:48px;left:0;width:260px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);z-index:200;max-height:360px;overflow-y:auto">
             <div id="calendario-dropdown-list"></div>
             <div style="height:1px;background:var(--border);margin:8px 0"></div>
             <button onclick="openCreateCalendarioModal()" style="width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;cursor:pointer;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink);font-family:inherit;transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
@@ -4025,32 +4045,29 @@
             </button>
           </div>
         </div>
-        <div class="cal-view-toggle" style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="cal-tabs">
+
+        <div class="cal-fpill cal-view-toggle" id="cal-tabs">
           <div class="pill-slider" id="cal-pill"></div>
           <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
           <div class="cal-view-btn" id="cal-btn-mes" onclick="switchCalView('mes')">Mes</div>
         </div>
-        <button class="tbtn" onclick="calToday()" style="padding:6px 12px;font-size:11px">Hoy</button>
-        <div style="display:flex;gap:4px">
-          <button class="tbtn" onclick="calNav(-1)" style="padding:6px 10px"><i class="ti ti-chevron-left" style="font-size:13px"></i></button>
-          <button class="tbtn" onclick="calNav(1)" style="padding:6px 10px"><i class="ti ti-chevron-right" style="font-size:13px"></i></button>
+
+        <div class="cal-fpill cal-nav-pill">
+          <button onclick="calNav(-1)"><i class="ti ti-chevron-left"></i></button>
+          <span id="cal-range-label"></span>
+          <button onclick="calNav(1)"><i class="ti ti-chevron-right"></i></button>
         </div>
-        <div id="cal-range-label" style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;flex:1;text-align:center"></div>
-        <div class="cal-toolbar-actions" style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-          <button class="tbtn cal-pdf-btn" onclick="generateCalendarioPDF()" style="gap:6px">
-            <i class="ti ti-download" style="font-size:14px"></i>
-            Descargar PDF
-          </button>
-          <button class="tbtn primary" onclick="openEventModal()" style="gap:6px">
-            <i class="ti ti-plus" style="font-size:14px"></i>
-            Nuevo evento
-          </button>
-          <button class="tbtn cal-drawer-btn" id="btn-por-programar" onclick="toggleDrawer()" style="gap:6px">
-            <i class="ti ti-stack-2" style="font-size:14px"></i>
-            Por programar
-            <span id="por-programar-badge" style="display:none;background:var(--danger);color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:10px;min-width:16px;text-align:center"></span>
-          </button>
-        </div>
+
+        <div style="flex:1"></div>
+
+        <button class="cal-fpill cal-pdf-btn" onclick="generateCalendarioPDF()">
+          <i class="ti ti-download"></i>
+          <span class="cal-fpill-label">Descargar PDF</span>
+        </button>
+        <button class="cal-fpill cal-fpill-primary" onclick="openEventModal()">
+          <i class="ti ti-plus"></i>
+          <span class="cal-fpill-label">Nuevo evento</span>
+        </button>
       </div>
       <!-- Cal grid -->
       <div id="cal-grid" style="flex:1;overflow:auto"></div>
