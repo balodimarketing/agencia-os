@@ -1709,6 +1709,23 @@
       #task-filters-selects-row select { width: 100%; }
       #task-filter-tabs { width: 100%; overflow-x: auto; }
       .task-view-selector, .task-view-divider, .task-desktop-actions { display: none !important; }
+
+      /* ── Calendario: vista agenda en vez de la grilla semanal/mensual ── */
+      #cal-grid { display: none !important; }
+      #cal-agenda-mobile { display: block; flex: 1; overflow-y: auto; padding: 4px 16px 24px; }
+      .cal-view-toggle, .cal-pdf-btn, .cal-drawer-btn { display: none !important; }
+      #v-calendario > div:first-child { flex-wrap: wrap; row-gap: 8px; padding: 12px 16px !important; }
+      #cal-range-label { flex-basis: 100%; text-align: left !important; order: 1; font-size: 14px !important; }
+      .cal-toolbar-actions { margin-left: auto; }
+      .cal-agenda-day-group { margin-bottom: 22px; }
+      .cal-agenda-day-label { font-size: 11.5px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; padding-left: 2px; }
+      .cal-agenda-item {
+        display: flex; align-items: flex-start; gap: 12px; background: #fff; border: 1px solid var(--border);
+        border-left: 3px solid; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer;
+      }
+      .cal-agenda-item-time { font-size: 11.5px; font-weight: 800; color: var(--ink2); flex-shrink: 0; width: 46px; padding-top: 1px; }
+      .cal-agenda-item-title { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+      .cal-agenda-item-sub { font-size: 11.5px; color: var(--ink3); margin-top: 2px; }
       .task-card-row { flex-wrap: wrap; gap: 10px !important; padding: 14px 16px !important; }
       .task-card-row > div:last-child { margin-left: auto; }
     }
@@ -3895,7 +3912,7 @@
             </button>
           </div>
         </div>
-        <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="cal-tabs">
+        <div class="cal-view-toggle" style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;position:relative" id="cal-tabs">
           <div class="pill-slider" id="cal-pill"></div>
           <div class="cal-view-btn active" id="cal-btn-semana" onclick="switchCalView('semana')">Semana</div>
           <div class="cal-view-btn" id="cal-btn-mes" onclick="switchCalView('mes')">Mes</div>
@@ -3906,8 +3923,8 @@
           <button class="tbtn" onclick="calNav(1)" style="padding:6px 10px"><i class="ti ti-chevron-right" style="font-size:13px"></i></button>
         </div>
         <div id="cal-range-label" style="font-size:15px;font-weight:900;color:var(--ink);letter-spacing:-.3px;flex:1;text-align:center"></div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-          <button class="tbtn" onclick="generateCalendarioPDF()" style="gap:6px">
+        <div class="cal-toolbar-actions" style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <button class="tbtn cal-pdf-btn" onclick="generateCalendarioPDF()" style="gap:6px">
             <i class="ti ti-download" style="font-size:14px"></i>
             Descargar PDF
           </button>
@@ -3915,7 +3932,7 @@
             <i class="ti ti-plus" style="font-size:14px"></i>
             Nuevo evento
           </button>
-          <button class="tbtn" id="btn-por-programar" onclick="toggleDrawer()" style="gap:6px">
+          <button class="tbtn cal-drawer-btn" id="btn-por-programar" onclick="toggleDrawer()" style="gap:6px">
             <i class="ti ti-stack-2" style="font-size:14px"></i>
             Por programar
             <span id="por-programar-badge" style="display:none;background:var(--danger);color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:10px;min-width:16px;text-align:center"></span>
@@ -3924,6 +3941,8 @@
       </div>
       <!-- Cal grid -->
       <div id="cal-grid" style="flex:1;overflow:auto"></div>
+      <!-- Vista agenda para mobile: lista cronológica en vez de la grilla -->
+      <div id="cal-agenda-mobile"></div>
     </div>
 
   </div>
@@ -7082,6 +7101,53 @@
   function renderCalGrid() {
     if (calView === 'semana') renderWeek()
     else renderMonth()
+    renderCalAgendaMobile()
+  }
+
+  function renderCalAgendaMobile() {
+    const container = document.getElementById('cal-agenda-mobile')
+    if (!container) return
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0)
+    const events = getAllEvents()
+      .filter(e => new Date(e.fecha_inicio) >= startOfToday)
+      .sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
+    if (events.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--ink3)">
+        <i class="ti ti-calendar-off" style="font-size:32px;opacity:.4;display:block;margin-bottom:10px"></i>
+        <div style="font-size:13px;font-weight:600">Sin eventos en este período.</div>
+      </div>`
+      return
+    }
+    const groups = {}
+    events.forEach(e => {
+      const key = new Date(e.fecha_inicio).toDateString()
+      if (!groups[key]) groups[key] = []
+      groups[key].push(e)
+    })
+    const todayStr = new Date().toDateString()
+    const tomorrowStr = new Date(Date.now() + 86400000).toDateString()
+    container.innerHTML = Object.keys(groups).map(key => {
+      const d = new Date(key)
+      let label = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+      label = label.charAt(0).toUpperCase() + label.slice(1)
+      if (key === todayStr) label = 'Hoy · ' + d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+      else if (key === tomorrowStr) label = 'Mañana · ' + d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })
+      return `<div class="cal-agenda-day-group">
+        <div class="cal-agenda-day-label">${label}</div>
+        ${groups[key].map(e => {
+          const time = new Date(e.fecha_inicio).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+          const isPiece = String(e.id).startsWith('piece-')
+          const clickAttr = isPiece ? `onclick="switchModule(document.querySelector('.rail-btn[data-module=contenido]'));setTimeout(()=>openPieceDetail('${String(e.id).replace('piece-','')}'),400)"` : `onclick="openEventDetail('${e.id}')"`
+          return `<div class="cal-agenda-item" ${clickAttr} style="border-left-color:${e.color || '#0A2540'}">
+            <div class="cal-agenda-item-time">${time}</div>
+            <div class="cal-agenda-item-body">
+              <div class="cal-agenda-item-title">${e.titulo}</div>
+              ${e.descripcion ? `<div class="cal-agenda-item-sub">${e.descripcion}</div>` : ''}
+            </div>
+          </div>`
+        }).join('')}
+      </div>`
+    }).join('')
   }
 
   function getWeekStart(d) {
