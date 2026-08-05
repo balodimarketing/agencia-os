@@ -1679,8 +1679,6 @@
       /* ── Tareas: solo ver y crear, sin estadísticas ── */
       .task-hero-card, #task-kpis, .task-sidebar-panel { display: none !important; }
       .task-main-grid { grid-template-columns: 1fr !important; }
-      #task-filters-full { padding: 16px !important; box-sizing: border-box; max-width: 100%; }
-      #task-filters-full, #task-filters-full * { box-sizing: border-box; max-width: 100%; }
 
       #task-filters-mobile-bar { display: flex !important; gap: 8px; margin-bottom: 14px; box-sizing: border-box; max-width: 100%; }
       #task-filters-toggle-btn {
@@ -1695,7 +1693,18 @@
         cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0;
       }
       #task-filters-full { display: none; }
-      #task-filters-full.show { display: block; }
+      #task-filters-full.show {
+        display: block; position: fixed; inset: 0; z-index: 1500; background: #fff !important;
+        padding: 16px !important; overflow-y: auto; border-radius: 0 !important; box-shadow: none !important;
+        margin-bottom: 0 !important; border: none !important;
+      }
+      #task-filters-mobile-header { display: none; }
+      #task-filters-full.show #task-filters-mobile-header {
+        display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+        padding-bottom: 14px; border-bottom: 1px solid var(--border);
+      }
+      #task-filters-mobile-header span { font-size: 16px; font-weight: 900; color: var(--ink); letter-spacing: -.3px; }
+      #task-filters-mobile-header button { width: 32px; height: 32px; border-radius: 9px; border: none; background: var(--bg); color: var(--ink2); display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; }
       #task-filters-selects-row { flex-direction: column; align-items: stretch !important; }
       #task-filters-selects-row select { width: 100%; }
       #task-filter-tabs { width: 100%; overflow-x: auto; }
@@ -2197,6 +2206,10 @@
 
             <!-- Barra de filtros -->
             <div id="task-filters-full" style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:18px 24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div id="task-filters-mobile-header">
+                <span>Filtros</span>
+                <button onclick="toggleTaskFiltersMobile()"><i class="ti ti-x"></i></button>
+              </div>
               <div id="task-filters-selects-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
                 <select id="task-filter-cliente" onchange="renderTasks()" style="height:34px;padding:0 28px 0 12px;border:1px solid #E8EDF3;border-radius:9px;font-size:12px;font-weight:500;font-family:inherit;color:#0A2540;background:#F5F7FA url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238B98A9' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;outline:none;cursor:pointer;appearance:none">
                   <option value="">Cliente: todos</option>
