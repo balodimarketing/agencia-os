@@ -163,6 +163,16 @@
       position: relative; overflow: hidden; box-shadow: 0 8px 28px rgba(76,29,149,.18); height: 100%;
     }
     .upsell-decor { position: absolute; right: -30px; top: -30px; pointer-events: none; z-index: 0; }
+
+    /* ── Módulo visible pero bloqueado por plan: se ve borroso y no se puede tocar ── */
+    .module-locked { filter: blur(6px) saturate(.7); pointer-events: none; user-select: none; transition: filter var(--t); }
+    .module-lock-hint {
+      position: fixed; top: 50%; left: calc(50% + var(--rail-w) / 2); transform: translate(-50%,-50%); z-index: 60;
+      background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 22px 30px;
+      box-shadow: var(--shadow-lg); text-align: center; max-width: 320px;
+    }
+    body.rail-collapsed .module-lock-hint { left: calc(50% + var(--rail-w-collapsed) / 2); }
+    body.mb-fullscreen .module-lock-hint { left: 50%; }
     .rail-pro-title { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: var(--azul); }
     .rail-pro-title i { font-size: 13px; }
     .rail-pro-desc { font-size: 10.5px; color: var(--ink2); line-height: 1.4; margin-bottom: 6px; }
@@ -5334,7 +5344,7 @@
   // ── Module switch ─────────────────────────────────────
   window.switchModule = async function(el) {
     const mod = el.dataset.module
-    if (!canAccessModule(mod)) { showModuleGate(mod); return }
+    const locked = !canAccessModule(mod)
     currentModule = mod
     // Si veníamos del Moodboard (modo pantalla completa) y saltamos a otro módulo que no sea Contenido,
     // hay que limpiar ese estado — si no, las pastillas flotantes del Moodboard quedan pegadas en pantalla.
@@ -5372,6 +5382,9 @@
       if (tabAgencia) tabAgencia.style.display = userRole === 'MEMBER' ? 'none' : 'block'
     }
     else { document.getElementById('panel-body').innerHTML = '' }
+
+    applyModuleLockVisual('v-' + mod, locked, mod)
+    if (locked) showModuleGate(mod)
   }
 
   const modMeta = {
@@ -9553,7 +9566,8 @@
   // ── Content tab switcher ──────────────────────────────
   window.switchContentTab = function(tab) {
     if (tab === 'piezas') tab = 'tableros' // sección oculta — redirigir a un lugar visible
-    if (tab === 'moodboard' && !canAccessModule('moodboard')) { showModuleGate('moodboard'); return }
+    const moodboardLocked = tab === 'moodboard' && !canAccessModule('moodboard')
+    clearModuleLockHint()
     currentContentTab = tab
     document.querySelectorAll('.contenido-tab').forEach(t => t.classList.remove('active'))
     document.getElementById('tab-' + tab)?.classList.add('active')
@@ -9579,6 +9593,11 @@
 
     if (tab === 'tableros') renderTableros()
     if (tab === 'moodboard') renderMoodboardTab()
+
+    if (tab === 'moodboard') {
+      applyModuleLockVisual('sv-moodboard', moodboardLocked, 'moodboard')
+      if (moodboardLocked) showModuleGate('moodboard')
+    }
   }
 
   window.handleContenidoCta = function() {
@@ -16157,6 +16176,28 @@ if (id) {
     const requiredLabel = requiredPlan === 'agency' ? 'Agency' : 'Pro'
     showToast(`🔒 ${label} es parte del plan ${requiredLabel}`)
     openUpgradePlanModal()
+  }
+
+  function clearModuleLockHint() {
+    document.querySelectorAll('.module-lock-hint').forEach(el => el.remove())
+  }
+
+  function applyModuleLockVisual(containerId, locked, mod) {
+    clearModuleLockHint()
+    const viewEl = document.getElementById(containerId)
+    if (viewEl) viewEl.classList.toggle('module-locked', locked)
+    if (!locked) return
+    const label = MODULE_LABELS[mod] || 'Esta sección'
+    const requiredPlan = MODULE_MIN_PLAN[mod] || 'pro'
+    const requiredLabel = requiredPlan === 'agency' ? 'Agency' : 'Pro'
+    const hint = document.createElement('div')
+    hint.className = 'module-lock-hint'
+    hint.innerHTML = `
+      <div style="width:44px;height:44px;border-radius:14px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;color:var(--azul);margin:0 auto 10px"><i class="ti ti-lock" style="font-size:20px"></i></div>
+      <div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:14px;white-space:nowrap">${label} es parte del plan ${requiredLabel}</div>
+      <button class="tbtn primary" onclick="openUpgradePlanModal()">Ver planes →</button>
+    `
+    document.body.appendChild(hint)
   }
 
   function checkLimit(tipo) {
