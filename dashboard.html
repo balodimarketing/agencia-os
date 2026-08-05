@@ -426,6 +426,46 @@
     }
     .daymodal-new-btn:hover { background: #DCEFFB; }
 
+    /* ── Modal de detalle de evento: vista previa premium ── */
+    .evdetail-card { border-radius: 22px; overflow: hidden; position: relative; }
+    .evdetail-close {
+      position: absolute; top: 18px; right: 18px; width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: var(--bg); color: var(--ink2); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px; z-index: 5; transition: background .15s;
+    }
+    .evdetail-close:hover { background: var(--border); }
+    .evdetail-body { overflow-y: auto; padding: 26px 0 8px; flex: 1; min-height: 0; }
+    .evdetail-header { display: flex; align-items: flex-start; gap: 14px; padding: 0 24px; margin-bottom: 18px; }
+    .evdetail-icon-badge { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .evdetail-type-badge { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+    .evdetail-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .evdetail-title { font-size: 19px; font-weight: 900; color: var(--ink); letter-spacing: -.4px; line-height: 1.25; }
+    .evdetail-datetime-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 0 24px; margin-bottom: 18px; font-size: 12.5px; font-weight: 600; color: var(--ink2); }
+    .evdetail-datetime-row span { display: flex; align-items: center; gap: 6px; }
+    .evdetail-datetime-row i { font-size: 14px; color: var(--ink3); }
+    .evdetail-media { margin: 0 24px 18px; border-radius: 16px; overflow: hidden; background: var(--bg); }
+    .evdetail-media img, .evdetail-media video { width: 100%; max-height: 320px; object-fit: cover; display: block; }
+    .evdetail-desc { margin: 0 24px 18px; font-size: 13px; color: var(--ink2); line-height: 1.65; }
+    .evdetail-info-grid { display: flex; gap: 10px; flex-wrap: wrap; padding: 0 24px; margin-bottom: 6px; }
+    .evdetail-info-item { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 130px; }
+    .evdetail-info-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .evdetail-info-label { font-size: 10.5px; font-weight: 700; color: var(--ink3); }
+    .evdetail-info-value { font-size: 12.5px; font-weight: 800; color: var(--ink); margin-top: 1px; }
+    .evdetail-participant-chip { display: inline-flex; align-items: center; background: var(--celeste-dim); color: var(--azul); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+    .evdetail-footer { display: flex; gap: 10px; padding: 18px 24px 22px; flex-shrink: 0; }
+    .evdetail-edit-btn {
+      flex: 1; height: 44px; border: none; border-radius: 13px; background: var(--celeste-dim); color: var(--azul);
+      font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 7px;
+      cursor: pointer; font-family: inherit; transition: background .15s;
+    }
+    .evdetail-edit-btn:hover { background: #DCEFFB; }
+    .evdetail-delete-btn {
+      flex: 1; height: 44px; border: 1.5px solid #FEE2E2; border-radius: 13px; background: #fff; color: #DC2626;
+      font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 7px;
+      cursor: pointer; font-family: inherit; transition: background .15s;
+    }
+    .evdetail-delete-btn:hover { background: #FEF2F2; }
+
     /* ── Modal de evento, estilo Google Calendar ── */
     .gcal-modal { padding: 0; }
     .gcal-head { display: flex; align-items: flex-start; gap: 10px; padding: 20px 20px 4px; }
@@ -5320,16 +5360,12 @@
 
 <!-- MODAL DETALLE EVENTO -->
 <div class="modal-overlay" id="modal-event-detail" onclick="if(event.target===this)closeEventDetail()">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-head">
-      <div class="modal-title" id="event-detail-title"></div>
-      <button class="modal-close" onclick="closeEventDetail()"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body" id="event-detail-body"></div>
-    <div class="modal-footer">
-      <button class="tbtn" onclick="closeEventDetail()">Cerrar</button>
-      <button class="tbtn" id="event-detail-edit" onclick="editEventFromDetail()" style="display:none"><i class="ti ti-pencil"></i> Editar</button>
-      <button class="tbtn" id="event-detail-delete" onclick="deleteEventFromDetail()" style="color:var(--danger);border-color:var(--danger);display:none"><i class="ti ti-trash"></i></button>
+  <div class="modal evdetail-card" style="max-width:460px;max-height:88vh;display:flex;flex-direction:column;padding:0">
+    <button class="evdetail-close" onclick="closeEventDetail()"><i class="ti ti-x"></i></button>
+    <div class="evdetail-body" id="event-detail-body"></div>
+    <div class="evdetail-footer">
+      <button class="evdetail-edit-btn" id="event-detail-edit" onclick="editEventFromDetail()" style="display:none"><i class="ti ti-pencil"></i> Editar evento</button>
+      <button class="evdetail-delete-btn" id="event-detail-delete" onclick="deleteEventFromDetail()" style="display:none"><i class="ti ti-trash"></i> Eliminar evento</button>
     </div>
   </div>
 </div>
@@ -7462,24 +7498,40 @@
   window.handleMonthCellClick = function() {}
 
   // ── Event detail ──────────────────────────────────────────
+  function evInfoItemHTML(icon, color, label, value) {
+    return `<div class="evdetail-info-item">
+      <div class="evdetail-info-icon" style="background:${color}18;color:${color}"><i class="ti ${icon}"></i></div>
+      <div>
+        <div class="evdetail-info-label">${label}</div>
+        <div class="evdetail-info-value">${value}</div>
+      </div>
+    </div>`
+  }
+
   window.openEventDetail = async function(id) {
     if (id.startsWith('piece-')) {
       const pieceId = id.replace('piece-', '')
       const p = calPublishedPieces.find(x => x.id === pieceId)
       if (!p) return
-      // Show piece info in a simple detail
-      document.getElementById('event-detail-title').textContent = p.titulo
+      const fecha = p.fecha_publicacion ? new Date(p.fecha_publicacion) : null
+      const estadoLabel = p.estado === 'programado' ? 'Programado' : p.estado === 'publicado' ? 'Publicado' : p.estado
       document.getElementById('event-detail-body').innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:#E6FFE6;color:#1A6B28">Publicación programada</span>
+        <div class="evdetail-header">
+          <div class="evdetail-icon-badge" style="background:#F5970618;color:#F59706"><i class="ti ti-calendar-event"></i></div>
+          <div style="min-width:0">
+            <div class="evdetail-type-badge"><span class="evdetail-dot" style="background:#F59706"></span>PUBLICACIÓN</div>
+            <div class="evdetail-title">${p.titulo}</div>
+          </div>
         </div>
-        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:10px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cliente</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.clients?.nombre||'—'}</div>
-        </div>
-        <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Fecha programada</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.fecha_publicacion ? new Date(p.fecha_publicacion).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—'}</div>
+        ${fecha ? `<div class="evdetail-datetime-row">
+          <span><i class="ti ti-calendar"></i> ${fecha.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</span>
+          <span><i class="ti ti-clock"></i> ${fecha.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span>
+        </div>` : ''}
+        ${p.archivo_url ? `<div class="evdetail-media">${isVideoFile(p.archivo_url) ? `<video src="${p.archivo_url}" controls></video>` : `<img src="${p.archivo_url}">`}</div>` : ''}
+        ${p.descripcion ? `<div class="evdetail-desc">${p.descripcion}</div>` : ''}
+        <div class="evdetail-info-grid">
+          ${evInfoItemHTML('ti-building','#6366F1','Cliente', p.clients?.nombre || '—')}
+          ${evInfoItemHTML('ti-tag','#10B981','Estado', estadoLabel || '—')}
         </div>`
       document.getElementById('event-detail-edit').style.display = 'none'
       document.getElementById('event-detail-delete').style.display = 'none'
@@ -7491,20 +7543,25 @@
     calEditingEventId = id
     const start = new Date(ev.fecha_inicio)
     const end = ev.fecha_fin ? new Date(ev.fecha_fin) : null
-    document.getElementById('event-detail-title').textContent = ev.titulo
     document.getElementById('event-detail-body').innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-        <div style="width:12px;height:12px;border-radius:50%;background:${ev.color};flex-shrink:0"></div>
-        <span style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">${ev.tipo === 'reunion' ? 'Reunión' : 'Evento'}</span>
+      <div class="evdetail-header">
+        <div class="evdetail-icon-badge" style="background:${ev.color}18;color:${ev.color}"><i class="ti ti-calendar-event"></i></div>
+        <div style="min-width:0">
+          <div class="evdetail-type-badge"><span class="evdetail-dot" style="background:${ev.color}"></span>${ev.tipo === 'reunion' ? 'REUNIÓN' : 'EVENTO'}</div>
+          <div class="evdetail-title">${ev.titulo}</div>
+        </div>
       </div>
-      <div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:10px">
-        <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Fecha y hora</div>
-        <div style="font-size:13px;font-weight:600;color:var(--ink)">${start.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</div>
-        <div style="font-size:12px;color:var(--ink3);margin-top:2px">${start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}${end?' – '+end.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):''}</div>
+      <div class="evdetail-datetime-row">
+        <span><i class="ti ti-calendar"></i> ${start.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</span>
+        <span><i class="ti ti-clock"></i> ${ev.all_day ? 'Todo el día' : start.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) + (end ? ' – ' + end.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '')}</span>
       </div>
-      ${ev.descripcion ? `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:10px"><div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Descripción</div><div style="font-size:13px;color:var(--ink2);line-height:1.6">${ev.descripcion}</div></div>` : ''}
-      ${ev.archivo_url ? `<div style="margin-bottom:10px">${isVideoFile(ev.archivo_url) ? `<video src="${ev.archivo_url}" controls style="width:100%;max-height:280px;border-radius:var(--r);display:block"></video>` : `<img src="${ev.archivo_url}" style="width:100%;max-height:280px;object-fit:cover;border-radius:var(--r);display:block">`}</div>` : ''}
-      ${ev.link ? `<a href="${ev.link}" target="_blank" style="display:flex;align-items:center;gap:8px;background:var(--celeste-dim);border:1px solid rgba(142,219,255,.3);border-radius:var(--r);padding:12px 14px;text-decoration:none;color:var(--azul);font-size:13px;font-weight:700"><i class="ti ti-link" style="font-size:16px"></i>${ev.link}</a>` : ''}`
+      ${ev.archivo_url ? `<div class="evdetail-media">${isVideoFile(ev.archivo_url) ? `<video src="${ev.archivo_url}" controls></video>` : `<img src="${ev.archivo_url}">`}</div>` : ''}
+      ${ev.descripcion ? `<div class="evdetail-desc">${ev.descripcion}</div>` : ''}
+      ${(ev.ubicacion || ev.link) ? `<div class="evdetail-info-grid">
+        ${ev.ubicacion ? evInfoItemHTML('ti-map-pin','#8B5CF6','Ubicación', ev.ubicacion) : ''}
+        ${ev.link ? `<a href="${ev.link}" target="_blank" class="evdetail-info-item" style="text-decoration:none"><div class="evdetail-info-icon" style="background:#2563EB18;color:#2563EB"><i class="ti ti-video"></i></div><div><div class="evdetail-info-label">Videollamada</div><div class="evdetail-info-value" style="color:#2563EB">Unirse al link</div></div></a>` : ''}
+      </div>` : ''}
+      <div id="evdetail-participants-slot"></div>`
     document.getElementById('event-detail-edit').style.display = 'flex'
     document.getElementById('event-detail-delete').style.display = 'flex'
 
@@ -7516,13 +7573,11 @@
     if (parts && parts.length > 0) {
       const partsHTML = parts.map(p => {
         const nombre = `${p.agency_members?.profiles?.nombre || ''} ${p.agency_members?.profiles?.apellido || ''}`.trim()
-        return `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--celeste-dim);color:var(--azul);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">${nombre}</span>`
+        return `<span class="evdetail-participant-chip">${nombre}</span>`
       }).join('')
-      document.getElementById('event-detail-body').innerHTML +=
-        `<div style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-top:10px">
-          <div style="font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Participantes</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">${partsHTML}</div>
-        </div>`
+      document.getElementById('evdetail-participants-slot').innerHTML =
+        `<div class="evdetail-info-label" style="margin:14px 24px 8px">Participantes</div>
+         <div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 24px 4px">${partsHTML}</div>`
     }
 
     document.getElementById('modal-event-detail').classList.add('show')
