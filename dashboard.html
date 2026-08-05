@@ -869,6 +869,30 @@
       opacity: 0; transform: translateY(-8px) scale(.97); pointer-events: none;
       transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
     }
+
+    /* ── Quiénes están mirando este moodboard ahora ── */
+    #mb-presence-stack {
+      position: fixed; top: 68px; right: 16px; z-index: 999;
+      display: flex; align-items: center; flex-direction: row-reverse;
+    }
+    .mb-presence-avatar {
+      width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid #fff; margin-left: -9px;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,.18); position: relative; cursor: default;
+    }
+    .mb-presence-avatar:hover .mb-presence-tooltip { opacity: 1; transform: translateY(0); }
+    .mb-presence-tooltip {
+      position: absolute; top: calc(100% + 6px); right: 0; background: var(--ink); color: #fff; font-size: 10.5px;
+      font-weight: 700; padding: 4px 9px; border-radius: 7px; white-space: nowrap; opacity: 0; pointer-events: none;
+      transform: translateY(-4px); transition: opacity .15s, transform .15s;
+    }
+
+    /* ── Cursores en vivo de otras personas en el lienzo ── */
+    .mb-remote-cursor { position: absolute; top: 0; left: 0; z-index: 999; pointer-events: none; transition: transform .06s linear; }
+    .mb-remote-cursor-label {
+      position: absolute; top: 18px; left: 14px; color: #fff; font-size: 10.5px; font-weight: 800;
+      padding: 3px 8px; border-radius: 7px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
     #mb-floating-selector.visible { display: flex; opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     #mb-floating-selector .mb-pill-btn { height: 42px; border-radius: 12px; box-shadow: var(--shadow-lg); }
     #mb-selector-wrap { position: relative; }
@@ -1931,7 +1955,11 @@
             <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:20000px;height:20000px;transform-origin:0 0">
               <svg id="mb-connections-svg" width="20000" height="20000"></svg>
               <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
+              <div id="mb-cursors-layer" style="position:absolute;top:0;left:0;pointer-events:none"></div>
             </div>
+
+            <!-- Quiénes están mirando este moodboard ahora mismo -->
+            <div id="mb-presence-stack"></div>
 
             <!-- Controles inferiores izquierda: deshacer/rehacer -->
             <div id="mb-history-controls">
@@ -12945,13 +12973,81 @@ if (id) {
     mbLiveChannel = supabase.channel('mb-live-' + currentMoodboardId)
       .on('broadcast', { event: 'move' }, ({ payload }) => handleMbRemoteMove(payload))
       .on('broadcast', { event: 'stop' }, ({ payload }) => handleMbRemoteStop(payload))
-      .subscribe()
+      .on('broadcast', { event: 'cursor' }, ({ payload }) => handleMbRemoteCursor(payload))
+      .on('presence', { event: 'sync' }, () => renderMbPresence())
+      .on('presence', { event: 'leave' }, ({ leftPresences }) => {
+        leftPresences.forEach(p => {
+          clearTimeout(mbRemoteCursorTimeouts[p.userId])
+          document.getElementById('mb-cursor-' + p.userId)?.remove()
+        })
+      })
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED') {
+          mbLiveChannel.track({
+            userId: currentUserId,
+            name: (profileData?.nombre || 'Alguien'),
+            color: mbColorForUser(currentUserId),
+          })
+        }
+      })
   }
 
   function teardownMbLiveChannel() {
     if (mbLiveChannel) supabase.removeChannel(mbLiveChannel)
     mbLiveChannel = null
     mbLiveChannelBoardId = null
+    document.getElementById('mb-cursors-layer').innerHTML = ''
+    document.getElementById('mb-presence-stack').innerHTML = ''
+    mbRemoteCursorTimeouts = {}
+  }
+
+  // ── Quiénes están mirando este moodboard ahora ──────────
+  function renderMbPresence() {
+    const stack = document.getElementById('mb-presence-stack')
+    if (!stack || !mbLiveChannel) return
+    const state = mbLiveChannel.presenceState()
+    const people = Object.values(state).flat().filter(p => p.userId !== currentUserId)
+    // De-duplicar por si la misma persona tiene dos pestañas abiertas
+    const unique = [...new Map(people.map(p => [p.userId, p])).values()]
+    stack.innerHTML = unique.map(p => {
+      const iniciales = (p.name || '?').trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase()
+      return `<div class="mb-presence-avatar" style="background:${p.color || '#0A2540'}">${iniciales}<div class="mb-presence-tooltip">${p.name}</div></div>`
+    }).join('')
+  }
+
+  // ── Cursores en vivo ─────────────────────────────────────
+  let mbLastCursorBroadcast = 0
+  let mbRemoteCursorTimeouts = {}
+
+  function mbBroadcastCursor(cx, cy) {
+    if (!mbLiveChannel) return
+    const now = Date.now()
+    if (now - mbLastCursorBroadcast < 55) return
+    mbLastCursorBroadcast = now
+    mbLiveChannel.send({
+      type: 'broadcast', event: 'cursor',
+      payload: { userId: currentUserId, name: (profileData?.nombre || 'Alguien'), color: mbColorForUser(currentUserId), x: cx, y: cy },
+    })
+  }
+
+  function handleMbRemoteCursor(data) {
+    if (!data || data.userId === currentUserId) return
+    const layer = document.getElementById('mb-cursors-layer')
+    if (!layer) return
+    let cursor = document.getElementById('mb-cursor-' + data.userId)
+    if (!cursor) {
+      cursor = document.createElement('div')
+      cursor.id = 'mb-cursor-' + data.userId
+      cursor.className = 'mb-remote-cursor'
+      cursor.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 2L8 17L10.5 10.5L17 8L2 2Z" fill="${data.color}" stroke="#fff" stroke-width="1.2"/></svg>
+        <div class="mb-remote-cursor-label" style="background:${data.color}">${data.name}</div>
+      `
+      layer.appendChild(cursor)
+    }
+    cursor.style.transform = `translate(${data.x}px, ${data.y}px)`
+    clearTimeout(mbRemoteCursorTimeouts[data.userId])
+    mbRemoteCursorTimeouts[data.userId] = setTimeout(() => cursor.remove(), 8000) // por si se va sin avisar
   }
 
   function mbBroadcastMove(itemId, x, y, width, height) {
@@ -13539,6 +13635,10 @@ if (id) {
     })
 
     document.addEventListener('mousemove', e => {
+      const vpRect = viewport.getBoundingClientRect()
+      if (e.clientX >= vpRect.left && e.clientX <= vpRect.right && e.clientY >= vpRect.top && e.clientY <= vpRect.bottom) {
+        mbBroadcastCursor((e.clientX - vpRect.left - mbPanX) / mbZoom, (e.clientY - vpRect.top - mbPanY) / mbZoom)
+      }
       if (mbConnectingFrom) {
         const rect = viewport.getBoundingClientRect()
         const cx = (e.clientX - rect.left - mbPanX) / mbZoom
