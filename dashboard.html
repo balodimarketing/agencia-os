@@ -1626,7 +1626,38 @@
     *::-webkit-scrollbar-corner { background: transparent; }
 
     /* ── Impresión: al exportar el calendario en PDF, ocultar todo el dashboard y mostrar solo el overlay ── */
-    @media print {
+    /* ══════════════════════════════════════════════════════
+       MOBILE: el rail se convierte en un cajón deslizable,
+       el panel del medio se oculta, el workspace ocupa todo.
+       ══════════════════════════════════════════════════════ */
+    .mobile-menu-btn { display: none; }
+    #mobile-rail-backdrop { display: none; }
+
+    @media (max-width: 860px) {
+      .mobile-menu-btn {
+        display: flex; align-items: center; justify-content: center; width: 38px; height: 38px;
+        border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--ink2);
+        cursor: pointer; flex-shrink: 0; margin-right: 6px; font-size: 17px;
+      }
+      .rail, body.rail-collapsed .rail {
+        position: fixed; top: 0; left: 0; height: 100vh; margin: 0; border-radius: 0;
+        width: 82vw; max-width: 300px; z-index: 2000;
+        transform: translateX(-100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+        box-shadow: 0 0 40px rgba(0,0,0,.25);
+      }
+      .rail-inner, body.rail-collapsed .rail-inner { padding: 18px 14px; }
+      .rail-collapse-toggle { display: none; } /* no aplica: en mobile el rail siempre se ve "expandido" cuando está abierto */
+      body.mobile-rail-open .rail { transform: translateX(0); }
+      #mobile-rail-backdrop {
+        display: block; position: fixed; inset: 0; background: rgba(10,37,64,.5); z-index: 1900;
+        opacity: 0; pointer-events: none; transition: opacity .25s;
+      }
+      body.mobile-rail-open #mobile-rail-backdrop { opacity: 1; pointer-events: auto; }
+      .panel { display: none !important; }
+      .workspace { width: 100%; }
+      .topbar-search { display: none; } /* poco espacio; la búsqueda por ahora queda para desktop */
+    }
+
       @page { margin: 0; }
       html, body { height: auto !important; overflow: visible !important; }
       body > *:not(#calendario-pdf-overlay) { display: none !important; }
@@ -1643,6 +1674,8 @@
 <script>document.body.classList.toggle('rail-collapsed', localStorage.getItem('faro_rail_collapsed') !== '0')</script>
 
 <div class="app">
+
+  <div id="mobile-rail-backdrop" onclick="toggleMobileRail(false)"></div>
 
   <!-- RAIL -->
   <div class="rail" id="app-rail">
@@ -1726,6 +1759,7 @@
   <!-- WORKSPACE -->
   <div class="workspace">
     <div class="topbar">
+      <button class="mobile-menu-btn" onclick="toggleMobileRail()"><i class="ti ti-menu-2"></i></button>
       <div class="topbar-title" id="ws-title">Inicio</div>
       <div class="topbar-search"><i class="ti ti-search"></i><input type="text" placeholder="Buscar en la app..."><span class="topbar-kbd">⌘K</span></div>
       <button class="tbtn primary" id="ws-cta" onclick="handleCta()" style="display:none"><i class="ti ti-plus"></i><span id="ws-cta-label">Nuevo</span></button>
@@ -5403,6 +5437,7 @@
     const mod = el.dataset.module
     const locked = !canAccessModule(mod)
     currentModule = mod
+    toggleMobileRail(false)
     // Si veníamos del Moodboard (modo pantalla completa) y saltamos a otro módulo que no sea Contenido,
     // hay que limpiar ese estado — si no, las pastillas flotantes del Moodboard quedan pegadas en pantalla.
     if (mod !== 'contenido') {
@@ -7773,6 +7808,12 @@
     document.body.classList.toggle('rail-collapsed', railCollapsed)
     localStorage.setItem('faro_rail_collapsed', railCollapsed ? '1' : '0')
     closeRailProfileMenu()
+  }
+
+  // ── Sidebar en mobile: cajón deslizable ──
+  window.toggleMobileRail = function(force) {
+    const open = force !== undefined ? force : !document.body.classList.contains('mobile-rail-open')
+    document.body.classList.toggle('mobile-rail-open', open)
   }
 
   // ── Sidebar: menú del perfil (⋮) ──
