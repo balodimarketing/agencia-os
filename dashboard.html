@@ -957,6 +957,11 @@
       display: flex; align-items: center; gap: 3px; background: #fff; border: 1px solid rgba(16,24,40,.06);
       border-radius: 18px; box-shadow: 0 4px 20px rgba(16,24,40,.09), 0 1px 3px rgba(16,24,40,.06); padding: 7px 9px;
     }
+    #mb-tools-pill::before {
+      content: ''; position: absolute; left: 50%; top: 50%; width: 340px; height: 130px;
+      transform: translate(-50%,-50%); background: radial-gradient(ellipse at center, rgba(37,99,235,.16), transparent 70%);
+      filter: blur(18px); z-index: -1; pointer-events: none;
+    }
     .mb-tools-pill-divider { width: 1px; height: 20px; background: rgba(16,24,40,.08); margin: 0 6px; flex-shrink: 0; }
     .mb-side-tool-btn {
       width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 9px;
