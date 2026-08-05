@@ -5327,6 +5327,7 @@
   // ── Module switch ─────────────────────────────────────
   window.switchModule = async function(el) {
     const mod = el.dataset.module
+    if (!canAccessModule(mod)) { showModuleGate(mod); return }
     currentModule = mod
     // Si veníamos del Moodboard (modo pantalla completa) y saltamos a otro módulo que no sea Contenido,
     // hay que limpiar ese estado — si no, las pastillas flotantes del Moodboard quedan pegadas en pantalla.
@@ -9501,6 +9502,7 @@
   // ── Content tab switcher ──────────────────────────────
   window.switchContentTab = function(tab) {
     if (tab === 'piezas') tab = 'tableros' // sección oculta — redirigir a un lugar visible
+    if (tab === 'moodboard' && !canAccessModule('moodboard')) { showModuleGate('moodboard'); return }
     currentContentTab = tab
     document.querySelectorAll('.contenido-tab').forEach(t => t.classList.remove('active'))
     document.getElementById('tab-' + tab)?.classList.add('active')
@@ -16003,6 +16005,62 @@ if (id) {
 
   function isPro() { return agencyPlan === 'pro' || agencyPlan === 'agency' }
 
+  // ── Qué plan mínimo necesita cada sección ──────────────
+  const MODULE_MIN_PLAN = { crm: 'pro', herramientas: 'pro', reportes: 'pro', moodboard: 'agency' }
+  const MODULE_LABELS = { crm: 'CRM', herramientas: 'Herramientas', reportes: 'Reportes', moodboard: 'Moodboard' }
+  function planRank(p) { return p === 'agency' ? 2 : p === 'pro' ? 1 : 0 }
+  function canAccessModule(mod) {
+    const req = MODULE_MIN_PLAN[mod]
+    if (!req) return true
+    return planRank(agencyPlan) >= planRank(req)
+  }
+
+  const PLAN_FEATURES = {
+    pro:    ['Clientes y miembros ilimitados', 'CRM integrado', 'Reportes ilimitados', 'Herramientas del equipo', 'Presupuestos y contratos'],
+    agency: ['Todo lo de Pro', 'Moodboard visual', 'Integraciones API (Make, Zapier, Meta Ads)', 'Múltiples agencias en una cuenta', 'Permisos avanzados por miembro', 'Soporte prioritario'],
+  }
+
+  function planCardHTML(plan, destacado) {
+    const info = FARO_PLANS_INFO[plan]
+    const precioNum = plan === 'pro' ? '1.000' : '3.000'
+    return `<div style="border:1.5px solid ${destacado ? 'var(--azul)' : 'var(--border)'};border-radius:14px;padding:16px;position:relative">
+      ${destacado ? '<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--azul);color:var(--celeste);font-size:9.5px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap">RECOMENDADO</div>' : ''}
+      <div style="font-size:15px;font-weight:900;color:var(--ink);margin-bottom:2px">${info.nombre}</div>
+      <div style="font-size:19px;font-weight:900;color:var(--azul);margin-bottom:10px">$${precioNum}<span style="font-size:11px;color:var(--ink3);font-weight:700"> ARS/mes</span></div>
+      <ul style="list-style:none;padding:0;margin:0 0 14px;display:flex;flex-direction:column;gap:6px">
+        ${PLAN_FEATURES[plan].map(f => `<li style="display:flex;align-items:flex-start;gap:6px;font-size:11.5px;color:var(--ink2);line-height:1.4"><i class="ti ti-check" style="color:#10B981;font-size:13px;margin-top:1px;flex-shrink:0"></i>${f}</li>`).join('')}
+      </ul>
+      <button class="fc-dialog-btn primary" style="width:100%" id="upgrade-btn-${plan}" onclick="startPlanCheckout('${plan}')">Pasar a ${info.nombre}</button>
+    </div>`
+  }
+
+  function showModuleGate(mod) {
+    const label = MODULE_LABELS[mod] || 'Esta sección'
+    const requiredPlan = MODULE_MIN_PLAN[mod] || 'pro'
+    const existing = document.getElementById('modal-module-gate')
+    if (existing) existing.remove()
+    const m = document.createElement('div')
+    m.id = 'modal-module-gate'
+    m.className = 'modal-overlay show'
+    m.onclick = e => { if (e.target === m) m.remove() }
+    const showProCard = agencyPlan === 'free'
+    m.innerHTML = `<div class="modal" style="max-width:${showProCard ? '640px' : '340px'}"><div class="fc-dialog" style="text-align:left">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="width:52px;height:52px;border-radius:16px;background:var(--celeste-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--azul)">
+          <i class="ti ti-lock" style="font-size:24px"></i>
+        </div>
+        <div class="fc-dialog-title" style="margin-bottom:4px">${label} es parte de un plan pago</div>
+        <div class="fc-dialog-message" style="margin-bottom:0">Elegí el plan que se ajuste a lo que necesitás.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:${showProCard ? '1fr 1fr' : '1fr'};gap:14px">
+        ${showProCard ? planCardHTML('pro', requiredPlan === 'pro') : ''}
+        ${planCardHTML('agency', requiredPlan === 'agency')}
+      </div>
+      <button onclick="document.getElementById('modal-module-gate').remove()" style="display:block;margin:16px auto 0;background:none;border:none;color:var(--ink3);font-size:12px;font-weight:700;cursor:pointer">Ahora no</button>
+    </div></div>`
+    document.body.appendChild(m)
+  }
+
   function checkLimit(tipo) {
     const limits = PLAN_LIMITS[agencyPlan] || PLAN_LIMITS.free
     if (tipo === 'clientes' && clients.length >= limits.clientes) {
@@ -16031,7 +16089,7 @@ if (id) {
       <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:24px">${desc}</div>
       <div style="display:flex;gap:8px">
         <button class="tbtn" style="flex:1" onclick="document.getElementById('modal-upgrade').remove()">Ahora no</button>
-        <button class="tbtn primary" style="flex:2" onclick="document.getElementById('modal-upgrade').remove();switchModule(document.querySelector('.rail-btn[data-module=inicio]'))">Ver planes →</button>
+        <button class="tbtn primary" style="flex:2" onclick="document.getElementById('modal-upgrade').remove();openUpgradePlanModal()">Ver planes →</button>
       </div>
     </div>`
     document.body.appendChild(m)
