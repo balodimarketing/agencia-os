@@ -1635,6 +1635,8 @@
     #mobile-topbar { display: none; }
 
     @media (max-width: 860px) {
+      body { overflow-x: hidden; }
+      .workspace, .content-subview, .view { max-width: 100vw; box-sizing: border-box; }
       .mobile-menu-btn {
         display: flex; align-items: center; justify-content: center; width: 38px; height: 38px;
         border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--ink2);
@@ -1672,22 +1674,25 @@
 
       /* ── Contenido: por ahora, solo Tareas está adaptado a mobile ── */
       #tab-tableros, #tab-moodboard { display: none !important; }
+      .content-subview { padding: 16px !important; }
 
       /* ── Tareas: solo ver y crear, sin estadísticas ── */
       .task-hero-card, #task-kpis, .task-sidebar-panel { display: none !important; }
       .task-main-grid { grid-template-columns: 1fr !important; }
+      #task-filters-full { padding: 16px !important; box-sizing: border-box; max-width: 100%; }
+      #task-filters-full, #task-filters-full * { box-sizing: border-box; max-width: 100%; }
 
-      #task-filters-mobile-bar { display: flex !important; gap: 8px; margin-bottom: 14px; }
+      #task-filters-mobile-bar { display: flex !important; gap: 8px; margin-bottom: 14px; box-sizing: border-box; max-width: 100%; }
       #task-filters-toggle-btn {
         flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; height: 40px;
         border-radius: 11px; border: 1px solid var(--border); background: #fff; color: var(--ink2);
-        font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit;
+        font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; min-width: 0;
       }
       #task-filters-toggle-btn.active { background: var(--azul); border-color: var(--azul); color: var(--celeste); }
       .task-mobile-new-btn {
-        display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 11px;
+        display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 11px;
         border: none; background: var(--azul); color: var(--celeste); font-size: 12.5px; font-weight: 700;
-        cursor: pointer; font-family: inherit; white-space: nowrap;
+        cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0;
       }
       #task-filters-full { display: none; }
       #task-filters-full.show { display: block; }
