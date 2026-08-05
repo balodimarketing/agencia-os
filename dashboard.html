@@ -12987,6 +12987,7 @@ if (id) {
             userId: currentUserId,
             name: (profileData?.nombre || 'Alguien'),
             color: mbColorForUser(currentUserId),
+            avatar: profileData?.avatar_url || null,
           })
         }
       })
@@ -13011,7 +13012,10 @@ if (id) {
     const unique = [...new Map(people.map(p => [p.userId, p])).values()]
     stack.innerHTML = unique.map(p => {
       const iniciales = (p.name || '?').trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase()
-      return `<div class="mb-presence-avatar" style="background:${p.color || '#0A2540'}">${iniciales}<div class="mb-presence-tooltip">${p.name}</div></div>`
+      const contenido = p.avatar
+        ? `<img src="${p.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
+        : iniciales
+      return `<div class="mb-presence-avatar" style="background:${p.color || '#0A2540'}">${contenido}<div class="mb-presence-tooltip">${p.name}</div></div>`
     }).join('')
   }
 
