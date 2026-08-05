@@ -1669,6 +1669,13 @@
       .inicio-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
       .inicio-pubs-grid { grid-template-columns: 1fr !important; }
       .inicio-split-grid { grid-template-columns: 1fr !important; }
+
+      /* ── Contenido: por ahora, solo Tareas está adaptado a mobile ── */
+      #tab-tableros, #tab-moodboard { display: none !important; }
+
+      /* ── Tareas: solo ver y crear, sin estadísticas ── */
+      .task-hero-card, #task-kpis, .task-sidebar-panel { display: none !important; }
+      .task-main-grid { grid-template-columns: 1fr !important; }
     }
 
     @media print {
@@ -2124,7 +2131,7 @@
       <div class="content-subview" id="sv-tareas" style="padding:32px;overflow-y:auto;max-width:1400px;margin:0 auto;width:100%">
 
         <!-- Hero -->
-        <div style="background:linear-gradient(135deg,#FFFFFF,#F7FCFF);border:1px solid #E8EDF3;border-radius:20px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;min-height:126px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+        <div class="task-hero-card" style="background:linear-gradient(135deg,#FFFFFF,#F7FCFF);border:1px solid #E8EDF3;border-radius:20px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;min-height:126px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
           <svg style="position:absolute;right:0;top:0;pointer-events:none;opacity:.6" width="320" height="170" viewBox="0 0 320 170">
             <defs><radialGradient id="tg" cx="65%" cy="35%" r="55%"><stop offset="0%" stop-color="#91E8FB" stop-opacity=".18"/><stop offset="100%" stop-color="#91E8FB" stop-opacity="0"/></radialGradient></defs>
             <circle cx="240" cy="60" r="140" fill="url(#tg)"/>
@@ -2148,7 +2155,7 @@
         </div>
 
         <!-- Layout principal: contenido + panel lateral -->
-        <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+        <div class="task-main-grid" style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
 
           <!-- ═══ Columna principal ═══ -->
           <div>
@@ -2215,7 +2222,7 @@
           </div>
 
           <!-- ═══ Panel lateral ═══ -->
-          <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="task-sidebar-panel" style="display:flex;flex-direction:column;gap:16px">
 
             <!-- Progreso general -->
             <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
@@ -8539,6 +8546,8 @@
     renderTasks()
     renderContenidoPanel()
     await renderTableros()
+    // En mobile, Tableros y Moodboard todavía no están adaptados — se entra directo a Tareas
+    if (window.innerWidth <= 860 && currentContentTab !== 'tareas') switchContentTab('tareas')
   }
 
   // ── Panel ─────────────────────────────────────────────
