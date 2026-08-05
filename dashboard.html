@@ -954,25 +954,38 @@
     #mb-workspace.show { display: flex !important; }
     #mb-tools-pill {
       position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 30;
-      display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid var(--border);
-      border-radius: 14px; box-shadow: var(--shadow-lg); padding: 5px;
+      display: flex; align-items: center; gap: 3px; background: #fff; border: 1px solid rgba(16,24,40,.06);
+      border-radius: 18px; box-shadow: 0 4px 20px rgba(16,24,40,.09), 0 1px 3px rgba(16,24,40,.06); padding: 7px 9px;
     }
-    .mb-tools-pill-divider { width: 1px; height: 22px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+    .mb-tools-pill-divider { width: 1px; height: 20px; background: rgba(16,24,40,.08); margin: 0 6px; flex-shrink: 0; }
     .mb-side-tool-btn {
-      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px;
-      border: none; background: none; cursor: pointer; font-family: inherit; transition: background .18s; flex-shrink: 0;
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 9px;
+      border: none; background: none; cursor: pointer; font-family: inherit; flex-shrink: 0; position: relative;
+      transition: background .18s ease, transform .18s ease;
     }
-    .mb-side-tool-btn i { font-size: 17px; color: var(--ink2); }
-    .mb-side-tool-btn:hover:not(:disabled) { background: var(--bg); }
-    .mb-side-tool-btn.active { background: var(--azul); }
-    .mb-side-tool-btn.active i { color: var(--celeste); }
-    .mb-side-tool-btn.running { position: relative; background: var(--celeste-dim); }
-    .mb-side-tool-btn.running i { color: var(--azul); }
+    .mb-side-tool-btn i { font-size: 16.5px; color: var(--ink2); line-height: 1; }
+    .mb-side-tool-btn:hover:not(:disabled) { background: rgba(16,24,40,.045); transform: scale(1.05); }
+    .mb-side-tool-btn.active { background: rgba(37,99,235,.07); }
+    .mb-side-tool-btn.active i { color: #2563EB; }
+    .mb-side-tool-btn.running { background: rgba(37,99,235,.07); }
+    .mb-side-tool-btn.running i { color: #2563EB; }
     .mb-side-tool-btn.running::after {
-      content: ''; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%;
+      content: ''; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%;
       background: #22C55E; border: 1.5px solid #fff; animation: pulse-dot 2s ease-in-out infinite;
     }
-    .mb-side-tool-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .mb-side-tool-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .mb-side-tool-btn:disabled::after {
+      content: ''; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: #2563EB;
+    }
+
+    /* Tooltip propio (no el feo nativo del navegador) — se arma con data-tooltip en cada botón */
+    .mb-side-tool-btn[data-tooltip]::before {
+      content: attr(data-tooltip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%) translateY(3px);
+      background: #1A1D23; color: #fff; font-size: 11px; font-weight: 600; padding: 5px 9px; border-radius: 7px;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s ease, transform .15s ease; z-index: 40;
+      letter-spacing: .1px;
+    }
+    .mb-side-tool-btn[data-tooltip]:hover::before { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* ── Moodboard: card flotante de info ── */
     #mb-header-card {
@@ -1969,17 +1982,17 @@
 
             <!-- Pastilla flotante de herramientas, abajo al centro, estilo Figma -->
             <div id="mb-tools-pill">
-              <button class="mb-side-tool-btn active" data-tool="select" onclick="setMbTool('select')" title="Seleccionar"><i class="ti ti-pointer"></i></button>
-              <button class="mb-side-tool-btn" data-tool="nota" onclick="setMbTool('nota')" title="Nota"><i class="ti ti-note"></i></button>
-              <button class="mb-side-tool-btn" data-tool="texto" onclick="setMbTool('texto')" title="Texto"><i class="ti ti-typography"></i></button>
-              <button class="mb-side-tool-btn" data-tool="imagen" onclick="setMbTool('imagen')" title="Imagen"><i class="ti ti-photo"></i></button>
-              <button class="mb-side-tool-btn" data-tool="link" onclick="setMbTool('link')" title="Link o video"><i class="ti ti-brand-youtube"></i></button>
-              <button class="mb-side-tool-btn" data-tool="marco" onclick="setMbTool('marco')" title="Marco"><i class="ti ti-frame"></i></button>
-              <button class="mb-side-tool-btn" data-tool="forma" onclick="setMbTool('forma')" title="Forma"><i class="ti ti-shape"></i></button>
-              <button class="mb-side-tool-btn" onclick="toggleMbMusicWidget()" title="Música de fondo" id="mb-music-btn"><i class="ti ti-music"></i></button>
+              <button class="mb-side-tool-btn active" data-tool="select" data-tooltip="Seleccionar" onclick="setMbTool('select')"><i class="ti ti-pointer"></i></button>
               <div class="mb-tools-pill-divider"></div>
+              <button class="mb-side-tool-btn" data-tool="nota" data-tooltip="Nota" onclick="setMbTool('nota')"><i class="ti ti-note"></i></button>
+              <button class="mb-side-tool-btn" data-tool="texto" data-tooltip="Texto" onclick="setMbTool('texto')"><i class="ti ti-typography"></i></button>
+              <button class="mb-side-tool-btn" data-tool="imagen" data-tooltip="Imagen" onclick="setMbTool('imagen')"><i class="ti ti-photo"></i></button>
+              <button class="mb-side-tool-btn" data-tool="link" data-tooltip="Video" onclick="setMbTool('link')"><i class="ti ti-brand-youtube"></i></button>
+              <button class="mb-side-tool-btn" data-tool="marco" data-tooltip="Marcos" onclick="setMbTool('marco')"><i class="ti ti-frame"></i></button>
+              <button class="mb-side-tool-btn" data-tool="forma" data-tooltip="Forma" onclick="setMbTool('forma')"><i class="ti ti-square"></i></button>
+              <button class="mb-side-tool-btn" data-tooltip="Música de fondo" onclick="toggleMbMusicWidget()" id="mb-music-btn"><i class="ti ti-music"></i></button>
               <div style="position:relative">
-                <button class="mb-side-tool-btn" onclick="toggleMbStampPicker(event)" title="Sello / reacción"><i class="ti ti-mood-smile"></i></button>
+                <button class="mb-side-tool-btn" data-tooltip="Sello / Reacción" onclick="toggleMbStampPicker(event)"><i class="ti ti-mood-smile"></i></button>
                 <div id="mb-stamp-picker">
                   <button onclick="mbPlaceStamp('✅')">✅</button>
                   <button onclick="mbPlaceStamp('👍')">👍</button>
@@ -1991,10 +2004,10 @@
                   <button onclick="mbPlaceStamp('💡')">💡</button>
                 </div>
               </div>
-              <button class="mb-side-tool-btn" onclick="toggleMbTimerWidget()" title="Cronómetro" id="mb-timer-btn"><i class="ti ti-clock"></i></button>
+              <button class="mb-side-tool-btn" data-tooltip="Timer" onclick="toggleMbTimerWidget()" id="mb-timer-btn"><i class="ti ti-clock"></i></button>
               <div class="mb-tools-pill-divider"></div>
-              <button class="mb-side-tool-btn" disabled title="IA (próximamente)"><i class="ti ti-sparkles"></i></button>
-              <button class="mb-side-tool-btn" disabled title="Ordenar automático (próximamente)"><i class="ti ti-layout-grid"></i></button>
+              <button class="mb-side-tool-btn" data-tooltip="IA (Próximamente)" disabled><i class="ti ti-sparkles"></i></button>
+              <button class="mb-side-tool-btn" data-tooltip="Ordenar automático (Próximamente)" disabled><i class="ti ti-layout-grid"></i></button>
             </div>
 
             <!-- Cronómetro flotante simple, independiente del timer de Herramientas -->
