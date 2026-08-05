@@ -396,6 +396,36 @@
 
     .modal-footer { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
 
+    /* ── Modal "eventos del día", estética premium ── */
+    .daymodal-card { border-radius: 22px; overflow: hidden; }
+    .daymodal-head { display: flex; align-items: flex-start; gap: 14px; padding: 24px 24px 16px; flex-shrink: 0; }
+    .daymodal-icon-badge { width: 46px; height: 46px; border-radius: 14px; background: var(--celeste-dim); color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 21px; flex-shrink: 0; }
+    .daymodal-title { font-size: 19px; font-weight: 900; color: var(--ink); letter-spacing: -.4px; }
+    .daymodal-sub { font-size: 12.5px; color: var(--ink3); font-weight: 600; margin-top: 2px; }
+    .daymodal-close { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--bg); color: var(--ink2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 14px; transition: background .15s; }
+    .daymodal-close:hover { background: var(--border); }
+    .daymodal-count-row { display: flex; align-items: center; gap: 7px; padding: 0 24px 16px; font-size: 12.5px; font-weight: 700; color: var(--ink3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .daymodal-count-row i { font-size: 14px; }
+    .daymodal-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding: 16px 20px 4px; flex: 1; min-height: 0; }
+    .daymodal-event-card {
+      display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--border);
+      border-left: 3px solid; border-radius: 14px; padding: 13px 14px; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(16,24,40,.04); transition: box-shadow .15s, transform .15s;
+    }
+    .daymodal-event-card:hover { box-shadow: 0 6px 16px rgba(16,24,40,.1); transform: translateY(-1px); }
+    .daymodal-event-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px; }
+    .daymodal-event-body { flex: 1; min-width: 0; }
+    .daymodal-event-title { font-size: 13.5px; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .daymodal-event-time { font-size: 11.5px; color: var(--ink3); font-weight: 600; margin-top: 2px; }
+    .daymodal-event-chevron { color: var(--ink3); flex-shrink: 0; font-size: 15px; }
+    .daymodal-footer { padding: 16px 20px 20px; flex-shrink: 0; }
+    .daymodal-new-btn {
+      width: 100%; height: 46px; border: none; border-radius: 14px; background: var(--celeste-dim); color: var(--azul);
+      font-size: 13.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 7px;
+      cursor: pointer; font-family: inherit; transition: background .15s;
+    }
+    .daymodal-new-btn:hover { background: #DCEFFB; }
+
     /* ── Modal de evento, estilo Google Calendar ── */
     .gcal-modal { padding: 0; }
     .gcal-head { display: flex; align-items: flex-start; gap: 10px; padding: 20px 20px 4px; }
@@ -5148,15 +5178,25 @@
 
 <!-- Modal día completo -->
 <div class="modal-overlay" id="modal-day" onclick="if(event.target===this)closeDayModal()">
-  <div class="modal" style="max-width:400px;max-height:80vh;display:flex;flex-direction:column">
-    <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div id="day-modal-title" style="font-size:17px;font-weight:900;color:var(--ink);letter-spacing:-.4px"></div>
-        <div id="day-modal-sub" style="font-size:12px;color:var(--ink3);margin-top:2px"></div>
+  <div class="modal daymodal-card" style="max-width:420px;max-height:82vh;display:flex;flex-direction:column;padding:0">
+    <div class="daymodal-head">
+      <div class="daymodal-icon-badge"><i class="ti ti-calendar-event"></i></div>
+      <div style="flex:1;min-width:0">
+        <div id="day-modal-title" class="daymodal-title"></div>
+        <div id="day-modal-sub" class="daymodal-sub"></div>
       </div>
-      <button class="modal-close" onclick="closeDayModal()">✕</button>
+      <button class="daymodal-close" onclick="closeDayModal()"><i class="ti ti-x"></i></button>
     </div>
-    <div id="day-modal-list" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding:2px 2px 4px"></div>
+    <div class="daymodal-count-row">
+      <i class="ti ti-calendar-stats"></i>
+      <span id="day-modal-count"></span>
+    </div>
+    <div id="day-modal-list" class="daymodal-list"></div>
+    <div class="daymodal-footer">
+      <button class="daymodal-new-btn" onclick="closeDayModal();openEventModal(window.dayModalIso)">
+        <i class="ti ti-plus"></i> Nuevo evento
+      </button>
+    </div>
   </div>
 </div>
 
@@ -7369,6 +7409,8 @@
       `${DAYS_FULL[date.getDay()]} ${date.getDate()}`
     document.getElementById('day-modal-sub').textContent =
       `${MONTHS_FULL[date.getMonth()]} ${date.getFullYear()}`
+    document.getElementById('day-modal-count').textContent =
+      dayEvents.length === 0 ? 'Sin eventos programados' : `${dayEvents.length} evento${dayEvents.length!==1?'s':''} programado${dayEvents.length!==1?'s':''}`
     window.dayModalIso = date.toISOString().slice(0, 16).replace('T', 'T').slice(0, 16)
 
     const list = document.getElementById('day-modal-list')
@@ -7377,18 +7419,16 @@
     } else {
       list.innerHTML = dayEvents.map(e => {
         const start = new Date(e.fecha_inicio)
-        const timeStr = start.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
+        const timeStr = e.all_day ? 'Todo el día' : start.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
         const isPiece = e.id.startsWith('piece-')
-        const icon = isPiece
-          ? `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`
-          : `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
-        return `<div onclick="closeDayModal();openEventDetail('${e.id}')" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:${e.color}11;border-left:3px solid ${e.color};cursor:pointer;transition:background .15s" onmouseover="this.style.background='${e.color}22'" onmouseout="this.style.background='${e.color}11'">
-          <div style="color:${e.color};flex-shrink:0">${icon}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.titulo}</div>
-            <div style="font-size:11px;color:var(--ink3);margin-top:2px">${timeStr}${isPiece ? ' · Pieza' : ''}</div>
+        const icon = isPiece ? 'ti-photo' : 'ti-calendar-event'
+        return `<div class="daymodal-event-card" style="border-left-color:${e.color}" onclick="closeDayModal();openEventDetail('${e.id}')">
+          <div class="daymodal-event-icon" style="background:${e.color}18;color:${e.color}"><i class="ti ${icon}"></i></div>
+          <div class="daymodal-event-body">
+            <div class="daymodal-event-title">${e.titulo}</div>
+            <div class="daymodal-event-time">${timeStr}${isPiece ? ' · Pieza' : ''}</div>
           </div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--ink3);flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+          <i class="ti ti-chevron-right daymodal-event-chevron"></i>
         </div>`
       }).join('')
     }
