@@ -611,6 +611,17 @@
     }
     .mb-item.selected { border-color: var(--celeste); box-shadow: 0 0 0 3px rgba(142,219,255,.35); }
     .mb-item.dragging { opacity: .85; cursor: grabbing; }
+    .mb-item.mb-item-remote-active {
+      outline: 2.5px solid var(--mb-remote-color, #EF4444); outline-offset: 2px;
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--mb-remote-color, #EF4444) 18%, transparent);
+      transition: left .06s linear, top .06s linear, width .06s linear, height .06s linear;
+      z-index: 50 !important;
+    }
+    .mb-remote-label {
+      position: absolute; top: -24px; right: 0; color: #fff; font-size: 10.5px; font-weight: 800;
+      padding: 3px 9px; border-radius: 7px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.2);
+      pointer-events: none; z-index: 51;
+    }
     .mb-item-clip { position: absolute; inset: 0; border-radius: 8px; overflow: hidden; }
     .mb-item img, .mb-item video, .mb-item iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
 
@@ -9663,6 +9674,7 @@
       floatingTabs?.classList.remove('visible')
       floatingSelector?.classList.remove('visible')
       if (mbPresenting) mbExitPresent()
+      teardownMbLiveChannel()
     }
 
     if (tab === 'tableros') renderTableros()
@@ -12909,6 +12921,100 @@ if (id) {
     await renderMoodboardTab()
   }
 
+  // ── En vivo: ver a otras personas moviendo/redimensionando elementos ──
+  // Usa Broadcast (no pasa por la base de datos) para que sea instantáneo, sin recargar nada.
+  let mbLiveChannel = null
+  let mbLiveChannelBoardId = null
+  let mbLastBroadcast = 0
+  const mbRemoteUserColors = {}
+  const MB_LIVE_PALETTE = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6']
+
+  function mbColorForUser(userId) {
+    if (!mbRemoteUserColors[userId]) {
+      const used = Object.keys(mbRemoteUserColors).length
+      mbRemoteUserColors[userId] = MB_LIVE_PALETTE[used % MB_LIVE_PALETTE.length]
+    }
+    return mbRemoteUserColors[userId]
+  }
+
+  function setupMbLiveChannel() {
+    if (mbLiveChannelBoardId === currentMoodboardId && mbLiveChannel) return
+    if (mbLiveChannel) supabase.removeChannel(mbLiveChannel)
+    mbLiveChannelBoardId = currentMoodboardId
+    if (!currentMoodboardId) { mbLiveChannel = null; return }
+    mbLiveChannel = supabase.channel('mb-live-' + currentMoodboardId)
+      .on('broadcast', { event: 'move' }, ({ payload }) => handleMbRemoteMove(payload))
+      .on('broadcast', { event: 'stop' }, ({ payload }) => handleMbRemoteStop(payload))
+      .subscribe()
+  }
+
+  function teardownMbLiveChannel() {
+    if (mbLiveChannel) supabase.removeChannel(mbLiveChannel)
+    mbLiveChannel = null
+    mbLiveChannelBoardId = null
+  }
+
+  function mbBroadcastMove(itemId, x, y, width, height) {
+    if (!mbLiveChannel) return
+    const now = Date.now()
+    if (now - mbLastBroadcast < 55) return // ~18 veces por segundo — fluido sin saturar la red
+    mbLastBroadcast = now
+    mbLiveChannel.send({
+      type: 'broadcast', event: 'move',
+      payload: {
+        itemId, x, y, width, height,
+        userId: currentUserId,
+        userName: (profileData?.nombre || 'Alguien'),
+      },
+    })
+  }
+
+  function mbBroadcastStop(itemId) {
+    if (!mbLiveChannel) return
+    mbLiveChannel.send({ type: 'broadcast', event: 'stop', payload: { itemId, userId: currentUserId } })
+  }
+
+  function handleMbRemoteMove(data) {
+    if (!data || data.userId === currentUserId) return
+    const el = document.querySelector(`.mb-item[data-id="${data.itemId}"]`)
+    if (!el) return
+    if (data.x !== undefined) el.style.left = data.x + 'px'
+    if (data.y !== undefined) el.style.top = data.y + 'px'
+    if (data.width !== undefined) el.style.width = data.width + 'px'
+    if (data.height !== undefined) el.style.height = data.height + 'px'
+    const color = mbColorForUser(data.userId)
+    el.classList.add('mb-item-remote-active')
+    el.style.setProperty('--mb-remote-color', color)
+    let label = el.querySelector('.mb-remote-label')
+    if (!label) {
+      label = document.createElement('div')
+      label.className = 'mb-remote-label'
+      el.appendChild(label)
+    }
+    label.textContent = data.userName
+    label.style.background = color
+    // Las conexiones de este item tienen que seguirlo mientras se mueve
+    const item = moodboardItems.find(i => i.id === data.itemId)
+    if (item) {
+      if (data.x !== undefined) item.x = data.x
+      if (data.y !== undefined) item.y = data.y
+      if (data.width !== undefined) item.width = data.width
+      if (data.height !== undefined) item.height = data.height
+      renderMbConnections()
+    }
+    clearTimeout(el._mbRemoteTimeout)
+    el._mbRemoteTimeout = setTimeout(() => handleMbRemoteStop(data), 1500) // por si el "stop" se pierde
+  }
+
+  function handleMbRemoteStop(data) {
+    if (!data) return
+    const el = document.querySelector(`.mb-item[data-id="${data.itemId}"]`)
+    if (!el) return
+    clearTimeout(el._mbRemoteTimeout)
+    el.classList.remove('mb-item-remote-active')
+    el.querySelector('.mb-remote-label')?.remove()
+  }
+
   async function renderMoodboardTab() {
     await loadMoodboards()
     const emptyState = document.getElementById('moodboard-empty-state')
@@ -12920,10 +13026,12 @@ if (id) {
       emptyState.style.display = 'flex'
       workspace.classList.remove('show')
       workspace.style.display = 'none'
+      teardownMbLiveChannel()
       return
     }
     emptyState.style.display = 'none'
     workspace.style.display = 'flex'
+    setupMbLiveChannel()
 
     await Promise.all([loadMoodboardItems(), loadMoodboardConnections(), loadMoodboardComments()])
     renderMbCanvas()
@@ -13473,6 +13581,7 @@ if (id) {
           const item = moodboardItems.find(i => i.id === draggingId)
           if (item) { item.x = parseFloat(el.style.left); item.y = parseFloat(el.style.top) }
           renderMbConnections()
+          mbBroadcastMove(draggingId, parseFloat(el.style.left), parseFloat(el.style.top))
         }
       } else if (resizingId) {
         mbJustDragged = true
@@ -13483,6 +13592,7 @@ if (id) {
           const item = moodboardItems.find(i => i.id === resizingId)
           if (item) { item.width = parseFloat(el.style.width); item.height = parseFloat(el.style.height) }
           renderMbConnections()
+          mbBroadcastMove(resizingId, undefined, undefined, parseFloat(el.style.width), parseFloat(el.style.height))
         }
       }
     })
@@ -13533,6 +13643,8 @@ if (id) {
           await supabase.from('moodboard_items').update({ width, height }).eq('id', finishedResizeId)
         }
       }
+      if (finishedDragId) mbBroadcastStop(finishedDragId)
+      if (finishedResizeId) mbBroadcastStop(finishedResizeId)
       if (finishedDragId || finishedResizeId) pushMbHistory()
     })
 
