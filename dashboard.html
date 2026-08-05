@@ -1676,6 +1676,27 @@
       /* ── Tareas: solo ver y crear, sin estadísticas ── */
       .task-hero-card, #task-kpis, .task-sidebar-panel { display: none !important; }
       .task-main-grid { grid-template-columns: 1fr !important; }
+
+      #task-filters-mobile-bar { display: flex !important; gap: 8px; margin-bottom: 14px; }
+      #task-filters-toggle-btn {
+        flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; height: 40px;
+        border-radius: 11px; border: 1px solid var(--border); background: #fff; color: var(--ink2);
+        font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit;
+      }
+      #task-filters-toggle-btn.active { background: var(--azul); border-color: var(--azul); color: var(--celeste); }
+      .task-mobile-new-btn {
+        display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 11px;
+        border: none; background: var(--azul); color: var(--celeste); font-size: 12.5px; font-weight: 700;
+        cursor: pointer; font-family: inherit; white-space: nowrap;
+      }
+      #task-filters-full { display: none; }
+      #task-filters-full.show { display: block; }
+      #task-filters-selects-row { flex-direction: column; align-items: stretch !important; }
+      #task-filters-selects-row select { width: 100%; }
+      #task-filter-tabs { width: 100%; overflow-x: auto; }
+      .task-view-selector, .task-view-divider, .task-desktop-actions { display: none !important; }
+      .task-card-row { flex-wrap: wrap; gap: 10px !important; padding: 14px 16px !important; }
+      .task-card-row > div:last-child { margin-left: auto; }
     }
 
     @media print {
@@ -2163,9 +2184,15 @@
             <!-- KPIs -->
             <div id="task-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px"></div>
 
+            <!-- Barra de filtros compacta para mobile -->
+            <div id="task-filters-mobile-bar">
+              <button id="task-filters-toggle-btn" onclick="toggleTaskFiltersMobile()"><i class="ti ti-adjustments-horizontal"></i> Filtros</button>
+              <button class="task-mobile-new-btn" onclick="handleContenidoCta()"><i class="ti ti-plus"></i> Nueva tarea</button>
+            </div>
+
             <!-- Barra de filtros -->
-            <div style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:18px 24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <div id="task-filters-full" style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:18px 24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(10,37,64,.04)">
+              <div id="task-filters-selects-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
                 <select id="task-filter-cliente" onchange="renderTasks()" style="height:34px;padding:0 28px 0 12px;border:1px solid #E8EDF3;border-radius:9px;font-size:12px;font-weight:500;font-family:inherit;color:#0A2540;background:#F5F7FA url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238B98A9' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E&quot;) no-repeat right 10px center;outline:none;cursor:pointer;appearance:none">
                   <option value="">Cliente: todos</option>
                 </select>
@@ -2186,7 +2213,7 @@
                   <i class="ti ti-x" style="font-size:13px"></i> Limpiar filtros
                 </button>
               </div>
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div id="task-filters-controls-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                 <div style="display:flex;gap:6px;background:#F5F7FA;border:1px solid #E8EDF3;border-radius:10px;padding:3px;position:relative" id="task-filter-tabs">
                   <div class="pill-slider" id="task-filter-pill"></div>
                   <button id="task-btn-todas" class="filter-btn active" data-filter="todas" onclick="filterTasks(this)" style="padding:7px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--celeste);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Todas</button>
@@ -2194,9 +2221,9 @@
                   <button id="task-btn-en-progreso" class="filter-btn" data-filter="en-progreso" onclick="filterTasks(this)" style="padding:7px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">En progreso</button>
                   <button id="task-btn-completada" class="filter-btn" data-filter="completada" onclick="filterTasks(this)" style="padding:7px 14px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;font-family:inherit;border-radius:7px;position:relative;z-index:1;transition:color var(--t)">Completadas</button>
                 </div>
-                <div style="width:1px;height:24px;background:#E8EDF3;margin:0 2px"></div>
+                <div class="task-view-divider" style="width:1px;height:24px;background:#E8EDF3;margin:0 2px"></div>
                 <!-- Selector de vistas -->
-                <div style="display:flex;gap:4px">
+                <div class="task-view-selector" style="display:flex;gap:4px">
                   <button style="height:32px;width:32px;border-radius:8px;border:1.5px solid #0A2540;background:#0A2540;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Vista de lista">
                     <i class="ti ti-list" style="font-size:15px"></i>
                   </button>
@@ -2207,7 +2234,7 @@
                     <i class="ti ti-calendar" style="font-size:15px"></i>
                   </button>
                 </div>
-                <div style="margin-left:auto;display:flex;align-items:center;gap:10px" id="task-filter-actions">
+                <div class="task-desktop-actions" style="margin-left:auto;display:flex;align-items:center;gap:10px" id="task-filter-actions">
                   <div id="task-stats-row"></div>
                   <button onclick="handleContenidoCta()" style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 16px;background:#0A2540;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap" onmouseover="this.style.background='#12365C'" onmouseout="this.style.background='#0A2540'">
                     <i class="ti ti-plus" style="font-size:14px"></i> Nueva tarea
@@ -9221,6 +9248,14 @@
     return 'mes'
   }
 
+  window.toggleTaskFiltersMobile = function() {
+    const panel = document.getElementById('task-filters-full')
+    const btn = document.getElementById('task-filters-toggle-btn')
+    const open = !panel.classList.contains('show')
+    panel.classList.toggle('show', open)
+    btn.classList.toggle('active', open)
+  }
+
   window.clearTaskFilters = function() {
     const c = document.getElementById('task-filter-cliente')
     const r = document.getElementById('task-filter-responsable')
@@ -9545,7 +9580,7 @@
     const attachCount = t._attachCount || 0
     const checklistInfo = t._checklistDone != null && t._checklistTotal ? `${t._checklistDone}/${t._checklistTotal}` : null
 
-    return `<div onclick="openTaskModal('${t.id}')" style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:16px 20px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;${isDone?'opacity:.6;':''}" onmouseover="this.style.borderColor='#D1D9E6';this.style.boxShadow='0 6px 18px rgba(10,37,64,.08)'" onmouseout="this.style.borderColor='#E8EDF3';this.style.boxShadow='0 2px 8px rgba(10,37,64,.04)'">
+    return `<div class="task-card-row" onclick="openTaskModal('${t.id}')" style="background:#fff;border:1px solid #E8EDF3;border-radius:16px;padding:16px 20px;box-shadow:0 2px 8px rgba(10,37,64,.04);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;${isDone?'opacity:.6;':''}" onmouseover="this.style.borderColor='#D1D9E6';this.style.boxShadow='0 6px 18px rgba(10,37,64,.08)'" onmouseout="this.style.borderColor='#E8EDF3';this.style.boxShadow='0 2px 8px rgba(10,37,64,.04)'">
       <div class="task-chk ${isDone ? 'done' : ''}" onclick="event.stopPropagation();toggleTaskStatus('${t.id}','${t.estado}')" style="flex-shrink:0"></div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
