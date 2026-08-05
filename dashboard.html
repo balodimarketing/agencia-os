@@ -5114,6 +5114,9 @@
       <button class="modal-close" onclick="closeDayModal()">✕</button>
     </div>
     <div id="day-modal-list" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding:2px 2px 4px"></div>
+    <button class="tbtn primary" style="width:100%;justify-content:center;margin-top:12px;gap:6px" onclick="closeDayModal();openEventModal(window.dayModalIso)">
+      <i class="ti ti-plus" style="font-size:14px"></i> Nuevo evento este día
+    </button>
   </div>
 </div>
 
@@ -7213,7 +7216,10 @@
         return ed.toDateString() === day.toDateString()
       })
       bodyHTML += `<div class="cal-day-col">`
-      bodyHTML += HOURS.map(() => `<div class="cal-hour-row"></div>`).join('')
+      bodyHTML += HOURS.map(h => {
+        const slotDate = new Date(day); slotDate.setHours(h, 0, 0, 0)
+        return `<div class="cal-hour-row" onclick="openEventModal('${slotDate.toISOString()}')"></div>`
+      }).join('')
 
       // Now line
       if (day.toDateString() === today.toDateString()) {
@@ -7297,11 +7303,11 @@
 
       const dayEvents = allEvents.filter(e => new Date(e.fecha_inicio).toDateString() === cellDate.toDateString())
       const eventsHTML = dayEvents.slice(0,3).map(e =>
-        `<div class="cal-month-event" style="background:${e.color}22;color:${e.color}" onclick="openEventDetail('${e.id}')">${e.archivo_url ? '<i class="ti ti-photo" style="font-size:9px;margin-right:2px"></i>' : ''}${e.titulo}</div>`
+        `<div class="cal-month-event" style="background:${e.color}22;color:${e.color}" onclick="event.stopPropagation();openEventDetail('${e.id}')">${e.archivo_url ? '<i class="ti ti-photo" style="font-size:9px;margin-right:2px"></i>' : ''}${e.titulo}</div>`
       ).join('')
       const more = dayEvents.length > 3 ? `<div class="cal-day-num-click" data-iso="${isoStr}" style="font-size:9px;color:var(--ink3);font-weight:700;cursor:pointer;padding:2px 4px">+${dayEvents.length-3} más</div>` : ''
 
-      html += `<div class="cal-month-cell" style="${isOther?'background:#FAFBFC':''}">${dayNum}${eventsHTML}${more}</div>`
+      html += `<div class="cal-month-cell" onclick="openDayModal('${isoStr}')" style="cursor:pointer;${isOther?'background:#FAFBFC':''}">${dayNum}${eventsHTML}${more}</div>`
     }
 
     html += `</div>`
