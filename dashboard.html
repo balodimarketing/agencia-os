@@ -1632,6 +1632,7 @@
        ══════════════════════════════════════════════════════ */
     .mobile-menu-btn { display: none; }
     #mobile-rail-backdrop { display: none; }
+    #mobile-topbar { display: none; }
 
     @media (max-width: 860px) {
       .mobile-menu-btn {
@@ -1639,6 +1640,11 @@
         border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--ink2);
         cursor: pointer; flex-shrink: 0; margin-right: 6px; font-size: 17px;
       }
+      #mobile-topbar {
+        display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; flex-shrink: 0;
+        background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+      }
+      #mobile-topbar-logo { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 900; color: var(--ink); letter-spacing: -.3px; }
       .rail, body.rail-collapsed .rail {
         position: fixed; top: 0; left: 0; height: 100vh; margin: 0; border-radius: 0;
         width: 82vw; max-width: 300px; z-index: 2000;
@@ -1766,8 +1772,11 @@
 
   <!-- WORKSPACE -->
   <div class="workspace">
-    <div class="topbar">
+    <div id="mobile-topbar">
       <button class="mobile-menu-btn" onclick="toggleMobileRail()"><i class="ti ti-menu-2"></i></button>
+      <div id="mobile-topbar-logo"><div class="rail-logo" style="width:26px;height:26px;font-size:13px">F</div> Faro</div>
+    </div>
+    <div class="topbar">
       <div class="topbar-title" id="ws-title">Inicio</div>
       <div class="topbar-search"><i class="ti ti-search"></i><input type="text" placeholder="Buscar en la app..."><span class="topbar-kbd">⌘K</span></div>
       <button class="tbtn primary" id="ws-cta" onclick="handleCta()" style="display:none"><i class="ti ti-plus"></i><span id="ws-cta-label">Nuevo</span></button>
