@@ -1658,6 +1658,7 @@
       .topbar-search { display: none; } /* poco espacio; la búsqueda por ahora queda para desktop */
     }
 
+    @media print {
       @page { margin: 0; }
       html, body { height: auto !important; overflow: visible !important; }
       body > *:not(#calendario-pdf-overlay) { display: none !important; }
