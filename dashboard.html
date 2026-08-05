@@ -6275,6 +6275,7 @@
     subscribeToNotifications()
     await loadNotifications()
     subscribeToContentChanges()
+    subscribeToTeamRealtime()
 
     // Notificar seguimientos CRM vencidos
     checkCrmOverdueFollowups()
@@ -8249,6 +8250,76 @@
           renderKanban()
           renderContenidoPanel()
           showToast('El cliente pidió cambios en una pieza')
+        }
+      })
+      .subscribe()
+  }
+
+  // ── Real-time: Tableros, Calendario, CRM, Cuentas, Equipo, Moodboard ──
+  function subscribeToTeamRealtime() {
+    if (!agencyId) return
+
+    supabase.channel('tableros-realtime-' + agencyId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'piece_board_cards' }, async () => {
+        if (currentModule === 'contenido' && currentContentTab === 'tableros' && currentBoardId) {
+          await loadBoardCards()
+          renderTableroKanban()
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'piece_board_stages' }, async () => {
+        if (currentModule === 'contenido' && currentContentTab === 'tableros' && currentBoardId) {
+          await Promise.all([loadBoardStages(), loadBoardCards()])
+          renderTableroKanban()
+        }
+      })
+      .subscribe()
+
+    supabase.channel('calendario-realtime-' + agencyId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events', filter: `agency_id=eq.${agencyId}` }, async () => {
+        if (currentModule === 'calendario') {
+          await loadCalendarEvents()
+          renderCalGrid()
+          renderCalPanel()
+        }
+      })
+      .subscribe()
+
+    supabase.channel('crm-realtime-' + agencyId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_contacts', filter: `agency_id=eq.${agencyId}` }, async () => {
+        if (currentModule === 'crm') renderCrm()
+      })
+      .subscribe()
+
+    supabase.channel('cuentas-realtime-' + agencyId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clients', filter: `agency_id=eq.${agencyId}` }, async () => {
+        await loadClients() // los clientes se usan en varios lugares (selects, filtros), se mantiene siempre al día
+        if (currentModule === 'cuentas') { renderClientsPanel(); renderClientsGrid() }
+      })
+      .subscribe()
+
+    supabase.channel('equipo-realtime-' + agencyId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'agency_members', filter: `agency_id=eq.${agencyId}` }, async () => {
+        if (currentModule === 'equipo') renderEquipo()
+      })
+      .subscribe()
+
+    supabase.channel('moodboard-realtime-' + agencyId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'moodboard_items' }, async () => {
+        if (currentModule === 'contenido' && currentContentTab === 'moodboard' && currentMoodboardId) {
+          await loadMoodboardItems()
+          renderMbCanvas()
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'moodboard_connections' }, async () => {
+        if (currentModule === 'contenido' && currentContentTab === 'moodboard' && currentMoodboardId) {
+          await loadMoodboardConnections()
+          renderMbCanvas()
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'moodboard_comments' }, async () => {
+        if (currentModule === 'contenido' && currentContentTab === 'moodboard' && currentMoodboardId) {
+          await loadMoodboardComments()
+          renderMbCanvas()
         }
       })
       .subscribe()
