@@ -7788,33 +7788,77 @@
     agency: { nombre: 'Agency', precio: '$3.000 ARS/mes', desc: 'Todo lo de Pro, más Moodboard, integraciones API, múltiples agencias y soporte prioritario.' },
   }
 
+  const PLAN_CARD_INFO = {
+    free:   { nombre: 'Free',   precio: '0',     desc: 'Para empezar sin riesgo' },
+    pro:    { nombre: 'Pro',    precio: '1.000', desc: 'Para agencias en crecimiento' },
+    agency: { nombre: 'Agency', precio: '3.000', desc: 'Para agencias que escalan' },
+  }
+  const PLAN_FEATURES_FULL = {
+    free:   ['Hasta 2 clientes', '1 miembro del equipo + admin', 'Cuentas, Contenido y Calendario', 'Sin vencimiento'],
+    pro:    ['Clientes y miembros ilimitados', 'CRM integrado', 'Reportes ilimitados', 'Herramientas del equipo', 'Presupuestos y contratos'],
+    agency: ['Todo lo de Pro', 'Moodboard visual', 'Integraciones API (Make, Zapier, Meta Ads)', 'Múltiples agencias en una cuenta', 'Permisos avanzados por miembro', 'Soporte prioritario'],
+  }
+
+  function pricingCardHTML(plan) {
+    const info = PLAN_CARD_INFO[plan]
+    const isCurrent = plan === agencyPlan
+    const isPopular = plan === 'pro'
+    const isAgency = plan === 'agency'
+    const borderColor = isCurrent ? 'var(--azul)' : isPopular ? '#2563EB' : isAgency ? '#7C3AED' : 'var(--border)'
+
+    let btnHTML
+    if (isCurrent) {
+      btnHTML = `<button style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--ink3);font-size:12.5px;font-weight:800;cursor:default;font-family:inherit" disabled>Plan actual</button>`
+    } else if (planRank(plan) < planRank(agencyPlan)) {
+      btnHTML = `<button style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);color:var(--ink3);font-size:12.5px;font-weight:800;cursor:default;font-family:inherit;opacity:.55" disabled>Plan anterior</button>`
+    } else {
+      const gradient = isAgency ? 'linear-gradient(135deg,#8B5CF6,#6D28D9)' : 'linear-gradient(135deg,#38BDF8,#2563EB)'
+      btnHTML = `<button style="width:100%;height:42px;border:none;border-radius:12px;background:${gradient};color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity var(--t)" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'" id="upgrade-btn-${plan}" onclick="startPlanCheckout('${plan}')">Pasar a ${info.nombre} <i class="ti ti-arrow-right" style="font-size:12px"></i></button>`
+    }
+
+    return `<div style="flex:1;min-width:200px;border:1.5px solid ${borderColor};border-radius:16px;padding:22px 18px;position:relative;background:${isCurrent ? 'var(--celeste-dim)' : '#fff'};display:flex;flex-direction:column">
+      ${isPopular ? '<div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#2563EB;color:#fff;font-size:9.5px;font-weight:800;padding:3px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.3px">MÁS POPULAR</div>' : ''}
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:900;color:var(--ink);margin-bottom:10px">${info.nombre}</div>
+        <div style="font-size:26px;font-weight:900;color:var(--ink)"><span style="font-size:13px;font-weight:700;color:var(--ink3);vertical-align:top;margin-right:2px">AR$</span>${info.precio}<span style="font-size:12px;font-weight:700;color:var(--ink3)">/mes</span></div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:5px">${info.desc}</div>
+      </div>
+      <ul style="list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:9px;flex:1">
+        ${PLAN_FEATURES_FULL[plan].map(f => `<li style="display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ink2);line-height:1.4"><i class="ti ti-check" style="color:#10B981;font-size:14px;margin-top:1px;flex-shrink:0"></i>${f}</li>`).join('')}
+      </ul>
+      ${btnHTML}
+    </div>`
+  }
+
   window.openUpgradePlanModal = function() {
     closeProfileModal()
     const existing = document.getElementById('modal-upgrade-plan')
     if (existing) existing.remove()
-    const disponibles = agencyPlan === 'pro' ? ['agency'] : ['pro', 'agency']
+    const planLabel = agencyPlan === 'agency' ? 'Agency' : agencyPlan === 'pro' ? 'Pro' : 'Free'
 
     const m = document.createElement('div')
     m.id = 'modal-upgrade-plan'
     m.className = 'modal-overlay show'
     m.onclick = e => { if (e.target === m) m.remove() }
-    m.innerHTML = `<div class="modal" style="max-width:420px"><div class="fc-dialog" style="text-align:left">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-        <div class="fc-dialog-title" style="margin:0">Mejorar plan</div>
-        <button onclick="document.getElementById('modal-upgrade-plan').remove()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:16px"><i class="ti ti-x"></i></button>
+    m.innerHTML = `<div class="modal" style="max-width:920px"><div class="fc-dialog" style="text-align:left">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
+        <div>
+          <div class="fc-dialog-title" style="margin:0">Planes y precios</div>
+          <div style="font-size:12.5px;color:var(--ink3);margin-top:4px">Elegí el plan que mejor se adapte a tu agencia.</div>
+        </div>
+        <button onclick="document.getElementById('modal-upgrade-plan').remove()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:18px;flex-shrink:0"><i class="ti ti-x"></i></button>
       </div>
-      ${disponibles.map(p => {
-        const info = FARO_PLANS_INFO[p]
-        return `<div style="border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <div style="font-size:15px;font-weight:900;color:var(--ink)">${info.nombre}</div>
-            <div style="font-size:12px;font-weight:800;color:var(--azul)">${info.precio}</div>
-          </div>
-          <div style="font-size:11.5px;color:var(--ink3);line-height:1.5;margin-bottom:12px">${info.desc}</div>
-          <button class="fc-dialog-btn primary" style="width:100%" id="upgrade-btn-${p}" onclick="startPlanCheckout('${p}')">Pasar a ${info.nombre}</button>
-        </div>`
-      }).join('')}
-      <div style="font-size:10.5px;color:var(--ink3);text-align:center;margin-top:4px">Te vamos a redirigir a MercadoPago para completar el pago.</div>
+      <div style="display:flex;justify-content:center;margin:18px 0 22px">
+        <div style="border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:12px;color:var(--ink2);font-weight:600">Estás en: <span style="color:var(--azul);font-weight:800">${planLabel}</span></div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:stretch;flex-wrap:wrap">
+        ${pricingCardHTML('free')}
+        ${pricingCardHTML('pro')}
+        ${pricingCardHTML('agency')}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:22px;font-size:11px;color:var(--ink3)">
+        <i class="ti ti-shield-check" style="font-size:14px"></i> Cancelá cuando quieras. Sin permanencia ni costos ocultos.
+      </div>
     </div></div>`
     document.body.appendChild(m)
   }
