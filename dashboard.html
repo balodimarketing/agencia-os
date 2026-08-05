@@ -1694,6 +1694,7 @@
       <!-- Contenido real -->
       <div id="inicio-content" style="display:none">
         <div id="inicio-novedad"></div>
+        <div id="inicio-plan-ads"></div>
         <div id="inicio-checklist"></div>
         <div id="inicio-metrics"></div>
         <div id="inicio-alerts"></div>
@@ -15213,6 +15214,7 @@ if (id) {
 
   async function renderInicio() {
     renderNovedad()
+    renderPlanAds()
     renderChecklist()
 
     const today = new Date()
@@ -16232,6 +16234,79 @@ if (id) {
       const steps = [...new Set([...(data?.completed_steps||[]), NOVEDAD_ACTUAL.id])]
       await supabase.from('onboarding_progress').upsert({ user_id: currentUserId, agency_id: agencyId, completed_steps: steps }, { onConflict: 'user_id,agency_id' })
     } catch(e) {}
+  }
+
+  // ── Anuncio rotativo: beneficios de Pro/Agency según el plan actual ──
+  const PLAN_ADS = {
+    free: [
+      { icon: 'ti-address-book', color: '#3B82F6', bg: '#EFF6FF', titulo: 'Centralizá tus contactos con el CRM', desc: 'Seguí oportunidades y no perdás ningún cliente potencial.', plan: 'Pro' },
+      { icon: 'ti-chart-bar', color: '#10B981', bg: '#ECFDF5', titulo: 'Medí resultados con Reportes', desc: 'Mostrale a tus clientes números reales, en PDF.', plan: 'Pro' },
+      { icon: 'ti-file-text', color: '#F59E0B', bg: '#FFFBEB', titulo: 'Armá presupuestos y contratos', desc: 'Documentos profesionales en minutos, listos para firmar.', plan: 'Pro' },
+      { icon: 'ti-palette', color: '#8B5CF6', bg: '#F5F3FF', titulo: 'Diseñá moodboards visuales', desc: 'Tableros de referencia colaborativos para cada cliente.', plan: 'Agency' },
+      { icon: 'ti-plug-connected', color: '#EC4899', bg: '#FDF2F8', titulo: 'Conectá tus apps favoritas', desc: 'Make, Zapier, Meta Ads y más — los leads llegan solos.', plan: 'Agency' },
+    ],
+    pro: [
+      { icon: 'ti-palette', color: '#8B5CF6', bg: '#F5F3FF', titulo: 'Diseñá moodboards visuales', desc: 'Tableros de referencia colaborativos para cada cliente.', plan: 'Agency' },
+      { icon: 'ti-plug-connected', color: '#EC4899', bg: '#FDF2F8', titulo: 'Conectá tus apps favoritas', desc: 'Make, Zapier, Meta Ads y más — los leads llegan solos.', plan: 'Agency' },
+      { icon: 'ti-building-skyscraper', color: '#0A2540', bg: '#EEF2FF', titulo: 'Manejá varias agencias en una cuenta', desc: 'Todo tu negocio, centralizado en un solo lugar.', plan: 'Agency' },
+      { icon: 'ti-shield-lock', color: '#EF4444', bg: '#FEF2F2', titulo: 'Permisos avanzados por miembro', desc: 'Controlá qué puede ver y hacer cada persona del equipo.', plan: 'Agency' },
+    ],
+  }
+  let planAdIndex = 0
+  let planAdInterval = null
+
+  function renderPlanAds() {
+    const container = document.getElementById('inicio-plan-ads')
+    if (!container) return
+    clearInterval(planAdInterval)
+    if (agencyPlan === 'agency') { container.innerHTML = ''; return }
+    const ads = PLAN_ADS[agencyPlan] || PLAN_ADS.free
+    planAdIndex = 0
+    container.innerHTML = `
+      <div id="plan-ad-card" style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:16px;transition:opacity .2s">
+        <div id="plan-ad-icon-wrap" style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div id="plan-ad-titulo" style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px"></div>
+          <div id="plan-ad-desc" style="font-size:12px;color:var(--ink3);line-height:1.5"></div>
+        </div>
+        <button onclick="openUpgradePlanModal()" class="tbtn primary" style="flex-shrink:0;font-size:11.5px;white-space:nowrap">Ver plan →</button>
+        <div id="plan-ad-dots" style="display:flex;gap:4px;flex-shrink:0"></div>
+      </div>`
+    renderPlanAdSlide(ads, 0)
+    planAdInterval = setInterval(() => {
+      planAdIndex = (planAdIndex + 1) % ads.length
+      renderPlanAdSlide(ads, planAdIndex)
+    }, 6000)
+  }
+
+  function renderPlanAdSlide(ads, i) {
+    const ad = ads[i]
+    const card = document.getElementById('plan-ad-card')
+    if (!card || !ad) return
+    card.style.opacity = '0'
+    setTimeout(() => {
+      const iconWrap = document.getElementById('plan-ad-icon-wrap')
+      if (!iconWrap) return
+      iconWrap.style.background = ad.bg
+      iconWrap.innerHTML = `<i class="ti ${ad.icon}" style="font-size:20px;color:${ad.color}"></i>`
+      document.getElementById('plan-ad-titulo').textContent = ad.titulo
+      document.getElementById('plan-ad-desc').textContent = `${ad.desc} · Plan ${ad.plan}`
+      document.getElementById('plan-ad-dots').innerHTML = ads.map((_, idx) =>
+        `<div onclick="jumpPlanAd(${idx})" style="width:6px;height:6px;border-radius:50%;cursor:pointer;background:${idx === i ? 'var(--azul)' : 'var(--border)'}"></div>`
+      ).join('')
+      card.style.opacity = '1'
+    }, 150)
+  }
+
+  window.jumpPlanAd = function(i) {
+    const ads = PLAN_ADS[agencyPlan] || PLAN_ADS.free
+    planAdIndex = i
+    renderPlanAdSlide(ads, i)
+    clearInterval(planAdInterval)
+    planAdInterval = setInterval(() => {
+      planAdIndex = (planAdIndex + 1) % ads.length
+      renderPlanAdSlide(ads, planAdIndex)
+    }, 6000)
   }
 
   // ══════════════════════════════════════
