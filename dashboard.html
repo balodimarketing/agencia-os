@@ -396,6 +396,48 @@
 
     .modal-footer { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
 
+    /* ── Modal de evento, estilo Google Calendar ── */
+    .gcal-modal { padding: 0; }
+    .gcal-head { display: flex; align-items: flex-start; gap: 10px; padding: 20px 20px 4px; }
+    .gcal-title-input { flex: 1; border: none; outline: none; font-size: 20px; font-weight: 800; color: var(--ink); font-family: inherit; padding: 6px 0; border-bottom: 2px solid transparent; background: none; }
+    .gcal-title-input:focus { border-bottom-color: var(--celeste); }
+    .gcal-title-input::placeholder { color: var(--ink3); font-weight: 700; }
+
+    .gcal-row { display: flex; align-items: flex-start; gap: 16px; padding: 12px 20px; }
+    .gcal-row-icon { font-size: 18px; color: var(--ink3); margin-top: 8px; flex-shrink: 0; width: 20px; text-align: center; }
+    .gcal-row-content { flex: 1; min-width: 0; }
+
+    .gcal-datetime-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .gcal-input {
+      height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: 9px; font-size: 13px;
+      font-family: inherit; color: var(--ink); background: var(--bg); outline: none; transition: border-color .15s, background .15s;
+    }
+    .gcal-input:focus { border-color: var(--celeste); background: #fff; }
+    .gcal-time-inline { display: flex; align-items: center; gap: 4px; }
+    .gcal-time-select { width: 54px; padding: 0 4px; text-align: center; cursor: pointer; }
+    .gcal-time-dash { color: var(--ink3); font-weight: 700; margin: 0 1px; }
+
+    .gcal-checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; font-weight: 600; color: var(--ink2); cursor: pointer; user-select: none; }
+    .gcal-checkbox-row input { width: 16px; height: 16px; accent-color: var(--azul); cursor: pointer; }
+
+    .gcal-field-trigger {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 38px; padding: 6px 2px;
+      cursor: pointer; border-bottom: 1px solid transparent; transition: border-color .15s;
+    }
+    .gcal-field-trigger:hover { border-bottom-color: var(--border); }
+    .gcal-placeholder { font-size: 13px; color: var(--ink3); font-weight: 500; }
+
+    .gcal-expandable {
+      width: 100%; padding: 9px 10px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 13px;
+      font-family: inherit; color: var(--ink); outline: none; box-sizing: border-box; transition: border-color .15s;
+    }
+    .gcal-expandable:focus { border-color: var(--celeste); }
+
+    .gcal-cal-color-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .gcal-color-dots { display: flex; gap: 6px; flex-shrink: 0; }
+    .gcal-color-dots div { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform .12s, box-shadow .12s; }
+    .gcal-color-dots div:hover { transform: scale(1.15); }
+
     .error-msg { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: var(--r-sm); margin-bottom: 16px; display: none; }
     .error-msg.show { display: block; }
 
@@ -5122,112 +5164,114 @@
 </div>
 
 <div class="modal-overlay" id="modal-event" onclick="if(event.target===this)closeEventModal()">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-head">
-      <div class="modal-title" id="modal-event-title">Nuevo evento</div>
+  <div class="modal gcal-modal" style="max-width:460px">
+    <div class="gcal-head">
+      <input type="text" class="gcal-title-input" id="event-titulo" placeholder="Añadí un título">
       <button class="modal-close" onclick="closeEventModal()"><i class="ti ti-x"></i></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="padding-top:6px">
       <div class="error-msg" id="event-error"></div>
       <input type="hidden" id="event-id">
 
-      <div class="form-field">
-        <label class="form-label">Título</label>
-        <input type="text" class="form-input" id="event-titulo" placeholder="Ej: Reunión semanal de equipo">
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">Calendario</label>
-        <select class="form-input form-select" id="event-calendario"></select>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Tipo</label>
-          <select class="form-input form-select" id="event-tipo">
-            <option value="evento">Evento</option>
-            <option value="reunion">Reunión</option>
-          </select>
-        </div>
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Color</label>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="event-colors">
-            <div style="width:22px;height:22px;border-radius:50%;background:#0A2540;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#0A2540',this)"></div>
-            <div style="width:22px;height:22px;border-radius:50%;background:#3B82F6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#3B82F6',this)"></div>
-            <div style="width:22px;height:22px;border-radius:50%;background:#8B5CF6;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#8B5CF6',this)"></div>
-            <div style="width:22px;height:22px;border-radius:50%;background:#EC4899;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EC4899',this)"></div>
-            <div style="width:22px;height:22px;border-radius:50%;background:#F59E0B;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#F59E0B',this)"></div>
-            <div style="width:22px;height:22px;border-radius:50%;background:#10B981;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#10B981',this)"></div>
-            <div style="width:22px;height:22px;border-radius:50%;background:#EF4444;cursor:pointer;border:2px solid transparent" onclick="selectEventColor('#EF4444',this)"></div>
-          </div>
-          <input type="hidden" id="event-color" value="#0A2540">
-        </div>
-      </div>
-
-      <div style="margin-top:16px;background:var(--bg);border-radius:var(--r);padding:14px 16px">
-        <div style="font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Fecha y horario</div>
-        <div class="form-field" style="margin-bottom:12px">
-          <label class="form-label">Fecha</label>
-          <input type="date" class="form-input" id="event-date" style="font-size:13px">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label class="form-label">Hora inicio</label>
-            <div style="display:flex;gap:6px;align-items:center">
-              <select class="form-input form-select" id="event-h-inicio" style="flex:1"><option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option></select>
-              <span style="font-size:14px;font-weight:800;color:var(--ink3)">:</span>
-              <select class="form-input form-select" id="event-m-inicio" style="flex:1">
-                <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-              </select>
+      <!-- Fecha y hora -->
+      <div class="gcal-row">
+        <i class="ti ti-clock gcal-row-icon"></i>
+        <div class="gcal-row-content">
+          <div class="gcal-datetime-row">
+            <input type="date" class="gcal-input" id="event-date">
+            <div class="gcal-time-inline" id="event-time-wrap">
+              <select class="gcal-input gcal-time-select" id="event-h-inicio"><option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option></select>
+              <select class="gcal-input gcal-time-select" id="event-m-inicio"><option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select>
+              <span class="gcal-time-dash">–</span>
+              <select class="gcal-input gcal-time-select" id="event-h-fin"><option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option></select>
+              <select class="gcal-input gcal-time-select" id="event-m-fin"><option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select>
             </div>
           </div>
-          <div>
-            <label class="form-label">Hora fin</label>
-            <div style="display:flex;gap:6px;align-items:center">
-              <select class="form-input form-select" id="event-h-fin" style="flex:1"><option value="0">00</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option></select>
-              <span style="font-size:14px;font-weight:800;color:var(--ink3)">:</span>
-              <select class="form-input form-select" id="event-m-fin" style="flex:1">
-                <option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-              </select>
-            </div>
+          <label class="gcal-checkbox-row">
+            <input type="checkbox" id="event-all-day" onchange="toggleEventAllDay()">
+            <span>Todo el día</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Invitados -->
+      <div class="gcal-row">
+        <i class="ti ti-users gcal-row-icon"></i>
+        <div class="gcal-row-content" style="position:relative">
+          <div id="event-participantes-wrap" class="gcal-field-trigger" onclick="togglePartDrop()">
+            <div id="event-participantes-tags" style="display:contents"></div>
+            <span class="gcal-placeholder" id="event-part-placeholder">Añadir invitados</span>
+          </div>
+          <div id="event-participantes-drop" style="display:none;position:absolute;left:0;right:0;z-index:200;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-lg);margin-top:4px;max-height:180px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- Videoconferencia / link -->
+      <div class="gcal-row">
+        <i class="ti ti-video gcal-row-icon"></i>
+        <div class="gcal-row-content">
+          <div class="gcal-field-trigger" id="event-link-trigger" onclick="expandEventField('link')">
+            <span class="gcal-placeholder" id="event-link-placeholder">Añadir videoconferencia o link</span>
+          </div>
+          <input type="url" class="gcal-input gcal-expandable" id="event-link" placeholder="https://meet.google.com/..." style="display:none" oninput="syncEventFieldPlaceholder('link')">
+        </div>
+      </div>
+
+      <!-- Ubicación -->
+      <div class="gcal-row">
+        <i class="ti ti-map-pin gcal-row-icon"></i>
+        <div class="gcal-row-content">
+          <div class="gcal-field-trigger" id="event-ubicacion-trigger" onclick="expandEventField('ubicacion')">
+            <span class="gcal-placeholder" id="event-ubicacion-placeholder">Añadir ubicación</span>
+          </div>
+          <input type="text" class="gcal-input gcal-expandable" id="event-ubicacion" placeholder="Dirección, oficina, etc." style="display:none" oninput="syncEventFieldPlaceholder('ubicacion')">
+        </div>
+      </div>
+
+      <!-- Descripción + archivo -->
+      <div class="gcal-row">
+        <i class="ti ti-align-left gcal-row-icon"></i>
+        <div class="gcal-row-content">
+          <div class="gcal-field-trigger" id="event-descripcion-trigger" onclick="expandEventField('descripcion')">
+            <span class="gcal-placeholder" id="event-descripcion-placeholder">Añadir descripción o un archivo adjunto</span>
+          </div>
+          <textarea class="gcal-input gcal-expandable form-textarea" id="event-descripcion" style="display:none;min-height:70px" placeholder="Agenda, notas, contexto..." oninput="syncEventFieldPlaceholder('descripcion')"></textarea>
+          <div id="event-upload-area" class="gcal-expandable" onclick="document.getElementById('event-file').click()" style="display:none;border:1.5px dashed var(--border);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:all var(--t);background:var(--bg);margin-top:8px" onmouseover="this.style.borderColor='var(--celeste)';this.style.background='var(--celeste-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
+            <i class="ti ti-cloud-upload" style="font-size:20px;color:var(--ink3);display:block;margin-bottom:5px"></i>
+            <div style="font-size:11.5px;font-weight:700;color:var(--ink2)" id="event-upload-label">Hacé click para subir una imagen o video</div>
+            <div style="font-size:10.5px;color:var(--ink3);margin-top:2px">JPG · PNG · MP4 · Máx. 50MB</div>
+          </div>
+          <input type="file" id="event-file" accept="image/*,video/*" style="display:none" onchange="updateEventUploadLabel(this)">
+          <div id="event-file-preview" style="display:none;margin-top:10px;position:relative">
+            <div id="event-file-preview-content"></div>
+            <button type="button" onclick="removeEventFile()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:13px"></i></button>
           </div>
         </div>
       </div>
 
-      <div class="form-field" style="margin-top:16px;position:relative">
-        <label class="form-label">Participantes</label>
-        <div id="event-participantes-wrap" style="display:flex;flex-wrap:wrap;gap:6px;min-height:38px;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--white);align-items:center" onclick="togglePartDrop()">
-          <div id="event-participantes-tags" style="display:contents"></div>
-          <span style="font-size:13px;color:var(--ink3)" id="event-part-placeholder">Seleccionar miembros...</span>
-        </div>
-        <div id="event-participantes-drop" style="display:none;position:absolute;left:0;right:0;z-index:200;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-lg);margin-top:4px;max-height:180px;overflow-y:auto"></div>
-      </div>
-
-      <div class="form-field" style="margin-top:16px">
-        <label class="form-label">Link (Meet, Zoom, etc.)</label>
-        <input type="url" class="form-input" id="event-link" placeholder="https://meet.google.com/...">
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">Descripción</label>
-        <textarea class="form-input form-textarea" id="event-descripcion" style="min-height:80px" placeholder="Agenda, notas, contexto..."></textarea>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">Foto o video <span style="font-weight:400;color:var(--ink3);text-transform:none;letter-spacing:0">(opcional)</span></label>
-        <div id="event-upload-area" onclick="document.getElementById('event-file').click()" style="border:1.5px dashed var(--border);border-radius:var(--r);padding:20px 16px;text-align:center;cursor:pointer;transition:all var(--t);background:var(--bg)" onmouseover="this.style.borderColor='var(--celeste)';this.style.background='var(--celeste-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
-          <i class="ti ti-cloud-upload" style="font-size:22px;color:var(--ink3);display:block;margin-bottom:6px"></i>
-          <div style="font-size:12px;font-weight:700;color:var(--ink2)" id="event-upload-label">Hacé click para subir una imagen o video</div>
-          <div style="font-size:11px;color:var(--ink3);margin-top:3px">JPG · PNG · MP4 · Máx. 50MB</div>
-        </div>
-        <input type="file" id="event-file" accept="image/*,video/*" style="display:none" onchange="updateEventUploadLabel(this)">
-        <div id="event-file-preview" style="display:none;margin-top:10px;position:relative">
-          <div id="event-file-preview-content"></div>
-          <button type="button" onclick="removeEventFile()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:13px"></i></button>
+      <!-- Calendario + color -->
+      <div class="gcal-row">
+        <i class="ti ti-calendar-stats gcal-row-icon"></i>
+        <div class="gcal-row-content">
+          <div class="gcal-cal-color-row">
+            <select class="gcal-input" id="event-calendario" style="flex:1"></select>
+            <div class="gcal-color-dots" id="event-colors">
+              <div style="background:#0A2540" onclick="selectEventColor('#0A2540',this)"></div>
+              <div style="background:#3B82F6" onclick="selectEventColor('#3B82F6',this)"></div>
+              <div style="background:#8B5CF6" onclick="selectEventColor('#8B5CF6',this)"></div>
+              <div style="background:#EC4899" onclick="selectEventColor('#EC4899',this)"></div>
+              <div style="background:#F59E0B" onclick="selectEventColor('#F59E0B',this)"></div>
+              <div style="background:#10B981" onclick="selectEventColor('#10B981',this)"></div>
+              <div style="background:#EF4444" onclick="selectEventColor('#EF4444',this)"></div>
+            </div>
+            <input type="hidden" id="event-color" value="#0A2540">
+          </div>
+          <input type="hidden" id="event-tipo" value="evento">
         </div>
       </div>
     </div>
     <div class="modal-footer">
+
       <button class="tbtn" style="flex:1" onclick="closeEventModal()">Cancelar</button>
       <button class="tbtn primary" style="flex:2" id="btn-save-event" onclick="saveEvent()">
         <span id="btn-save-event-text">Guardar evento</span>
@@ -7583,12 +7627,12 @@
 
   window.openEventModal = function(defaultDate) {
     calEditingEventId = null
-    document.getElementById('modal-event-title').textContent = 'Nuevo evento'
     document.getElementById('event-id').value = ''
     document.getElementById('event-titulo').value = ''
     document.getElementById('event-tipo').value = 'evento'
     populateEventCalendarioSelect(null, true)
     document.getElementById('event-link').value = ''
+    document.getElementById('event-ubicacion').value = ''
     document.getElementById('event-descripcion').value = ''
     document.getElementById('event-error').classList.remove('show')
     calSelectedColor = '#0A2540'
@@ -7599,6 +7643,9 @@
     renderPartTags()
     loadPartDrop()
     removeEventFile()
+    resetExpandableEventFields()
+    document.getElementById('event-all-day').checked = false
+    toggleEventAllDay()
 
     const now = defaultDate ? new Date(defaultDate) : new Date()
     document.getElementById('event-date').value = now.toISOString().slice(0,10)
@@ -7609,6 +7656,27 @@
 
     document.getElementById('modal-event').classList.add('show')
     setTimeout(() => document.getElementById('event-titulo').focus(), 100)
+  }
+
+  // ── Campos expandibles al estilo Google Calendar (Link, Ubicación, Descripción) ──
+  function resetExpandableEventFields() {
+    document.querySelectorAll('.gcal-expandable').forEach(el => el.style.display = 'none')
+    document.querySelectorAll('.gcal-field-trigger').forEach(el => el.style.display = 'flex')
+  }
+
+  window.expandEventField = function(field) {
+    const trigger = document.getElementById(`event-${field}-trigger`)
+    const input = document.getElementById(`event-${field}`)
+    if (trigger) trigger.style.display = 'none'
+    if (input) { input.style.display = 'block'; input.focus() }
+    if (field === 'descripcion') document.getElementById('event-upload-area').style.display = 'block'
+  }
+
+  window.syncEventFieldPlaceholder = function() {} // reservado — hoy el campo queda expandido una vez abierto
+
+  window.toggleEventAllDay = function() {
+    const isAllDay = document.getElementById('event-all-day').checked
+    document.getElementById('event-time-wrap').style.display = isAllDay ? 'none' : 'flex'
   }
 
   window.closeEventModal = function() { document.getElementById('modal-event').classList.remove('show') }
@@ -7630,13 +7698,19 @@
 
     closeEventDetail()
     setTimeout(() => {
-      document.getElementById('modal-event-title').textContent = 'Editar evento'
       document.getElementById('event-id').value = ev.id
       document.getElementById('event-titulo').value = ev.titulo
       populateEventCalendarioSelect(ev.calendario_id)
       document.getElementById('event-tipo').value = ev.tipo
+      resetExpandableEventFields()
       document.getElementById('event-link').value = ev.link || ''
+      if (ev.link) expandEventField('link')
+      document.getElementById('event-ubicacion').value = ev.ubicacion || ''
+      if (ev.ubicacion) expandEventField('ubicacion')
       document.getElementById('event-descripcion').value = ev.descripcion || ''
+      if (ev.descripcion) expandEventField('descripcion')
+      document.getElementById('event-all-day').checked = !!ev.all_day
+      toggleEventAllDay()
       const evStart = new Date(ev.fecha_inicio)
       const evEnd = ev.fecha_fin ? new Date(ev.fecha_fin) : null
       document.getElementById('event-date').value = evStart.toISOString().slice(0,10)
@@ -7648,6 +7722,7 @@
       renderPartTags()
       loadPartDrop()
       showExistingEventFile(ev.archivo_url || null)
+      if (ev.archivo_url) expandEventField('descripcion')
       document.getElementById('modal-event').classList.add('show')
     }, 150)
   }
@@ -7673,14 +7748,19 @@
     if (!calendarioVal) { errEl.textContent = 'Elegí a qué calendario mandar el evento.'; errEl.classList.add('show'); return }
     const dateVal = document.getElementById('event-date').value
     if (!dateVal) { errEl.textContent = 'La fecha es obligatoria.'; errEl.classList.add('show'); return }
+    const isAllDay = document.getElementById('event-all-day').checked
     const hI = document.getElementById('event-h-inicio').value
     const mI = document.getElementById('event-m-inicio').value
     const hF = document.getElementById('event-h-fin').value
     const mF = document.getElementById('event-m-fin').value
     const startDate = new Date(dateVal + 'T00:00:00')
-    startDate.setHours(parseInt(hI), parseInt(mI), 0, 0)
     const endDate = new Date(dateVal + 'T00:00:00')
-    endDate.setHours(parseInt(hF), parseInt(mF), 0, 0)
+    if (isAllDay) {
+      endDate.setHours(23, 59, 0, 0)
+    } else {
+      startDate.setHours(parseInt(hI), parseInt(mI), 0, 0)
+      endDate.setHours(parseInt(hF), parseInt(mF), 0, 0)
+    }
 
     const btn = document.getElementById('btn-save-event')
     const spinner = document.getElementById('event-spinner')
@@ -7694,7 +7774,9 @@
       fecha_inicio: startDate.toISOString(),
       fecha_fin: endDate > startDate ? endDate.toISOString() : null,
       link: document.getElementById('event-link').value.trim() || null,
+      ubicacion: document.getElementById('event-ubicacion').value.trim() || null,
       descripcion: document.getElementById('event-descripcion').value.trim() || null,
+      all_day: isAllDay,
       agency_id: agencyId,
       calendario_id: calendarioVal,
     }
