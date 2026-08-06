@@ -7361,6 +7361,25 @@
       `<div class="pdfcal-legend-chip"><span class="pdfcal-legend-dot" style="background:${color}"></span>${label}</div>`
     ).join('')
 
+    // ── Resumen: listado con TODO el contenido del mes, uno debajo del otro ──
+    const resumenHTML = itemsDelMes.map(it => {
+      const fecha = new Date(it.fecha)
+      const diaStr = fecha.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }).replace('.', '')
+      const horaStr = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+      const camara = it.archivo_url ? '<i class="pdfcal-row-cam">📷</i>' : ''
+      return `<div class="pdfcal-row">
+        <div class="pdfcal-row-top">
+          <div class="pdfcal-row-date">${diaStr}<span>${horaStr}</span></div>
+          <div class="pdfcal-row-dot" style="background:${it.color}"></div>
+          <div class="pdfcal-row-title">${it.titulo}</div>
+          ${camara}
+          <div class="pdfcal-row-badge" style="background:${it.color}18;color:${it.color}">${it.tipoLabel}</div>
+        </div>
+        ${it.descripcion ? `<div class="pdfcal-row-desc">${linkify(it.descripcion)}</div>` : ''}
+        ${it.link ? `<div class="pdfcal-row-link-wrap"><a href="${it.link}" target="_blank" rel="noopener noreferrer" class="pdfcal-link">🔗 ${it.link}</a></div>` : ''}
+      </div>`
+    }).join('')
+
     // ── Detalle visual: cards grandes para todo lo que tenga foto/video ──
     const detalleItems = pdfShowImagenes ? itemsDelMes.filter(it => it.archivo_url) : itemsDelMes
     const detalleHTML = detalleItems.map(it => {
@@ -7389,7 +7408,7 @@
     // con ninguna clase existente del dashboard (.header, .page, .footer, etc. ya se usan en otro lado).
     const pdfCSS = [
       '#calendario-pdf-content { font-family: "Plus Jakarta Sans", Arial, sans-serif; color: #111; }',
-      '#calendario-pdf-content .pdfcal-page { max-width: 900px; margin: 0 auto; background: #fff; }',
+      '#calendario-pdf-content .pdfcal-page { max-width: 100%; margin: 0 auto; background: #fff; }',
       '#calendario-pdf-content .pdfcal-header { background: ' + accentColor + '; border-radius: 16px; padding: 32px 36px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }',
       '#calendario-pdf-content .pdfcal-kicker { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }',
       '#calendario-pdf-content .pdfcal-h1 { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -.6px; margin-bottom: 4px; }',
@@ -7407,8 +7426,8 @@
       '#calendario-pdf-content .pdfcal-gnum { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 4px; }',
       '#calendario-pdf-content .pdfcal-gchip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 3px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }',
       '#calendario-pdf-content .pdfcal-gmore { font-size: 8px; color: #9AA5B4; font-weight: 700; padding-left: 2px; }',
-      '#calendario-pdf-content .pdfcal-section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; }',
-      '#calendario-pdf-content .pdfcal-section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; }',
+      '#calendario-pdf-content .pdfcal-section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; break-after: avoid; page-break-after: avoid; }',
+      '#calendario-pdf-content .pdfcal-section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; break-after: avoid; page-break-after: avoid; }',
       '#calendario-pdf-content .pdfcal-resumen { border: 1px solid #E8ECF0; border-radius: 14px; overflow: hidden; margin-bottom: 32px; }',
       '#calendario-pdf-content .pdfcal-row { padding: 10px 16px; border-bottom: 1px solid #F0F3F7; break-inside: avoid; page-break-inside: avoid; }',
       '#calendario-pdf-content .pdfcal-row:last-child { border-bottom: none; }',
@@ -7450,6 +7469,7 @@
       logoHTML + '</div>' +
       (legendHTML ? '<div class="pdfcal-legend">' + legendHTML + '</div>' : '') +
       (pdfShowCalendario ? '<div class="pdfcal-grid">' + gridHTML + '</div>' : '') +
+      (resumenHTML ? '<div class="pdfcal-section-title">Resumen del mes</div><div class="pdfcal-section-sub">Todo el contenido planificado para ' + monthLabel + '</div><div class="pdfcal-resumen">' + resumenHTML + '</div>' : '') +
       (pdfShowDetalle && detalleHTML ? '<div class="pdfcal-section-title">Detalle de publicaciones</div><div class="pdfcal-section-sub">' + (pdfShowImagenes ? 'Vista previa del contenido con foto o video' : 'Todo el contenido planificado para ' + monthLabel) + '</div><div class="pdfcal-detalle-grid">' + detalleHTML + '</div>' : '') +
       '<div class="pdfcal-footer"><div class="pdfcal-footer-agency">' + agencyName + '</div><div class="pdfcal-footer-faro">Calendario generado con Faro</div></div>' +
       '</div>'
