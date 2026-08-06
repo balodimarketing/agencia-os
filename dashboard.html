@@ -469,16 +469,16 @@
     /* ══════════════════════════════════════════════════════
        EDITOR DE CALENDARIO — estilo SaaS premium (Canva/Figma/Notion)
        ══════════════════════════════════════════════════════ */
-    #calendario-pdf-overlay { font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif; }
+    #calendario-pdf-overlay {
+      font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+      display: flex; opacity: 0; pointer-events: none; transform: scale(.97);
+      transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
+    }
+    #calendario-pdf-overlay.show { opacity: 1; pointer-events: auto; transform: scale(1); }
     #pdfed-header {
       display: flex; align-items: center; gap: 20px; padding: 14px 28px; border-bottom: 1px solid #EDEFF2;
       flex-shrink: 0; background: #fff;
     }
-    .pdfed-back-btn {
-      display: flex; align-items: center; gap: 7px; border: none; background: none; cursor: pointer;
-      font-size: 13px; font-weight: 700; color: var(--ink2); font-family: inherit; padding: 8px 4px; transition: color .15s;
-    }
-    .pdfed-back-btn:hover { color: var(--ink); }
     .pdfed-header-title { border-left: 1px solid #EDEFF2; padding-left: 20px; }
     .pdfed-h1 { font-size: 15.5px; font-weight: 800; color: var(--ink); letter-spacing: -.2px; }
     .pdfed-h1-sub { font-size: 11px; color: var(--ink3); font-weight: 500; margin-top: 1px; }
@@ -488,11 +488,11 @@
     }
     .pdfed-saved-chip i { font-size: 13px; }
     .pdfed-btn {
-      display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px; border-radius: 11px;
-      border: 1px solid #E5E8EC; background: #fff; color: var(--ink2); font-size: 12.5px; font-weight: 700;
-      cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s;
+      display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 16px; border-radius: 12px;
+      border: 1px solid rgba(16,24,40,.08); background: #fff; color: var(--ink2); font-size: 12.5px; font-weight: 700;
+      cursor: pointer; font-family: inherit; box-shadow: 0 2px 10px rgba(16,24,40,.06); transition: box-shadow .15s;
     }
-    .pdfed-btn:hover { background: #F8F9FB; }
+    .pdfed-btn:hover { box-shadow: 0 4px 16px rgba(16,24,40,.1); }
     .pdfed-btn.primary { background: var(--azul); color: var(--celeste); border-color: var(--azul); }
     .pdfed-btn.primary:hover { opacity: .9; }
     .pdfed-btn i { font-size: 14px; }
@@ -567,9 +567,14 @@
     #pdfed-preview-area { flex: 1; display: flex; flex-direction: column; background: #F6F7F9; min-width: 0; }
     #pdfed-preview-toolbar { display: flex; align-items: center; padding: 14px 24px; flex-shrink: 0; }
     .pdfed-page-indicator {
-      background: #fff; border: 1px solid #E5E8EC; border-radius: 10px; padding: 8px 14px; font-size: 12px;
-      font-weight: 700; color: var(--ink2); box-shadow: 0 1px 4px rgba(16,24,40,.05);
+      display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #E5E8EC; border-radius: 10px;
+      padding: 6px 8px; font-size: 12px; font-weight: 700; color: var(--ink2); box-shadow: 0 1px 4px rgba(16,24,40,.05);
     }
+    .pdfed-page-indicator button {
+      width: 24px; height: 24px; border-radius: 7px; border: none; background: none; color: var(--ink2);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: background .15s;
+    }
+    .pdfed-page-indicator button:hover { background: #F5F6F8; }
     .pdfed-zoom-controls {
       display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #E5E8EC; border-radius: 10px;
       padding: 4px; box-shadow: 0 1px 4px rgba(16,24,40,.05);
@@ -5804,11 +5809,11 @@
   </div>
 </div>
 
-<div id="calendario-pdf-overlay" style="display:none;position:fixed;inset:0;background:#fff;z-index:900;flex-direction:column">
+<div id="calendario-pdf-overlay" style="position:fixed;inset:0;background:#fff;z-index:900;flex-direction:column">
 
   <!-- Header -->
   <div id="pdfed-header">
-    <button class="pdfed-back-btn" onclick="closeCalendarioPdfPreview()"><i class="ti ti-arrow-left"></i> Volver al calendario</button>
+    <button class="pdfed-btn" onclick="closeCalendarioPdfPreview()"><i class="ti ti-arrow-left"></i> Volver al calendario</button>
     <div class="pdfed-header-title">
       <div class="pdfed-h1">Editor de calendario</div>
       <div class="pdfed-h1-sub">Personalizá y descargá tu calendario de contenido</div>
@@ -5817,7 +5822,6 @@
     <div style="flex:1"></div>
     <button class="pdfed-btn" onclick="pdfedTogglePreviewOnly()" id="pdfed-preview-toggle-btn"><i class="ti ti-eye"></i> Vista previa</button>
     <button class="pdfed-btn primary" onclick="window.print()"><i class="ti ti-download"></i> Descargar PDF</button>
-    <button class="pdfed-btn" onclick="closeCalendarioPdfPreview()"><i class="ti ti-x"></i> Cerrar</button>
   </div>
 
   <div id="pdfed-body">
@@ -5861,11 +5865,6 @@
               <input type="color" onchange="setCalendarioPdfCustomColor(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
             </label>
           </div>
-          <label class="pdfed-label">Tema de la portada</label>
-          <div class="pdfed-segmented">
-            <button class="pdfed-seg-btn active" id="pdfed-theme-claro" onclick="pdfedSetTheme('claro')"><i class="ti ti-sun"></i> Claro</button>
-            <button class="pdfed-seg-btn" id="pdfed-theme-oscuro" onclick="pdfedSetTheme('oscuro')"><i class="ti ti-moon"></i> Oscuro</button>
-          </div>
         </div>
       </div>
 
@@ -5876,9 +5875,7 @@
         <div class="pdfed-section-body">
           <div class="pdfed-toggle-row"><i class="ti ti-calendar-month"></i><span>Calendario mensual</span><label class="pdfed-switch"><input type="checkbox" id="pdfed-toggle-calendario" checked onchange="pdfedUpdateContentFlags()"><span></span></label></div>
           <div class="pdfed-toggle-row"><i class="ti ti-list-details"></i><span>Detalle de publicaciones</span><label class="pdfed-switch"><input type="checkbox" id="pdfed-toggle-detalle" checked onchange="pdfedUpdateContentFlags()"><span></span></label></div>
-          <div class="pdfed-toggle-row"><i class="ti ti-layout-grid"></i><span>Mostrar resumen</span><label class="pdfed-switch"><input type="checkbox" id="pdfed-toggle-resumen" checked onchange="pdfedUpdateContentFlags()"><span></span></label></div>
           <div class="pdfed-toggle-row"><i class="ti ti-photo"></i><span>Incluir imágenes</span><label class="pdfed-switch"><input type="checkbox" id="pdfed-toggle-imagenes" checked onchange="pdfedUpdateContentFlags()"><span></span></label></div>
-          <div class="pdfed-toggle-row"><i class="ti ti-clock"></i><span>Mostrar horarios</span><label class="pdfed-switch"><input type="checkbox" id="pdfed-toggle-horarios" checked onchange="pdfedUpdateContentFlags()"><span></span></label></div>
         </div>
       </div>
 
@@ -5887,11 +5884,6 @@
           <span>EXPORTACIÓN</span><i class="ti ti-chevron-up"></i>
         </div>
         <div class="pdfed-section-body">
-          <label class="pdfed-label">Tamaño de página</label>
-          <select class="pdfed-input" id="pdfed-page-size" onchange="pdfedUpdatePageSetup()" style="margin-bottom:14px">
-            <option value="A4">A4 (210 x 297 mm)</option>
-            <option value="Letter">Carta (216 x 279 mm)</option>
-          </select>
           <label class="pdfed-label">Orientación</label>
           <div class="pdfed-segmented" style="margin-bottom:18px">
             <button class="pdfed-seg-btn active" id="pdfed-orient-vertical" onclick="pdfedSetOrientation('vertical')"><i class="ti ti-rectangle-vertical"></i> Vertical</button>
@@ -5906,7 +5898,11 @@
     <!-- Vista previa -->
     <div id="pdfed-preview-area">
       <div id="pdfed-preview-toolbar">
-        <div class="pdfed-page-indicator">Página <span id="pdfed-page-current">1</span> de <span id="pdfed-page-total">1</span></div>
+        <div class="pdfed-page-indicator">
+          <button onclick="pdfedGoToPage(-1)"><i class="ti ti-chevron-left"></i></button>
+          Página <span id="pdfed-page-current">1</span> de <span id="pdfed-page-total">1</span>
+          <button onclick="pdfedGoToPage(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
         <div style="flex:1"></div>
         <div class="pdfed-zoom-controls">
           <button onclick="pdfedZoom(-10)"><i class="ti ti-minus"></i></button>
@@ -7233,18 +7229,14 @@
   }
 
   window.closeCalendarioPdfPreview = function() {
-    document.getElementById('calendario-pdf-overlay').style.display = 'none'
-    document.getElementById('calendario-pdf-content').innerHTML = ''
+    document.getElementById('calendario-pdf-overlay').classList.remove('show')
+    setTimeout(() => { document.getElementById('calendario-pdf-content').innerHTML = '' }, 320)
   }
 
   // ── Estado del editor de calendario ──
   let pdfShowCalendario = true
   let pdfShowDetalle = true
-  let pdfShowResumen = true
   let pdfShowImagenes = true
-  let pdfShowHorarios = true
-  let pdfTheme = 'claro'
-  let pdfPageSize = 'A4'
   let pdfOrientation = 'vertical'
   let pdfAgencyNameOverride = null
   let pdfZoomPct = 100
@@ -7258,24 +7250,10 @@
     generateCalendarioPDF()
   }
 
-  window.pdfedSetTheme = function(theme) {
-    pdfTheme = theme
-    document.getElementById('pdfed-theme-claro').classList.toggle('active', theme === 'claro')
-    document.getElementById('pdfed-theme-oscuro').classList.toggle('active', theme === 'oscuro')
-    generateCalendarioPDF()
-  }
-
   window.pdfedUpdateContentFlags = function() {
     pdfShowCalendario = document.getElementById('pdfed-toggle-calendario').checked
     pdfShowDetalle = document.getElementById('pdfed-toggle-detalle').checked
-    pdfShowResumen = document.getElementById('pdfed-toggle-resumen').checked
     pdfShowImagenes = document.getElementById('pdfed-toggle-imagenes').checked
-    pdfShowHorarios = document.getElementById('pdfed-toggle-horarios').checked
-    generateCalendarioPDF()
-  }
-
-  window.pdfedUpdatePageSetup = function() {
-    pdfPageSize = document.getElementById('pdfed-page-size').value
     generateCalendarioPDF()
   }
 
@@ -7301,16 +7279,32 @@
     btn.innerHTML = hiding ? '<i class="ti ti-edit"></i> Editar' : '<i class="ti ti-eye"></i> Vista previa'
   }
 
+  // ── Navegación real entre páginas: se mueve el scroll de a una hoja por vez ──
+  window.pdfedGoToPage = function(delta) {
+    const wrap = document.getElementById('pdfed-sheet-wrap')
+    if (!wrap) return
+    const total = parseInt(document.getElementById('pdfed-page-total').textContent) || 1
+    let current = parseInt(document.getElementById('pdfed-page-current').textContent) || 1
+    current = Math.min(total, Math.max(1, current + delta))
+    const pageHeight = pdfOrientation === 'horizontal' ? 794 : 1123
+    wrap.scrollTo({ top: (current - 1) * pageHeight, behavior: 'smooth' })
+    document.getElementById('pdfed-page-current').textContent = current
+  }
+
   function pdfedUpdatePageIndicator() {
     // Estimación honesta de cantidad de páginas: alto real del contenido vs. alto de una hoja
     const content = document.getElementById('calendario-pdf-content')
+    const wrap = document.getElementById('pdfed-sheet-wrap')
     const sheetHeight = pdfOrientation === 'horizontal' ? 794 : 1123
     const pages = Math.max(1, Math.ceil(content.scrollHeight / sheetHeight))
+    const current = Math.min(pages, Math.max(1, Math.round((wrap?.scrollTop || 0) / sheetHeight) + 1))
     document.getElementById('pdfed-page-total').textContent = pages
-    document.getElementById('pdfed-page-current').textContent = pages > 0 ? '1' : '0'
+    document.getElementById('pdfed-page-current').textContent = current
   }
+  document.getElementById('pdfed-sheet-wrap')?.addEventListener('scroll', () => pdfedUpdatePageIndicator())
 
   window.generateCalendarioPDF = function() {
+    const prevScroll = document.getElementById('pdfed-sheet-wrap')?.scrollTop || 0
     const activo = CALENDARS.find(c => c.id === currentCalendarioId)
     const year = calDate.getFullYear()
     const month = calDate.getMonth()
@@ -7369,7 +7363,7 @@
       const dayItems = itemsDelMes.filter(it => new Date(it.fecha).toDateString() === cellDate.toDateString())
       const MAX_CHIPS = 2
       const chips = dayItems.slice(0,MAX_CHIPS).map(it => {
-        const hora = pdfShowHorarios ? new Date(it.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) + ' ' : ''
+        const hora = new Date(it.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) + ' '
         const camara = (it.archivo_url && pdfShowImagenes) ? '📷 ' : ''
         return `<div class="pdfcal-gchip" style="background:${it.color}22;color:${it.color}">${camara}${hora}${it.titulo}</div>`
       }).join('')
@@ -7388,7 +7382,7 @@
     const detalleHTML = detalleItems.map(it => {
       const fecha = new Date(it.fecha)
       const fechaStr = fecha.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
-      const horaStr = pdfShowHorarios ? ' · ' + fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : ''
+      const horaStr = ' · ' + fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
       let mediaHTML = ''
       if (pdfShowImagenes && it.archivo_url) {
         const esVideo = isVideoFile(it.archivo_url)
@@ -7406,24 +7400,6 @@
         </div>
       </div>`
     }).join('')
-
-    // ── Resumen del mes: métricas reales calculadas del contenido planificado ──
-    const totalHoras = itemsDelMes.reduce((acc, it) => {
-      const original = calEvents.find(e => e.id === it.id)
-      if (original?.fecha_fin) {
-        const dur = (new Date(original.fecha_fin) - new Date(original.fecha_inicio)) / 3600000
-        return acc + Math.max(0, dur)
-      }
-      return acc
-    }, 0)
-    const conImagenCount = itemsDelMes.filter(it => it.archivo_url).length
-    const tiposDistintos = new Set(itemsDelMes.map(it => it.tipoLabel)).size
-    const resumenStatsHTML = `<div class="pdfcal-stats-grid">
-      <div class="pdfcal-stat-card"><div class="pdfcal-stat-icon" style="background:${accentColor}18;color:${accentColor}"><i class="ti ti-calendar-stats"></i></div><div class="pdfcal-stat-num">${itemsDelMes.length}</div><div class="pdfcal-stat-label">Publicaciones</div></div>
-      <div class="pdfcal-stat-card"><div class="pdfcal-stat-icon" style="background:#3B82F618;color:#3B82F6"><i class="ti ti-clock"></i></div><div class="pdfcal-stat-num">${Math.round(totalHoras)}</div><div class="pdfcal-stat-label">Horas programadas</div></div>
-      <div class="pdfcal-stat-card"><div class="pdfcal-stat-icon" style="background:#10B98118;color:#10B981"><i class="ti ti-photo"></i></div><div class="pdfcal-stat-num">${conImagenCount}</div><div class="pdfcal-stat-label">Con imagen</div></div>
-      <div class="pdfcal-stat-card"><div class="pdfcal-stat-icon" style="background:#8B5CF618;color:#8B5CF6"><i class="ti ti-category"></i></div><div class="pdfcal-stat-num">${tiposDistintos}</div><div class="pdfcal-stat-label">Tipos de contenido</div></div>
-    </div>`
 
     // Todo prefijado con "pdfcal-" y escopado bajo #calendario-pdf-content para no chocar
     // con ninguna clase existente del dashboard (.header, .page, .footer, etc. ya se usan en otro lado).
@@ -7476,17 +7452,8 @@
       '#calendario-pdf-content .pdfcal-footer { border-top: 1px solid #eee; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }',
       '#calendario-pdf-content .pdfcal-footer-agency { font-size: 12px; font-weight: 700; color: #4A5568; }',
       '#calendario-pdf-content .pdfcal-footer-faro { font-size: 10px; color: #C0CAD4; }',
-      '#calendario-pdf-content .pdfcal-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }',
-      '#calendario-pdf-content .pdfcal-stat-card { border: 1px solid #E8ECF0; border-radius: 14px; padding: 16px; break-inside: avoid; }',
-      '#calendario-pdf-content .pdfcal-stat-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 10px; }',
-      '#calendario-pdf-content .pdfcal-stat-num { font-size: 22px; font-weight: 900; color: #111; letter-spacing: -.5px; }',
-      '#calendario-pdf-content .pdfcal-stat-label { font-size: 10.5px; color: #9AA5B4; font-weight: 700; margin-top: 2px; }' +
-        (pdfTheme === 'oscuro' ? '' : ''),
-      pdfTheme === 'oscuro'
-        ? '#calendario-pdf-content .pdfcal-page { background: #0A1220; } #calendario-pdf-content { color: #E8ECF0; } #calendario-pdf-content .pdfcal-ghead { background: #16202E; color: #7C8B9C; } #calendario-pdf-content .pdfcal-gcell { background: #0F1826; border-color: #1E2A3A; } #calendario-pdf-content .pdfcal-gother { background: #0A1220; } #calendario-pdf-content .pdfcal-gnum { color: #E8ECF0; } #calendario-pdf-content .pdfcal-grid { background: #1E2A3A; border-color: #1E2A3A; } #calendario-pdf-content .pdfcal-stat-card, #calendario-pdf-content .pdfcal-dcard, #calendario-pdf-content .pdfcal-resumen { background: #0F1826; border-color: #1E2A3A; } #calendario-pdf-content .pdfcal-stat-num, #calendario-pdf-content .pdfcal-dtitle, #calendario-pdf-content .pdfcal-row-title, #calendario-pdf-content .pdfcal-section-title { color: #F5F7FA; } #calendario-pdf-content .pdfcal-row { border-color: #1E2A3A; } #calendario-pdf-content .pdfcal-footer { border-color: #1E2A3A; } #calendario-pdf-content .pdfcal-footer-agency { color: #C4CDD9; }'
-        : '',
       '@media print { #calendario-pdf-content * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } #calendario-pdf-content .pdfcal-header{background:' + accentColor + ' !important} #calendario-pdf-content .pdfcal-dvideo{background:#0A2540 !important} #calendario-pdf-content .pdfcal-ghead{background:#F5F7FA !important} #calendario-pdf-content .pdfcal-gother{background:#FAFBFC !important} #calendario-pdf-content .pdfcal-dcard{break-inside:avoid} }',
-      '@page { size: ' + pdfPageSize + (pdfOrientation === 'horizontal' ? ' landscape' : '') + '; margin: 14mm; }',
+      '@page { size: A4' + (pdfOrientation === 'horizontal' ? ' landscape' : '') + '; margin: 14mm; }',
     ].join('\n')
 
     const logoHTML = pdfLogoBase64
@@ -7500,15 +7467,19 @@
       (legendHTML ? '<div class="pdfcal-legend">' + legendHTML + '</div>' : '') +
       (pdfShowCalendario ? '<div class="pdfcal-grid">' + gridHTML + '</div>' : '') +
       (pdfShowDetalle && detalleHTML ? '<div class="pdfcal-section-title">Detalle de publicaciones</div><div class="pdfcal-section-sub">' + (pdfShowImagenes ? 'Vista previa del contenido con foto o video' : 'Todo el contenido planificado para ' + monthLabel) + '</div><div class="pdfcal-detalle-grid">' + detalleHTML + '</div>' : '') +
-      (pdfShowResumen ? '<div class="pdfcal-section-title">Resumen del mes</div><div class="pdfcal-section-sub">Un vistazo rápido a ' + monthLabel + '</div>' + resumenStatsHTML : '') +
       '<div class="pdfcal-footer"><div class="pdfcal-footer-agency">' + agencyName + '</div><div class="pdfcal-footer-faro">Calendario generado con Faro</div></div>' +
       '</div>'
 
     document.getElementById('calendario-pdf-content').innerHTML = contentHTML
     // Se reubica como hijo directo de <body> — si no, queda anidado dentro de .app y la regla
     // de impresión que esconde "todo menos el PDF" lo esconde a él también sin querer.
-    document.body.appendChild(document.getElementById('calendario-pdf-overlay'))
-    document.getElementById('calendario-pdf-overlay').style.display = 'flex'
+    // OJO: appendChild mueve el nodo en el DOM aunque ya esté ahí, y eso resetea el scroll —
+    // por eso solo lo hacemos la primera vez que se abre, no en cada actualización de un control.
+    const overlayEl = document.getElementById('calendario-pdf-overlay')
+    if (overlayEl.parentElement !== document.body) document.body.appendChild(overlayEl)
+    overlayEl.classList.add('show')
+    const sheetWrap = document.getElementById('pdfed-sheet-wrap')
+    if (sheetWrap) sheetWrap.scrollTop = prevScroll
 
     // Sincronizar controles del panel con el estado actual
     const nameInput = document.getElementById('pdfed-agency-name')
@@ -7518,7 +7489,6 @@
       logoCircle.innerHTML = pdfLogoBase64 ? `<img src="${pdfLogoBase64}">` : agencyName.substring(0,2).toUpperCase()
       document.getElementById('pdfed-logo-remove-btn').style.display = pdfLogoBase64 ? 'flex' : 'none'
     }
-    document.getElementById('pdfed-page-size').value = pdfPageSize
     document.getElementById('pdfed-sheet')?.classList.toggle('pdfed-horizontal', pdfOrientation === 'horizontal')
     setTimeout(pdfedUpdatePageIndicator, 60)
   }
