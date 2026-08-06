@@ -5899,9 +5899,7 @@
     <div id="pdfed-preview-area">
       <div id="pdfed-preview-toolbar">
         <div class="pdfed-page-indicator">
-          <button onclick="pdfedGoToPage(-1)"><i class="ti ti-chevron-left"></i></button>
-          Página <span id="pdfed-page-current">1</span> de <span id="pdfed-page-total">1</span>
-          <button onclick="pdfedGoToPage(1)"><i class="ti ti-chevron-right"></i></button>
+          <span id="pdfed-page-total-label">1 página</span>
         </div>
         <div style="flex:1"></div>
         <div class="pdfed-zoom-controls">
@@ -7280,28 +7278,14 @@
   }
 
   // ── Navegación real entre páginas: se mueve el scroll de a una hoja por vez ──
-  window.pdfedGoToPage = function(delta) {
-    const wrap = document.getElementById('pdfed-sheet-wrap')
-    if (!wrap) return
-    const total = parseInt(document.getElementById('pdfed-page-total').textContent) || 1
-    let current = parseInt(document.getElementById('pdfed-page-current').textContent) || 1
-    current = Math.min(total, Math.max(1, current + delta))
-    const pageHeight = pdfOrientation === 'horizontal' ? 794 : 1123
-    wrap.scrollTo({ top: (current - 1) * pageHeight, behavior: 'smooth' })
-    document.getElementById('pdfed-page-current').textContent = current
-  }
-
   function pdfedUpdatePageIndicator() {
     // Estimación honesta de cantidad de páginas: alto real del contenido vs. alto de una hoja
     const content = document.getElementById('calendario-pdf-content')
-    const wrap = document.getElementById('pdfed-sheet-wrap')
     const sheetHeight = pdfOrientation === 'horizontal' ? 794 : 1123
     const pages = Math.max(1, Math.ceil(content.scrollHeight / sheetHeight))
-    const current = Math.min(pages, Math.max(1, Math.round((wrap?.scrollTop || 0) / sheetHeight) + 1))
-    document.getElementById('pdfed-page-total').textContent = pages
-    document.getElementById('pdfed-page-current').textContent = current
+    const label = document.getElementById('pdfed-page-total-label')
+    if (label) label.textContent = pages === 1 ? '1 página' : pages + ' páginas'
   }
-  document.getElementById('pdfed-sheet-wrap')?.addEventListener('scroll', () => pdfedUpdatePageIndicator())
 
   window.generateCalendarioPDF = function() {
     const prevScroll = document.getElementById('pdfed-sheet-wrap')?.scrollTop || 0
@@ -7421,7 +7405,7 @@
       '#calendario-pdf-content .pdfcal-gother { background: #FAFBFC; }',
       '#calendario-pdf-content .pdfcal-gother .pdfcal-gnum { color: #C4CDD9; }',
       '#calendario-pdf-content .pdfcal-gnum { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 4px; }',
-      '#calendario-pdf-content .pdfcal-gchip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+      '#calendario-pdf-content .pdfcal-gchip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 3px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }',
       '#calendario-pdf-content .pdfcal-gmore { font-size: 8px; color: #9AA5B4; font-weight: 700; padding-left: 2px; }',
       '#calendario-pdf-content .pdfcal-section-title { font-size: 14px; font-weight: 900; color: #111; letter-spacing: -.3px; margin-bottom: 4px; }',
       '#calendario-pdf-content .pdfcal-section-sub { font-size: 12px; color: #9AA5B4; margin-bottom: 16px; }',
