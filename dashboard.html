@@ -14864,7 +14864,7 @@ if (id) {
     if (!layer) return
     layer.innerHTML = moodboardItems.map(item => {
       const isSelected = item.id === mbSelectedItemId
-      let bodyHTML = '', extraClass = '', outerBg = '#fff', extraStyle = ''
+      let bodyHTML = '', extraClass = '', outerBg = '#fff', extraStyle = '', clipStyle = ''
       if (item.tipo === 'imagen') {
         bodyHTML = `<img src="${item.archivo_url}" draggable="false">`
       } else if (item.tipo === 'link') {
@@ -14892,9 +14892,10 @@ if (id) {
         if (!isSelected) extraStyle = `border:2px dashed ${c};`
       } else if (item.tipo === 'forma') {
         const c = item.color || '#3B82F6'
-        outerBg = c
-        if (item.forma_tipo === 'circulo') extraStyle = 'border-radius:50%;'
-        else if (item.forma_tipo === 'triangulo') extraStyle = 'clip-path:polygon(50% 0%,0% 100%,100% 100%);border-radius:0;'
+        outerBg = 'transparent'
+        if (item.forma_tipo === 'circulo') clipStyle = `border-radius:50%;background:${c};`
+        else if (item.forma_tipo === 'triangulo') clipStyle = `clip-path:polygon(50% 0%,0% 100%,100% 100%);border-radius:0;background:${c};`
+        else clipStyle = `background:${c};` // rectángulo
       } else if (item.tipo === 'stamp') {
         outerBg = 'transparent'
         bodyHTML = `<div class="mb-stamp">${item.stamp_emoji || '✅'}</div>`
@@ -14933,7 +14934,7 @@ if (id) {
           <button onclick="event.stopPropagation();mbBringToFront('${item.id}')" title="Traer al frente"><i class="ti ti-stack-front"></i></button>
           <button onclick="event.stopPropagation();mbSendToBack('${item.id}')" title="Enviar atrás"><i class="ti ti-stack-back"></i></button>
         </div>
-        <div class="mb-item-clip">${bodyHTML}${etiquetaBadge}</div>
+        <div class="mb-item-clip" style="${clipStyle}">${bodyHTML}${etiquetaBadge}</div>
         ${anchors}
         <div class="mb-resize-handle"></div>
       </div>`
