@@ -970,6 +970,7 @@
       pointer-events: none; z-index: 51;
     }
     .mb-item-clip { position: absolute; inset: 0; border-radius: 8px; overflow: hidden; }
+    .mb-arrow-svg { width: 100%; height: 100%; overflow: visible !important; }
     .mb-item img, .mb-item video, .mb-item iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
 
     /* Botón eliminar: siempre visible, arriba a la derecha */
@@ -1136,6 +1137,18 @@
     #mb-forma-picker.show { display: flex; }
     #mb-forma-picker button { width: 36px; height: 36px; border-radius: 9px; border: none; background: none; font-size: 17px; color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
     #mb-forma-picker button:hover { background: var(--bg); color: var(--azul); }
+
+    /* ── Picker de herramientas extra (flechas, y lo que sigamos sumando) ── */
+    #mb-extra-tools-picker {
+      display: none; position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg);
+      padding: 10px; z-index: 60; width: 150px;
+    }
+    #mb-extra-tools-picker.show { display: block; }
+    .mb-extra-tools-label { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .mb-extra-tools-row { display: flex; gap: 4px; }
+    .mb-extra-tools-row button { flex: 1; height: 36px; border-radius: 9px; border: none; background: var(--bg); color: var(--ink2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .mb-extra-tools-row button:hover { background: var(--celeste-dim); color: var(--azul); }
 
     /* ── Cronómetro flotante del Moodboard ── */
     #mb-timer-widget {
@@ -2466,7 +2479,13 @@
             </div>
 
             <div id="mb-canvas-inner" style="position:absolute;top:0;left:0;width:20000px;height:20000px;transform-origin:0 0">
-              <svg id="mb-connections-svg" width="20000" height="20000"></svg>
+              <svg id="mb-connections-svg" width="20000" height="20000">
+                <defs>
+                  <marker id="mb-arrow-preview-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 Z" fill="#2563EB"></path>
+                  </marker>
+                </defs>
+              </svg>
               <div id="mb-items-layer" style="position:absolute;top:0;left:0"></div>
               <div id="mb-cursors-layer" style="position:absolute;top:0;left:0;pointer-events:none"></div>
             </div>
@@ -2514,7 +2533,16 @@
               <button class="mb-side-tool-btn" data-tooltip="Timer" onclick="toggleMbTimerWidget()" id="mb-timer-btn"><i class="ti ti-clock"></i></button>
               <div class="mb-tools-pill-divider"></div>
               <button class="mb-side-tool-btn" data-tooltip="IA (Próximamente)" disabled><i class="ti ti-sparkles"></i></button>
-              <button class="mb-side-tool-btn" data-tooltip="Ordenar automático (Próximamente)" disabled><i class="ti ti-layout-grid"></i></button>
+              <div style="position:relative">
+                <button class="mb-side-tool-btn" data-tooltip="Más herramientas" onclick="toggleMbExtraToolsPicker(event)"><i class="ti ti-layout-grid"></i></button>
+                <div id="mb-extra-tools-picker">
+                  <div class="mb-extra-tools-label">Flechas</div>
+                  <div class="mb-extra-tools-row">
+                    <button onclick="setMbArrowTool(false)" title="Flecha recta"><i class="ti ti-arrow-up-right"></i></button>
+                    <button onclick="setMbArrowTool(true)" title="Flecha curva"><i class="ti ti-arrow-ramp-right-2"></i></button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Cronómetro flotante simple, independiente del timer de Herramientas -->
@@ -14281,6 +14309,18 @@ if (id) {
     return { x: item.x + item.width, y: cy } // right
   }
 
+  // Arma el "d" de un <path> SVG entre dos puntos: recto, o curvo con una panza perpendicular tenue
+  function mbArrowPathD(x1, y1, x2, y2, curva) {
+    if (!curva) return `M${x1},${y1} L${x2},${y2}`
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2
+    const dx = x2 - x1, dy = y2 - y1
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1
+    const offset = dist * 0.25
+    const cx = mx - (dy / dist) * offset
+    const cy = my + (dx / dist) * offset
+    return `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`
+  }
+
   function pickMbNearestSide(item, x, y) {
     let best = 'top', bestDist = Infinity
     ;['top','right','bottom','left'].forEach(side => {
@@ -14369,9 +14409,30 @@ if (id) {
     let potentialDragId = null, draggingId = null, dragStartX = 0, dragStartY = 0, dragOrigX = 0, dragOrigY = 0
     let resizingId = null, resizeStartX = 0, resizeStartY = 0, resizeOrigW = 0, resizeOrigH = 0
     let mbConnectingFrom = null
+    let mbArrowDrawing = null
 
     viewport.addEventListener('mousedown', e => {
       if (e.target.closest('.mb-conn-line')) return
+
+      // ── Herramienta de flecha: click y arrastre para dibujarla ──
+      if (mbActiveTool === 'flecha-recta' || mbActiveTool === 'flecha-curva') {
+        const rect = viewport.getBoundingClientRect()
+        const cx = (e.clientX - rect.left - mbPanX) / mbZoom
+        const cy = (e.clientY - rect.top - mbPanY) / mbZoom
+        mbArrowDrawing = { x1: cx, y1: cy, x2: cx, y2: cy, curva: mbActiveTool === 'flecha-curva' }
+        const svg = document.getElementById('mb-connections-svg')
+        const preview = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        preview.id = 'mb-arrow-draw-preview'
+        preview.setAttribute('stroke', '#2563EB')
+        preview.setAttribute('stroke-width', '2.5')
+        preview.setAttribute('fill', 'none')
+        preview.setAttribute('stroke-dasharray', '6,4')
+        preview.setAttribute('marker-end', 'url(#mb-arrow-preview-head)')
+        svg.appendChild(preview)
+        e.preventDefault()
+        return
+      }
+
       const itemEl = e.target.closest('.mb-item')
       const anchorEl = e.target.closest('.mb-anchor')
       const resizeEl = e.target.closest('.mb-resize-handle')
@@ -14435,6 +14496,14 @@ if (id) {
       const vpRect = viewport.getBoundingClientRect()
       if (e.clientX >= vpRect.left && e.clientX <= vpRect.right && e.clientY >= vpRect.top && e.clientY <= vpRect.bottom) {
         mbBroadcastCursor((e.clientX - vpRect.left - mbPanX) / mbZoom, (e.clientY - vpRect.top - mbPanY) / mbZoom)
+      }
+      if (mbArrowDrawing) {
+        const rect = viewport.getBoundingClientRect()
+        mbArrowDrawing.x2 = (e.clientX - rect.left - mbPanX) / mbZoom
+        mbArrowDrawing.y2 = (e.clientY - rect.top - mbPanY) / mbZoom
+        const preview = document.getElementById('mb-arrow-draw-preview')
+        if (preview) preview.setAttribute('d', mbArrowPathD(mbArrowDrawing.x1, mbArrowDrawing.y1, mbArrowDrawing.x2, mbArrowDrawing.y2, mbArrowDrawing.curva))
+        return
       }
       if (mbConnectingFrom) {
         const rect = viewport.getBoundingClientRect()
@@ -14500,6 +14569,20 @@ if (id) {
     })
 
     document.addEventListener('mouseup', async e => {
+      if (mbArrowDrawing) {
+        document.getElementById('mb-arrow-draw-preview')?.remove()
+        const { x1, y1, x2, y2, curva } = mbArrowDrawing
+        mbArrowDrawing = null
+        setMbTool('select')
+        const dist = Math.hypot(x2 - x1, y2 - y1)
+        if (dist < 15) return // click sin arrastre real: no crea nada
+        const x = Math.min(x1, x2), y = Math.min(y1, y2)
+        const width = Math.max(30, Math.abs(x2 - x1))
+        const height = Math.max(30, Math.abs(y2 - y1))
+        const dir = (x1 <= x2) === (y1 <= y2) ? 'tl-br' : 'tr-bl'
+        await createMbItem({ tipo: 'flecha', arrow_curve: curva, arrow_dir: dir, x, y, width, height, color: '#2563EB' })
+        return
+      }
       if (mbConnectingFrom) {
         document.getElementById('mb-temp-conn-line')?.remove()
         viewport.classList.remove('connecting')
@@ -14679,7 +14762,7 @@ if (id) {
   // Cierra los otros popovers de la pastilla (música/timer/sellos) al abrir uno — lo que esté
   // sonando o corriendo adentro sigue funcionando en segundo plano, solo se esconde la ventanita.
   function mbCloseOtherToolPopovers(except) {
-    ;['mb-music-widget', 'mb-timer-widget', 'mb-stamp-picker', 'mb-forma-picker'].forEach(id => {
+    ;['mb-music-widget', 'mb-timer-widget', 'mb-stamp-picker', 'mb-forma-picker', 'mb-extra-tools-picker'].forEach(id => {
       if (id !== except) document.getElementById(id)?.classList.remove('show')
     })
   }
@@ -14768,6 +14851,24 @@ if (id) {
     createMbItem({ tipo: 'forma', forma_tipo: formaTipo, x: pos.x - 80, y: pos.y - 80, width: 160, height: 160, color: '#3B82F6' })
   }
 
+  window.toggleMbExtraToolsPicker = function(e) {
+    e.stopPropagation()
+    const picker = document.getElementById('mb-extra-tools-picker')
+    const opening = !picker?.classList.contains('show')
+    mbCloseOtherToolPopovers('mb-extra-tools-picker')
+    if (opening) picker?.classList.add('show'); else picker?.classList.remove('show')
+  }
+  document.addEventListener('click', e => {
+    const picker = document.getElementById('mb-extra-tools-picker')
+    if (picker?.classList.contains('show') && !e.target.closest('#mb-extra-tools-picker') && !e.target.closest('[onclick*="toggleMbExtraToolsPicker"]')) {
+      picker.classList.remove('show')
+    }
+  })
+  window.setMbArrowTool = function(curva) {
+    document.getElementById('mb-extra-tools-picker')?.classList.remove('show')
+    setMbTool(curva ? 'flecha-curva' : 'flecha-recta')
+  }
+
   // ── Cronómetro flotante simple (propio del Moodboard, no toca el timer de Herramientas) ──
   let mbTimerSeconds = 0
   let mbTimerRunning = false
@@ -14822,6 +14923,7 @@ if (id) {
       etiqueta: partial.etiqueta || null, etiqueta_color: partial.etiqueta_color || null,
       locked: partial.locked || false, responsable_ids: partial.responsable_ids || [],
       forma_tipo: partial.forma_tipo || null, stamp_emoji: partial.stamp_emoji || null,
+      arrow_curve: partial.arrow_curve || false, arrow_dir: partial.arrow_dir || 'tl-br',
     }
     const { data, error } = await supabase.from('moodboard_items').insert(payload).select('*').single()
     if (error) { showToast('Error: ' + error.message); return }
@@ -14899,12 +15001,23 @@ if (id) {
       } else if (item.tipo === 'stamp') {
         outerBg = 'transparent'
         bodyHTML = `<div class="mb-stamp">${item.stamp_emoji || '✅'}</div>`
+      } else if (item.tipo === 'flecha') {
+        outerBg = 'transparent'
+        clipStyle = 'overflow:visible;'
+        const c = item.color || '#2563EB'
+        const w = item.width, h = item.height
+        const [x1, y1, x2, y2] = item.arrow_dir === 'tr-bl' ? [w, 0, 0, h] : [0, 0, w, h]
+        const markerId = 'mb-arrow-head-' + item.id
+        bodyHTML = `<svg class="mb-arrow-svg" viewBox="0 0 ${w} ${h}" style="overflow:visible">
+          <defs><marker id="${markerId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="${c}"></path></marker></defs>
+          <path d="${mbArrowPathD(x1, y1, x2, y2, item.arrow_curve)}" stroke="${c}" stroke-width="3" fill="none" marker-end="url(#${markerId})"></path>
+        </svg>`
       }
       const abrirBtn = (item.tipo === 'link' || (item.tipo === 'imagen' && item.url))
         ? `<button onclick="event.stopPropagation();window.open('${item.url}','_blank')" title="Abrir link"><i class="ti ti-external-link"></i></button>` : ''
       const calBtn = (item.tipo === 'imagen' && item.archivo_url)
         ? `<button onclick="event.stopPropagation();mbSendToCalendar('${item.id}')" title="Agregar al calendario"><i class="ti ti-calendar-plus"></i></button>` : ''
-      const colorBtn = (item.tipo === 'nota' || item.tipo === 'marco' || item.tipo === 'forma' || (item.tipo === 'link' && item.link_estilo === 'boton'))
+      const colorBtn = (item.tipo === 'nota' || item.tipo === 'marco' || item.tipo === 'forma' || item.tipo === 'flecha' || (item.tipo === 'link' && item.link_estilo === 'boton'))
         ? `<button onclick="event.stopPropagation();document.getElementById('mb-color-input-${item.id}').click()" title="Cambiar color"><i class="ti ti-palette"></i></button><input type="color" id="mb-color-input-${item.id}" value="${item.color||'#FFF3B0'}" onmousedown="event.stopPropagation()" onchange="event.stopPropagation();changeMbItemColor('${item.id}', this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">`
         : ''
       const etiquetaBadge = ((item.tipo === 'imagen' || item.tipo === 'link') && item.etiqueta)
@@ -15175,7 +15288,7 @@ if (id) {
       return
     }
 
-    const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco', forma: 'Forma', stamp: 'Sello' }
+    const tipoLabels = { imagen: 'Imagen', link: 'Link / Video', nota: 'Nota', texto: 'Texto libre', marco: 'Marco', forma: 'Forma', stamp: 'Sello', flecha: 'Flecha' }
 
     let previewHTML = ''
     if (item.tipo === 'imagen') {
@@ -15220,7 +15333,7 @@ if (id) {
       : item.tipo === 'link'
       ? ['#0A2540','#3B82F6','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981']
       : ['#FFF3B0','#DDD6FE','#BFDBFE','#BBF7D0','#FBCFE8','#94A3B8']
-    const colorField = (item.tipo === 'nota' || item.tipo === 'marco' || item.tipo === 'forma' || (item.tipo === 'link' && item.link_estilo === 'boton')) ? `
+    const colorField = (item.tipo === 'nota' || item.tipo === 'marco' || item.tipo === 'forma' || item.tipo === 'flecha' || (item.tipo === 'link' && item.link_estilo === 'boton')) ? `
       <div class="mb-prop-field">
         <label class="mb-prop-label">Color</label>
         <div class="mb-prop-colors">
@@ -15235,6 +15348,15 @@ if (id) {
           ${[['rect','Rectángulo','ti-square'],['circulo','Círculo','ti-circle'],['triangulo','Triángulo','ti-triangle']].map(([val,label,icon]) => `
             <button class="tbtn ${item.forma_tipo===val?'primary':''}" style="flex:1;justify-content:center;padding:8px 4px;gap:5px" onclick="updateMbItemField('${item.id}','forma_tipo','${val}')" title="${label}"><i class="ti ${icon}" style="font-size:14px"></i></button>
           `).join('')}
+        </div>
+      </div>` : ''
+
+    const flechaField = item.tipo === 'flecha' ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Estilo</label>
+        <div style="display:flex;gap:6px">
+          <button class="tbtn ${!item.arrow_curve?'primary':''}" style="flex:1;justify-content:center;padding:8px 4px;gap:5px" onclick="updateMbItemField('${item.id}','arrow_curve',false)" title="Recta"><i class="ti ti-arrow-up-right" style="font-size:14px"></i> Recta</button>
+          <button class="tbtn ${item.arrow_curve?'primary':''}" style="flex:1;justify-content:center;padding:8px 4px;gap:5px" onclick="updateMbItemField('${item.id}','arrow_curve',true)" title="Curva"><i class="ti ti-arrow-ramp-right-2" style="font-size:14px"></i> Curva</button>
         </div>
       </div>` : ''
 
@@ -15260,6 +15382,7 @@ if (id) {
       ${linkEstiloField}
       ${textoField}
       ${formaField}
+      ${flechaField}
       ${colorField}
       ${responsableField}
       ${fechaField}
