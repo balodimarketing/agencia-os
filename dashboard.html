@@ -973,13 +973,14 @@
     .mb-arrow-svg { width: 100%; height: 100%; overflow: visible !important; }
     .mb-item img, .mb-item video, .mb-item iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
 
-    /* Botón eliminar: siempre visible, arriba a la derecha */
+    /* Botón eliminar: solo aparece al pasar el mouse o seleccionar, no todo el tiempo */
     .mb-item-delete {
       position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%;
       background: #fff; border: 1.5px solid var(--border); color: var(--danger); cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 20;
+      display: none; align-items: center; justify-content: center; font-size: 11px; z-index: 20;
       box-shadow: 0 2px 6px rgba(0,0,0,.12);
     }
+    .mb-item:hover .mb-item-delete, .mb-item.selected .mb-item-delete { display: flex; }
     .mb-item-delete:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
     .mb-item-lock-badge {
@@ -994,9 +995,10 @@
     .mb-item-move {
       position: absolute; top: -9px; left: -9px; width: 22px; height: 22px; border-radius: 50%;
       background: var(--azul); border: 1.5px solid #fff; color: var(--celeste); cursor: grab;
-      display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 20;
+      display: none; align-items: center; justify-content: center; font-size: 11px; z-index: 20;
       box-shadow: 0 2px 6px rgba(0,0,0,.12);
     }
+    .mb-item:hover .mb-item-move, .mb-item.selected .mb-item-move { display: flex; }
     .mb-item-move:active { cursor: grabbing; }
 
     .mb-item-toolbar {
