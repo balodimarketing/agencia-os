@@ -958,6 +958,7 @@
     }
     .mb-item.selected { border-color: var(--celeste); box-shadow: 0 0 0 3px rgba(142,219,255,.35); }
     .mb-item.dragging { opacity: .85; cursor: grabbing; }
+    .mb-item.mb-item-no-shadow:not(.selected) { box-shadow: none; } /* texto libre, sellos y flechas no tienen fondo que la justifique */
     .mb-item.mb-item-remote-active {
       outline: 2.5px solid var(--mb-remote-color, #EF4444); outline-offset: 2px;
       box-shadow: 0 0 0 5px color-mix(in srgb, var(--mb-remote-color, #EF4444) 18%, transparent);
@@ -15037,6 +15038,7 @@ if (id) {
         const textoHTML = /<[a-z][\s\S]*>/i.test(item.contenido || '') ? item.contenido : (item.contenido ? mbLinkify(item.contenido) : 'Doble click para escribir')
         bodyHTML = `<div class="mb-texto" contenteditable="false" data-id="${item.id}" ondblclick="event.stopPropagation();enterMbEditMode(this)" onblur="saveMbText(this)">${textoHTML}</div>`
         outerBg = 'transparent'
+        extraClass = 'mb-item-no-shadow'
       } else if (item.tipo === 'marco') {
         extraClass = 'mb-marco'
         const c = item.color || '#94A3B8'
@@ -15050,9 +15052,11 @@ if (id) {
         else clipStyle = `background:${c};` // rectángulo
       } else if (item.tipo === 'stamp') {
         outerBg = 'transparent'
+        extraClass = 'mb-item-no-shadow'
         bodyHTML = `<div class="mb-stamp">${item.stamp_emoji || '✅'}</div>`
       } else if (item.tipo === 'flecha') {
         outerBg = 'transparent'
+        extraClass = 'mb-item-no-shadow'
         clipStyle = 'overflow:visible;'
         const c = item.color || '#2563EB'
         const w = item.width, h = item.height
