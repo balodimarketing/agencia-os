@@ -1017,6 +1017,16 @@
     }
     .mb-item.selected .mb-resize-handle { display: block; }
 
+    .mb-rotate-handle {
+      position: absolute; bottom: -9px; left: -9px; width: 20px; height: 20px; border-radius: 50%;
+      background: #fff; border: 1.5px solid var(--border); color: var(--ink2); cursor: grab;
+      display: none; align-items: center; justify-content: center; font-size: 11px; z-index: 20;
+      box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    }
+    .mb-item.selected .mb-rotate-handle { display: flex; }
+    .mb-rotate-handle:active { cursor: grabbing; }
+    .mb-item.locked .mb-rotate-handle { display: none !important; }
+
     /* Anclas de conexión: aparecen al pasar el mouse o si está seleccionado */
     .mb-anchor {
       position: absolute; width: 12px; height: 12px; border-radius: 50%;
@@ -14408,6 +14418,7 @@ if (id) {
     let panning = false, panStartX = 0, panStartY = 0, panOrigX = 0, panOrigY = 0
     let potentialDragId = null, draggingId = null, dragStartX = 0, dragStartY = 0, dragOrigX = 0, dragOrigY = 0
     let resizingId = null, resizeStartX = 0, resizeStartY = 0, resizeOrigW = 0, resizeOrigH = 0
+    let rotatingId = null, rotateCenterX = 0, rotateCenterY = 0, rotateOrigDeg = 0, rotateStartAngle = 0
     let mbConnectingFrom = null
     let mbArrowDrawing = null
 
@@ -14436,6 +14447,7 @@ if (id) {
       const itemEl = e.target.closest('.mb-item')
       const anchorEl = e.target.closest('.mb-anchor')
       const resizeEl = e.target.closest('.mb-resize-handle')
+      const rotateEl = e.target.closest('.mb-rotate-handle')
       const moveEl = e.target.closest('.mb-item-move')
       const deleteEl = e.target.closest('.mb-item-delete')
       const toolbarEl = e.target.closest('.mb-item-toolbar')
@@ -14447,6 +14459,17 @@ if (id) {
         viewport.classList.add('connecting')
         e.preventDefault(); e.stopPropagation()
         return
+      }
+      if (rotateEl && itemEl) {
+        const itemData = moodboardItems.find(i => i.id === itemEl.dataset.id)
+        if (itemData?.locked) return
+        rotatingId = itemEl.dataset.id
+        const box = itemEl.getBoundingClientRect()
+        rotateCenterX = box.left + box.width / 2
+        rotateCenterY = box.top + box.height / 2
+        rotateOrigDeg = itemData?.rotation || 0
+        rotateStartAngle = Math.atan2(e.clientY - rotateCenterY, e.clientX - rotateCenterX) * 180 / Math.PI
+        e.preventDefault(); return
       }
       if (resizeEl && itemEl) {
         const itemData = moodboardItems.find(i => i.id === itemEl.dataset.id)
@@ -14471,7 +14494,15 @@ if (id) {
         const editing = itemEl.querySelector('.mb-nota[contenteditable="true"], .mb-texto[contenteditable="true"]')
         if (editing) return
         const itemData = moodboardItems.find(i => i.id === itemEl.dataset.id)
-        if (itemData?.locked || mbPresenting) return // bloqueado o presentando: no se arrastra, pero sí se puede seleccionar (onclick propio)
+        if (itemData?.locked || mbPresenting) {
+          // Bloqueado: no se arrastra el elemento, pero si el usuario arrastra el mouse igual
+          // paneamos el lienzo (como si fuera fondo vacío) — el click simple lo sigue seleccionando.
+          panning = true
+          panStartX = e.clientX; panStartY = e.clientY
+          panOrigX = mbPanX; panOrigY = mbPanY
+          viewport.classList.add('panning')
+          return
+        }
         potentialDragId = itemEl.dataset.id
         dragStartX = e.clientX; dragStartY = e.clientY
         dragOrigX = parseFloat(itemEl.style.left); dragOrigY = parseFloat(itemEl.style.top)
@@ -14549,6 +14580,19 @@ if (id) {
           renderMbConnections()
           mbBroadcastMove(draggingId, parseFloat(el.style.left), parseFloat(el.style.top))
         }
+      } else if (rotatingId) {
+        mbJustDragged = true
+        const el = layer.querySelector(`.mb-item[data-id="${rotatingId}"]`)
+        if (el) {
+          const currentAngle = Math.atan2(e.clientY - rotateCenterY, e.clientX - rotateCenterX) * 180 / Math.PI
+          let deg = rotateOrigDeg + (currentAngle - rotateStartAngle)
+          if (e.shiftKey) deg = Math.round(deg / 15) * 15 // con shift, ajusta de a 15°
+          deg = ((deg % 360) + 360) % 360
+          const clip = el.querySelector('.mb-item-clip')
+          if (clip) clip.style.transform = `rotate(${deg}deg)`
+          const item = moodboardItems.find(i => i.id === rotatingId)
+          if (item) item.rotation = deg
+        }
       } else if (resizingId) {
         mbJustDragged = true
         const el = layer.querySelector(`.mb-item[data-id="${resizingId}"]`)
@@ -14606,7 +14650,8 @@ if (id) {
       // así el item no sigue "pegado" al mouse mientras se guarda.
       const finishedDragId = draggingId
       const finishedResizeId = resizingId
-      potentialDragId = null; draggingId = null; resizingId = null
+      const finishedRotateId = rotatingId
+      potentialDragId = null; draggingId = null; resizingId = null; rotatingId = null
       setTimeout(() => { mbJustDragged = false }, 0)
 
       if (finishedDragId) {
@@ -14628,9 +14673,13 @@ if (id) {
           await supabase.from('moodboard_items').update({ width, height }).eq('id', finishedResizeId)
         }
       }
+      if (finishedRotateId) {
+        const item = moodboardItems.find(i => i.id === finishedRotateId)
+        if (item) await supabase.from('moodboard_items').update({ rotation: item.rotation || 0 }).eq('id', finishedRotateId)
+      }
       if (finishedDragId) mbBroadcastStop(finishedDragId)
       if (finishedResizeId) mbBroadcastStop(finishedResizeId)
-      if (finishedDragId || finishedResizeId) pushMbHistory()
+      if (finishedDragId || finishedResizeId || finishedRotateId) pushMbHistory()
     })
 
     viewport.addEventListener('click', e => {
@@ -14924,6 +14973,7 @@ if (id) {
       locked: partial.locked || false, responsable_ids: partial.responsable_ids || [],
       forma_tipo: partial.forma_tipo || null, stamp_emoji: partial.stamp_emoji || null,
       arrow_curve: partial.arrow_curve || false, arrow_dir: partial.arrow_dir || 'tl-br',
+      rotation: partial.rotation || 0,
     }
     const { data, error } = await supabase.from('moodboard_items').insert(payload).select('*').single()
     if (error) { showToast('Error: ' + error.message); return }
@@ -15047,9 +15097,10 @@ if (id) {
           <button onclick="event.stopPropagation();mbBringToFront('${item.id}')" title="Traer al frente"><i class="ti ti-stack-front"></i></button>
           <button onclick="event.stopPropagation();mbSendToBack('${item.id}')" title="Enviar atrás"><i class="ti ti-stack-back"></i></button>
         </div>
-        <div class="mb-item-clip" style="${clipStyle}">${bodyHTML}${etiquetaBadge}</div>
+        <div class="mb-item-clip" style="${clipStyle}transform:rotate(${item.rotation || 0}deg)">${bodyHTML}${etiquetaBadge}</div>
         ${anchors}
         <div class="mb-resize-handle"></div>
+        <div class="mb-rotate-handle" title="Rotar"><i class="ti ti-rotate-2"></i></div>
       </div>`
     }).join('')
     renderMbConnections()
