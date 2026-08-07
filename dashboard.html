@@ -15180,8 +15180,17 @@ if (id) {
     pushMbHistory()
   }
 
+  // Referencia al elemento que se está editando ahora mismo — nunca puede haber
+  // dos al mismo tiempo, porque eso es lo que hacía que el tamaño de letra
+  // "se filtrara" de una nota a otra.
+  let mbCurrentEditingEl = null
+
   window.enterMbEditMode = function(el) {
     if (mbPresenting) return
+    if (mbCurrentEditingEl && mbCurrentEditingEl !== el) {
+      saveMbText(mbCurrentEditingEl) // guarda y cierra la nota anterior antes de abrir esta
+    }
+    mbCurrentEditingEl = el
     el.setAttribute('contenteditable', 'true')
     el.focus()
     const range = document.createRange()
@@ -15220,8 +15229,12 @@ if (id) {
   }
 
   window.mbRteFontSize = function(px) {
+    if (!mbCurrentEditingEl) return
     document.execCommand('fontSize', false, '7')
-    document.querySelectorAll('font[size="7"]').forEach(el => {
+    // OJO: se busca solo DENTRO del elemento que se está editando ahora, nunca en
+    // toda la página — antes buscaba en todo el documento y por eso el tamaño se
+    // "filtraba" a otras notas que no tenían nada que ver.
+    mbCurrentEditingEl.querySelectorAll('font[size="7"]').forEach(el => {
       el.removeAttribute('size')
       el.style.fontSize = px + 'px'
     })
@@ -15257,6 +15270,7 @@ if (id) {
 
   window.saveMbText = async function(el) {
     el.setAttribute('contenteditable', 'false')
+    if (mbCurrentEditingEl === el) mbCurrentEditingEl = null
     hideMbRteToolbar()
     mbLinkifyNode(el)
     const id = el.dataset.id
