@@ -954,8 +954,10 @@
     .mb-item {
       position: absolute; box-sizing: border-box; user-select: none;
       border-radius: 10px; overflow: visible;
-      background: #fff; border: 2px solid transparent; cursor: grab;
+      background: transparent; border: 2px solid transparent; cursor: grab;
+      transition: border-color .12s;
     }
+    .mb-item:hover:not(.selected):not(.locked) { border-color: rgba(37,99,235,.3); }
     .mb-item.selected { border-color: var(--celeste); box-shadow: 0 0 0 3px rgba(142,219,255,.35); }
     .mb-item.dragging { opacity: .85; cursor: grabbing; }
     .mb-item.mb-item-remote-active {
@@ -15018,7 +15020,7 @@ if (id) {
     if (!layer) return
     layer.innerHTML = moodboardItems.map(item => {
       const isSelected = item.id === mbSelectedItemId
-      let bodyHTML = '', extraClass = '', outerBg = '#fff', extraStyle = '', clipStyle = ''
+      let bodyHTML = '', extraClass = '', outerBg = 'transparent', extraStyle = '', clipStyle = ''
       if (item.tipo === 'imagen') {
         bodyHTML = `<img src="${item.archivo_url}" draggable="false">`
       } else if (item.tipo === 'link') {
