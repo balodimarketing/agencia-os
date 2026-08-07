@@ -1127,6 +1127,16 @@
     #mb-stamp-picker button:hover { background: var(--bg); }
     .mb-stamp { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 34px; }
 
+    /* ── Picker de formas ── */
+    #mb-forma-picker {
+      display: none; position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg);
+      padding: 6px; gap: 2px; z-index: 60;
+    }
+    #mb-forma-picker.show { display: flex; }
+    #mb-forma-picker button { width: 36px; height: 36px; border-radius: 9px; border: none; background: none; font-size: 17px; color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    #mb-forma-picker button:hover { background: var(--bg); color: var(--azul); }
+
     /* ── Cronómetro flotante del Moodboard ── */
     #mb-timer-widget {
       display: none; position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%); z-index: 60;
@@ -1410,6 +1420,7 @@
     .mb-prop-textarea { min-height: 70px; resize: vertical; }
     .mb-prop-preview { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 16px; background: var(--bg); }
     .mb-prop-preview img, .mb-prop-preview video, .mb-prop-preview iframe { width: 100%; height: 160px; object-fit: cover; display: block; border: none; }
+    .mb-prop-lock { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--ink2); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; }
     .mb-prop-delete { width: 100%; padding: 10px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; color: var(--danger); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .mb-prop-delete:hover { background: #FEE2E2; }
     .mb-prop-colors { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -2442,6 +2453,11 @@
             <div id="mb-rte-toolbar">
               <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRte('bold')" title="Negrita"><i class="ti ti-bold"></i></button>
               <div class="mb-rte-sep"></div>
+              <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRteFontSize(11)" title="Letra chica" style="font-size:10px;font-weight:800">A</button>
+              <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRteFontSize(16)" title="Letra normal" style="font-size:13px;font-weight:800">A</button>
+              <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRteFontSize(24)" title="Letra grande" style="font-size:17px;font-weight:800">A</button>
+              <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRteFontSize(38)" title="Letra muy grande" style="font-size:21px;font-weight:800">A</button>
+              <div class="mb-rte-sep"></div>
               <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRteFormat('H3')" title="Título"><i class="ti ti-h-1"></i></button>
               <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRteFormat('H4')" title="Subtítulo"><i class="ti ti-h-2"></i></button>
               <button onmousedown="event.preventDefault();event.stopPropagation()" onclick="mbRteFormat('P')" title="Texto normal"><i class="ti ti-align-left"></i></button>
@@ -2473,7 +2489,14 @@
               <button class="mb-side-tool-btn" data-tool="imagen" data-tooltip="Imagen" onclick="setMbTool('imagen')"><i class="ti ti-photo"></i></button>
               <button class="mb-side-tool-btn" data-tool="link" data-tooltip="Video" onclick="setMbTool('link')"><i class="ti ti-brand-youtube"></i></button>
               <button class="mb-side-tool-btn" data-tool="marco" data-tooltip="Marcos" onclick="setMbTool('marco')"><i class="ti ti-frame"></i></button>
-              <button class="mb-side-tool-btn" data-tool="forma" data-tooltip="Forma" onclick="setMbTool('forma')"><i class="ti ti-square"></i></button>
+              <div style="position:relative">
+                <button class="mb-side-tool-btn" data-tooltip="Forma" onclick="toggleMbFormaPicker(event)"><i class="ti ti-square"></i></button>
+                <div id="mb-forma-picker">
+                  <button onclick="mbPlaceForma('rect')" title="Rectángulo"><i class="ti ti-square"></i></button>
+                  <button onclick="mbPlaceForma('circulo')" title="Círculo"><i class="ti ti-circle"></i></button>
+                  <button onclick="mbPlaceForma('triangulo')" title="Triángulo"><i class="ti ti-triangle"></i></button>
+                </div>
+              </div>
               <button class="mb-side-tool-btn" data-tooltip="Música de fondo" onclick="toggleMbMusicWidget()" id="mb-music-btn"><i class="ti ti-music"></i></button>
               <div style="position:relative">
                 <button class="mb-side-tool-btn" data-tooltip="Sello / Reacción" onclick="toggleMbStampPicker(event)"><i class="ti ti-mood-smile"></i></button>
@@ -14461,8 +14484,13 @@ if (id) {
         mbJustDragged = true
         const el = layer.querySelector(`.mb-item[data-id="${resizingId}"]`)
         if (el) {
-          el.style.width = Math.max(60, resizeOrigW + (e.clientX - resizeStartX) / mbZoom) + 'px'
-          el.style.height = Math.max(50, resizeOrigH + (e.clientY - resizeStartY) / mbZoom) + 'px'
+          let newW = Math.max(60, resizeOrigW + (e.clientX - resizeStartX) / mbZoom)
+          let newH = Math.max(50, resizeOrigH + (e.clientY - resizeStartY) / mbZoom)
+          if (e.shiftKey && resizeOrigW > 0) {
+            newH = Math.max(50, newW * (resizeOrigH / resizeOrigW)) // mantiene la proporción original
+          }
+          el.style.width = newW + 'px'
+          el.style.height = newH + 'px'
           const item = moodboardItems.find(i => i.id === resizingId)
           if (item) { item.width = parseFloat(el.style.width); item.height = parseFloat(el.style.height) }
           renderMbConnections()
@@ -14651,7 +14679,7 @@ if (id) {
   // Cierra los otros popovers de la pastilla (música/timer/sellos) al abrir uno — lo que esté
   // sonando o corriendo adentro sigue funcionando en segundo plano, solo se esconde la ventanita.
   function mbCloseOtherToolPopovers(except) {
-    ;['mb-music-widget', 'mb-timer-widget', 'mb-stamp-picker'].forEach(id => {
+    ;['mb-music-widget', 'mb-timer-widget', 'mb-stamp-picker', 'mb-forma-picker'].forEach(id => {
       if (id !== except) document.getElementById(id)?.classList.remove('show')
     })
   }
@@ -14719,6 +14747,25 @@ if (id) {
     document.getElementById('mb-stamp-picker')?.classList.remove('show')
     const pos = mbViewportCenterCanvasCoords()
     createMbItem({ tipo: 'stamp', stamp_emoji: emoji, x: pos.x - 30, y: pos.y - 30, width: 60, height: 60 })
+  }
+
+  window.toggleMbFormaPicker = function(e) {
+    e.stopPropagation()
+    const picker = document.getElementById('mb-forma-picker')
+    const opening = !picker?.classList.contains('show')
+    mbCloseOtherToolPopovers('mb-forma-picker')
+    if (opening) picker?.classList.add('show'); else picker?.classList.remove('show')
+  }
+  document.addEventListener('click', e => {
+    const picker = document.getElementById('mb-forma-picker')
+    if (picker?.classList.contains('show') && !e.target.closest('#mb-forma-picker') && !e.target.closest('[onclick*="toggleMbFormaPicker"]')) {
+      picker.classList.remove('show')
+    }
+  })
+  window.mbPlaceForma = function(formaTipo) {
+    document.getElementById('mb-forma-picker')?.classList.remove('show')
+    const pos = mbViewportCenterCanvasCoords()
+    createMbItem({ tipo: 'forma', forma_tipo: formaTipo, x: pos.x - 80, y: pos.y - 80, width: 160, height: 160, color: '#3B82F6' })
   }
 
   // ── Cronómetro flotante simple (propio del Moodboard, no toca el timer de Herramientas) ──
@@ -14932,6 +14979,7 @@ if (id) {
     if (!item) return
     item.locked = !item.locked
     renderMbCanvas()
+    renderMbPropertiesPanel()
     await supabase.from('moodboard_items').update({ locked: item.locked }).eq('id', id)
     pushMbHistory()
     showToast(item.locked ? '🔒 Elemento bloqueado' : '🔓 Elemento desbloqueado')
@@ -14999,6 +15047,14 @@ if (id) {
 
   window.mbRte = function(command) {
     document.execCommand(command, false, null)
+  }
+
+  window.mbRteFontSize = function(px) {
+    document.execCommand('fontSize', false, '7')
+    document.querySelectorAll('font[size="7"]').forEach(el => {
+      el.removeAttribute('size')
+      el.style.fontSize = px + 'px'
+    })
   }
 
   window.mbRteFormat = function(tag) {
@@ -15206,6 +15262,7 @@ if (id) {
       ${colorField}
       ${responsableField}
       ${fechaField}
+      <button class="mb-prop-lock" onclick="toggleMbItemLock('${item.id}')"><i class="ti ${item.locked?'ti-lock-open':'ti-lock'}"></i> ${item.locked ? 'Desbloquear elemento' : 'Bloquear elemento'}</button>
       <button class="mb-prop-delete" onclick="deleteMbItem('${item.id}')"><i class="ti ti-trash"></i> Eliminar elemento</button>
     `
   }
