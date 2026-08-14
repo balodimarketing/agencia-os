@@ -591,116 +591,6 @@
     #pdfed-sheet.pdfed-horizontal { width: 1123px; min-height: 794px; }
     #calendario-pdf-content { padding: 32px 32px 40px; }
 
-    /* ══════════════════════════════════════════════════════
-       EDITOR DE PRESUPUESTO — mismo lenguaje visual que el editor de calendario
-       ══════════════════════════════════════════════════════ */
-    #tools-presupuesto { font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif; }
-    .presed-header {
-      display: flex; align-items: center; gap: 20px; padding: 14px 28px; border-bottom: 1px solid #EDEFF2;
-      flex-shrink: 0; background: #fff;
-    }
-    .presed-back-btn {
-      display: flex; align-items: center; gap: 7px; border: none; background: none; cursor: pointer;
-      font-size: 13px; font-weight: 700; color: var(--ink2); font-family: inherit; padding: 8px 4px; transition: color .15s;
-    }
-    .presed-back-btn:hover { color: var(--ink); }
-    .presed-header-title { border-left: 1px solid #EDEFF2; padding-left: 20px; }
-    .presed-h1 { font-size: 15.5px; font-weight: 800; color: var(--ink); letter-spacing: -.2px; }
-    .presed-h1-sub { font-size: 11px; color: var(--ink3); font-weight: 500; margin-top: 1px; }
-    .presed-saved-chip {
-      display: flex; align-items: center; gap: 6px; background: #ECFDF5; color: #059669; font-size: 11.5px;
-      font-weight: 700; padding: 6px 12px; border-radius: 20px;
-    }
-    .presed-saved-chip i { font-size: 13px; }
-    .presed-btn {
-      display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px; border-radius: 11px;
-      border: 1px solid #E5E8EC; background: #fff; color: var(--ink2); font-size: 12.5px; font-weight: 700;
-      cursor: pointer; font-family: inherit; transition: background .15s;
-    }
-    .presed-btn:hover { background: #F8F9FB; }
-    .presed-btn.primary { background: var(--azul); color: var(--celeste); border-color: var(--azul); }
-    .presed-btn.primary:hover { opacity: .9; }
-    .presed-btn i { font-size: 14px; }
-
-    .presed-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
-
-    /* Columna izquierda */
-    #presed-nav-col { width: 260px; flex-shrink: 0; border-right: 1px solid #EDEFF2; overflow-y: auto; padding: 20px 18px 40px; background: #fff; }
-    .presed-steps { display: flex; flex-direction: column; gap: 3px; margin-bottom: 22px; }
-    .presed-step {
-      display: flex; align-items: center; gap: 10px; padding: 10px 10px; border-radius: 11px; cursor: pointer;
-      font-size: 13px; font-weight: 700; color: var(--ink2); transition: background .15s, color .15s;
-    }
-    .presed-step:hover { background: #F8F9FB; }
-    .presed-step.active { background: var(--celeste-dim); color: var(--azul); }
-    .presed-step-num {
-      width: 22px; height: 22px; border-radius: 50%; background: #E5E8EC; color: var(--ink3); font-size: 11px;
-      font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s, color .15s;
-    }
-    .presed-step.active .presed-step-num { background: var(--azul); color: var(--celeste); }
-    .presed-panel-card { border-top: 1px solid #EDEFF2; padding-top: 18px; }
-    .presed-panel-title { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 800; color: var(--ink); }
-    .presed-panel-title i { color: var(--azul); font-size: 15px; }
-    .presed-panel-sub { font-size: 11px; color: var(--ink3); margin-top: 3px; margin-bottom: 4px; }
-    .presed-logo-drop {
-      width: 100%; height: 84px; border: 1.5px dashed #D8DCE2; border-radius: 13px; display: flex; align-items: center;
-      justify-content: center; cursor: pointer; overflow: hidden; background-size: contain; background-repeat: no-repeat;
-      background-position: center; transition: border-color .15s;
-    }
-    .presed-logo-drop:hover { border-color: var(--celeste); }
-    .presed-swatch.active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ink); }
-    .presed-tip {
-      display: flex; gap: 10px; background: var(--celeste-dim); border-radius: 13px; padding: 13px 14px; margin-top: 18px;
-    }
-    .presed-tip-icon { width: 26px; height: 26px; border-radius: 8px; background: #fff; color: var(--azul); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-    .presed-tip-title { font-size: 11.5px; font-weight: 800; color: var(--ink); }
-    .presed-tip-text { font-size: 11px; color: var(--ink2); margin-top: 2px; line-height: 1.4; }
-    .presed-tpl-btn {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; border-radius: 10px;
-      border: 1.5px solid #E5E8EC; background: #fff; color: var(--ink2); font-size: 11px; font-weight: 700;
-      cursor: pointer; font-family: inherit; transition: background .15s;
-    }
-    .presed-tpl-btn:hover { background: #F8F9FB; }
-
-    /* Columna central */
-    #presed-form-col { flex: 1; overflow-y: auto; padding: 26px 32px 60px; background: #FAFBFC; min-width: 0; }
-    .presed-step-card { display: none; background: #fff; border: 1px solid #EDEFF2; border-radius: 16px; padding: 26px 28px; max-width: 640px; margin: 0 auto; box-shadow: 0 2px 10px rgba(16,24,40,.04); }
-    .presed-step-card.active { display: block; }
-    .presed-card-title { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -.2px; }
-    .presed-card-sub { font-size: 12px; color: var(--ink3); margin-top: 4px; margin-bottom: 20px; }
-    .presed-card-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .presed-card-title-row .presed-card-sub { margin-bottom: 0; }
-    .presed-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; }
-    .presed-add-item-btn {
-      display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 10px; border: none;
-      background: var(--azul); color: var(--celeste); font-size: 11.5px; font-weight: 800; cursor: pointer;
-      font-family: inherit; flex-shrink: 0; white-space: nowrap;
-    }
-    .presed-totals-box { background: var(--azul); border-radius: 14px; padding: 18px 20px; margin-top: 4px; }
-    .presed-total-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; color: rgba(255,255,255,.75); padding: 6px 0; }
-    .presed-total-row span:last-child { color: #fff; font-weight: 800; }
-    .presed-total-final { border-top: 1px solid rgba(255,255,255,.15); margin-top: 6px; padding-top: 12px; font-size: 14px; }
-    .presed-total-final span:last-child { font-size: 21px; letter-spacing: -.4px; }
-    .presed-next-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 46px; border-radius: 13px;
-      border: none; background: var(--azul); color: var(--celeste); font-size: 13px; font-weight: 800; cursor: pointer;
-      font-family: inherit; margin-top: 24px; transition: opacity .15s;
-    }
-    .presed-next-btn:hover { opacity: .9; }
-
-    /* Columna derecha: preview */
-    #presed-preview-col { width: 420px; flex-shrink: 0; border-left: 1px solid #EDEFF2; display: flex; flex-direction: column; background: #F6F7F9; }
-    .presed-preview-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; flex-shrink: 0; }
-    .presed-preview-label { font-size: 13px; font-weight: 800; color: var(--ink); }
-    .presed-live-chip { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #059669; }
-    .presed-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #059669; animation: pulse-dot 2s ease-in-out infinite; }
-    #presed-sheet-wrap { flex: 1; overflow-y: auto; padding: 0 20px 30px; }
-    #presed-sheet { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(16,24,40,.1), 0 2px 8px rgba(16,24,40,.05); overflow: hidden; }
-    body.presed-preview-only #presed-nav-col, body.presed-preview-only #presed-form-col { display: none; }
-    body.presed-preview-only #presed-preview-col { flex: 1; width: auto; }
-    body.presed-preview-only #presed-sheet-wrap { display: flex; justify-content: center; padding-top: 20px; }
-    body.presed-preview-only #presed-sheet { max-width: 700px; width: 100%; }
-
     /* ── Modal de evento, estilo Google Calendar ── */
     .gcal-modal { padding: 0; }
     .gcal-head { display: flex; align-items: flex-start; gap: 10px; padding: 20px 20px 4px; }
@@ -1435,7 +1325,13 @@
       transition: width .28s cubic-bezier(.4,0,.2,1);
     }
     #mb-properties-panel.open { width: 300px; }
-    #mb-properties-tabs { display: flex; gap: 4px; padding: 90px 16px 0; flex-shrink: 0; }
+    #mb-properties-tabs { display: flex; align-items: center; gap: 4px; padding: 90px 16px 0; flex-shrink: 0; }
+    #mb-properties-close {
+      margin-left: auto; width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--bg);
+      color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0; transition: background .15s;
+    }
+    #mb-properties-close:hover { background: var(--border); }
     .mb-prop-tab { padding: 8px 4px; background: none; border: none; border-bottom: 2px solid transparent; font-size: 12.5px; font-weight: 700; color: var(--ink3); cursor: pointer; font-family: inherit; margin-right: 14px; }
     .mb-prop-tab.active { color: var(--azul); border-bottom-color: var(--azul); }
     .mb-prop-tab:disabled { cursor: not-allowed; opacity: .5; }
@@ -2604,6 +2500,7 @@
             <div id="mb-properties-tabs">
               <button class="mb-prop-tab active" data-tab="props" onclick="setMbPropTab('props')">Propiedades</button>
               <button class="mb-prop-tab" data-tab="comments" onclick="setMbPropTab('comments')">Comentarios <span id="mb-comments-count"></span></button>
+              <button id="mb-properties-close" onclick="deselectMbItem()" title="Cerrar"><i class="ti ti-x"></i></button>
             </div>
             <div id="mb-properties-body"></div>
           </div>
@@ -3632,108 +3529,49 @@
       </div>
 
       <!-- Vista: Generador de presupuestos -->
-      <div id="tools-presupuesto" style="display:none;flex-direction:column;height:100vh">
-
-        <!-- Header -->
-        <div class="presed-header">
-          <button class="presed-back-btn" onclick="closeTool()"><i class="ti ti-arrow-left"></i> Volver al listado</button>
-          <div class="presed-header-title">
-            <div class="presed-h1">Editor de presupuesto</div>
-            <div class="presed-h1-sub">Completá los datos y generá tu presupuesto profesional</div>
-          </div>
-          <div class="presed-saved-chip"><i class="ti ti-check"></i> Cambios guardados</div>
-          <div style="flex:1"></div>
-          <button class="presed-btn" onclick="presedTogglePreviewOnly()" id="presed-preview-toggle-btn"><i class="ti ti-eye"></i> Vista previa</button>
-          <button class="presed-btn primary" onclick="generateBudgetPDF()"><i class="ti ti-download"></i> Descargar PDF</button>
+      <div id="tools-presupuesto" style="display:none;padding:28px 32px;max-width:800px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <button onclick="closeTool()" style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:13px;font-weight:700;padding:0" onmouseover="this.style.color='var(--ink)'" onmouseout="this.style.color='var(--ink3)'">
+            <i class="ti ti-arrow-left" style="font-size:15px"></i> Herramientas
+          </button>
+          <div></div>
         </div>
 
-        <div class="presed-body">
-          <!-- Columna izquierda: navegación + personalización -->
-          <div id="presed-nav-col">
-            <div class="presed-steps">
-              <div class="presed-step active" data-step="cliente" onclick="presedGoStep('cliente')"><span class="presed-step-num">1</span> Cliente</div>
-              <div class="presed-step" data-step="info" onclick="presedGoStep('info')"><span class="presed-step-num">2</span> Información</div>
-              <div class="presed-step" data-step="servicios" onclick="presedGoStep('servicios')"><span class="presed-step-num">3</span> Servicios</div>
-              <div class="presed-step" data-step="totales" onclick="presedGoStep('totales')"><span class="presed-step-num">4</span> Totales</div>
-              <div class="presed-step" data-step="condiciones" onclick="presedGoStep('condiciones')"><span class="presed-step-num">5</span> Condiciones</div>
-            </div>
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
 
-            <div class="presed-panel-card">
-              <div class="presed-panel-title"><i class="ti ti-palette"></i> Personalización</div>
-              <div class="presed-panel-sub">Personalizá la apariencia de tu presupuesto.</div>
+          <!-- Constructor -->
+          <div style="display:flex;flex-direction:column;gap:16px">
 
-              <label class="pdfed-label" style="margin-top:14px">Logo de tu marca</label>
-              <div id="budget-logo-preview" class="presed-logo-drop" onclick="document.getElementById('budget-logo-input').click()">
-                <span id="budget-logo-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                  <i class="ti ti-upload" style="font-size:18px;color:var(--ink3)"></i>
-                  <span style="font-size:11.5px;font-weight:700;color:var(--ink2)">Subir logo</span>
-                  <span style="font-size:10px;color:var(--ink3)">PNG, JPG o SVG</span>
-                </span>
+            <!-- Datos del cliente -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-user" style="font-size:15px;color:var(--azul)"></i> Datos del cliente
               </div>
-              <input type="file" id="budget-logo-input" accept="image/*" style="display:none" onchange="previewBudgetLogo(this)">
-
-              <label class="pdfed-label" style="margin-top:14px">Color principal</label>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px" id="presed-color-swatches">
-                <div class="pdfed-swatch presed-swatch active" data-color="#0A2540" onclick="setBudgetColor('#0A2540',this)" style="background:#0A2540"></div>
-                <div class="pdfed-swatch presed-swatch" data-color="#EC4899" onclick="setBudgetColor('#EC4899',this)" style="background:#EC4899"></div>
-                <div class="pdfed-swatch presed-swatch" data-color="#F59E0B" onclick="setBudgetColor('#F59E0B',this)" style="background:#F59E0B"></div>
-                <div class="pdfed-swatch presed-swatch" data-color="#10B981" onclick="setBudgetColor('#10B981',this)" style="background:#10B981"></div>
-                <div class="pdfed-swatch presed-swatch" data-color="#2563EB" onclick="setBudgetColor('#2563EB',this)" style="background:#2563EB"></div>
-                <label class="pdfed-swatch pdfed-swatch-custom" title="Color personalizado">
-                  <i class="ti ti-plus"></i>
-                  <input type="color" onchange="setBudgetColorFromHex(this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
-                </label>
-              </div>
-              <input type="hidden" id="budget-color-primary" value="#0A2540">
-
-              <label class="pdfed-label" style="margin-top:14px">Nombre en el documento</label>
-              <input type="text" class="pdfed-input" id="budget-agency-name" placeholder="Tu agencia" oninput="presedRefresh()">
-
-              <div class="presed-tip">
-                <div class="presed-tip-icon"><i class="ti ti-bulb"></i></div>
-                <div>
-                  <div class="presed-tip-title">Consejo</div>
-                  <div class="presed-tip-text">Usá un logo y color consistente para reforzar tu marca.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Nombre / Empresa</label>
+                  <input type="text" class="form-input" id="budget-cliente" placeholder="Nombre del cliente">
+                </div>
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" id="budget-email" placeholder="email@cliente.com">
                 </div>
               </div>
-
-              <div style="display:flex;gap:8px;margin-top:16px">
-                <button onclick="loadBudgetTemplates()" class="presed-tpl-btn"><i class="ti ti-bookmarks"></i> Mis plantillas</button>
-                <button onclick="saveBudgetTemplate()" class="presed-tpl-btn"><i class="ti ti-bookmark-plus"></i> Guardar</button>
-              </div>
-              <div id="budget-templates-panel" style="display:none;margin-top:10px">
-                <div id="budget-templates-list" style="display:flex;flex-direction:column;gap:8px"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Columna central: formulario por pasos -->
-          <div id="presed-form-col">
-
-            <!-- Paso 1: Cliente -->
-            <div class="presed-step-card active" id="presed-card-cliente">
-              <div class="presed-card-title">1. Cliente</div>
-              <div class="presed-card-sub">Datos de la persona o empresa que contrata el servicio.</div>
-              <div class="presed-fields-grid">
-                <div class="form-field" style="grid-column:1/-1"><label class="form-label">Nombre completo o razón social</label><input type="text" class="form-input" id="budget-cliente" placeholder="Nombre del cliente" oninput="presedRefresh()"></div>
-                <div class="form-field"><label class="form-label">Email</label><input type="email" class="form-input" id="budget-email" placeholder="email@cliente.com" oninput="presedRefresh()"></div>
-                <div class="form-field"><label class="form-label">DNI / CUIT</label><input type="text" class="form-input" id="budget-dni" placeholder="30-71612345-4" oninput="presedRefresh()"></div>
-                <div class="form-field" style="grid-column:1/-1"><label class="form-label">Domicilio</label><input type="text" class="form-input" id="budget-domicilio" placeholder="Av. Siempre Viva 123" oninput="presedRefresh()"></div>
-                <div class="form-field"><label class="form-label">Ciudad</label><input type="text" class="form-input" id="budget-ciudad" placeholder="Rosario" oninput="presedRefresh()"></div>
-                <div class="form-field"><label class="form-label">Provincia</label><input type="text" class="form-input" id="budget-provincia" placeholder="Santa Fe" oninput="presedRefresh()"></div>
-              </div>
-              <button class="presed-next-btn" onclick="presedGoStep('info')">Guardar y continuar <i class="ti ti-arrow-right"></i></button>
             </div>
 
-            <!-- Paso 2: Información -->
-            <div class="presed-step-card" id="presed-card-info">
-              <div class="presed-card-title">2. Información</div>
-              <div class="presed-card-sub">Título, moneda y una breve introducción del presupuesto.</div>
-              <div class="presed-fields-grid">
-                <div class="form-field"><label class="form-label">Título</label><input type="text" class="form-input" id="budget-titulo" placeholder="Ej: Gestión de redes sociales" oninput="presedRefresh()"></div>
-                <div class="form-field">
+            <!-- Info del presupuesto -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-file-text" style="font-size:15px;color:var(--azul)"></i> Información del presupuesto
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-field" style="margin-bottom:0">
+                  <label class="form-label">Título</label>
+                  <input type="text" class="form-input" id="budget-titulo" placeholder="Ej: Gestión de redes sociales">
+                </div>
+                <div class="form-field" style="margin-bottom:0">
                   <label class="form-label">Moneda</label>
-                  <select class="form-input form-select" id="budget-moneda" onchange="presedRefresh()">
+                  <select class="form-input form-select" id="budget-moneda">
                     <option value="ARS">ARS — Peso argentino</option>
                     <option value="USD">USD — Dólar</option>
                     <option value="UYU">UYU — Peso uruguayo</option>
@@ -3742,57 +3580,114 @@
                     <option value="EUR">EUR — Euro</option>
                   </select>
                 </div>
-                <div class="form-field" style="grid-column:1/-1"><label class="form-label">Introducción (opcional)</label><textarea class="form-input form-textarea" id="budget-intro" placeholder="Breve descripción del servicio o propuesta..." style="min-height:80px" oninput="presedRefresh()"></textarea></div>
               </div>
-              <button class="presed-next-btn" onclick="presedGoStep('servicios')">Guardar y continuar <i class="ti ti-arrow-right"></i></button>
+              <div class="form-field" style="margin-bottom:0;margin-top:12px">
+                <label class="form-label">Introducción (opcional)</label>
+                <textarea class="form-input form-textarea" id="budget-intro" placeholder="Breve descripción del servicio o propuesta..." style="min-height:70px"></textarea>
+              </div>
             </div>
 
-            <!-- Paso 3: Servicios -->
-            <div class="presed-step-card" id="presed-card-servicios">
-              <div class="presed-card-title-row">
-                <div><div class="presed-card-title">3. Servicios</div><div class="presed-card-sub">Los planes o servicios que incluye este presupuesto.</div></div>
-                <button onclick="addBudgetItem()" class="presed-add-item-btn"><i class="ti ti-plus"></i> Agregar ítem</button>
+            <!-- Items / Servicios -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:13px;font-weight:900;color:var(--ink);display:flex;align-items:center;gap:8px">
+                  <i class="ti ti-list" style="font-size:15px;color:var(--azul)"></i> Servicios / Planes
+                </div>
+                <button onclick="addBudgetItem()" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:800;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:opacity var(--t)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                  <i class="ti ti-plus" style="font-size:12px"></i> Agregar ítem
+                </button>
               </div>
-              <div id="budget-items-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px"></div>
-              <div id="budget-items-empty" style="text-align:center;padding:24px 0;color:var(--ink3);font-size:13px">Agregá los servicios o planes que incluye este presupuesto</div>
-              <button class="presed-next-btn" onclick="presedGoStep('totales')">Guardar y continuar <i class="ti ti-arrow-right"></i></button>
+              <div id="budget-items-list" style="display:flex;flex-direction:column;gap:10px"></div>
+              <div id="budget-items-empty" style="text-align:center;padding:24px 0;color:var(--ink3);font-size:13px">
+                Agregá los servicios o planes que incluye este presupuesto
+              </div>
             </div>
 
-            <!-- Paso 4: Totales -->
-            <div class="presed-step-card" id="presed-card-totales">
-              <div class="presed-card-title">4. Totales</div>
-              <div class="presed-card-sub">Aplicá un descuento si corresponde — el resto se calcula solo.</div>
-              <div class="presed-fields-grid">
-                <div class="form-field"><label class="form-label">Descuento (%)</label><input type="number" class="form-input" id="budget-descuento" min="0" max="100" placeholder="0" oninput="recalcBudget();presedRefresh()"></div>
+            <!-- Totales -->
+            <div style="background:var(--azul);border-radius:var(--r-lg);padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:12px;font-weight:700;color:#fff">Subtotal</div>
+                <div style="font-size:14px;font-weight:800;color:#fff" id="budget-subtotal">—</div>
               </div>
-              <div class="presed-totals-box">
-                <div class="presed-total-row"><span>Subtotal</span><span id="budget-subtotal">—</span></div>
-                <div class="presed-total-row presed-total-final"><span>Total</span><span id="budget-total">—</span></div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                <div style="font-size:12px;font-weight:700;color:#fff;flex:1">Descuento</div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="number" id="budget-descuento" min="0" max="100" placeholder="0" oninput="recalcBudget()" style="width:60px;padding:5px 8px;border-radius:6px;border:1px solid rgba(142,219,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:12px;font-family:inherit;text-align:center;outline:none">
+                  <span style="font-size:12px;color:rgba(142,219,255,.7)">%</span>
+                </div>
               </div>
-              <button class="presed-next-btn" onclick="presedGoStep('condiciones')">Guardar y continuar <i class="ti ti-arrow-right"></i></button>
+              <div style="border-top:1px solid rgba(142,219,255,.15);padding-top:12px;display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:14px;font-weight:900;color:#fff">Total</div>
+                <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px" id="budget-total">—</div>
+              </div>
             </div>
 
-            <!-- Paso 5: Condiciones -->
-            <div class="presed-step-card" id="presed-card-condiciones">
-              <div class="presed-card-title">5. Condiciones</div>
-              <div class="presed-card-sub">Vigencia, forma de pago, condiciones generales.</div>
-              <div class="presed-fields-grid">
-                <div class="form-field" style="grid-column:1/-1"><textarea class="form-input form-textarea" id="budget-condiciones" placeholder="Vigencia del presupuesto, forma de pago, condiciones generales..." style="min-height:110px" oninput="presedRefresh()"></textarea></div>
+            <!-- Condiciones -->
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-notes" style="font-size:15px;color:var(--azul)"></i> Condiciones y cierre
               </div>
-              <button class="presed-next-btn primary" onclick="generateBudgetPDF()"><i class="ti ti-download"></i> Descargar PDF</button>
+              <div class="form-field" style="margin-bottom:0">
+                <label class="form-label">Condiciones (opcional)</label>
+                <textarea class="form-input form-textarea" id="budget-condiciones" placeholder="Vigencia del presupuesto, forma de pago, condiciones generales..." style="min-height:70px"></textarea>
+              </div>
             </div>
 
           </div>
 
-          <!-- Columna derecha: vista previa en vivo -->
-          <div id="presed-preview-col">
-            <div class="presed-preview-toolbar">
-              <div class="presed-preview-label">Vista previa del presupuesto</div>
-              <div class="presed-live-chip"><span class="presed-live-dot"></span> Actualización en tiempo real</div>
+          <!-- Panel derecho: Personalización -->
+          <div style="display:flex;flex-direction:column;gap:16px;position:sticky;top:20px">
+
+            <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:20px">
+              <div style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+                <i class="ti ti-palette" style="font-size:15px;color:var(--azul)"></i> Personalización
+              </div>
+
+              <div class="form-field" style="margin-bottom:14px">
+                <label class="form-label">Logo de la agencia</label>
+                <div id="budget-logo-preview" style="width:100%;height:90px;border:1.5px dashed var(--border);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:6px;overflow:hidden;transition:border-color var(--t);gap:5px" onclick="document.getElementById('budget-logo-input').click()" onmouseover="this.style.borderColor='var(--azul)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <span id="budget-logo-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:4px"><i class="ti ti-upload" style="font-size:18px;color:var(--ink3)"></i><span style="font-size:12px;color:var(--ink3)">Subir logo</span><span style="font-size:10px;color:var(--ink3);opacity:.6">PNG, JPG o SVG</span></span>
+                </div>
+                <input type="file" id="budget-logo-input" accept="image/*" style="display:none" onchange="previewBudgetLogo(this)">
+              </div>
+
+              <div class="form-field" style="margin-bottom:14px">
+                <label class="form-label">Color principal</label>
+                <!-- Barra de degradé clickeable -->
+                <div id="budget-color-bar" onclick="pickColorFromBar(event)" style="width:100%;height:20px;border-radius:6px;cursor:crosshair;margin-bottom:8px;position:relative;background:linear-gradient(to right,#0A2540,#1e40af,#7c3aed,#be185d,#dc2626,#b45309,#047857,#0891b2,#111827);box-shadow:0 1px 4px rgba(0,0,0,.15)">
+                  <div id="budget-color-cursor" style="position:absolute;top:-4px;width:6px;height:28px;border-radius:3px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3);transform:translateX(-50%);pointer-events:none;left:5%"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div id="budget-color-swatch" style="width:28px;height:28px;border-radius:8px;background:#0A2540;flex-shrink:0;border:2px solid var(--border)"></div>
+                  <input type="text" id="budget-color-hex" value="#0A2540" oninput="setBudgetColorFromHex(this.value)" placeholder="#0A2540" style="flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:monospace;color:var(--ink);outline:none" onfocus="this.style.borderColor='var(--celeste)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <input type="hidden" id="budget-color-primary" value="#0A2540">
+              </div>
+
+              <div class="form-field" style="margin-bottom:0">
+                <label class="form-label">Nombre de la agencia en el PDF</label>
+                <input type="text" class="form-input" id="budget-agency-name" placeholder="Tu agencia">
+              </div>
             </div>
-            <div id="presed-sheet-wrap">
-              <div id="presed-sheet"></div>
+
+            <button onclick="generateBudgetPDF()" style="width:100%;padding:14px;border-radius:var(--r);font-size:13px;font-weight:900;border:none;background:var(--azul);color:var(--celeste);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity var(--t);letter-spacing:-.2px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+              <i class="ti ti-download" style="font-size:15px"></i> Descargar PDF
+            </button>
+
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button onclick="loadBudgetTemplates()" id="btn-mis-plantillas" style="flex:1;padding:8px;border-radius:var(--r);font-size:11px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:all var(--t)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'">
+                <i class="ti ti-bookmarks" style="font-size:12px"></i> Mis plantillas
+              </button>
+              <button onclick="saveBudgetTemplate()" style="flex:1;padding:8px;border-radius:var(--r);font-size:11px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--ink2);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:all var(--t)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='var(--white)'">
+                <i class="ti ti-bookmark-plus" style="font-size:12px"></i> Guardar plantilla
+              </button>
             </div>
+
+            <div id="budget-templates-panel" style="display:none;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px">
+              <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:12px">Mis plantillas</div>
+              <div id="budget-templates-list" style="display:flex;flex-direction:column;gap:8px"></div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -9165,19 +9060,22 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'moodboard_items' }, async () => {
         if (currentModule === 'contenido' && currentContentTab === 'moodboard' && currentMoodboardId) {
           await loadMoodboardItems()
-          renderMbCanvas()
+          // Si alguien está escribiendo texto en este momento, no reconstruimos el lienzo —
+          // eso destruía la nota que tenía abierta y lo sacaba de golpe de la edición.
+          // Los datos ya quedaron al día igual; se termina de dibujar apenas guarde o cierre.
+          if (!mbCurrentEditingEl) renderMbCanvas()
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'moodboard_connections' }, async () => {
         if (currentModule === 'contenido' && currentContentTab === 'moodboard' && currentMoodboardId) {
           await loadMoodboardConnections()
-          renderMbCanvas()
+          if (!mbCurrentEditingEl) renderMbCanvas()
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'moodboard_comments' }, async () => {
         if (currentModule === 'contenido' && currentContentTab === 'moodboard' && currentMoodboardId) {
           await loadMoodboardComments()
-          renderMbCanvas()
+          if (!mbCurrentEditingEl) renderMbCanvas()
         }
       })
       .subscribe()
@@ -12381,7 +12279,6 @@
     budgetCurrentColor = '#0A2540'
     renderBudgetItems()
     recalcBudget()
-    presedGoStep('cliente')
 
     // Pre-completar desde CRM si vino de ahí
     const raw = sessionStorage.getItem('budget_contact')
@@ -12400,22 +12297,6 @@
 
     // Cargar plantillas guardadas
     loadBudgetTemplatesFromStorage()
-    presedRefresh()
-  }
-
-  // ── Navegación por pasos ──
-  window.presedGoStep = function(step) {
-    document.querySelectorAll('.presed-step-card').forEach(c => c.classList.remove('active'))
-    document.getElementById('presed-card-' + step)?.classList.add('active')
-    document.querySelectorAll('.presed-step').forEach(s => s.classList.toggle('active', s.dataset.step === step))
-    document.getElementById('presed-form-col').scrollTop = 0
-  }
-
-  window.presedTogglePreviewOnly = function() {
-    const on = document.body.classList.toggle('presed-preview-only')
-    document.getElementById('presed-preview-toggle-btn').innerHTML = on
-      ? '<i class="ti ti-edit"></i> Editar'
-      : '<i class="ti ti-eye"></i> Vista previa'
   }
 
   window.addBudgetItem = function() {
@@ -12480,7 +12361,6 @@
     const totEl = document.getElementById('budget-total')
     if (subEl) subEl.textContent = budgetItems.length > 0 ? fmt(subtotal) : '—'
     if (totEl) totEl.textContent = budgetItems.length > 0 ? fmt(total) : '—'
-    presedRefresh()
   }
 
   window.previewBudgetLogo = function(input) {
@@ -12498,30 +12378,66 @@
         preview.style.backgroundPosition = 'center'
       }
       if (placeholder) placeholder.style.display = 'none'
-      presedRefresh()
     }
     reader.readAsDataURL(file)
   }
 
   let budgetCurrentColor = '#0A2540'
 
-  window.setBudgetColor = function(color, el) {
+  window.setBudgetColor = function(color) {
     budgetCurrentColor = color
     const hidden = document.getElementById('budget-color-primary')
+    const hex = document.getElementById('budget-color-hex')
+    const swatch = document.getElementById('budget-color-swatch')
     if (hidden) hidden.value = color
-    document.querySelectorAll('#presed-color-swatches .presed-swatch').forEach(s => s.classList.remove('active'))
-    if (el) el.classList.add('active')
-    presedRefresh()
+    if (hex) hex.value = color
+    if (swatch) swatch.style.background = color
   }
 
   window.setBudgetColorFromHex = function(val) {
     if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
       budgetCurrentColor = val
       const hidden = document.getElementById('budget-color-primary')
+      const swatch = document.getElementById('budget-color-swatch')
       if (hidden) hidden.value = val
-      document.querySelectorAll('#presed-color-swatches .presed-swatch').forEach(s => s.classList.remove('active'))
-      presedRefresh()
+      if (swatch) swatch.style.background = val
     }
+  }
+
+  window.pickColorFromBar = function(e) {
+    const bar = document.getElementById('budget-color-bar')
+    const cursor = document.getElementById('budget-color-cursor')
+    const rect = bar.getBoundingClientRect()
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+
+    // Colores del degradé en orden
+    const stops = [
+      { p: 0,    r: 10,  g: 37,  b: 64  },  // #0A2540
+      { p: 0.12, r: 30,  g: 64,  b: 175 },  // #1e40af
+      { p: 0.25, r: 124, g: 58,  b: 237 },  // #7c3aed
+      { p: 0.38, r: 190, g: 24,  b: 93  },  // #be185d
+      { p: 0.5,  r: 220, g: 38,  b: 38  },  // #dc2626
+      { p: 0.62, r: 180, g: 83,  b: 9   },  // #b45309
+      { p: 0.75, r: 4,   g: 120, b: 87  },  // #047857
+      { p: 0.88, r: 8,   g: 145, b: 178 },  // #0891b2
+      { p: 1,    r: 17,  g: 24,  b: 39  },  // #111827
+    ]
+
+    // Interpolar entre los dos stops más cercanos
+    let s1 = stops[0], s2 = stops[stops.length - 1]
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (pct >= stops[i].p && pct <= stops[i+1].p) { s1 = stops[i]; s2 = stops[i+1]; break }
+    }
+    const t = s1.p === s2.p ? 0 : (pct - s1.p) / (s2.p - s1.p)
+    const r = Math.round(s1.r + (s2.r - s1.r) * t)
+    const g = Math.round(s1.g + (s2.g - s1.g) * t)
+    const b = Math.round(s1.b + (s2.b - s1.b) * t)
+    const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('')
+
+    // Mover cursor
+    if (cursor) cursor.style.left = (pct * 100) + '%'
+
+    setBudgetColor(hex)
   }
 
   // ── Plantillas ─────────────────────────────────────────
@@ -12607,13 +12523,9 @@
 
   // ── Generar PDF ────────────────────────────────────────
 
-  function buildBudgetDocument() {
+  window.generateBudgetPDF = function() {
     const cliente = document.getElementById('budget-cliente')?.value.trim() || 'Cliente'
     const email = document.getElementById('budget-email')?.value.trim() || ''
-    const dni = document.getElementById('budget-dni')?.value.trim() || ''
-    const domicilio = document.getElementById('budget-domicilio')?.value.trim() || ''
-    const ciudad = document.getElementById('budget-ciudad')?.value.trim() || ''
-    const provincia = document.getElementById('budget-provincia')?.value.trim() || ''
     const titulo = document.getElementById('budget-titulo')?.value.trim() || 'Presupuesto'
     const intro = document.getElementById('budget-intro')?.value.trim() || ''
     const condiciones = document.getElementById('budget-condiciones')?.value.trim() || ''
@@ -12622,13 +12534,15 @@
     const color = budgetCurrentColor || '#0A2540'
     const agencyName = document.getElementById('budget-agency-name')?.value.trim() || 'Mi agencia'
 
+    if (budgetItems.length === 0) { showToast('Agregá al menos un ítem al presupuesto'); return }
+
     const subtotal = budgetItems.reduce((a, i) => a + (i.precio * i.cantidad), 0)
     const descuentoAmt = subtotal * (descuento / 100)
     const total = subtotal - descuentoAmt
     const fmt = (n) => moneda + ' ' + n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     const today = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
 
-    const itemsHTML = budgetItems.length > 0 ? budgetItems.map(item => [
+    const itemsHTML = budgetItems.map(item => [
       '<tr>',
       '<td style="padding:10px 12px;border-bottom:1px solid #f0f0f0">',
       '<div style="font-size:13px;font-weight:700;color:#111">' + (item.nombre || 'Sin nombre') + '</div>',
@@ -12638,13 +12552,11 @@
       '<td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-size:13px;color:#4A5568">' + fmt(item.precio) + '</td>',
       '<td style="padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-size:13px;font-weight:700;color:#111">' + fmt(item.precio * item.cantidad) + '</td>',
       '</tr>'
-    ].join('')).join('') : '<tr><td colspan="4" style="padding:20px 12px;text-align:center;font-size:12px;color:#9AA5B4">Todavía no agregaste servicios</td></tr>'
+    ].join('')).join('')
 
-    const domicilioLine = [domicilio, ciudad, provincia].filter(Boolean).join(', ')
-
-    const css = [
+    const pdfCSS = [
       '* { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }',
-      'body { font-family: "Poppins", Arial, sans-serif; color: #111; background: #fff; }',
+      'body { font-family: Arial, sans-serif; color: #111; background: #fff; }',
       '.page { max-width: 780px; margin: 0 auto; padding: 40px; }',
       '.header { background: ' + color + '; border-radius: 12px; padding: 32px; margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; }',
       '.header-left h1 { font-size: 24px; font-weight: 900; color: #fff; letter-spacing: -0.5px; margin-bottom: 4px; }',
@@ -12674,18 +12586,14 @@
       '.footer { border-top: 1px solid #eee; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; }',
       '.footer-agency { font-size: 12px; font-weight: 700; color: #4A5568; }',
       '.footer-faro { font-size: 10px; color: #C0CAD4; }',
-      '@media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } .header { background: ' + color + ' !important; } .total-final { background: ' + color + ' !important; } thead tr { background: ' + color + ' !important; } }',
+      '@media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } .header { background: ' + color + ' !important; } .total-final { background: ' + color + ' !important; } thead tr { background: ' + color + ' !important; } }'
     ].join('\n')
 
-    const body = '<div class="page">' +
+    const htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>' + pdfCSS + '</style></head><body><div class="page">' +
       '<div class="header"><div class="header-left"><h1>' + titulo + '</h1><p>' + today + '</p></div>' +
       (budgetLogoBase64 ? '<img src="' + budgetLogoBase64 + '" class="header-logo" alt="Logo">' : '<div class="header-logo-placeholder">' + agencyName.substring(0,2).toUpperCase() + '</div>') +
       '</div>' +
-      '<div class="meta"><div class="meta-box"><div class="meta-label">Para</div><div class="meta-value">' + cliente + '</div>' +
-        (email ? '<div class="meta-sub">' + email + '</div>' : '') +
-        (dni ? '<div class="meta-sub">' + dni + '</div>' : '') +
-        (domicilioLine ? '<div class="meta-sub">' + domicilioLine + '</div>' : '') +
-      '</div>' +
+      '<div class="meta"><div class="meta-box"><div class="meta-label">Para</div><div class="meta-value">' + cliente + '</div>' + (email ? '<div class="meta-sub">' + email + '</div>' : '') + '</div>' +
       '<div class="meta-box"><div class="meta-label">De parte de</div><div class="meta-value">' + agencyName + '</div></div></div>' +
       (intro ? '<div class="intro">' + intro + '</div>' : '') +
       '<table><thead><tr><th>Servicio / Plan</th><th>Cant.</th><th>Precio unit.</th><th>Subtotal</th></tr></thead><tbody>' + itemsHTML + '</tbody></table>' +
@@ -12695,23 +12603,7 @@
       '<div class="total-final"><div class="label">Total</div><div class="amount">' + fmt(total) + '</div></div>' +
       (condiciones ? '<div class="conditions"><div class="conditions-title">Condiciones</div>' + condiciones + '</div>' : '') +
       '<div class="footer"><div class="footer-agency">' + agencyName + '</div><div class="footer-faro">Presupuesto generado con Faro</div></div>' +
-      '</div>'
-
-    return { css, body }
-  }
-
-  // ── Vista previa en vivo (columna derecha) ──
-  window.presedRefresh = function() {
-    const sheet = document.getElementById('presed-sheet')
-    if (!sheet) return
-    const { css, body } = buildBudgetDocument()
-    sheet.innerHTML = '<style>' + css + '</style>' + body
-  }
-
-  window.generateBudgetPDF = function() {
-    if (budgetItems.length === 0) { showToast('Agregá al menos un ítem al presupuesto'); return }
-    const { css, body } = buildBudgetDocument()
-    const htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>' + css + '</style></head><body>' + body + '</body></html>'
+      '</div></body></html>'
 
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
@@ -12722,6 +12614,7 @@
     setTimeout(() => URL.revokeObjectURL(url), 60000)
     showToast('PDF listo para descargar')
   }
+
 
   window.switchCrmView = function(view) {
     crmView = view
@@ -15119,7 +15012,7 @@ if (id) {
     renderMbPropertiesPanel()
   }
 
-  function deselectMbItem() {
+  window.deselectMbItem = function deselectMbItem() {
     mbSelectedItemId = null
     document.querySelectorAll('#mb-items-layer .mb-item.selected').forEach(el => el.classList.remove('selected'))
     renderMbPropertiesPanel()
@@ -15226,6 +15119,22 @@ if (id) {
 
   window.mbRte = function(command) {
     document.execCommand(command, false, null)
+  }
+
+  window.mbPanelRte = function(id, command) {
+    if (!mbCurrentEditingEl || mbCurrentEditingEl.dataset.id !== id) {
+      showToast('Primero hacé doble click en el texto para editarlo y seleccioná una parte')
+      return
+    }
+    document.execCommand(command, false, null)
+  }
+
+  window.mbPanelRteFontSize = function(id, px) {
+    if (!mbCurrentEditingEl || mbCurrentEditingEl.dataset.id !== id) {
+      showToast('Primero hacé doble click en el texto para editarlo y seleccioná una parte')
+      return
+    }
+    mbRteFontSize(px)
   }
 
   window.mbRteFontSize = function(px) {
@@ -15430,6 +15339,21 @@ if (id) {
         </div>
       </div>` : ''
 
+    const textStyleField = (item.tipo === 'nota' || item.tipo === 'texto') ? `
+      <div class="mb-prop-field">
+        <label class="mb-prop-label">Texto</label>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <button class="tbtn" style="flex:1;justify-content:center;padding:8px 4px;font-weight:900" onmousedown="event.preventDefault()" onclick="mbPanelRte('${item.id}','bold')">N</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="tbtn" style="flex:1;justify-content:center;padding:8px 4px;font-size:10px" onmousedown="event.preventDefault()" onclick="mbPanelRteFontSize('${item.id}',11)">A</button>
+          <button class="tbtn" style="flex:1;justify-content:center;padding:8px 4px;font-size:13px" onmousedown="event.preventDefault()" onclick="mbPanelRteFontSize('${item.id}',16)">A</button>
+          <button class="tbtn" style="flex:1;justify-content:center;padding:8px 4px;font-size:17px" onmousedown="event.preventDefault()" onclick="mbPanelRteFontSize('${item.id}',24)">A</button>
+          <button class="tbtn" style="flex:1;justify-content:center;padding:8px 4px;font-size:21px" onmousedown="event.preventDefault()" onclick="mbPanelRteFontSize('${item.id}',38)">A</button>
+        </div>
+        <div style="font-size:10.5px;color:var(--ink3);margin-top:6px;line-height:1.4">Seleccioná el texto adentro de la nota y después tocá una opción de acá.</div>
+      </div>` : ''
+
     const etiquetaField = (item.tipo === 'imagen' || item.tipo === 'link') ? renderMbEtiquetaField(item) : ''
 
     const responsableField = renderMbResponsableField(item)
@@ -15453,6 +15377,7 @@ if (id) {
       ${textoField}
       ${formaField}
       ${flechaField}
+      ${textStyleField}
       ${colorField}
       ${responsableField}
       ${fechaField}
