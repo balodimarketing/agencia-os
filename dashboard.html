@@ -5956,7 +5956,7 @@
     else if (mod === 'crm') { renderCrm(); setTimeout(()=>{showTooltipBanner('crm');initPills()},300) }
     else if (mod === 'reportes') { renderReportes(); setTimeout(()=>{showTooltipBanner('reportes');initPills()},300)
       const tabAgencia = document.getElementById('rep-tab-agencia')
-      if (tabAgencia) tabAgencia.style.display = userRole === 'MEMBER' ? 'none' : 'block'
+      if (tabAgencia) tabAgencia.style.display = userRole !== 'OWNER' ? 'none' : 'block'
     }
     else { document.getElementById('panel-body').innerHTML = '' }
 
@@ -10597,7 +10597,7 @@
       const clientTags = assignedClients.length
         ? assignedClients.map(c => `<span class="member-client-tag">${c.nombre}</span>`).join('')
         : `<span class="member-no-clients">Sin clientes asignados</span>`
-      const canEdit = userRole === 'OWNER' && m.role !== 'OWNER'
+      const canEdit = (userRole === 'OWNER' || userRole === 'ADMIN') && m.role !== 'OWNER'
       const statusColor = m.activity_status==='activo' ? 'var(--success)' : m.activity_status==='ocupado' ? 'var(--warn)' : 'var(--ink3)'
       const avatarImg = avatarUrl ? `<img src="${avatarUrl}" style="width:52px;height:52px;border-radius:14px;object-fit:cover;flex-shrink:0;display:block" onerror="this.style.display='none';this.nextSibling.style.display='flex'">` : ''
       const avatarIni = `<div style="width:52px;height:52px;border-radius:14px;background:${col.bg};color:${col.color};font-size:18px;font-weight:900;display:${avatarUrl?'none':'flex'};align-items:center;justify-content:center;flex-shrink:0">${ini}</div>`
