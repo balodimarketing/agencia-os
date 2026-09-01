@@ -1937,6 +1937,7 @@
     @media (max-width: 860px) {
       body { overflow-x: hidden; }
       .workspace, .content-subview, .view { max-width: 100vw; box-sizing: border-box; }
+      #ws-cta { top: 68px !important; }
       .mobile-menu-btn {
         display: flex; align-items: center; justify-content: center; width: 38px; height: 38px;
         border-radius: 10px; border: 1px solid var(--border); background: #fff; color: var(--ink2);
@@ -2136,11 +2137,10 @@
       <button class="mobile-menu-btn" onclick="toggleMobileRail()"><i class="ti ti-menu-2"></i></button>
       <div id="mobile-topbar-logo"><div class="rail-logo" style="width:26px;height:26px;font-size:13px">F</div> Faro</div>
     </div>
-    <div class="topbar">
-      <div class="topbar-title" id="ws-title">Inicio</div>
-      <div class="topbar-search"><i class="ti ti-search"></i><input type="text" placeholder="Buscar en la app..."><span class="topbar-kbd">⌘K</span></div>
-      <button class="tbtn primary" id="ws-cta" onclick="handleCta()" style="display:none"><i class="ti ti-plus"></i><span id="ws-cta-label">Nuevo</span></button>
-    </div>
+    <div id="ws-title" style="display:none"></div>
+    <button class="cal-fpill cal-fpill-primary" id="ws-cta" onclick="handleCta()" style="display:none;position:fixed;top:16px;right:16px;z-index:150">
+      <i class="ti ti-plus"></i><span id="ws-cta-label">Nuevo</span>
+    </button>
 
     <!-- INICIO -->
     <div class="view active" id="v-inicio" style="padding:32px 32px 48px"><div style="max-width:1200px;margin:0 auto;width:100%">
@@ -5936,12 +5936,6 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
     document.getElementById('v-' + mod)?.classList.add('active')
     document.getElementById('ws-title').textContent = modMeta[mod]?.title || mod
-    // Contenido y Calendario tienen su propia cabecera/toolbar — el resto de los módulos
-    // (Inicio, Cuentas, Equipo, CRM, Herramientas, Reportes) dependen de esta barra genérica
-    // para mostrar el título, el buscador y el botón de acción (ej: "+ Invitar" en Equipo).
-    const modulosConCabeceraPropia = ['contenido', 'calendario']
-    const topbarEl = document.querySelector('.topbar')
-    if (topbarEl) topbarEl.style.display = modulosConCabeceraPropia.includes(mod) ? 'none' : 'flex'
     document.getElementById('ws-cta-label').textContent = modMeta[mod]?.cta || 'Nuevo'
     document.getElementById('panel-title').textContent = modMeta[mod]?.title || mod
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
