@@ -5936,6 +5936,12 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
     document.getElementById('v-' + mod)?.classList.add('active')
     document.getElementById('ws-title').textContent = modMeta[mod]?.title || mod
+    // Contenido y Calendario tienen su propia cabecera/toolbar — el resto de los módulos
+    // (Inicio, Cuentas, Equipo, CRM, Herramientas, Reportes) dependen de esta barra genérica
+    // para mostrar el título, el buscador y el botón de acción (ej: "+ Invitar" en Equipo).
+    const modulosConCabeceraPropia = ['contenido', 'calendario']
+    const topbarEl = document.querySelector('.topbar')
+    if (topbarEl) topbarEl.style.display = modulosConCabeceraPropia.includes(mod) ? 'none' : 'flex'
     document.getElementById('ws-cta-label').textContent = modMeta[mod]?.cta || 'Nuevo'
     document.getElementById('panel-title').textContent = modMeta[mod]?.title || mod
     document.getElementById('panel-sub').textContent = modMeta[mod]?.sub || ''
